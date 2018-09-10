@@ -1,0 +1,10 @@
+name=Apple Inc.
+dataPath=AAPL.csv
+ticker={0}
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={7}
