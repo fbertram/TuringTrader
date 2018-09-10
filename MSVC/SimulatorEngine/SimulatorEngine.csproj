@@ -7,7 +7,7 @@
     <ProjectGuid>{279F2A6E-FAA4-4E8A-9E75-DAFC7D8DABB3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimulatorEngine</RootNamespace>
+    <RootNamespace>FUB_TradingSim</RootNamespace>
     <AssemblyName>SimulatorEngine</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -30,6 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DynamicInterop">
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\DynamicInterop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\..\..\..\..\..\..\Windows\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c\Microsoft.Office.Interop.Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="RDotNet">
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="RDotNet.NativeLibrary">
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.NativeLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
@@ -47,6 +61,7 @@
     <Compile Include="InstrumentDataBase.cs" />
     <Compile Include="InstrumentDataCsv.cs" />
     <Compile Include="ITimeSeries.cs" />
+    <Compile Include="Plotter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

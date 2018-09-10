@@ -1,6 +1,5 @@
 name=Apple Inc.
-dataPath=AAPL.csv
-ticker={0}
+dataPath=Data\AAPL
 date={1}
 time=16:00
 open={2}
