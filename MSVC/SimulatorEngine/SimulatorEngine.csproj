@@ -60,8 +60,8 @@
     <Compile Include="BarType.cs" />
     <Compile Include="InstrumentDataBase.cs" />
     <Compile Include="InstrumentDataCsv.cs" />
-    <Compile Include="ITimeSeries.cs" />
-    <Compile Include="Plotter.cs" />
+    <Compile Include="TimeSeries.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,9 +1,12 @@
 ﻿//==============================================================================
-// Project:      Trading Simulator
-// File:         MyAlgo2.cs
-// Description:  Sample Algorithm
-// History:      2018/09/08, FUB, created
-// Copyright (c) 2011-2018, Bertram Solutions LLC
+// Project:     Trading Simulator
+// Name:        Algorithm1
+// Description: Sample Algorithm #1
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL v3.0
 //==============================================================================
 
 //#define DEBUG_PLOT
@@ -21,7 +24,7 @@ namespace FUB_TradingSim
 {
     class Algorithm1: AlgoBase
     {
-        private Plotter _plotter = new Plotter();
+        private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\ImportOnly.xlsm";
 

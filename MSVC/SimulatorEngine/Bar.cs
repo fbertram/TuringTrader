@@ -1,4 +1,15 @@
-﻿using System;
+﻿//==============================================================================
+// Project:     Trading Simulator
+// Name:        Bar
+// Description: data structure for single instrument bar
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL v3.0
+//==============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class BarType
+    public class Bar
     {
         public readonly string Symbol;
         public readonly DateTime TimeStamp;
@@ -16,7 +27,7 @@ namespace FUB_TradingSim
         public readonly double Close;
         public readonly double Volume;
 
-        public BarType(
+        public Bar(
             string symbol,
             DateTime timeStamp,
             double open,
@@ -35,3 +46,5 @@ namespace FUB_TradingSim
         }
     }
 }
+//==============================================================================
+// end of file

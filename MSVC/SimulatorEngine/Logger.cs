@@ -1,9 +1,10 @@
 ﻿//==============================================================================
+// Project:     Trading Simulator
 // Name:        Plotter
 // Description: logging class to connect w/ CSV Files, Excel, R
 // History:     2017xii08,   FUB, created
-//==============================================================================
-// Copyright:   2017-2018, Bertram Solutions LLC
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL v3.0
 //==============================================================================
@@ -45,7 +46,7 @@ using System.Diagnostics;
 
 namespace FUB_TradingSim
 {
-    public class Plotter
+    public class Logger
     {
         #region data
         //private CStudyControl Host;
@@ -54,9 +55,9 @@ namespace FUB_TradingSim
         private Dictionary<string, List<Dictionary<string, string>>> LogData;
         #endregion
         #region initialization & cleanup
-        public Plotter() { }
+        public Logger() { }
 
-        ~Plotter()
+        ~Logger()
         { }
 
         /// <summary>

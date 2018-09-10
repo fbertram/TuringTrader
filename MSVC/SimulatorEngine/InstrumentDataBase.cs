@@ -1,4 +1,15 @@
-﻿using System;
+﻿//==============================================================================
+// Project:     Trading Simulator
+// Name:        InstrumentDataBase
+// Description: base class for instrument data
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL v3.0
+//==============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -71,3 +82,5 @@ namespace FUB_TradingSim
         abstract public void LoadData(DateTime startTime);
     }
 }
+//==============================================================================
+// end of file
