@@ -74,7 +74,7 @@ namespace FUB_TradingSim
             return new InstrumentDataCsv(infos);
         }
 
-        abstract public IEnumerator<BarType> BarEnumerator
+        abstract public IEnumerator<Bar> BarEnumerator
         {
             get;
         }

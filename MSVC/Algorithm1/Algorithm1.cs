@@ -36,8 +36,8 @@ namespace FUB_TradingSim
         override public void Run()
         {
             // set simulation time frame
-            StartDate = DateTime.Parse("01/01/2009");
-            EndDate = DateTime.Parse("08/01/2017");
+            StartTime = DateTime.Parse("01/01/2009");
+            EndTime = DateTime.Parse("08/01/2017");
 
             // add instruments
             DataPath = _dataPath;
@@ -46,8 +46,11 @@ namespace FUB_TradingSim
             //AddInstrument("^XSP");
 
             // loop through all bars
-            foreach (BarCollection bars in Bars)
+            foreach (DateTime simTime in SimTime)
             {
+                Debug.WriteLine("{0:MM/dd/yyyy}, # of symbols = {1}", simTime, Bars.Count);
+
+                /*
                 foreach (string symbol in bars.Symbols)
                 {
                     //Debug.WriteLine("{0:MM/dd/yyyy} {1}: {2}, {3}, {4}, {5}, {6}, {7}",
@@ -66,6 +69,7 @@ namespace FUB_TradingSim
                             ? bars[instr.Info[InstrumentDataField.ticker]].Close
                             : 0.0);
 #endif
+                */
             }
 
             FitnessValue = 0.0;
@@ -99,7 +103,7 @@ namespace FUB_TradingSim
 
             //Console.WriteLine("Press key to continue");
             //Console.ReadKey();
-            System.Threading.Thread.Sleep(3000);
+            //System.Threading.Thread.Sleep(3000);
         }
     }
 }

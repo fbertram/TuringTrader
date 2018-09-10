@@ -37,6 +37,7 @@ namespace FUB_TradingSim
                 return InstrumentDataBase.DataPath;
             }
         }
+
         public void AddInstrument(string ticker)
         {
             Instruments.Add(InstrumentDataBase.New(ticker));
@@ -48,9 +49,10 @@ namespace FUB_TradingSim
             private set;
         }
 
-        public DateTime StartDate;
-        public DateTime EndDate;
-        public DateTime SimDate;
+        public DateTime StartTime;
+        public DateTime EndTime;
+
+        protected Dictionary<string, TimeSeries<Bar>> Bars = new Dictionary<string, TimeSeries<Bar>>();
 
         public double FitnessValue
         {
@@ -58,7 +60,7 @@ namespace FUB_TradingSim
             protected set;
         }
 
-        protected IEnumerable<BarCollection> Bars
+        protected IEnumerable<DateTime> SimTime
         {
             get
             {
@@ -66,29 +68,30 @@ namespace FUB_TradingSim
 
                 foreach (InstrumentDataBase instr in Instruments)
                 {
-                    instr.LoadData(StartDate);
+                    instr.LoadData(StartTime);
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
 
                 while(hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    SimDate = Instruments
+                    DateTime simTime = Instruments
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.TimeStamp);
 
-                    BarCollection currentBars = new BarCollection();
                     foreach (InstrumentDataBase instr in Instruments)
                     {
-                        while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == SimDate)
+                        while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
                         {
-                            currentBars[instr.BarEnumerator.Current.Symbol] = instr.BarEnumerator.Current;
+                            if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
+                                Bars[instr.BarEnumerator.Current.Symbol] = new TimeSeries<Bar>();
+                            Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
+
                             hasData[instr] = instr.BarEnumerator.MoveNext();
                         }
                     }
 
-                    if (currentBars.Count > 0)
-                        yield return currentBars;
+                    yield return simTime;
                 }
 
                 yield break;
@@ -97,7 +100,6 @@ namespace FUB_TradingSim
 
         public AlgoBase()
         {
-            SimDate = default(DateTime);
             Instruments = new List<InstrumentDataBase>();
         }
 

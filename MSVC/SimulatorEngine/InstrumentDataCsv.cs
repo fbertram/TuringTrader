@@ -22,9 +22,9 @@ namespace FUB_TradingSim
 {
     public class InstrumentDataCsv : InstrumentDataBase
     {
-        private List<BarType> _data;
+        private List<Bar> _data;
 
-        private IEnumerator<BarType> _barEnumerator;
+        private IEnumerator<Bar> _barEnumerator;
 
         public InstrumentDataCsv(Dictionary<InstrumentDataField, string> info) : base(info)
         {
@@ -43,7 +43,7 @@ namespace FUB_TradingSim
                     throw new Exception(string.Format("data location for {0} not found", Info[InstrumentDataField.symbol]));
         }
 
-        override public IEnumerator<BarType> BarEnumerator
+        override public IEnumerator<Bar> BarEnumerator
         {
             get
             {
@@ -150,7 +150,7 @@ namespace FUB_TradingSim
                     }
                 }
 
-                BarType bar = new BarType(
+                Bar bar = new Bar(
                         ticker,
                         date.Date + time.TimeOfDay,
                         open,
@@ -165,7 +165,7 @@ namespace FUB_TradingSim
 
         override public void LoadData(DateTime startTime)
         {
-            _data = new List<BarType>();
+            _data = new List<Bar>();
 
             if (File.Exists(Info[InstrumentDataField.dataPath]))
                 LoadFile(Info[InstrumentDataField.dataPath], startTime);

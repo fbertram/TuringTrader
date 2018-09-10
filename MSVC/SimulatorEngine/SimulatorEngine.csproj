@@ -57,7 +57,7 @@
   <ItemGroup>
     <Compile Include="AlgoBase.cs" />
     <Compile Include="BarCollection.cs" />
-    <Compile Include="BarType.cs" />
+    <Compile Include="Bar.cs" />
     <Compile Include="InstrumentDataBase.cs" />
     <Compile Include="InstrumentDataCsv.cs" />
     <Compile Include="TimeSeries.cs" />
