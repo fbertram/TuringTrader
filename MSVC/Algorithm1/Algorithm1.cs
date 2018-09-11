@@ -10,7 +10,7 @@
 //==============================================================================
 
 //#define DEBUG_PLOT
-#define EXCEL_REPORT
+//#define EXCEL_REPORT
 
 using System;
 using System.Collections.Generic;
@@ -39,33 +39,28 @@ namespace FUB_TradingSim
             StartTime = DateTime.Parse("01/01/2009");
             EndTime = DateTime.Parse("08/01/2017");
 
+            // set account value
+            Cash = 100000.00;
+
             // add instruments
             DataPath = _dataPath;
-            AddInstrument("AAPL");
-            AddInstrument("TSLA");
-            AddInstrument("^XSP");
+            DataSources.Add(DataSource.New("AAPL"));
+            DataSources.Add(DataSource.New("TSLA"));
+            //DataSources.Add(DataSource.New("^XSP"));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                //Debug.WriteLine("{0:MM/dd/yyyy}, # of symbols = {1}", simTime, Bars.Count);
-                foreach(string symbol in Bars.Keys)
-                {
-                    double sma = SMA.CalcSMA(Bars[symbol].Close, 126);
+                Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
 
-                    //Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}, {3}", 
-                    //    Bars[symbol][0].TimeStamp, Bars[symbol][0].Symbol, 
-                    //    Bars[symbol][0].Open, Bars[symbol].Open[0]);
-                    //Debug.WriteLine("{0:MM/dd/yyyy}: close = {1}, sma = {2}", Bars[symbol][0].TimeStamp, Bars[symbol].Close[0],  SMA.CalcSMA(Bars[symbol].Close, 126));
-                }
-
-                /*
-                foreach (string symbol in bars.Symbols)
+                foreach(string symbol in Instruments.Keys)
                 {
-                    //Debug.WriteLine("{0:MM/dd/yyyy} {1}: {2}, {3}, {4}, {5}, {6}, {7}",
-                    //    SimDate, symbol, bars[symbol].TimeStamp, 
-                    //    bars[symbol].Open, bars[symbol].High, bars[symbol].Low, bars[symbol].Close, 
-                    //    bars[symbol].Volume);
+                    //double sma = SMA.CalcSMA(Bars[symbol].Close, 126);
+
+                    //Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", Instruments[symbol][0].TimeStamp, Instruments[symbol][0].Symbol, Instruments[symbol].Close[0]);
+
+                    if (Instruments[symbol].Position == 0)
+                        Instruments[symbol].Trade(1);
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
@@ -78,7 +73,6 @@ namespace FUB_TradingSim
                             ? bars[instr.Info[InstrumentDataField.ticker]].Close
                             : 0.0);
 #endif
-                */
             }
 
             FitnessValue = 0.0;
@@ -109,6 +103,11 @@ namespace FUB_TradingSim
 
             DateTime finishTime = DateTime.Now;
             Debug.WriteLine("Total algorithm run time = {0:F1} seconds", (finishTime - startTime).TotalSeconds);
+
+            foreach (LogEntry entry in algo.Log)
+            {
+                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.TimeStamp, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
+            }
 
             //Console.WriteLine("Press key to continue");
             //Console.ReadKey();

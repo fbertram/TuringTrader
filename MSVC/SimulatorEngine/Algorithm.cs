@@ -22,10 +22,39 @@ namespace FUB_TradingSim
 
     public abstract partial class Algorithm
     {
-        //---------- public API for use by trading application
+        //---------- internal helpers
+        private void ExecOrder(Order ticket)
+        {
+            Instrument instrument = ticket.Instrument;
+            Bar execBar = instrument[0];
+            double price = execBar.Values[DataSourceValue.close];
+
+            // add position
+            if (!Positions.ContainsKey(instrument))
+                Positions[instrument] = 0;
+            Positions[instrument] += ticket.Quantity;
+            if (Positions[instrument] == 0)
+                Positions.Remove(instrument);
+
+            // add log entry
+            LogEntry log = new LogEntry()
+            {
+                OrderTicket = ticket,
+                BarOfExecution = execBar,
+                FillPrice = price,
+                Commission = 0.00
+            };
+            Log.Add(log);
+
+            // remove order from pending list
+            PendingOrders = PendingOrders
+                .Where(o => o != ticket)
+                .ToList();
+        }
+
+        //---------- for use by trading applications
         public Algorithm()
         {
-            Instruments = new List<Instrument>();
         }
         virtual public void Run()
         {
@@ -41,7 +70,7 @@ namespace FUB_TradingSim
             protected set;
         }
 
-        //---------- protected API for use by algorithms
+        //---------- for use by algorithms
         protected string DataPath
         {
             set
@@ -49,24 +78,16 @@ namespace FUB_TradingSim
                 if (!Directory.Exists(value))
                     throw new Exception(string.Format("invalid data path {0}", value));
 
-                Instrument.DataPath = value;
+                DataSource.DataPath = value;
             }
 
             get
             {
-                return Instrument.DataPath;
+                return DataSource.DataPath;
             }
         }
 
-        protected void AddInstrument(string ticker)
-        {
-            Instruments.Add(Instrument.New(ticker));
-        }
-        protected List<Instrument> Instruments
-        {
-            get;
-            private set;
-        }
+        protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;
         protected DateTime EndTime;
@@ -75,9 +96,9 @@ namespace FUB_TradingSim
         {
             get
             {
-                Dictionary<Instrument, bool> hasData = new Dictionary<Instrument, bool>();
+                Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
-                foreach (Instrument instr in Instruments)
+                foreach (DataSource instr in DataSources)
                 {
                     instr.LoadData(StartTime);
                     instr.BarEnumerator.Reset();
@@ -86,28 +107,61 @@ namespace FUB_TradingSim
 
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    DateTime simTime = Instruments
+                    DateTime simTime = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.TimeStamp);
 
-                    foreach (Instrument instr in Instruments)
+                    foreach (DataSource instr in DataSources)
                     {
                         while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
                         {
-                            if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
-                                Bars[instr.BarEnumerator.Current.Symbol] = new BarSeries();
-                            Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
+                            if (!Instruments.ContainsKey(instr.BarEnumerator.Current.Symbol))
+                                Instruments[instr.BarEnumerator.Current.Symbol] = new Instrument(this);
+                            Instruments[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
                             hasData[instr] = instr.BarEnumerator.MoveNext();
                         }
                     }
 
+                    List<Order> ordersOpenNextBar = PendingOrders
+                        .Where(o => o.Execution == OrderExecution.openNextBar)
+                        .ToList();
+
+                    foreach (Order order in ordersOpenNextBar)
+                        ExecOrder(order);
+
                     yield return simTime;
+
+                    List<Order> ordersCloseThisBar = PendingOrders
+                        .Where(o => o.Execution == OrderExecution.closeThisBar)
+                        .ToList();
+
+                    foreach (Order order in ordersCloseThisBar)
+                        ExecOrder(order);
                 }
 
                 yield break;
             }
         }
-        protected Dictionary<string, BarSeries> Bars = new Dictionary<string, BarSeries>();
+        protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+
+        public List<Order> PendingOrders = new List<Order>();
+        public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();
+        public List<LogEntry> Log = new List<LogEntry>();
+
+        protected double Cash;
+        public double NetAssetValue
+        {
+            get
+            {
+                double nav = Cash;
+                foreach (var instrument in Positions.Keys)
+                {
+                    nav += Positions[instrument] * instrument.Close[0];
+                }
+
+                return nav;
+            }
+        }
     }
 }
 //==============================================================================

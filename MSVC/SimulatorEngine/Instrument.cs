@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        InstrumentDataBase
-// Description: base class for instrument data
+// Name:        BarCollection
+// Description: collection of bars
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -11,75 +11,112 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum InstrumentInfo { infoPath, dataPath, name, symbol, ticker, date, time, open, high, low, close, volume, bid, ask, bidSize, askSize };
-
-    public abstract class Instrument
+    public class Instrument : TimeSeries<Bar>
     {
-        public static string DataPath = @".\Data";
-
-        public Dictionary<InstrumentInfo, string> Info
+        private class BarSeriesAccessor : ITimeSeries<double>
         {
-            get;
-            protected set;
-        }
+            private Func<int, double> _accessor;
 
-        public Instrument(Dictionary<InstrumentInfo, string> info)
-        {
-            Info = info;
-        }
-
-        static public Instrument New(string ticker)
-        {
-            // check for info file
-            string infoPathName = string.Format(@"{0}\{1}.inf", DataPath, ticker);
-                    
-            if (!File.Exists(infoPathName))
-                throw new Exception("failed to locate data source info for " + ticker);
-
-            // create info structure
-            Dictionary<InstrumentInfo, string> infos = new Dictionary<InstrumentInfo, string>();
-            infos[InstrumentInfo.ticker] = ticker;
-            infos[InstrumentInfo.symbol] = ticker;
-            infos[InstrumentInfo.infoPath] = DataPath;
-
-            // load info file
-            string[] lines = File.ReadAllLines(infoPathName);
-            foreach (string line in lines)
+            public BarSeriesAccessor(Func<int, double> accessor)
             {
-                int idx = line.IndexOf('=');
-
-                try
-                {
-                    InstrumentInfo key = (InstrumentInfo)
-                        Enum.Parse(typeof(InstrumentInfo), line.Substring(0, idx), true);
-
-                    string value = line.Substring(idx + 1);
-
-                    infos[key] = value;
-                }
-                catch (Exception)
-                {
-                    throw new Exception(string.Format("error parsing data source info for {0}: line '{1}", ticker, line));
-                }
+                _accessor = accessor;
             }
 
-            // instantiate data source
-            return new InstrumentCsv(infos);
+            public double this[int daysBack]
+            {
+                get
+                {
+                    return _accessor(daysBack);
+                }
+            }
         }
+        private BarSeriesAccessor _openSeries;
+        private BarSeriesAccessor _highSeries;
+        private BarSeriesAccessor _lowSeries;
+        private BarSeriesAccessor _closeSeries;
+        private Algorithm _algorithm;
 
-        abstract public IEnumerator<Bar> BarEnumerator
+        public Instrument(Algorithm algorithm)
         {
-            get;
+            _algorithm = algorithm;
+
+            _openSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.open]);
+            _highSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.high]);
+            _lowSeries   = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.low]);
+            _closeSeries = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.close]);
         }
 
-        abstract public void LoadData(DateTime startTime);
+        public readonly DataSource DataSource;
+
+        public string Symbol
+        {
+            get
+            {
+                return this[0].Symbol;
+            }
+        }
+        public DateTime LastTime
+        {
+            get
+            {
+                return this[0].TimeStamp;
+            }
+        }
+
+        public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
+        {
+            _algorithm.PendingOrders.Add(
+                new Order() {
+                    Instrument = this,
+                    Quantity = quantity,
+                    Execution = tradeExecution,
+                    PriceSpec = OrderPriceSpec.market,
+                });
+        }
+        public int Position
+        {
+            get
+            {
+                return _algorithm.Positions
+                        .Where(p => p.Key == this)
+                        .Sum(x => x.Value);
+            }
+        }
+
+        public ITimeSeries<double> Open
+        {
+            get
+            {
+                return _openSeries;
+            }
+        }
+        public ITimeSeries<double> High
+        {
+            get
+            {
+                return _highSeries;
+            }
+        }
+        public ITimeSeries<double> Low
+        {
+            get
+            {
+                return _lowSeries;
+            }
+        }
+        public ITimeSeries<double> Close
+        {
+            get
+            {
+                return _closeSeries;
+            }
+        }
     }
 }
 //==============================================================================

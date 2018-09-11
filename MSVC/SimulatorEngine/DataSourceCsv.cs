@@ -20,27 +20,27 @@ using System.IO.Compression; // requires reference to System.IO.Compression.dll
 
 namespace FUB_TradingSim
 {
-    public class InstrumentCsv : Instrument
+    public class DataSourceCsv : DataSource
     {
         private List<Bar> _data;
 
         private IEnumerator<Bar> _barEnumerator;
 
-        public InstrumentCsv(Dictionary<InstrumentInfo, string> info) : base(info)
+        public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
         {
             // expand relative paths, if required
-            if (!Info[InstrumentInfo.dataPath].Substring(1, 1).Equals(":")   // drive letter
-            &&  !Info[InstrumentInfo.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
+            if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
+            &&  !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
             {
-                Info[InstrumentInfo.dataPath] = string.Format(@"{0}\{1}",
-                    Info[InstrumentInfo.infoPath], Info[InstrumentInfo.dataPath]);
+                Info[DataSourceValue.dataPath] = string.Format(@"{0}\{1}",
+                    Info[DataSourceValue.infoPath], Info[DataSourceValue.dataPath]);
             }
 
             // dataPath is either a file name, or a directory
             // throw, if it's neither
-            if (!File.Exists(Info[InstrumentInfo.dataPath]))
-                if (!Directory.Exists(Info[InstrumentInfo.dataPath]))
-                    throw new Exception(string.Format("data location for {0} not found", Info[InstrumentInfo.symbol]));
+            if (!File.Exists(Info[DataSourceValue.dataPath]))
+                if (!Directory.Exists(Info[DataSourceValue.dataPath]))
+                    throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
         }
 
         override public IEnumerator<Bar> BarEnumerator
@@ -59,7 +59,7 @@ namespace FUB_TradingSim
             FileInfo[] Files = d.GetFiles("*.*");
 
             if (Files.Count() == 0)
-                throw new Exception(string.Format("no files to load for {0}", Info[InstrumentInfo.ticker]));
+                throw new Exception(string.Format("no files to load for {0}", Info[DataSourceValue.ticker]));
 
             foreach (FileInfo file in Files)
             {
@@ -107,57 +107,46 @@ namespace FUB_TradingSim
 
             for (string line; (line = sr.ReadLine()) != null;)
             {
-                line = Info[InstrumentInfo.ticker] + "," + line;
+                line = Info[DataSourceValue.ticker] + "," + line;
                 string[] items = line.Split(',');
 
-                string ticker = Info[InstrumentInfo.symbol];
+                string symbol = Info[DataSourceValue.ticker];
                 DateTime date = default(DateTime);
                 DateTime time = default(DateTime);
-                double open = default(double);
-                double high = default(double);
-                double low = default(double);
-                double close = default(double);
-                double volume = default(double);
 
+                Dictionary<DataSourceValue, double> values = new Dictionary<DataSourceValue, double>();
                 foreach (var mapping in Info)
                 {
                     switch (mapping.Key)
                     {
-                        case InstrumentInfo.symbol:
-                            ticker = string.Format(mapping.Value, items);
+                        // for stocks, symbol matches ticker
+                        // for options, the symbol adds expiry, right, and strike to the ticker
+                        case DataSourceValue.symbol:
+                            symbol = string.Format(mapping.Value, items);
                             break;
-                        case InstrumentInfo.date:
+
+                        case DataSourceValue.date:
                             date = DateTime.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentInfo.time:
+
+                        case DataSourceValue.time:
                             time = DateTime.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentInfo.open:
-                            open = double.Parse(string.Format(mapping.Value, items));
-                            break;
-                        case InstrumentInfo.high:
-                            high = double.Parse(string.Format(mapping.Value, items));
-                            break;
-                        case InstrumentInfo.low:
-                            low = double.Parse(string.Format(mapping.Value, items));
-                            break;
-                        case InstrumentInfo.close:
-                            close = double.Parse(string.Format(mapping.Value, items));
-                            break;
-                        case InstrumentInfo.volume:
-                            volume = double.Parse(string.Format(mapping.Value, items));
+
+                        case DataSourceValue.open:
+                        case DataSourceValue.high:
+                        case DataSourceValue.low:
+                        case DataSourceValue.close:
+                        case DataSourceValue.volume:
+                            values[mapping.Key] = double.Parse(string.Format(mapping.Value, items));
                             break;
                     }
                 }
 
                 Bar bar = new Bar(
-                        ticker,
+                        symbol,
                         date.Date + time.TimeOfDay,
-                        open,
-                        high,
-                        low,
-                        close,
-                        volume);
+                        values);
 
                 _data.Add(bar);
             }
@@ -167,10 +156,10 @@ namespace FUB_TradingSim
         {
             _data = new List<Bar>();
 
-            if (File.Exists(Info[InstrumentInfo.dataPath]))
-                LoadFile(Info[InstrumentInfo.dataPath], startTime);
+            if (File.Exists(Info[DataSourceValue.dataPath]))
+                LoadFile(Info[DataSourceValue.dataPath], startTime);
             else
-                LoadDir(Info[InstrumentInfo.dataPath], startTime);
+                LoadDir(Info[DataSourceValue.dataPath], startTime);
         }
     }
 }

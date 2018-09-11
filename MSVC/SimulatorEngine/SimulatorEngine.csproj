@@ -56,11 +56,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
-    <Compile Include="BarSeries.cs" />
-    <Compile Include="Bar.cs" />
     <Compile Include="Instrument.cs" />
-    <Compile Include="InstrumentCsv.cs" />
+    <Compile Include="Bar.cs" />
+    <Compile Include="DataSource.cs" />
+    <Compile Include="DataSourceCsv.cs" />
     <Compile Include="ITimeSeries.cs" />
+    <Compile Include="LogEntry.cs" />
+    <Compile Include="Order.cs" />
     <Compile Include="SMA.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="Logger.cs" />

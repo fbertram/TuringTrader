@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Bar
-// Description: data structure for single instrument bar
-// History:     2018ix10, FUB, created
+// Name:        Order
+// Description: order ticket
+// History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -17,22 +17,18 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class Bar
-    {
-        public Bar(
-            string symbol,
-            DateTime timeStamp,
-            Dictionary<DataSourceValue, double> values)
-        {
-            Symbol = symbol;
-            TimeStamp = timeStamp;
-            Values = values;
-        }
+    public enum OrderExecution { closeThisBar, openNextBar };
+    public enum OrderPriceSpec { market };
 
-        public readonly string Symbol;
-        public readonly DateTime TimeStamp;
-        public readonly Dictionary<DataSourceValue, double> Values;
+    public class Order
+    {
+        public Instrument Instrument;
+        public int Quantity;
+        public OrderExecution Execution;
+        public OrderPriceSpec PriceSpec;
+        public double Price;
     }
 }
+
 //==============================================================================
 // end of file
