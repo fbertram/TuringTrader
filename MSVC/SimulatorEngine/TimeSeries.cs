@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class TimeSeries<T>
+    public class TimeSeries<T> : ITimeSeries<T>
     {
         private int _maxBarsBack;
         private List<T> _data = new List<T>();

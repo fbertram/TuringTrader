@@ -52,7 +52,7 @@ namespace FUB_TradingSim
         public DateTime StartTime;
         public DateTime EndTime;
 
-        protected Dictionary<string, TimeSeries<Bar>> Bars = new Dictionary<string, TimeSeries<Bar>>();
+        protected Dictionary<string, BarSeries> Bars = new Dictionary<string, BarSeries>();
 
         public double FitnessValue
         {
@@ -83,10 +83,14 @@ namespace FUB_TradingSim
                     {
                         while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
                         {
-                            if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
-                                Bars[instr.BarEnumerator.Current.Symbol] = new TimeSeries<Bar>();
-                            Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
+                            //if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
+                            //    Bars[instr.BarEnumerator.Current.Symbol] = new TimeSeries<Bar>();
+                            //Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
+                            //hasData[instr] = instr.BarEnumerator.MoveNext();
 
+                            if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
+                                Bars[instr.BarEnumerator.Current.Symbol] = new BarSeries();
+                            Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
                             hasData[instr] = instr.BarEnumerator.MoveNext();
                         }
                     }

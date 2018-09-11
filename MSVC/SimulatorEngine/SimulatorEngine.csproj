@@ -56,10 +56,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgoBase.cs" />
-    <Compile Include="BarCollection.cs" />
+    <Compile Include="BarSeries.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="InstrumentDataBase.cs" />
     <Compile Include="InstrumentDataCsv.cs" />
+    <Compile Include="ITimeSeries.cs" />
+    <Compile Include="SMA.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

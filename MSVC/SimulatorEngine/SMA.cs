@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        BarCollection
-// Description: collection of bars
+// Name:        SMA
+// Description: simple moving average
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -17,16 +17,11 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class BarCollection : Dictionary<string, Bar>
+    public class SMA : TimeSeries<double>
     {
-        public IEnumerable<string> Symbols
-        {
-            get
-            {
-                return Keys;
-            }
-        }
+
     }
 }
+
 //==============================================================================
 // end of file

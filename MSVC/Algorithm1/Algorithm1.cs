@@ -48,7 +48,13 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}, # of symbols = {1}", simTime, Bars.Count);
+                //Debug.WriteLine("{0:MM/dd/yyyy}, # of symbols = {1}", simTime, Bars.Count);
+                foreach(string symbol in Bars.Keys)
+                {
+                    Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}, {3}", 
+                        Bars[symbol][0].TimeStamp, Bars[symbol][0].Symbol, 
+                        Bars[symbol][0].Open, Bars[symbol].Open[0]);
+                }
 
                 /*
                 foreach (string symbol in bars.Symbols)
