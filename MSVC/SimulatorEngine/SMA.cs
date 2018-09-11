@@ -19,7 +19,23 @@ namespace FUB_TradingSim
 {
     public class SMA : TimeSeries<double>
     {
+        public static double CalcSMA(ITimeSeries<double> series, int length)
+        {
+            double retval = 0.0;
+            for (int t = 0; t < length; t++)
+            {
+                try
+                {
+                    retval += series[t];
+                }
+                catch (Exception)
+                {
+                    return retval / (length - 1);
+                }
+            }
 
+            return retval / length;
+        }
     }
 }
 

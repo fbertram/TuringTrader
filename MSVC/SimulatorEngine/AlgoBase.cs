@@ -83,11 +83,6 @@ namespace FUB_TradingSim
                     {
                         while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
                         {
-                            //if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
-                            //    Bars[instr.BarEnumerator.Current.Symbol] = new TimeSeries<Bar>();
-                            //Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
-                            //hasData[instr] = instr.BarEnumerator.MoveNext();
-
                             if (!Bars.ContainsKey(instr.BarEnumerator.Current.Symbol))
                                 Bars[instr.BarEnumerator.Current.Symbol] = new BarSeries();
                             Bars[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
