@@ -17,6 +17,11 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
+    public partial class Algorithm
+    {
+
+    }
+
     public class SMA : TimeSeries<double>
     {
         public static double CalcSMA(ITimeSeries<double> series, int length)

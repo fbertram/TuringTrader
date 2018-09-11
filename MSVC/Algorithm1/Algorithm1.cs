@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Algorithm1: AlgoBase
+    class Algorithm1: Algorithm
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
@@ -41,9 +41,9 @@ namespace FUB_TradingSim
 
             // add instruments
             DataPath = _dataPath;
-            //AddInstrument("AAPL");
+            AddInstrument("AAPL");
             AddInstrument("TSLA");
-            //AddInstrument("^XSP");
+            AddInstrument("^XSP");
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
@@ -51,10 +51,12 @@ namespace FUB_TradingSim
                 //Debug.WriteLine("{0:MM/dd/yyyy}, # of symbols = {1}", simTime, Bars.Count);
                 foreach(string symbol in Bars.Keys)
                 {
+                    double sma = SMA.CalcSMA(Bars[symbol].Close, 126);
+
                     //Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}, {3}", 
                     //    Bars[symbol][0].TimeStamp, Bars[symbol][0].Symbol, 
                     //    Bars[symbol][0].Open, Bars[symbol].Open[0]);
-                    Debug.WriteLine("{0:MM/dd/yyyy}: close = {1}, sma = {2}", Bars[symbol][0].TimeStamp, Bars[symbol].Close[0],  SMA.CalcSMA(Bars[symbol].Close, 126));
+                    //Debug.WriteLine("{0:MM/dd/yyyy}: close = {1}, sma = {2}", Bars[symbol][0].TimeStamp, Bars[symbol].Close[0],  SMA.CalcSMA(Bars[symbol].Close, 126));
                 }
 
                 /*

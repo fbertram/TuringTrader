@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        AlgoBase
+// Name:        Algorithm
 // Description: Base class for trading algorithms
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
@@ -20,66 +20,77 @@ namespace FUB_TradingSim
 {
     public enum ReportType { FitnessValue, Plot, Excel };
 
-    public abstract class AlgoBase
+    public abstract partial class Algorithm
     {
-        public string DataPath
+        //---------- public API for use by trading application
+        public Algorithm()
         {
-            set
-            {
-                if (!Directory.Exists(value))
-                    throw new Exception(string.Format("invalid data path {0}", value));
-
-                InstrumentDataBase.DataPath = value;
-            }
-
-            get
-            {
-                return InstrumentDataBase.DataPath;
-            }
+            Instruments = new List<Instrument>();
         }
-
-        public void AddInstrument(string ticker)
+        virtual public void Run()
         {
-            Instruments.Add(InstrumentDataBase.New(ticker));
-        }
 
-        public List<InstrumentDataBase> Instruments
+        }
+        virtual public object Report(ReportType reportType)
         {
-            get;
-            private set;
+            return FitnessValue;
         }
-
-        public DateTime StartTime;
-        public DateTime EndTime;
-
-        protected Dictionary<string, BarSeries> Bars = new Dictionary<string, BarSeries>();
-
         public double FitnessValue
         {
             get;
             protected set;
         }
 
+        //---------- protected API for use by algorithms
+        protected string DataPath
+        {
+            set
+            {
+                if (!Directory.Exists(value))
+                    throw new Exception(string.Format("invalid data path {0}", value));
+
+                Instrument.DataPath = value;
+            }
+
+            get
+            {
+                return Instrument.DataPath;
+            }
+        }
+
+        protected void AddInstrument(string ticker)
+        {
+            Instruments.Add(Instrument.New(ticker));
+        }
+        protected List<Instrument> Instruments
+        {
+            get;
+            private set;
+        }
+
+        protected DateTime StartTime;
+        protected DateTime EndTime;
+
         protected IEnumerable<DateTime> SimTime
         {
             get
             {
-                Dictionary<InstrumentDataBase, bool> hasData = new Dictionary<InstrumentDataBase, bool>();
+                Dictionary<Instrument, bool> hasData = new Dictionary<Instrument, bool>();
 
-                foreach (InstrumentDataBase instr in Instruments)
+                foreach (Instrument instr in Instruments)
                 {
                     instr.LoadData(StartTime);
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
 
-                while(hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
+                while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
                     DateTime simTime = Instruments
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.TimeStamp);
 
-                    foreach (InstrumentDataBase instr in Instruments)
+                    foreach (Instrument instr in Instruments)
                     {
                         while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
                         {
@@ -96,21 +107,7 @@ namespace FUB_TradingSim
                 yield break;
             }
         }
-
-        public AlgoBase()
-        {
-            Instruments = new List<InstrumentDataBase>();
-        }
-
-        virtual public void Run()
-        {
-
-        }
-
-        virtual public object Report(ReportType reportType)
-        {
-            return FitnessValue;
-        }
+        protected Dictionary<string, BarSeries> Bars = new Dictionary<string, BarSeries>();
     }
 }
 //==============================================================================

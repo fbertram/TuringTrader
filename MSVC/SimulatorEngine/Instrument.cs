@@ -18,24 +18,24 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum InstrumentDataField { infoPath, dataPath, name, symbol, ticker, date, time, open, high, low, close, volume, bid, ask, bidSize, askSize };
+    public enum InstrumentInfo { infoPath, dataPath, name, symbol, ticker, date, time, open, high, low, close, volume, bid, ask, bidSize, askSize };
 
-    public abstract class InstrumentDataBase
+    public abstract class Instrument
     {
         public static string DataPath = @".\Data";
 
-        public Dictionary<InstrumentDataField, string> Info
+        public Dictionary<InstrumentInfo, string> Info
         {
             get;
             protected set;
         }
 
-        public InstrumentDataBase(Dictionary<InstrumentDataField, string> info)
+        public Instrument(Dictionary<InstrumentInfo, string> info)
         {
             Info = info;
         }
 
-        static public InstrumentDataBase New(string ticker)
+        static public Instrument New(string ticker)
         {
             // check for info file
             string infoPathName = string.Format(@"{0}\{1}.inf", DataPath, ticker);
@@ -44,10 +44,10 @@ namespace FUB_TradingSim
                 throw new Exception("failed to locate data source info for " + ticker);
 
             // create info structure
-            Dictionary<InstrumentDataField, string> infos = new Dictionary<InstrumentDataField, string>();
-            infos[InstrumentDataField.ticker] = ticker;
-            infos[InstrumentDataField.symbol] = ticker;
-            infos[InstrumentDataField.infoPath] = DataPath;
+            Dictionary<InstrumentInfo, string> infos = new Dictionary<InstrumentInfo, string>();
+            infos[InstrumentInfo.ticker] = ticker;
+            infos[InstrumentInfo.symbol] = ticker;
+            infos[InstrumentInfo.infoPath] = DataPath;
 
             // load info file
             string[] lines = File.ReadAllLines(infoPathName);
@@ -57,8 +57,8 @@ namespace FUB_TradingSim
 
                 try
                 {
-                    InstrumentDataField key = (InstrumentDataField)
-                        Enum.Parse(typeof(InstrumentDataField), line.Substring(0, idx), true);
+                    InstrumentInfo key = (InstrumentInfo)
+                        Enum.Parse(typeof(InstrumentInfo), line.Substring(0, idx), true);
 
                     string value = line.Substring(idx + 1);
 
@@ -71,7 +71,7 @@ namespace FUB_TradingSim
             }
 
             // instantiate data source
-            return new InstrumentDataCsv(infos);
+            return new InstrumentCsv(infos);
         }
 
         abstract public IEnumerator<Bar> BarEnumerator

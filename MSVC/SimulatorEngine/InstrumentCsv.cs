@@ -20,27 +20,27 @@ using System.IO.Compression; // requires reference to System.IO.Compression.dll
 
 namespace FUB_TradingSim
 {
-    public class InstrumentDataCsv : InstrumentDataBase
+    public class InstrumentCsv : Instrument
     {
         private List<Bar> _data;
 
         private IEnumerator<Bar> _barEnumerator;
 
-        public InstrumentDataCsv(Dictionary<InstrumentDataField, string> info) : base(info)
+        public InstrumentCsv(Dictionary<InstrumentInfo, string> info) : base(info)
         {
             // expand relative paths, if required
-            if (!Info[InstrumentDataField.dataPath].Substring(1, 1).Equals(":")   // drive letter
-            &&  !Info[InstrumentDataField.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
+            if (!Info[InstrumentInfo.dataPath].Substring(1, 1).Equals(":")   // drive letter
+            &&  !Info[InstrumentInfo.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
             {
-                Info[InstrumentDataField.dataPath] = string.Format(@"{0}\{1}",
-                    Info[InstrumentDataField.infoPath], Info[InstrumentDataField.dataPath]);
+                Info[InstrumentInfo.dataPath] = string.Format(@"{0}\{1}",
+                    Info[InstrumentInfo.infoPath], Info[InstrumentInfo.dataPath]);
             }
 
             // dataPath is either a file name, or a directory
             // throw, if it's neither
-            if (!File.Exists(Info[InstrumentDataField.dataPath]))
-                if (!Directory.Exists(Info[InstrumentDataField.dataPath]))
-                    throw new Exception(string.Format("data location for {0} not found", Info[InstrumentDataField.symbol]));
+            if (!File.Exists(Info[InstrumentInfo.dataPath]))
+                if (!Directory.Exists(Info[InstrumentInfo.dataPath]))
+                    throw new Exception(string.Format("data location for {0} not found", Info[InstrumentInfo.symbol]));
         }
 
         override public IEnumerator<Bar> BarEnumerator
@@ -59,7 +59,7 @@ namespace FUB_TradingSim
             FileInfo[] Files = d.GetFiles("*.*");
 
             if (Files.Count() == 0)
-                throw new Exception(string.Format("no files to load for {0}", Info[InstrumentDataField.ticker]));
+                throw new Exception(string.Format("no files to load for {0}", Info[InstrumentInfo.ticker]));
 
             foreach (FileInfo file in Files)
             {
@@ -107,10 +107,10 @@ namespace FUB_TradingSim
 
             for (string line; (line = sr.ReadLine()) != null;)
             {
-                line = Info[InstrumentDataField.ticker] + "," + line;
+                line = Info[InstrumentInfo.ticker] + "," + line;
                 string[] items = line.Split(',');
 
-                string ticker = Info[InstrumentDataField.symbol];
+                string ticker = Info[InstrumentInfo.symbol];
                 DateTime date = default(DateTime);
                 DateTime time = default(DateTime);
                 double open = default(double);
@@ -123,28 +123,28 @@ namespace FUB_TradingSim
                 {
                     switch (mapping.Key)
                     {
-                        case InstrumentDataField.symbol:
+                        case InstrumentInfo.symbol:
                             ticker = string.Format(mapping.Value, items);
                             break;
-                        case InstrumentDataField.date:
+                        case InstrumentInfo.date:
                             date = DateTime.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.time:
+                        case InstrumentInfo.time:
                             time = DateTime.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.open:
+                        case InstrumentInfo.open:
                             open = double.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.high:
+                        case InstrumentInfo.high:
                             high = double.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.low:
+                        case InstrumentInfo.low:
                             low = double.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.close:
+                        case InstrumentInfo.close:
                             close = double.Parse(string.Format(mapping.Value, items));
                             break;
-                        case InstrumentDataField.volume:
+                        case InstrumentInfo.volume:
                             volume = double.Parse(string.Format(mapping.Value, items));
                             break;
                     }
@@ -167,10 +167,10 @@ namespace FUB_TradingSim
         {
             _data = new List<Bar>();
 
-            if (File.Exists(Info[InstrumentDataField.dataPath]))
-                LoadFile(Info[InstrumentDataField.dataPath], startTime);
+            if (File.Exists(Info[InstrumentInfo.dataPath]))
+                LoadFile(Info[InstrumentInfo.dataPath], startTime);
             else
-                LoadDir(Info[InstrumentDataField.dataPath], startTime);
+                LoadDir(Info[InstrumentInfo.dataPath], startTime);
         }
     }
 }

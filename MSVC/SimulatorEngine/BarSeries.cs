@@ -36,7 +36,6 @@ namespace FUB_TradingSim
                 }
             }
         }
-
         private BarSeriesAccessor _openSeries;
         private BarSeriesAccessor _highSeries;
         private BarSeriesAccessor _lowSeries;
@@ -50,7 +49,7 @@ namespace FUB_TradingSim
             _closeSeries = new BarSeriesAccessor(t => this[t].Close);
         }
 
-        public readonly InstrumentDataBase DataSource;
+        public readonly Instrument DataSource;
 
         public ITimeSeries<double> Open
         {
@@ -59,7 +58,6 @@ namespace FUB_TradingSim
                 return _openSeries;
             }
         }
-
         public ITimeSeries<double> High
         {
             get
@@ -67,7 +65,6 @@ namespace FUB_TradingSim
                 return _highSeries;
             }
         }
-
         public ITimeSeries<double> Low
         {
             get
@@ -75,7 +72,6 @@ namespace FUB_TradingSim
                 return _lowSeries;
             }
         }
-
         public ITimeSeries<double> Close
         {
             get
@@ -83,7 +79,6 @@ namespace FUB_TradingSim
                 return _closeSeries;
             }
         }
-
     }
 }
 //==============================================================================

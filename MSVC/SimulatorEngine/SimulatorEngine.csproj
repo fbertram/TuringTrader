@@ -55,11 +55,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgoBase.cs" />
+    <Compile Include="Algorithm.cs" />
     <Compile Include="BarSeries.cs" />
     <Compile Include="Bar.cs" />
-    <Compile Include="InstrumentDataBase.cs" />
-    <Compile Include="InstrumentDataCsv.cs" />
+    <Compile Include="Instrument.cs" />
+    <Compile Include="InstrumentCsv.cs" />
     <Compile Include="ITimeSeries.cs" />
     <Compile Include="SMA.cs" />
     <Compile Include="TimeSeries.cs" />
