@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FUB_TradingSim
@@ -36,23 +37,23 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private BarSeriesAccessor _openSeries;
-        private BarSeriesAccessor _highSeries;
-        private BarSeriesAccessor _lowSeries;
-        private BarSeriesAccessor _closeSeries;
-        private Algorithm _algorithm;
+        private readonly BarSeriesAccessor _openSeries;
+        private readonly BarSeriesAccessor _highSeries;
+        private readonly BarSeriesAccessor _lowSeries;
+        private readonly BarSeriesAccessor _closeSeries;
+        private readonly Algorithm _algorithm;
+        private readonly DataSource _dataSource;
 
-        public Instrument(Algorithm algorithm)
+        public Instrument(Algorithm algorithm, DataSource source)
         {
             _algorithm = algorithm;
+            _dataSource = source;
 
             _openSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.open]);
             _highSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.high]);
             _lowSeries   = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.low]);
             _closeSeries = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.close]);
         }
-
-        public readonly DataSource DataSource;
 
         public string Symbol
         {
@@ -66,6 +67,42 @@ namespace FUB_TradingSim
             get
             {
                 return this[0].TimeStamp;
+            }
+        }
+
+        public bool IsOption
+        {
+            get
+            {
+                return _dataSource.IsOption;
+            }
+        }
+        public string OptionUnderlying
+        {
+            get
+            {
+                return _dataSource.OptionUnderlying;
+            }
+        }
+        public DateTime OptionExpiry
+        {
+            get
+            {
+                return DateTime.Parse(this[0].Strings[DataSourceValue.optionExpiration]);
+            }
+        }
+        public bool OptionIsPut
+        {
+            get
+            {
+                return Regex.IsMatch(this[0].Strings[DataSourceValue.optionRight], "^[pP]");
+            }
+        }
+        public double OptionStrike
+        {
+            get
+            {
+                return this[0].Values[DataSourceValue.optionStrike];
             }
         }
 

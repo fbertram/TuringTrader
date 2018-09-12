@@ -18,7 +18,15 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum DataSourceValue { infoPath, dataPath, name, ticker, symbol, date, time, open, high, low, close, volume, bid, ask, bidSize, askSize };
+    public enum DataSourceValue
+    {
+        infoPath, dataPath,
+        name, ticker, symbol,
+        date, time,
+        open, high, low, close, bid, ask,
+        volume, bidSize, askSize,
+        optionExpiration, optionStrike, optionRight, optionUnderlying
+    };
 
     public abstract class DataSource
     {
@@ -30,9 +38,24 @@ namespace FUB_TradingSim
             protected set;
         }
 
-        public DataSource(Dictionary<DataSourceValue, string> info)
+        protected DataSource(Dictionary<DataSourceValue, string> info)
         {
             Info = info;
+        }
+
+        public bool IsOption
+        {
+            get
+            {
+                return Info.ContainsKey(DataSourceValue.optionExpiration);
+            }
+        }
+        public string OptionUnderlying
+        {
+            get
+            {
+                return Info[DataSourceValue.optionUnderlying];
+            }
         }
 
         static public DataSource New(string nickname)

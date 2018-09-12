@@ -27,7 +27,19 @@ namespace FUB_TradingSim
         {
             Instrument instrument = ticket.Instrument;
             Bar execBar = instrument[0];
-            double price = execBar.Values[DataSourceValue.close];
+            double price = 0.00;
+            switch(ticket.Execution)
+            {
+                case OrderExecution.closeThisBar:
+                    price = execBar.Values[DataSourceValue.close];
+                    break;
+                case OrderExecution.openNextBar:
+                    price = execBar.Values[DataSourceValue.open];
+                    break;
+                case OrderExecution.optionExpiry:
+                    price = ticket.Price;
+                    break;
+            }
 
             // add position
             if (!Positions.ContainsKey(instrument))
@@ -50,6 +62,26 @@ namespace FUB_TradingSim
             PendingOrders = PendingOrders
                 .Where(o => o != ticket)
                 .ToList();
+        }
+        private void ExpireOption(Instrument instr)
+        {
+            Instrument underlying = Instruments[instr.OptionUnderlying];
+            double price = underlying.Close[1];
+
+            // create order ticket
+            Order ticket = new Order()
+            {
+                Instrument = instr,
+                Quantity = -Positions[instr],
+                Execution = OrderExecution.optionExpiry,
+                PriceSpec = OrderPriceSpec.market,
+                Price = instr.OptionIsPut
+                    ? Math.Max(0.00, instr.OptionStrike - price) 
+                    : Math.Max(0.00, price - instr.OptionStrike),
+            };
+
+            // force execution
+            ExecOrder(ticket);
         }
 
         //---------- for use by trading applications
@@ -96,8 +128,10 @@ namespace FUB_TradingSim
         {
             get
             {
+                // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
+                // reset all enumerators
                 foreach (DataSource instr in DataSources)
                 {
                     instr.LoadData(StartTime);
@@ -105,23 +139,28 @@ namespace FUB_TradingSim
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
 
+                // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
                     DateTime simTime = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.TimeStamp);
 
-                    foreach (DataSource instr in DataSources)
+                    // go through all data sources
+                    foreach (DataSource source in DataSources)
                     {
-                        while (hasData[instr] && instr.BarEnumerator.Current.TimeStamp == simTime)
+                        // while timestamp is current, keep adding bars
+                        // options have multiple bars with identical timestamps!
+                        while (hasData[source] && source.BarEnumerator.Current.TimeStamp == simTime)
                         {
-                            if (!Instruments.ContainsKey(instr.BarEnumerator.Current.Symbol))
-                                Instruments[instr.BarEnumerator.Current.Symbol] = new Instrument(this);
-                            Instruments[instr.BarEnumerator.Current.Symbol].Value = instr.BarEnumerator.Current;
-                            hasData[instr] = instr.BarEnumerator.MoveNext();
+                            if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
+                                Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
+                            Instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
+                            hasData[source] = source.BarEnumerator.MoveNext();
                         }
                     }
 
+                    // execute trades on bar open
                     List<Order> ordersOpenNextBar = PendingOrders
                         .Where(o => o.Execution == OrderExecution.openNextBar)
                         .ToList();
@@ -129,8 +168,14 @@ namespace FUB_TradingSim
                     foreach (Order order in ordersOpenNextBar)
                         ExecOrder(order);
 
+                    // handle option expiry on bar following expiry
+                    foreach (Instrument instr in Positions.Keys.Where(i => i.IsOption && i.OptionExpiry.Date < simTime.Date))
+                        ExpireOption(instr);
+
+                    // run our algorithm here
                     yield return simTime;
 
+                    // execute trades on bar close
                     List<Order> ordersCloseThisBar = PendingOrders
                         .Where(o => o.Execution == OrderExecution.closeThisBar)
                         .ToList();

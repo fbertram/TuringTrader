@@ -1,9 +1,9 @@
 name=S&P 500 MINI SPX OPTIONS INDEX
-dataPath=C:\ProgramData\TS Support\MultiCharts .NET64\DataArchive\^XSP
-symbol={0},{4},{6},{5}
-date={2}
+dataPath=Data\^XSP
+date={1}
 time=16:00
-bid={13}
-bidSize={14}
-ask={15}
-askSize={16}
+open={2}
+high={3}
+low={4}
+close={5}
+volume=0

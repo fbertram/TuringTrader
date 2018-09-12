@@ -22,16 +22,19 @@ namespace FUB_TradingSim
         public Bar(
             string symbol,
             DateTime timeStamp,
-            Dictionary<DataSourceValue, double> values)
+            Dictionary<DataSourceValue, double> values,
+            Dictionary<DataSourceValue, string> strings)
         {
             Symbol = symbol;
             TimeStamp = timeStamp;
             Values = values;
+            Strings = strings;
         }
 
         public readonly string Symbol;
         public readonly DateTime TimeStamp;
         public readonly Dictionary<DataSourceValue, double> Values;
+        public readonly Dictionary<DataSourceValue, string> Strings;
     }
 }
 //==============================================================================

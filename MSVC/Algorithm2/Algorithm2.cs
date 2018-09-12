@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
 // Name:        Algorithm1
-// Description: Sample Algorithm #1
-// History:     2018ix10, FUB, created
+// Description: Sample Algorithm #2
+// History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -22,13 +22,13 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Algorithm1: Algorithm
+    class Algorithm2 : Algorithm
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\ImportOnly.xlsm";
 
-        public Algorithm1()
+        public Algorithm2()
         {
 
         }
@@ -44,24 +44,16 @@ namespace FUB_TradingSim
 
             // add instruments
             DataPath = _dataPath;
-            DataSources.Add(DataSource.New("AAPL"));
-            DataSources.Add(DataSource.New("TSLA"));
-            //DataSources.Add(DataSource.New("^XSP"));
-            //DataSources.Add(DataSource.New("^XSP.Options"));
+            DataSources.Add(DataSource.New("^XSP"));
+            DataSources.Add(DataSource.New("^XSP.Options"));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
                 Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
 
-                foreach(string symbol in Instruments.Keys)
+                foreach (string symbol in Instruments.Keys)
                 {
-                    //double sma = SMA.CalcSMA(Bars[symbol].Close, 126);
-
-                    //Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", Instruments[symbol][0].TimeStamp, Instruments[symbol][0].Symbol, Instruments[symbol].Close[0]);
-
-                    if (Instruments[symbol].Position == 0)
-                        Instruments[symbol].Trade(1);
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
@@ -89,9 +81,9 @@ namespace FUB_TradingSim
             _plotter.OpenWithExcel(_excelPath);
 #endif
             return 0.0;
-        #else
+#else
             return base.Report(reportType);
-        #endif
+#endif
         }
 
         static void Main(string[] args)

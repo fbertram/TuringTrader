@@ -22,37 +22,11 @@ namespace FUB_TradingSim
 {
     public class DataSourceCsv : DataSource
     {
+        //---------- internal data
         private List<Bar> _data;
-
         private IEnumerator<Bar> _barEnumerator;
 
-        public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
-        {
-            // expand relative paths, if required
-            if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
-            &&  !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
-            {
-                Info[DataSourceValue.dataPath] = string.Format(@"{0}\{1}",
-                    Info[DataSourceValue.infoPath], Info[DataSourceValue.dataPath]);
-            }
-
-            // dataPath is either a file name, or a directory
-            // throw, if it's neither
-            if (!File.Exists(Info[DataSourceValue.dataPath]))
-                if (!Directory.Exists(Info[DataSourceValue.dataPath]))
-                    throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
-        }
-
-        override public IEnumerator<Bar> BarEnumerator
-        {
-            get
-            {
-                if (_barEnumerator == null)
-                    _barEnumerator = _data.GetEnumerator();
-                return _barEnumerator;
-            }
-        }
-
+        //---------- internal helpers
         private void LoadDir(string path, DateTime startTime)
         {
             DirectoryInfo d = new DirectoryInfo(path);
@@ -66,7 +40,6 @@ namespace FUB_TradingSim
                 LoadFile(file.FullName, startTime);
             }
         }
-
         private void LoadFile(string filePath, DateTime startTime)
         {
             if (Path.GetExtension(filePath).Equals(".zip"))
@@ -100,7 +73,6 @@ namespace FUB_TradingSim
                 }
             }
         }
-
         private void LoadCsv(StreamReader sr, DateTime startTime)
         {
             sr.ReadLine(); // skip header line
@@ -115,6 +87,7 @@ namespace FUB_TradingSim
                 DateTime time = default(DateTime);
 
                 Dictionary<DataSourceValue, double> values = new Dictionary<DataSourceValue, double>();
+                Dictionary<DataSourceValue, string> strings = new Dictionary<DataSourceValue, string>();
                 foreach (var mapping in Info)
                 {
                     switch (mapping.Key)
@@ -138,7 +111,18 @@ namespace FUB_TradingSim
                         case DataSourceValue.low:
                         case DataSourceValue.close:
                         case DataSourceValue.volume:
+                        case DataSourceValue.bid:
+                        case DataSourceValue.bidSize:
+                        case DataSourceValue.ask:
+                        case DataSourceValue.askSize:
+                        case DataSourceValue.optionStrike:
                             values[mapping.Key] = double.Parse(string.Format(mapping.Value, items));
+                            break;
+
+                        case DataSourceValue.optionExpiration:
+                        case DataSourceValue.optionRight:
+                        case DataSourceValue.optionUnderlying:
+                            strings[mapping.Key] = string.Format(mapping.Value, items);
                             break;
                     }
                 }
@@ -146,12 +130,39 @@ namespace FUB_TradingSim
                 Bar bar = new Bar(
                         symbol,
                         date.Date + time.TimeOfDay,
-                        values);
+                        values,
+                        strings);
 
                 _data.Add(bar);
             }
         }
 
+        //---------- API
+        public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
+        {
+            // expand relative paths, if required
+            if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
+            &&  !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
+            {
+                Info[DataSourceValue.dataPath] = string.Format(@"{0}\{1}",
+                    Info[DataSourceValue.infoPath], Info[DataSourceValue.dataPath]);
+            }
+
+            // dataPath is either a file name, or a directory
+            // throw, if it's neither
+            if (!File.Exists(Info[DataSourceValue.dataPath]))
+                if (!Directory.Exists(Info[DataSourceValue.dataPath]))
+                    throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
+        }
+        override public IEnumerator<Bar> BarEnumerator
+        {
+            get
+            {
+                if (_barEnumerator == null)
+                    _barEnumerator = _data.GetEnumerator();
+                return _barEnumerator;
+            }
+        }
         override public void LoadData(DateTime startTime)
         {
             _data = new List<Bar>();
