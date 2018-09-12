@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum OrderExecution { closeThisBar, openNextBar, optionExpiry };
+    public enum OrderExecution { closeThisBar, openNextBar, optionExpiryClose };
     public enum OrderPriceSpec { market };
 
     public class Order

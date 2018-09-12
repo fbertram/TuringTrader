@@ -21,7 +21,7 @@ namespace FUB_TradingSim
     public enum DataSourceValue
     {
         infoPath, dataPath,
-        name, ticker, symbol,
+        nickName, name, ticker, symbol,
         date, time,
         open, high, low, close, bid, ask,
         volume, bidSize, askSize,
@@ -68,6 +68,7 @@ namespace FUB_TradingSim
 
             // create info structure
             Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
+            infos[DataSourceValue.nickName] = nickname;
             infos[DataSourceValue.ticker] = nickname;
             infos[DataSourceValue.symbol] = nickname;
             infos[DataSourceValue.infoPath] = DataPath;

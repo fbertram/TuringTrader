@@ -1,5 +1,6 @@
 name=Tesla, Inc.
-dataPath=Data\TSLA
+dataPath=Data\TSLA.Stock
+ticker=TSLA
 date={1}
 time=16:00
 open={2}

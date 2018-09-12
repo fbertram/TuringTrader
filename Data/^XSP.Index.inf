@@ -1,5 +1,6 @@
 name=S&P 500 MINI SPX OPTIONS INDEX
-dataPath=Data\^XSP
+dataPath=Data\^XSP.Index
+ticker=^XSP
 date={1}
 time=16:00
 open={2}

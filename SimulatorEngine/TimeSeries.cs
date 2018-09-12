@@ -43,7 +43,7 @@ namespace FUB_TradingSim
         {
             get
             {
-                if (daysBack <0 || daysBack > _data.Count)
+                if (daysBack < 0 || daysBack >= _data.Count)
                     throw new Exception(string.Format("{0} exceed max bars back of {1}", daysBack, _maxBarsBack));
 
                 return _data[daysBack];

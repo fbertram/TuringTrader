@@ -25,6 +25,8 @@ namespace FUB_TradingSim
             Symbol = info[DataSourceValue.ticker];
             DateTime date = default(DateTime);
             DateTime time = default(DateTime);
+            HasOHLC = false;
+            HasBidAsk = false;
 
             foreach (var mapping in info)
             {
@@ -38,14 +40,14 @@ namespace FUB_TradingSim
                     case DataSourceValue.date:   date = DateTime.Parse(mappedString);  break;
                     case DataSourceValue.time:   time = DateTime.Parse(mappedString);  break;
 
-                    case DataSourceValue.open:  Open = double.Parse(mappedString);  break;
-                    case DataSourceValue.high:  High = double.Parse(mappedString);  break;
-                    case DataSourceValue.low:   Low = double.Parse(mappedString);   break;
-                    case DataSourceValue.close: Close = double.Parse(mappedString); break;
-                    case DataSourceValue.bid:   Bid = double.Parse(mappedString);   break;
-                    case DataSourceValue.ask:   Ask = double.Parse(mappedString);   break;
+                    case DataSourceValue.open:  Open = double.Parse(mappedString);  HasOHLC = true; break;
+                    case DataSourceValue.high:  High = double.Parse(mappedString);  HasOHLC = true; break;
+                    case DataSourceValue.low:   Low = double.Parse(mappedString);   HasOHLC = true; break;
+                    case DataSourceValue.close: Close = double.Parse(mappedString); HasOHLC = true; break;
+                    case DataSourceValue.volume: Volume = int.Parse(mappedString); break;
 
-                    case DataSourceValue.volume:  Volume = int.Parse(mappedString);    break;
+                    case DataSourceValue.bid:   Bid = double.Parse(mappedString); HasBidAsk = true; break;
+                    case DataSourceValue.ask:   Ask = double.Parse(mappedString); HasBidAsk = true; break;
                     case DataSourceValue.bidSize: BidVolume = int.Parse(mappedString); break;
                     case DataSourceValue.askSize: AskVolume = int.Parse(mappedString); break;
 
@@ -76,12 +78,14 @@ namespace FUB_TradingSim
         public readonly double High;
         public readonly double Low;
         public readonly double Close;
+        public readonly int Volume;
+        public readonly bool HasOHLC;
+
         public readonly double Bid;
         public readonly double Ask;
-
-        public readonly int Volume;
         public readonly int BidVolume;
         public readonly int AskVolume;
+        public readonly bool HasBidAsk;
 
         public readonly bool IsOption;
         public readonly DateTime OptionExpiry;

@@ -22,21 +22,31 @@ namespace FUB_TradingSim
 
     public abstract partial class Algorithm
     {
+        //---------- internal data
+        DateTime _simTime;
+
         //---------- internal helpers
         private void ExecOrder(Order ticket)
         {
             Instrument instrument = ticket.Instrument;
-            Bar execBar = instrument[0];
+            Bar execBar = null;
             double price = 0.00;
             switch(ticket.Execution)
             {
                 case OrderExecution.closeThisBar:
-                    price = execBar.Close;
+                    execBar = instrument[1];
+                    if (execBar.HasBidAsk)
+                        price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
+                    else
+                        price = execBar.Close;
                     break;
                 case OrderExecution.openNextBar:
+                    execBar = instrument[0];
                     price = execBar.Open;
                     break;
-                case OrderExecution.optionExpiry:
+                case OrderExecution.optionExpiryClose:
+                    // execBar = instrument[1]; // option bar
+                    execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
                     price = ticket.Price;
                     break;
             }
@@ -48,6 +58,10 @@ namespace FUB_TradingSim
             if (Positions[instrument] == 0)
                 Positions.Remove(instrument);
 
+            // pay for it
+            Cash -= (instrument.IsOption ? 100.0 : 1.0)
+                * ticket.Quantity * price;
+
             // add log entry
             LogEntry log = new LogEntry()
             {
@@ -57,11 +71,6 @@ namespace FUB_TradingSim
                 Commission = 0.00
             };
             Log.Add(log);
-
-            // remove order from pending list
-            PendingOrders = PendingOrders
-                .Where(o => o != ticket)
-                .ToList();
         }
         private void ExpireOption(Instrument instr)
         {
@@ -73,7 +82,7 @@ namespace FUB_TradingSim
             {
                 Instrument = instr,
                 Quantity = -Positions[instr],
-                Execution = OrderExecution.optionExpiry,
+                Execution = OrderExecution.optionExpiryClose,
                 PriceSpec = OrderPriceSpec.market,
                 Price = instr.OptionIsPut
                     ? Math.Max(0.00, instr.OptionStrike - price) 
@@ -142,7 +151,7 @@ namespace FUB_TradingSim
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    DateTime simTime = DataSources
+                    _simTime = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
@@ -151,7 +160,7 @@ namespace FUB_TradingSim
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == simTime)
+                        while (hasData[source] && source.BarEnumerator.Current.Time == _simTime)
                         {
                             if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
@@ -160,35 +169,39 @@ namespace FUB_TradingSim
                         }
                     }
 
-                    // execute trades on bar open
-                    List<Order> ordersOpenNextBar = PendingOrders
-                        .Where(o => o.Execution == OrderExecution.openNextBar)
-                        .ToList();
-
-                    foreach (Order order in ordersOpenNextBar)
+                    // execute orders
+                    foreach (Order order in PendingOrders)
                         ExecOrder(order);
+                    PendingOrders.Clear();
 
                     // handle option expiry on bar following expiry
-                    TODO: exception enumerator was modified
-                    foreach (Instrument instr in Positions.Keys.Where(i => i.IsOption && i.OptionExpiry.Date < simTime.Date))
+                    List<Instrument> optionsToExpire = Positions.Keys
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < _simTime.Date)
+                            .ToList();
+
+                    foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
                     // run our algorithm here
-                    yield return simTime;
-
-                    // execute trades on bar close
-                    List<Order> ordersCloseThisBar = PendingOrders
-                        .Where(o => o.Execution == OrderExecution.closeThisBar)
-                        .ToList();
-
-                    foreach (Order order in ordersCloseThisBar)
-                        ExecOrder(order);
+                    yield return _simTime;
                 }
 
                 yield break;
             }
         }
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        protected List<Instrument> OptionChain(string nickname)
+        {
+            // TODO: we need to check for nickname!
+            List<Instrument> optionChain = Instruments
+                    .Select(kv => kv.Value)
+                    .Where(i => i[0].Time == _simTime  // current bar
+                        && i.IsOption                  // is option
+                        && i.OptionExpiry > _simTime)  // future expiry
+                    .ToList();
+
+            return optionChain;
+        }
 
         public List<Order> PendingOrders = new List<Order>();
         public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();

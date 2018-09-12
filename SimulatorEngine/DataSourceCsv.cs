@@ -116,12 +116,18 @@ namespace FUB_TradingSim
         }
         override public void LoadData(DateTime startTime)
         {
+            DateTime t1 = DateTime.Now;
+            Debug.WriteLine(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
+
             _data = new List<Bar>();
 
             if (File.Exists(Info[DataSourceValue.dataPath]))
                 LoadFile(Info[DataSourceValue.dataPath], startTime);
             else
                 LoadDir(Info[DataSourceValue.dataPath], startTime);
+
+            DateTime t2 = DateTime.Now;
+            Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
         }
     }
 }

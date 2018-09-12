@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Algorithm1
+// Name:        Algorithm2
 // Description: Sample Algorithm #2
 // History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL v3.0
 //==============================================================================
 
-//#define DEBUG_PLOT
+#define DEBUG_PLOT
 //#define EXCEL_REPORT
 
 using System;
@@ -44,19 +44,13 @@ namespace FUB_TradingSim
 
             // add instruments
             DataPath = _dataPath;
-            DataSources.Add(DataSource.New("^XSP"));
+            DataSources.Add(DataSource.New("^XSP.Index"));
             DataSources.Add(DataSource.New("^XSP.Options"));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                //Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
-
-                List<Instrument> optionChain = Instruments
-                        .Select(kv => kv.Value)
-                        .Where(i => i.IsOption
-                            && i.OptionExpiry > simTime)
-                        .ToList();
+                List<Instrument> optionChain = OptionChain("^XSP.Options");
 
                 double underlyingPrice = optionChain
                     .Select(o => Instruments[o.OptionUnderlying].Close[0])
@@ -65,8 +59,12 @@ namespace FUB_TradingSim
                 if (Positions.Count == 0)
                 {
                     Instrument shortPut = optionChain
-                        .Where(o => o.OptionIsPut)
-                        .OrderByDescending(o => underlyingPrice - o.OptionStrike)
+                        .Where(o => o.OptionIsPut
+                            && (o.OptionExpiry - simTime).Days > 21
+                            && (o.OptionExpiry - simTime).Days < 28
+                            && o.OptionStrike < 0.9 * underlyingPrice
+                            && o.Bid[0] > 0.10)
+                        .OrderByDescending(o => o.Bid[0])
                         .FirstOrDefault();
 
                     if (shortPut != null)
@@ -76,14 +74,10 @@ namespace FUB_TradingSim
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
-                double date = SimDate.Year + (SimDate.Month - 1) / 12.0 + (SimDate.Day - 1) / 372.0; // 12 * 31 = 372
-                _plotter.SelectPlot("instruments vs time", "time");
+                double date = simTime.Year + (simTime.Month - 1) / 12.0 + (simTime.Day - 1) / 372.0; // 12 * 31 = 372
+                _plotter.SelectPlot("nav vs time", "time");
                 _plotter.SetX(date);
-                foreach (var instr in Instruments)
-                    _plotter.Log(instr.Info[InstrumentDataField.ticker],
-                        bars.Symbols.ToList().Contains(instr.Info[InstrumentDataField.ticker])
-                            ? bars[instr.Info[InstrumentDataField.ticker]].Close
-                            : 0.0);
+                _plotter.Log("nav", NetAssetValue);
 #endif
             }
 
@@ -118,11 +112,11 @@ namespace FUB_TradingSim
 
             foreach (LogEntry entry in algo.Log)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
+                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3:C2}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
             }
 
-            //Console.WriteLine("Press key to continue");
-            //Console.ReadKey();
+            Console.WriteLine("Press key to continue");
+            Console.ReadKey();
             //System.Threading.Thread.Sleep(3000);
         }
     }

@@ -41,6 +41,8 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor _highSeries;
         private readonly BarSeriesAccessor _lowSeries;
         private readonly BarSeriesAccessor _closeSeries;
+        private readonly BarSeriesAccessor _bidSeries;
+        private readonly BarSeriesAccessor _askSeries;
         private readonly Algorithm _algorithm;
         private readonly DataSource _dataSource;
 
@@ -53,6 +55,9 @@ namespace FUB_TradingSim
             _highSeries  = new BarSeriesAccessor(t => this[t].High);
             _lowSeries   = new BarSeriesAccessor(t => this[t].Low);
             _closeSeries = new BarSeriesAccessor(t => this[t].Close);
+
+            _bidSeries = new BarSeriesAccessor(t => this[t].Bid);
+            _askSeries = new BarSeriesAccessor(t => this[t].Ask);
         }
 
         public string Symbol
@@ -152,6 +157,21 @@ namespace FUB_TradingSim
             get
             {
                 return _closeSeries;
+            }
+        }
+
+        public ITimeSeries<double> Bid
+        {
+            get
+            {
+                return _bidSeries;
+            }
+        }
+        public ITimeSeries<double> Ask
+        {
+            get
+            {
+                return _askSeries;
             }
         }
     }
