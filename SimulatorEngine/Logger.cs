@@ -220,12 +220,15 @@ namespace FUB_TradingSim
             // https://stackoverflow.com/questions/4811664/set-cell-value-using-excel-interop
             // also: Application.ScreenUpdating = false, calculation to manual
             // https://support.microsoft.com/en-us/help/302096/how-to-automate-excel-by-using-visual-c-to-fill-or-to-obtain-data-in-a
-            // 
+            // https://social.msdn.microsoft.com/Forums/lync/en-US/2e33b8e5-c9fd-42a1-8d67-3d61d2cedc1c/how-to-call-excel-macros-programmatically-in-c?forum=exceldev
 
-            var excel = new Excel.ApplicationClass();
+            //var excel = new Excel.ApplicationClass();
+            var excel = new Excel.Application();
+
             excel.Visible = true;
             var wbooks = excel.Workbooks;
-            var wbook = wbooks.Open(pathToExcelFile);
+            //var wbook = wbooks.Open(pathToExcelFile);
+            var wbook = wbooks.Add(pathToExcelFile); // create new w/ file as template
             Thread.Sleep(500); // this is ugly but prevents Excel from crashing
 
             List<string> plots = LogData.Keys.ToList();
@@ -235,12 +238,14 @@ namespace FUB_TradingSim
                 string tmpFile = Path.GetTempFileName();
                 SaveAsCsv(tmpFile, plot);
 
-                excel.GetType().InvokeMember("Run",
-                    System.Reflection.BindingFlags.Default | System.Reflection.BindingFlags.InvokeMethod,
-                    null,
-                    excel,
-                    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
-                                        tmpFile, plots.Count, i});
+                //excel.GetType().InvokeMember("Run",
+                //    System.Reflection.BindingFlags.Default | System.Reflection.BindingFlags.InvokeMethod,
+                //    null,
+                //    excel,
+                //    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
+                //                        tmpFile, plots.Count, i});
+                excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i);
+
                 Thread.Sleep(500); // this is ugly but prevents Excel from crashing
             }
         }

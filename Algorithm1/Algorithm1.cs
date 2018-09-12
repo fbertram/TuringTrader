@@ -10,7 +10,7 @@
 //==============================================================================
 
 //#define DEBUG_PLOT
-//#define EXCEL_REPORT
+#define EXCEL_REPORT
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,8 @@ namespace FUB_TradingSim
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\ImportOnly.xlsm";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly double _initialCash = 100000.00;
 
         public Algorithm1()
         {
@@ -40,17 +41,17 @@ namespace FUB_TradingSim
             EndTime = DateTime.Parse("08/01/2017");
 
             // set account value
-            Cash = 100000.00;
+            Cash = _initialCash;
 
             // add instruments
             DataPath = _dataPath;
-            DataSources.Add(DataSource.New("AAPL"));
-            DataSources.Add(DataSource.New("TSLA"));
+            DataSources.Add(DataSource.New("AAPL.Stock"));
+            DataSources.Add(DataSource.New("TSLA.Stock"));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
+                //Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
 
                 foreach(string symbol in Instruments.Keys)
                 {
@@ -59,14 +60,12 @@ namespace FUB_TradingSim
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
-                double date = SimDate.Year + (SimDate.Month - 1) / 12.0 + (SimDate.Day - 1) / 372.0; // 12 * 31 = 372
-                _plotter.SelectPlot("instruments vs time", "time");
+                // create plot output
+                double date = simTime.Year + (simTime.Month - 1) / 12.0 + (simTime.Day - 1) / 372.0; // 12 * 31 = 372
+                _plotter.SelectPlot("nav vs time", "time");
                 _plotter.SetX(date);
-                foreach (var instr in Instruments)
-                    _plotter.Log(instr.Info[InstrumentDataField.ticker],
-                        bars.Symbols.ToList().Contains(instr.Info[InstrumentDataField.ticker])
-                            ? bars[instr.Info[InstrumentDataField.ticker]].Close
-                            : 0.0);
+                //_plotter.Log(_underlyingNickname, underlyingPrice / (double)_initialUnderlyingPrice);
+                _plotter.Log("nav", NetAssetValue / _initialCash);
 #endif
             }
 

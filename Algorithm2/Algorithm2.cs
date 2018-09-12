@@ -9,8 +9,8 @@
 // License:     this code is licensed under GPL v3.0
 //==============================================================================
 
-#define DEBUG_PLOT
-//#define EXCEL_REPORT
+//#define DEBUG_PLOT
+#define EXCEL_REPORT
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,11 @@ namespace FUB_TradingSim
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\ImportOnly.xlsm";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _underlyingNickname = "^XSP.Index";
+        private readonly string _optionsNickname = "^XSP.Options";
+        private readonly double _initialCash = 100000.00;
+        private double? _initialUnderlyingPrice = null;
 
         public Algorithm2()
         {
@@ -40,24 +44,31 @@ namespace FUB_TradingSim
             EndTime = DateTime.Parse("08/01/2017");
 
             // set account value
-            Cash = 100000.00;
+            Cash = _initialCash;
 
             // add instruments
             DataPath = _dataPath;
-            DataSources.Add(DataSource.New("^XSP.Index"));
-            DataSources.Add(DataSource.New("^XSP.Options"));
+            DataSources.Add(DataSource.New(_underlyingNickname));
+            DataSources.Add(DataSource.New(_optionsNickname));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                List<Instrument> optionChain = OptionChain("^XSP.Options");
+                // retrieve the option chain
+                List<Instrument> optionChain = OptionChain(_optionsNickname);
+                if (optionChain.Count == 0)
+                    continue;
 
+                // retrieve the underlying price
                 double underlyingPrice = optionChain
                     .Select(o => Instruments[o.OptionUnderlying].Close[0])
                     .FirstOrDefault();
+                if (_initialUnderlyingPrice == null)
+                    _initialUnderlyingPrice = underlyingPrice;
 
                 if (Positions.Count == 0)
                 {
+                    // find option
                     Instrument shortPut = optionChain
                         .Where(o => o.OptionIsPut
                             && (o.OptionExpiry - simTime).Days > 21
@@ -67,6 +78,7 @@ namespace FUB_TradingSim
                         .OrderByDescending(o => o.Bid[0])
                         .FirstOrDefault();
 
+                    // trade option
                     if (shortPut != null)
                     {
                         shortPut.Trade(-1, OrderExecution.closeThisBar);
@@ -74,10 +86,12 @@ namespace FUB_TradingSim
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
+                // create plot output
                 double date = simTime.Year + (simTime.Month - 1) / 12.0 + (simTime.Day - 1) / 372.0; // 12 * 31 = 372
                 _plotter.SelectPlot("nav vs time", "time");
                 _plotter.SetX(date);
-                _plotter.Log("nav", NetAssetValue);
+                _plotter.Log(_underlyingNickname, underlyingPrice / (double)_initialUnderlyingPrice);
+                _plotter.Log("nav", NetAssetValue / _initialCash);
 #endif
             }
 
