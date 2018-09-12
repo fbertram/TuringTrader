@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
-// License:     this code is licensed under GPL v3.0
+// License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
 #define ENABLE_R
