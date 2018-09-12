@@ -29,6 +29,7 @@ namespace FUB_TradingSim
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
+        private readonly double _regTMarginToUse = 0.8;
         private readonly double _initialCash = 100000.00;
         private double? _initialUnderlyingPrice = null;
 
@@ -73,7 +74,7 @@ namespace FUB_TradingSim
                         .Where(o => o.OptionIsPut
                             && (o.OptionExpiry - simTime).Days > 21
                             && (o.OptionExpiry - simTime).Days < 28
-                            && o.OptionStrike < 0.9 * underlyingPrice
+                            && o.OptionStrike < 0.85 * underlyingPrice
                             && o.Bid[0] > 0.10)
                         .OrderByDescending(o => o.Bid[0])
                         .FirstOrDefault();
@@ -81,7 +82,14 @@ namespace FUB_TradingSim
                     // trade option
                     if (shortPut != null)
                     {
-                        shortPut.Trade(-1, OrderExecution.closeThisBar);
+                        // Interactive Brokers margin requirements for short naked puts:
+                        // Put Price + Maximum((15 % * Underlying Price - Out of the Money Amount), 
+                        //                     (10 % * Strike Price)) 
+                        double margin = Math.Max(0.15 * underlyingPrice - Math.Max(0.0, underlyingPrice - shortPut.OptionStrike),
+                                            0.10 * underlyingPrice);
+                        int contracts = (int)Math.Floor(Math.Max(0.0, _regTMarginToUse * Cash / (100.0 * margin)));
+
+                        shortPut.Trade(-contracts, OrderExecution.closeThisBar);
                     }
                 }
 
@@ -129,8 +137,8 @@ namespace FUB_TradingSim
                 Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3:C2}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
             }
 
-            Console.WriteLine("Press key to continue");
-            Console.ReadKey();
+            //Console.WriteLine("Press key to continue");
+            //Console.ReadKey();
             //System.Threading.Thread.Sleep(3000);
         }
     }
