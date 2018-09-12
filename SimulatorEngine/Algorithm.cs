@@ -31,10 +31,10 @@ namespace FUB_TradingSim
             switch(ticket.Execution)
             {
                 case OrderExecution.closeThisBar:
-                    price = execBar.Values[DataSourceValue.close];
+                    price = execBar.Close;
                     break;
                 case OrderExecution.openNextBar:
-                    price = execBar.Values[DataSourceValue.open];
+                    price = execBar.Open;
                     break;
                 case OrderExecution.optionExpiry:
                     price = ticket.Price;
@@ -144,14 +144,14 @@ namespace FUB_TradingSim
                 {
                     DateTime simTime = DataSources
                         .Where(i => hasData[i])
-                        .Min(i => i.BarEnumerator.Current.TimeStamp);
+                        .Min(i => i.BarEnumerator.Current.Time);
 
                     // go through all data sources
                     foreach (DataSource source in DataSources)
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.TimeStamp == simTime)
+                        while (hasData[source] && source.BarEnumerator.Current.Time == simTime)
                         {
                             if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
@@ -169,6 +169,7 @@ namespace FUB_TradingSim
                         ExecOrder(order);
 
                     // handle option expiry on bar following expiry
+                    TODO: exception enumerator was modified
                     foreach (Instrument instr in Positions.Keys.Where(i => i.IsOption && i.OptionExpiry.Date < simTime.Date))
                         ExpireOption(instr);
 

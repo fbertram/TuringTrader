@@ -25,8 +25,8 @@ namespace FUB_TradingSim
     class Algorithm1: Algorithm
     {
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\ImportOnly.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\ImportOnly.xlsm";
 
         public Algorithm1()
         {
@@ -46,8 +46,6 @@ namespace FUB_TradingSim
             DataPath = _dataPath;
             DataSources.Add(DataSource.New("AAPL"));
             DataSources.Add(DataSource.New("TSLA"));
-            //DataSources.Add(DataSource.New("^XSP"));
-            //DataSources.Add(DataSource.New("^XSP.Options"));
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
@@ -56,10 +54,6 @@ namespace FUB_TradingSim
 
                 foreach(string symbol in Instruments.Keys)
                 {
-                    //double sma = SMA.CalcSMA(Bars[symbol].Close, 126);
-
-                    //Debug.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", Instruments[symbol][0].TimeStamp, Instruments[symbol][0].Symbol, Instruments[symbol].Close[0]);
-
                     if (Instruments[symbol].Position == 0)
                         Instruments[symbol].Trade(1);
                 }
@@ -107,7 +101,7 @@ namespace FUB_TradingSim
 
             foreach (LogEntry entry in algo.Log)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.TimeStamp, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
+                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
             }
 
             //Console.WriteLine("Press key to continue");

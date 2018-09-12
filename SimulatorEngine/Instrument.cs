@@ -49,10 +49,10 @@ namespace FUB_TradingSim
             _algorithm = algorithm;
             _dataSource = source;
 
-            _openSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.open]);
-            _highSeries  = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.high]);
-            _lowSeries   = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.low]);
-            _closeSeries = new BarSeriesAccessor(t => this[t].Values[DataSourceValue.close]);
+            _openSeries  = new BarSeriesAccessor(t => this[t].Open);
+            _highSeries  = new BarSeriesAccessor(t => this[t].High);
+            _lowSeries   = new BarSeriesAccessor(t => this[t].Low);
+            _closeSeries = new BarSeriesAccessor(t => this[t].Close);
         }
 
         public string Symbol
@@ -66,7 +66,7 @@ namespace FUB_TradingSim
         {
             get
             {
-                return this[0].TimeStamp;
+                return this[0].Time;
             }
         }
 
@@ -88,21 +88,21 @@ namespace FUB_TradingSim
         {
             get
             {
-                return DateTime.Parse(this[0].Strings[DataSourceValue.optionExpiration]);
+                return this[0].OptionExpiry;
             }
         }
         public bool OptionIsPut
         {
             get
             {
-                return Regex.IsMatch(this[0].Strings[DataSourceValue.optionRight], "^[pP]");
+                return this[0].OptionIsPut;
             }
         }
         public double OptionStrike
         {
             get
             {
-                return this[0].Values[DataSourceValue.optionStrike];
+                return this[0].OptionStrike;
             }
         }
 

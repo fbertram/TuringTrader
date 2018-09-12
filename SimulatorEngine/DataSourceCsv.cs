@@ -25,6 +25,7 @@ namespace FUB_TradingSim
         //---------- internal data
         private List<Bar> _data;
         private IEnumerator<Bar> _barEnumerator;
+        public static int TotalRecordsRead = 0;
 
         //---------- internal helpers
         private void LoadDir(string path, DateTime startTime)
@@ -44,7 +45,6 @@ namespace FUB_TradingSim
         {
             if (Path.GetExtension(filePath).Equals(".zip"))
             {
-                //throw new Exception("zip archive supported for " + Info[InstrumentDataField.symbol]);
                 try
                 {
                     using (FileStream zipFile = File.OpenRead(filePath))
@@ -60,9 +60,9 @@ namespace FUB_TradingSim
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    throw new Exception(string.Format("failed to load zipped data file {0}", filePath));
+                    throw new Exception(string.Format("failed to load zipped data file {0}, {1}", filePath, e.Message));
                 }
             }
             else
@@ -82,58 +82,9 @@ namespace FUB_TradingSim
                 line = Info[DataSourceValue.ticker] + "," + line;
                 string[] items = line.Split(',');
 
-                string symbol = Info[DataSourceValue.ticker];
-                DateTime date = default(DateTime);
-                DateTime time = default(DateTime);
+                _data.Add(new Bar(Info, items));
 
-                Dictionary<DataSourceValue, double> values = new Dictionary<DataSourceValue, double>();
-                Dictionary<DataSourceValue, string> strings = new Dictionary<DataSourceValue, string>();
-                foreach (var mapping in Info)
-                {
-                    switch (mapping.Key)
-                    {
-                        // for stocks, symbol matches ticker
-                        // for options, the symbol adds expiry, right, and strike to the ticker
-                        case DataSourceValue.symbol:
-                            symbol = string.Format(mapping.Value, items);
-                            break;
-
-                        case DataSourceValue.date:
-                            date = DateTime.Parse(string.Format(mapping.Value, items));
-                            break;
-
-                        case DataSourceValue.time:
-                            time = DateTime.Parse(string.Format(mapping.Value, items));
-                            break;
-
-                        case DataSourceValue.open:
-                        case DataSourceValue.high:
-                        case DataSourceValue.low:
-                        case DataSourceValue.close:
-                        case DataSourceValue.volume:
-                        case DataSourceValue.bid:
-                        case DataSourceValue.bidSize:
-                        case DataSourceValue.ask:
-                        case DataSourceValue.askSize:
-                        case DataSourceValue.optionStrike:
-                            values[mapping.Key] = double.Parse(string.Format(mapping.Value, items));
-                            break;
-
-                        case DataSourceValue.optionExpiration:
-                        case DataSourceValue.optionRight:
-                        case DataSourceValue.optionUnderlying:
-                            strings[mapping.Key] = string.Format(mapping.Value, items);
-                            break;
-                    }
-                }
-
-                Bar bar = new Bar(
-                        symbol,
-                        date.Date + time.TimeOfDay,
-                        values,
-                        strings);
-
-                _data.Add(bar);
+                TotalRecordsRead++;
             }
         }
 

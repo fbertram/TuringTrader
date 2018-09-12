@@ -25,8 +25,8 @@ namespace FUB_TradingSim
     class Algorithm2 : Algorithm
     {
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\ImportOnly.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\ImportOnly.xlsm";
 
         public Algorithm2()
         {
@@ -50,10 +50,29 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
+                //Debug.WriteLine("{0:MM/dd/yyyy}, NAV = {1}", simTime, NetAssetValue);
 
-                foreach (string symbol in Instruments.Keys)
+                List<Instrument> optionChain = Instruments
+                        .Select(kv => kv.Value)
+                        .Where(i => i.IsOption
+                            && i.OptionExpiry > simTime)
+                        .ToList();
+
+                double underlyingPrice = optionChain
+                    .Select(o => Instruments[o.OptionUnderlying].Close[0])
+                    .FirstOrDefault();
+
+                if (Positions.Count == 0)
                 {
+                    Instrument shortPut = optionChain
+                        .Where(o => o.OptionIsPut)
+                        .OrderByDescending(o => underlyingPrice - o.OptionStrike)
+                        .FirstOrDefault();
+
+                    if (shortPut != null)
+                    {
+                        shortPut.Trade(-1, OrderExecution.closeThisBar);
+                    }
                 }
 
 #if DEBUG_PLOT || EXCEL_REPORT
@@ -99,7 +118,7 @@ namespace FUB_TradingSim
 
             foreach (LogEntry entry in algo.Log)
             {
-                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.TimeStamp, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
+                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
             }
 
             //Console.WriteLine("Press key to continue");
