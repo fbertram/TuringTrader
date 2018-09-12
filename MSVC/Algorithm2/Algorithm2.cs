@@ -90,7 +90,7 @@ namespace FUB_TradingSim
         {
             DateTime startTime = DateTime.Now;
 
-            var algo = new Algorithm1();
+            var algo = new Algorithm2();
             algo.Run();
             double fitness = (double)algo.Report(ReportType.FitnessValue);
 
