@@ -1,4 +1,15 @@
-﻿using System;
+﻿//==============================================================================
+// Project:     Trading Simulator
+// Name:        Volatility
+// Description: collection of volatility indicators
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL-3.0-or-later
+//==============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,10 +37,14 @@ namespace FUB_TradingSim
             }
             catch (Exception)
             {
-                // ignore
+                // we get here, when attempting to access fields further in the
+                // past, than what's available in the instrument's time series
             }
 
             return 1.0;
         }
     }
 }
+
+//==============================================================================
+// end of file

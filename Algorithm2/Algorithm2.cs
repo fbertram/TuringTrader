@@ -9,8 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-//#define DEBUG_PLOT
-#define EXCEL_REPORT
+#define CREATE_EXCEL
 
 using System;
 using System.Collections.Generic;
@@ -32,6 +31,7 @@ namespace FUB_TradingSim
         private readonly double _regTMarginToUse = 0.8;
         private readonly double _initialCash = 100000.00;
         private double? _initialUnderlyingPrice = null;
+        private Instrument _underlyingInstrument;
 
         public Algorithm2()
         {
@@ -40,9 +40,11 @@ namespace FUB_TradingSim
 
         override public void Run()
         {
+            //---------- initialization
+
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2009");
-            EndTime = DateTime.Parse("08/01/2017");
+            StartTime = DateTime.Parse("01/01/2007");
+            EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
             Cash = _initialCash;
@@ -51,6 +53,8 @@ namespace FUB_TradingSim
             DataPath = _dataPath;
             DataSources.Add(DataSource.New(_underlyingNickname));
             DataSources.Add(DataSource.New(_optionsNickname));
+
+            //---------- simulation
 
             // loop through all bars
             foreach (DateTime simTime in SimTime)
@@ -61,9 +65,9 @@ namespace FUB_TradingSim
                     continue;
 
                 // retrieve the underlying price
-                double underlyingPrice = optionChain
-                    .Select(o => Instruments[o.OptionUnderlying].Close[0])
-                    .FirstOrDefault();
+                if (_underlyingInstrument == null)
+                    _underlyingInstrument = Instruments[optionChain.Select(o => o.OptionUnderlying).FirstOrDefault()];
+                double underlyingPrice = _underlyingInstrument.Close[0];
                 if (_initialUnderlyingPrice == null)
                     _initialUnderlyingPrice = underlyingPrice;
 
@@ -93,31 +97,33 @@ namespace FUB_TradingSim
                     }
                 }
 
-#if DEBUG_PLOT || EXCEL_REPORT
+                // calculate volatility
+                double vol = _underlyingInstrument.VolatilityCloseToClose(20);
+
                 // create plot output
-                double date = simTime.Year + (simTime.Month - 1) / 12.0 + (simTime.Day - 1) / 372.0; // 12 * 31 = 372
-                _plotter.SelectPlot("nav vs time", "time");
-                _plotter.SetX(date);
+                _plotter.SelectPlot("nav vs time", "time"); // this will go to Sheet1
+                _plotter.SetX(simTime);
                 _plotter.Log(_underlyingNickname, underlyingPrice / (double)_initialUnderlyingPrice);
+                _plotter.Log("vol", vol);
                 _plotter.Log("nav", NetAssetValue / _initialCash);
-#endif
             }
 
-            FitnessValue = 0.0;
+            //---------- post-processing
+
+            _plotter.SelectPlot("trades", "time"); // this will go to Sheet2
+            foreach (LogEntry entry in Log)
+            {
+                _plotter.SetX(entry.BarOfExecution.Time);
+                _plotter.Log("qty", entry.OrderTicket.Quantity);
+                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("price", entry.FillPrice);
+            }
         }
 
-        public override object Report(ReportType reportType)
+        public void CreateChart()
         {
-#if true
-#if DEBUG_PLOT
-            _plotter.OpenWithR();
-#endif
-#if EXCEL_REPORT
+#if CREATE_EXCEL
             _plotter.OpenWithExcel(_excelPath);
-#endif
-            return 0.0;
-#else
-            return base.Report(reportType);
 #endif
         }
 
@@ -127,19 +133,10 @@ namespace FUB_TradingSim
 
             var algo = new Algorithm2();
             algo.Run();
-            double fitness = (double)algo.Report(ReportType.FitnessValue);
+            algo.CreateChart();
 
             DateTime finishTime = DateTime.Now;
             Debug.WriteLine("Total algorithm run time = {0:F1} seconds", (finishTime - startTime).TotalSeconds);
-
-            foreach (LogEntry entry in algo.Log)
-            {
-                Debug.WriteLine("{0:MM/dd/yyyy}: {1} x {2} @ {3:C2}", entry.BarOfExecution.Time, entry.OrderTicket.Quantity, entry.OrderTicket.Instrument.Symbol, entry.FillPrice);
-            }
-
-            //Console.WriteLine("Press key to continue");
-            //Console.ReadKey();
-            //System.Threading.Thread.Sleep(3000);
         }
     }
 }

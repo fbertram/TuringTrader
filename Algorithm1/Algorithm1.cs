@@ -23,7 +23,7 @@ namespace FUB_TradingSim
 {
     class Algorithm1: Algorithm
     {
-        public Logger Plotter = new Logger();
+        private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
@@ -88,11 +88,11 @@ namespace FUB_TradingSim
                 }
 
                 // create plot output
-                Plotter.SetX(simTime);
-                Plotter.Log(_benchmarkInstrument,
+                _plotter.SetX(simTime); // this will go to Sheet1
+                _plotter.Log(_benchmarkInstrument,
                             FindInstruments(_benchmarkInstrument).FirstOrDefault().Close[0] 
                             / _initialValues[_benchmarkInstrument]);
-                Plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
+                _plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
 
                 foreach (string nickname in _tradingInstruments)
                 {
@@ -101,26 +101,26 @@ namespace FUB_TradingSim
                         ? instr.Close[0] / _initialValues[nickname]
                         : 1.0;
 
-                    Plotter.Log(nickname, y);
+                    _plotter.Log(nickname, y);
                 }
             }
 
             //---------- post-processing
 
-            Plotter.SelectPlot("trades", "time");
+            _plotter.SelectPlot("trades", "time"); // this will go to Sheet2
             foreach (LogEntry entry in Log)
             {
-                Plotter.SetX(entry.BarOfExecution.Time);
-                Plotter.Log("qty", entry.OrderTicket.Quantity);
-                Plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
-                Plotter.Log("price", entry.FillPrice);
+                _plotter.SetX(entry.BarOfExecution.Time);
+                _plotter.Log("qty", entry.OrderTicket.Quantity);
+                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("price", entry.FillPrice);
             }
         }
 
         public void CreateChart()
         {
 #if CREATE_EXCEL
-            Plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWithExcel(_excelPath);
 #endif
         }
 

@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        SMA
-// Description: simple moving average
+// Name:        Moving Averages
+// Description: collection of moving average indicators
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -33,7 +33,8 @@ namespace FUB_TradingSim
             }
             catch (Exception)
             {
-                // ignore
+                // we get here, when attempting to access fields further
+                // in the past, than what's available in the input time series
             }
 
             return sum / num;
