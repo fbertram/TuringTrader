@@ -17,29 +17,26 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public partial class Algorithm
+    public static class MovingAverages
     {
-
-    }
-
-    public class SMA : TimeSeries<double>
-    {
-        public static double CalcSMA(ITimeSeries<double> series, int length)
+        public static double SMA(this ITimeSeries<double> series, int N)
         {
-            double retval = 0.0;
-            for (int t = 0; t < length; t++)
+            int num = 0;
+            double sum = 0.0;
+            try
             {
-                try
+                for (int t = 0; t < N; t++)
                 {
-                    retval += series[t];
-                }
-                catch (Exception)
-                {
-                    return retval / (length - 1);
+                    sum += series[t];
+                    num++;
                 }
             }
+            catch (Exception)
+            {
+                // ignore
+            }
 
-            return retval / length;
+            return sum / num;
         }
     }
 }

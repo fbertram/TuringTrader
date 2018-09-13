@@ -63,10 +63,11 @@
     <Compile Include="ITimeSeries.cs" />
     <Compile Include="LogEntry.cs" />
     <Compile Include="Order.cs" />
-    <Compile Include="SMA.cs" />
+    <Compile Include="MovingAverages.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Volatility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
