@@ -1,0 +1,10 @@
+name=Amazon.com
+dataPath=Data\AMZN.Stock
+ticker=AMZN
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={7}

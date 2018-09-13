@@ -1,6 +1,6 @@
-name=Tesla, Inc.
-dataPath=Data\TSLA.Stock
-ticker=TSLA
+name=Facebook
+dataPath=Data\FB.Stock
+ticker=FB
 date={1}
 time=16:00
 open={2}

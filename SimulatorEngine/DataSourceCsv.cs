@@ -82,7 +82,9 @@ namespace FUB_TradingSim
                 line = Info[DataSourceValue.ticker] + "," + line;
                 string[] items = line.Split(',');
 
-                _data.Add(new Bar(Info, items));
+                Bar bar = new Bar(Info, items);
+                if (bar.Time >= startTime)
+                    _data.Add(bar);
 
                 TotalRecordsRead++;
             }

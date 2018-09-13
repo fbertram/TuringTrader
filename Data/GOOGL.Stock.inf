@@ -1,0 +1,10 @@
+name=Alphabet Inc Class A
+dataPath=Data\GOOGL.Stock
+ticker=GOOGL
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={7}

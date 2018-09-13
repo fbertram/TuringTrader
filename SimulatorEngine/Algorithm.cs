@@ -183,13 +183,19 @@ namespace FUB_TradingSim
                         ExpireOption(instr);
 
                     // run our algorithm here
-                    yield return _simTime;
+                    if (_simTime >= StartTime && _simTime <= EndTime)
+                        yield return _simTime;
                 }
 
                 yield break;
             }
         }
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        protected IEnumerable<Instrument> FindInstruments(string nickname)
+        {
+            return Instruments.Values
+                .Where(i => i.Nickname == nickname);
+        }
         protected List<Instrument> OptionChain(string nickname)
         {
             // TODO: we need to check for nickname!

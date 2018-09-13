@@ -44,12 +44,12 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor _bidSeries;
         private readonly BarSeriesAccessor _askSeries;
         private readonly Algorithm _algorithm;
-        private readonly DataSource _dataSource;
+        public readonly DataSource DataSource;
 
         public Instrument(Algorithm algorithm, DataSource source)
         {
             _algorithm = algorithm;
-            _dataSource = source;
+            DataSource = source;
 
             _openSeries  = new BarSeriesAccessor(t => this[t].Open);
             _highSeries  = new BarSeriesAccessor(t => this[t].High);
@@ -60,6 +60,20 @@ namespace FUB_TradingSim
             _askSeries = new BarSeriesAccessor(t => this[t].Ask);
         }
 
+        public string Nickname
+        {
+            get
+            {
+                return DataSource.Info[DataSourceValue.nickName];
+            }
+        }
+        public string Name
+        {
+            get
+            {
+                return DataSource.Info[DataSourceValue.name];
+            }
+        }
         public string Symbol
         {
             get
@@ -79,14 +93,14 @@ namespace FUB_TradingSim
         {
             get
             {
-                return _dataSource.IsOption;
+                return DataSource.IsOption;
             }
         }
         public string OptionUnderlying
         {
             get
             {
-                return _dataSource.OptionUnderlying;
+                return DataSource.OptionUnderlying;
             }
         }
         public DateTime OptionExpiry
