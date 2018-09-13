@@ -17,8 +17,8 @@ The following features are planned for the near future:
 The following environment is required for building and running the simulator:
 
 * Microsoft Visual Studio, Community 2015 or better
-* Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel
-* R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R
+* Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these requirements, comment the line #define ENABLE_EXCEL in Logger.cs
+* R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not meet these requirements, comment the line #define ENABLE_R in Logger.cs
 * data files for the instruments to simulate
 
 
