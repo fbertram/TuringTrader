@@ -88,22 +88,20 @@ namespace FUB_TradingSim
                 }
 
                 // create plot output
-                double date = simTime.Year + (simTime.Month - 1) / 12.0 + (simTime.Day - 1) / 372.0; // 12 * 31 = 372
-                Plotter.SelectPlot("value vs time", "time");
-                Plotter.SetX(date);
+                Plotter.SetX(simTime);
                 Plotter.Log(_benchmarkInstrument,
                             FindInstruments(_benchmarkInstrument).FirstOrDefault().Close[0] 
                             / _initialValues[_benchmarkInstrument]);
                 Plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
 
-                foreach (string nick in _tradingInstruments)
+                foreach (string nickname in _tradingInstruments)
                 {
-                    Instrument instr = FindInstruments(nick).FirstOrDefault();
+                    Instrument instr = FindInstruments(nickname).FirstOrDefault();
                     double y = instr != null
-                        ? instr.Close[0] / _initialValues[nick]
+                        ? instr.Close[0] / _initialValues[nickname]
                         : 1.0;
 
-                    Plotter.Log(nick, y);
+                    Plotter.Log(nickname, y);
                 }
             }
 

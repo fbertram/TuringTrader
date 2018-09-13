@@ -119,7 +119,7 @@ namespace FUB_TradingSim
         override public void LoadData(DateTime startTime)
         {
             DateTime t1 = DateTime.Now;
-            Debug.WriteLine(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
+            Debug.Write(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
 
             _data = new List<Bar>();
 
