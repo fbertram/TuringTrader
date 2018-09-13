@@ -1,5 +1,5 @@
 # FUB Trading Simulator
-This project implements a trading simulator for stocks and options with the followig features:
+This project implements a trading simulator for stocks and options with the following features:
 
 * import data in CSV format, either as plain files, or zipped archives
 * simulate stock trades
