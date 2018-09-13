@@ -31,6 +31,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 
 #if ENABLE_EXCEL
 using Excel = Microsoft.Office.Interop.Excel;
@@ -252,7 +253,7 @@ namespace FUB_TradingSim
 #else // ENABLE_EXCEL
 			public void OpenWithExcel(string pathToExcelFile = @"C:\ProgramData\TS Support\MultiCharts .NET64\__FUB_Research.xlsm")
 			{
-				Debug.WriteLine("__FUB_Logger: OpenWithExcel disabled w/ ENABLE_EXCEL switch");
+				Debug.WriteLine("Logger: OpenWithExcel bypassed w/ ENABLE_EXCEL switch");
 			}
 #endif // ENABLE_EXCEL
         #endregion
@@ -331,7 +332,7 @@ namespace FUB_TradingSim
 #else // ENABLE_R
 			public void OpenWithR(List<string> RCommands = null)
 			{
-				Host.Output.WriteLine("__FUB_Logger: OpenWithR disabled w/ ENABLE_R switch");
+				Debug.WriteLine("Logger: OpenWithR bypassed w/ ENABLE_R switch");
 			}
 #endif // ENABLE_R
         #endregion
