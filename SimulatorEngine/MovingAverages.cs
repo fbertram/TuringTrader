@@ -9,36 +9,133 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     public static class MovingAverages
     {
-        public static double SMA(this ITimeSeries<double> series, int N)
+        #region SMA - Simple Moving Average
+        static List<FunctorSMA> _FunctorCacheSMA = new List<FunctorSMA>();
+
+        public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
-            int num = 0;
-            double sum = 0.0;
-            try
+            FunctorSMA sma = null;
+            foreach (FunctorSMA f in _FunctorCacheSMA)
             {
-                for (int t = 0; t < N; t++)
+                if (f.Series == series && f.N == n)
                 {
-                    sum += series[t];
-                    num++;
+                    sma = f;
+                    break;
                 }
             }
-            catch (Exception)
+
+            if (sma == null)
             {
-                // we get here, when attempting to access fields further
-                // in the past, than what's available in the input time series
+                sma = new FunctorSMA(series, n);
+                _FunctorCacheSMA.Add(sma);
             }
 
-            return sum / num;
+            sma.Calc();
+            return sma;
         }
+
+        private class FunctorSMA : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int N;
+
+            public FunctorSMA(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = n;
+            }
+
+            public void Calc()
+            {
+                double sum = 0.0;
+                int num = 0;
+
+                try
+                {
+                    for (int t = 0; t < N; t++)
+                    {
+                        sum += Series[t];
+                        num++;
+                    }
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                }
+
+                Value = sum / num;
+            }
+        }
+
+        #endregion
+        #region EMA - Exponentially Weighted Moving Average
+
+        static List<FunctorEMA> _FunctorCacheEMA = new List<FunctorEMA>();
+        /// <summary>
+        /// Exponentially Weighted Moving Average
+        /// </summary>
+        public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
+        {
+            FunctorEMA ema = null;
+            foreach (FunctorEMA e in _FunctorCacheEMA)
+            {
+                if (e.Series == series && e.N == n)
+                {
+                    ema = e;
+                    break;
+                }
+            }
+
+            if (ema == null)
+            {
+                ema = new FunctorEMA(series, n);
+                _FunctorCacheEMA.Add(ema);
+            }
+
+            ema.Calc();
+            return ema;
+        }
+
+        private class FunctorEMA : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int N;
+
+            private double _alpha;
+
+            public FunctorEMA(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = n;
+                _alpha = 2.0 / (n + 1.0);
+            }
+
+            public void Calc()
+            {
+                try
+                {
+                    Value = _alpha * (Series[0] - this[1]) + this[0];
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                    Value = Series[0];
+                }
+            }
+        }
+        #endregion
     }
 }
 

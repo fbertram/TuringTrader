@@ -9,8 +9,6 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define CREATE_EXCEL
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -119,21 +117,14 @@ namespace FUB_TradingSim
 
         public void CreateChart()
         {
-#if CREATE_EXCEL
             _plotter.OpenWithExcel(_excelPath);
-#endif
         }
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            DateTime startTime = DateTime.Now;
-
             var algo = new Algorithm1();
             algo.Run();
             algo.CreateChart();
-
-            DateTime finishTime = DateTime.Now;
-            Debug.WriteLine("Total algorithm run time = {0:F1} seconds", (finishTime - startTime).TotalSeconds);
         }
     }
 }

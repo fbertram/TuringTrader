@@ -2,6 +2,7 @@
 This project implements a trading simulator for stocks and options with the following features:
 
 * import data in CSV format, either as plain files, or zipped archives
+* calculate indicators, with a growing library of standard indicators
 * simulate stock trades
 * simulate option trades. Currently this is limited to cash-settled European-style options
 * export results to Excel, where you can fully customize reports with a few lines of VBA
@@ -11,8 +12,6 @@ The following features are planned for the near future:
 
 * automatic download/ update of data files
 * customizable optimizer engine
-* API for creating custom indicators
-* collection of standard indicators
 
 The following environment is required for building and running the simulator:
 
