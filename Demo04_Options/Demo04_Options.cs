@@ -98,13 +98,13 @@ namespace FUB_TradingSim
                 }
 
                 // calculate volatility
-                double vol = _underlyingInstrument.VolatilityCloseToClose(20);
+                ITimeSeries<double> vol = _underlyingInstrument.Close.Volatility(20);
 
                 // create plot output
                 _plotter.SelectPlot("nav vs time", "time"); // this will go to Sheet1
                 _plotter.SetX(simTime);
                 _plotter.Log(_underlyingNickname, underlyingPrice / (double)_initialUnderlyingPrice);
-                _plotter.Log("vol", vol);
+                _plotter.Log("vol", vol[0]);
                 _plotter.Log("nav", NetAssetValue / _initialCash);
             }
 

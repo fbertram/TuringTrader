@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Lambda
-// Description: lamda on time series
+// Name:        IndicatorsArithmetic
+// Description: arithmetic on time series
 // History:     2018ix14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -9,16 +9,18 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
-    static public class TimeSeriesArithmetic
+    static public class IndicatorsArithmetic
     {
         #region Add
         #region functor caching
@@ -107,6 +109,52 @@ namespace FUB_TradingSim
                 get
                 {
                     return Series1[daysBack] - Series2[daysBack];
+                }
+            }
+
+        }
+        #endregion
+        #region Multiply
+        #region functor caching
+        private static List<FunctorMultiply> _functorCacheMul = new List<FunctorMultiply>();
+
+        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        {
+            FunctorMultiply functor = null;
+            foreach (FunctorMultiply f in _functorCacheMul)
+            {
+                if (f.Series1 == series1 && f.Series2 == series2)
+                {
+                    functor = f;
+                    break;
+                }
+            }
+
+            if (functor == null)
+            {
+                functor = new FunctorMultiply(series1, series2);
+                _functorCacheMul.Add(functor);
+            }
+
+            return functor;
+        }
+        #endregion
+        private class FunctorMultiply : ITimeSeries<double>
+        {
+            public ITimeSeries<double> Series1;
+            public ITimeSeries<double> Series2;
+
+            public FunctorMultiply(ITimeSeries<double> series1, ITimeSeries<double> series2)
+            {
+                Series1 = series1;
+                Series2 = series2;
+            }
+
+            public double this[int daysBack]
+            {
+                get
+                {
+                    return Series1[daysBack] * Series2[daysBack];
                 }
             }
 

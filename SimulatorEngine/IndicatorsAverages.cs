@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public static class MovingAverages
+    public static class IndicatorsAverages
     {
         #region SMA - Simple Moving Average
         #region functor cache
@@ -82,7 +82,7 @@ namespace FUB_TradingSim
         }
         #endregion
         #region EMA - Exponentially Weighted Moving Average
-
+        #region functor cache
         static List<FunctorEMA> _FunctorCacheEMA = new List<FunctorEMA>();
         /// <summary>
         /// Exponentially Weighted Moving Average
@@ -108,6 +108,7 @@ namespace FUB_TradingSim
             ema.Calc();
             return ema;
         }
+        #endregion
 
         private class FunctorEMA : TimeSeries<double>
         {

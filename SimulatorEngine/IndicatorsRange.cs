@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public static class Range
+    public static class IndicatorsRange
     {
         #region Highest - highest value
         #region functor caching
@@ -131,3 +131,6 @@ namespace FUB_TradingSim
         #endregion
     }
 }
+
+//==============================================================================
+// end of file
