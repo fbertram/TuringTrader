@@ -34,7 +34,6 @@ namespace FUB_TradingSim
             "NFLX.Stock",
             "GOOGL.Stock"
         };
-        private Dictionary<string, double> _initialValues = new Dictionary<string, double>();
 
         public Demo03_Portfolio()
         { }
@@ -61,15 +60,17 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                // keep initial values
-                foreach (Instrument instr in Instruments.Values)
-                    if (!_initialValues.ContainsKey(instr.Nickname))
-                        _initialValues[instr.Nickname] = instr.Open[0];
 
-                // find active instruments
+                // this list of instruments is dynamic: the simulator engine
+                // adds a new instrument whenever needed. we need to determine 
+                // which of these instruments have received new bars
+                // also, we want to ignore our benchmark instrument.
                 var activeInstruments = Instruments.Values
                         .Where(i => i.LastTime == simTime
                             && _tradingInstruments.Contains(i.Nickname));
+
+                // this algorithm allocates an equal share of the net asset value
+                // to all active instruments... and rebalances daily
                 double targetEquity = NetAssetValue / Math.Max(1, activeInstruments.Count());
 
                 foreach (Instrument instr in activeInstruments)
@@ -85,27 +86,15 @@ namespace FUB_TradingSim
                         instr.Trade(targetShares - currentShares);
                 }
 
-                // create plot output
-                _plotter.SetX(simTime); // this will go to Sheet1
-                _plotter.Log(_benchmarkInstrument,
-                            FindInstruments(_benchmarkInstrument).FirstOrDefault().Close[0] 
-                            / _initialValues[_benchmarkInstrument]);
+                // plot net asset value on Sheet1
+                _plotter.SetX(simTime);
                 _plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
-
-                foreach (string nickname in _tradingInstruments)
-                {
-                    Instrument instr = FindInstruments(nickname).FirstOrDefault();
-                    double y = instr != null
-                        ? instr.Close[0] / _initialValues[nickname]
-                        : 1.0;
-
-                    _plotter.Log(nickname, y);
-                }
             }
 
             //---------- post-processing
 
-            _plotter.SelectPlot("trades", "time"); // this will go to Sheet2
+            // create a list of trades on Sheet2
+            _plotter.SelectPlot("trades", "time");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
