@@ -22,6 +22,7 @@ namespace FUB_TradingSim
     public static class MovingAverages
     {
         #region SMA - Simple Moving Average
+        #region functor cache
         static List<FunctorSMA> _FunctorCacheSMA = new List<FunctorSMA>();
 
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
@@ -45,6 +46,7 @@ namespace FUB_TradingSim
             sma.Calc();
             return sma;
         }
+        #endregion
 
         private class FunctorSMA : TimeSeries<double>
         {
@@ -59,12 +61,12 @@ namespace FUB_TradingSim
 
             public void Calc()
             {
-                double sum = 0.0;
-                int num = 0;
+                double sum = Series[0];
+                int num = 1;
 
                 try
                 {
-                    for (int t = 0; t < N; t++)
+                    for (int t = 1; t < N; t++)
                     {
                         sum += Series[t];
                         num++;
@@ -78,7 +80,6 @@ namespace FUB_TradingSim
                 Value = sum / num;
             }
         }
-
         #endregion
         #region EMA - Exponentially Weighted Moving Average
 

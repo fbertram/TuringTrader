@@ -27,6 +27,7 @@ namespace FUB_TradingSim
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^GSPC.Index";
+        private readonly double _offsetPrice = -1800.0;
 
         public Algorithm3()
         { }
@@ -36,8 +37,8 @@ namespace FUB_TradingSim
             //---------- initialization
 
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2007");
-            EndTime = DateTime.Parse("08/01/2018");
+            StartTime = DateTime.Parse("01/01/2015");
+            EndTime = DateTime.Parse("12/31/2016");
 
             // set account value
             Cash = _initialCash;
@@ -54,22 +55,23 @@ namespace FUB_TradingSim
                 // we could also just use Instrument[0]
                 Instrument instrument = FindInstruments(_instrumentNick).First();
 
-                // calculate a simple indicator
-                // note that the output is again a time series
-                ITimeSeries<double> indicatorSeries = instrument.Close.EMA(126);
-                double indicatorValue = indicatorSeries[0];
+                // calculate simple indicators
+                // the output of an indicator is also a time series
+                ITimeSeries<double> ema26 = instrument.Close.EMA(26);
+                ITimeSeries<double> ema12 = instrument.Close.EMA(12);
 
-                // calculate an indicator on top of another indicator
-                // we use the output of a previous indicator as input to the next
-                ITimeSeries<double> indicatorOnIndicatorSeries = indicatorSeries.EMA(126);
-                double indicatorOnIndicatorValue = indicatorOnIndicatorSeries[0];
+                // indicators can be calculated on top indicators
+                ITimeSeries<double> macd = ema12.Subtract(ema26);
+                ITimeSeries<double> signal = macd.EMA(9);
 
                 // plot our data
                 _plotter.SelectPlot("indicator vs time", "date");
                 _plotter.SetX(simTime);
-                _plotter.Log(instrument.Symbol, instrument.Close[0]);
-                _plotter.Log("Indicator", indicatorValue);
-                _plotter.Log("Indicator on Indicator", indicatorOnIndicatorValue);
+                _plotter.Log(instrument.Symbol, instrument.Close[0] + _offsetPrice);
+                _plotter.Log("ema26", ema26[0] + _offsetPrice);
+                _plotter.Log("ema12", ema12[0] + _offsetPrice);
+                _plotter.Log("macd", macd[0]);
+                _plotter.Log("signal", signal[0]);
             }
         }
 
