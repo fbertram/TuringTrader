@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Algorithm1
-// Description: Sample Algorithm #1
+// Name:        Demo03_Portfolio
+// Description: portfolio trading demo
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Algorithm1: Algorithm
+    class Demo03_Portfolio: Algorithm
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
@@ -36,7 +36,7 @@ namespace FUB_TradingSim
         };
         private Dictionary<string, double> _initialValues = new Dictionary<string, double>();
 
-        public Algorithm1()
+        public Demo03_Portfolio()
         { }
 
         override public void Run()
@@ -122,7 +122,7 @@ namespace FUB_TradingSim
 
         public static void Main(string[] args)
         {
-            var algo = new Algorithm1();
+            var algo = new Demo03_Portfolio();
             algo.Run();
             algo.CreateChart();
         }

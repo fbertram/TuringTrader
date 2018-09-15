@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Algorithm2
-// Description: Sample Algorithm #2
+// Name:        Demo04_Options
+// Description: demonstrate option trading
 // History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Algorithm2 : Algorithm
+    class Demo04_Options : Algorithm
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
@@ -33,7 +33,7 @@ namespace FUB_TradingSim
         private double? _initialUnderlyingPrice = null;
         private Instrument _underlyingInstrument;
 
-        public Algorithm2()
+        public Demo04_Options()
         {
 
         }
@@ -131,7 +131,7 @@ namespace FUB_TradingSim
         {
             DateTime startTime = DateTime.Now;
 
-            var algo = new Algorithm2();
+            var algo = new Demo04_Options();
             algo.Run();
             algo.CreateChart();
 

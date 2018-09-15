@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm1", "Algorithm1\Algorithm1.csproj", "{57E72A44-8C6A-4090-803E-D71731B48D3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo03_Portfolio", "Algorithm1\Demo03_Portfolio.csproj", "{57E72A44-8C6A-4090-803E-D71731B48D3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorEngine", "SimulatorEngine\SimulatorEngine.csproj", "{279F2A6E-FAA4-4E8A-9E75-DAFC7D8DABB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm2", "Algorithm2\Algorithm2.csproj", "{554DC89A-391D-4D12-B461-D49B43D2CE27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo04_Options", "Algorithm2\Demo04_Options.csproj", "{554DC89A-391D-4D12-B461-D49B43D2CE27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo01_Indicators", "Algorithm3\Demo01_Indicators.csproj", "{1C8930B5-3AF3-413F-BF2A-5406BE8145B3}"
 EndProject
