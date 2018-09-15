@@ -47,6 +47,8 @@ namespace FUB_TradingSim
             Cash = _initialCash;
 
             // add instruments
+            // the underlying must be added explicitly,
+            // as the simulation engine requires it
             DataPath = _dataPath;
             DataSources.Add(DataSource.New(_underlyingNickname));
             DataSources.Add(DataSource.New(_optionsNickname));
@@ -56,8 +58,8 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                // retrieve the option chain. we can filter the chain
-                // to narrow down our search
+                // retrieve the option chain
+                // we can filter the chain to narrow down our search
                 List<Instrument> optionChain = OptionChain(_optionsNickname)
                         .Where(o => o.OptionIsPut
                             && (o.OptionExpiry - simTime).Days > 21
@@ -70,6 +72,8 @@ namespace FUB_TradingSim
                     continue;
 
                 // find the underlying instrument
+                // this code shows the safe way, via the option chain
+                // the same can be achieved with FindInstruments(_underlyingNickname)
                 if (_underlyingInstrument == null)
                     _underlyingInstrument = Instruments[optionChain.Select(o => o.OptionUnderlying).First()];
 
@@ -82,13 +86,14 @@ namespace FUB_TradingSim
                 ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(20);
                 double volatility = volatilitySeries.Highest(3)[0];
 
+                // open a new position, if we are flat
                 if (Positions.Count == 0)
                 {
-                    // determine strike price: 3.0 stdev away from spot price
+                    // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
                         / Math.Exp(3.0 * Math.Sqrt(28.0 / 365.25) * volatility);
 
-                    // find option best fitting our criteria
+                    // find contract best fitting our criteria
                     Instrument shortPut = optionChain
                         .OrderBy(o => Math.Abs(o.OptionStrike - strikePrice))
                         .FirstOrDefault();
@@ -106,17 +111,24 @@ namespace FUB_TradingSim
                         shortPut.Trade(-contracts, OrderExecution.closeThisBar);
                     }
                 }
-                else
+
+                // monitor and maintain existing positions
+                else // if (Postions.Count != 0)
                 {
                     // find our currently open position
+                    // we might need fancier code, in case we have more than
+                    // one position open
                     Instrument shortPut = Positions.Keys.First();
 
                     // re-evaluate the likely trading range
                     double expectedLowestPrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(1.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
+                        / Math.Exp(2.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
                     // exit, when the risk of ending in the money is too high
-                    if (expectedLowestPrice < shortPut.OptionStrike)
+                    // and, the contract is actively traded
+                    if (expectedLowestPrice < shortPut.OptionStrike
+                    &&  shortPut.BidVolume[0] > 0
+                    &&  shortPut.Ask[0] < 2 * shortPut.Bid[0])
                     {
                         shortPut.Trade(-Positions[shortPut], OrderExecution.closeThisBar);
                     }

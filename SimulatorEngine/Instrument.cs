@@ -43,7 +43,10 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor _closeSeries;
         private readonly BarSeriesAccessor _bidSeries;
         private readonly BarSeriesAccessor _askSeries;
+        private readonly BarSeriesAccessor _bidVolume;
+        private readonly BarSeriesAccessor _askVolume;
         private readonly Algorithm _algorithm;
+
         public readonly DataSource DataSource;
 
         public Instrument(Algorithm algorithm, DataSource source)
@@ -58,6 +61,8 @@ namespace FUB_TradingSim
 
             _bidSeries = new BarSeriesAccessor(t => this[t].Bid);
             _askSeries = new BarSeriesAccessor(t => this[t].Ask);
+            _bidVolume = new BarSeriesAccessor(t => this[t].BidVolume);
+            _askVolume = new BarSeriesAccessor(t => this[t].AskVolume);
         }
 
         public string Nickname
@@ -186,6 +191,20 @@ namespace FUB_TradingSim
             get
             {
                 return _askSeries;
+            }
+        }
+        public ITimeSeries<double> BidVolume
+        {
+            get
+            {
+                return _bidVolume;
+            }
+        }
+        public ITimeSeries<double> AskVolume
+        {
+            get
+            {
+                return _askVolume;
             }
         }
     }
