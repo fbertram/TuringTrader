@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Algorithm1
-// Description: Sample Algorithm #1
-// History:     2018ix10, FUB, created
+// Name:        Demo01_Indicators
+// Description: demonstrate use of indicators
+// History:     2018ix15, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Algorithm3 : Algorithm
+    class Demo01_Indicators : Algorithm
     {
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
@@ -29,7 +29,7 @@ namespace FUB_TradingSim
         private readonly string _instrumentNick = "^GSPC.Index";
         private readonly double _offsetPrice = -1800.0;
 
-        public Algorithm3()
+        public Demo01_Indicators()
         { }
 
         override public void Run()
@@ -82,7 +82,7 @@ namespace FUB_TradingSim
 
         static void Main(string[] args)
         {
-            var algo = new Algorithm3();
+            var algo = new Demo01_Indicators();
             algo.Run();
             algo.CreateChart();
         }

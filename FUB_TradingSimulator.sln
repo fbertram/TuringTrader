@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorEngine", "Simulato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm2", "Algorithm2\Algorithm2.csproj", "{554DC89A-391D-4D12-B461-D49B43D2CE27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm3", "Algorithm3\Algorithm3.csproj", "{1C8930B5-3AF3-413F-BF2A-5406BE8145B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo01_Indicators", "Algorithm3\Demo01_Indicators.csproj", "{1C8930B5-3AF3-413F-BF2A-5406BE8145B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
