@@ -22,15 +22,14 @@ namespace FUB_TradingSim
 {
     class Demo01_Indicators : Algorithm
     {
+        #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^GSPC.Index";
         private readonly double _offsetPrice = -1800.0;
-
-        public Demo01_Indicators()
-        { }
+        #endregion
 
         override public void Run()
         {
@@ -56,7 +55,7 @@ namespace FUB_TradingSim
                 Instrument instrument = FindInstruments(_instrumentNick).First();
 
                 // calculate simple indicators
-                // the output of an indicator is also a time series
+                // the output of an indicator is a time series
                 ITimeSeries<double> ema26 = instrument.Close.EMA(26);
                 ITimeSeries<double> ema12 = instrument.Close.EMA(12);
 
@@ -75,6 +74,11 @@ namespace FUB_TradingSim
             }
         }
 
+        #region miscellaneous stuff
+        public Demo01_Indicators()
+        {
+        }
+
         public void CreateChart()
         {
             _plotter.OpenWithExcel(_excelPath);
@@ -86,6 +90,7 @@ namespace FUB_TradingSim
             algo.Run();
             algo.CreateChart();
         }
+        #endregion
     }
 }
 

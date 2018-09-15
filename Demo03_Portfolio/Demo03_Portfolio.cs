@@ -9,6 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,11 +17,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     class Demo03_Portfolio: Algorithm
     {
+        #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
@@ -34,9 +37,7 @@ namespace FUB_TradingSim
             "NFLX.Stock",
             "GOOGL.Stock"
         };
-
-        public Demo03_Portfolio()
-        { }
+        #endregion
 
         override public void Run()
         {
@@ -63,14 +64,14 @@ namespace FUB_TradingSim
 
                 // this list of instruments is dynamic: the simulator engine
                 // adds a new instrument whenever needed. we need to determine 
-                // which of these instruments have received new bars
+                // which of these instruments have received new bars.
                 // also, we want to ignore our benchmark instrument.
                 var activeInstruments = Instruments.Values
                         .Where(i => i.LastTime == simTime
                             && _tradingInstruments.Contains(i.Nickname));
 
                 // this algorithm allocates an equal share of the net asset value
-                // to all active instruments... and rebalances daily
+                // to all active instruments, and rebalances daily
                 double targetEquity = NetAssetValue / Math.Max(1, activeInstruments.Count());
 
                 foreach (Instrument instr in activeInstruments)
@@ -104,6 +105,10 @@ namespace FUB_TradingSim
             }
         }
 
+        #region miscellaneous stuff
+        public Demo03_Portfolio()
+        { }
+
         public void CreateChart()
         {
             _plotter.OpenWithExcel(_excelPath);
@@ -115,6 +120,7 @@ namespace FUB_TradingSim
             algo.Run();
             algo.CreateChart();
         }
+        #endregion
     }
 }
 

@@ -40,7 +40,6 @@ using Excel = Microsoft.Office.Interop.Excel;
 #if ENABLE_R
 using RDotNet;
 using RDotNet.NativeLibrary;
-using System.Diagnostics;
 #endif
 #endregion
 

@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Range
+// Name:        IndicatorsRange
 // Description: collection of range-based indicators
 // History:     2018ix14, FUB, created
 //------------------------------------------------------------------------------
@@ -9,11 +9,13 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {

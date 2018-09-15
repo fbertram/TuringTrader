@@ -22,16 +22,14 @@ namespace FUB_TradingSim
 {
     class Demo02_Stocks : Algorithm
     {
+        #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
         private double? _initialPrice = null;
         private readonly string _instrumentNick = "AAPL.Stock";
-        private readonly double _offsetPrice = -1800.0;
-
-        public Demo02_Stocks()
-        { }
+        #endregion
 
         override public void Run()
         {
@@ -53,14 +51,15 @@ namespace FUB_TradingSim
             foreach (DateTime simTime in SimTime)
             {
                 // find our instrument. if we have only one instrument, 
-                // we could also just use Instrument[0]
+                // we can also just use Instrument[0]
                 Instrument instrument = FindInstruments(_instrumentNick).First();
 
                 // calculate moving averages
                 ITimeSeries<double> slow = instrument.Close.EMA(63);
                 ITimeSeries<double> fast = instrument.Close.EMA(21);
 
-                // determine current and target position size
+                // determine current and target position size,
+                // based on a simple moving average crossover strategy
                 int currentPosition = Positions.ContainsKey(instrument)
                     ? Positions[instrument]
                     : 0;
@@ -72,15 +71,19 @@ namespace FUB_TradingSim
                 if (targetPosition != currentPosition)
                     instrument.Trade(targetPosition - currentPosition, OrderExecution.openNextBar);
 
-                // plot data
+                // plot net asset value versus benchmark
                 if (_initialPrice == null) _initialPrice = instrument.Close[0];
 
                 _plotter.SelectPlot("nav & benchmark vs time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Log(instrument.Symbol, instrument.Close[0] / (double)_initialPrice);
-                _plotter.Log("strategy", NetAssetValue / _initialCash);
+                _plotter.Log("MA Crossover", NetAssetValue / _initialCash);
             }
         }
+
+        #region miscellanous stuff
+        public Demo02_Stocks()
+        { }
 
         public void CreateChart()
         {
@@ -93,6 +96,7 @@ namespace FUB_TradingSim
             algo.Run();
             algo.CreateChart();
         }
+        #endregion
     }
 }
 

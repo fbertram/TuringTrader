@@ -9,8 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define CREATE_EXCEL
-
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,11 +17,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     class Demo04_Options : Algorithm
     {
+        #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
@@ -32,11 +33,7 @@ namespace FUB_TradingSim
         private readonly double _initialCash = 100000.00;
         private double? _initialUnderlyingPrice = null;
         private Instrument _underlyingInstrument;
-
-        public Demo04_Options()
-        {
-
-        }
+        #endregion
 
         override public void Run()
         {
@@ -59,31 +56,44 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                // retrieve the option chain
-                List<Instrument> optionChain = OptionChain(_optionsNickname);
+                // retrieve the option chain. we can filter the chain
+                // to narrow down our search
+                List<Instrument> optionChain = OptionChain(_optionsNickname)
+                        .Where(o => o.OptionIsPut
+                            && (o.OptionExpiry - simTime).Days > 21
+                            && (o.OptionExpiry - simTime).Days < 28
+                            //&& o.Bid[0] > 0.10
+                            && (o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Friday
+                            || o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Saturday))
+                        .ToList();
                 if (optionChain.Count == 0)
                     continue;
 
-                // retrieve the underlying price
+                // find the underlying instrument
                 if (_underlyingInstrument == null)
-                    _underlyingInstrument = Instruments[optionChain.Select(o => o.OptionUnderlying).FirstOrDefault()];
+                    _underlyingInstrument = Instruments[optionChain.Select(o => o.OptionUnderlying).First()];
+
+                // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
                 if (_initialUnderlyingPrice == null)
                     _initialUnderlyingPrice = underlyingPrice;
 
+                // calculate volatility
+                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(20);
+                double volatility = volatilitySeries.Highest(3)[0];
+
                 if (Positions.Count == 0)
                 {
-                    // find option
+                    // determine strike price: 3.0 stdev away from spot price
+                    double strikePrice = _underlyingInstrument.Close[0]
+                        / Math.Exp(3.0 * Math.Sqrt(28.0 / 365.25) * volatility);
+
+                    // find option best fitting our criteria
                     Instrument shortPut = optionChain
-                        .Where(o => o.OptionIsPut
-                            && (o.OptionExpiry - simTime).Days > 21
-                            && (o.OptionExpiry - simTime).Days < 28
-                            && o.OptionStrike < 0.85 * underlyingPrice
-                            && o.Bid[0] > 0.10)
-                        .OrderByDescending(o => o.Bid[0])
+                        .OrderBy(o => Math.Abs(o.OptionStrike - strikePrice))
                         .FirstOrDefault();
 
-                    // trade option
+                    // enter short put position
                     if (shortPut != null)
                     {
                         // Interactive Brokers margin requirements for short naked puts:
@@ -96,16 +106,28 @@ namespace FUB_TradingSim
                         shortPut.Trade(-contracts, OrderExecution.closeThisBar);
                     }
                 }
+                else
+                {
+                    // find our currently open position
+                    Instrument shortPut = Positions.Keys.First();
 
-                // calculate volatility
-                ITimeSeries<double> vol = _underlyingInstrument.Close.Volatility(20);
+                    // re-evaluate the likely trading range
+                    double expectedLowestPrice = _underlyingInstrument.Close[0]
+                        / Math.Exp(1.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
-                // create plot output
+                    // exit, when the risk of ending in the money is too high
+                    if (expectedLowestPrice < shortPut.OptionStrike)
+                    {
+                        shortPut.Trade(-Positions[shortPut], OrderExecution.closeThisBar);
+                    }
+                }
+
+                // plot the underlying against our strategy results, plus volatility
                 _plotter.SelectPlot("nav vs time", "time"); // this will go to Sheet1
                 _plotter.SetX(simTime);
-                _plotter.Log(_underlyingNickname, underlyingPrice / (double)_initialUnderlyingPrice);
-                _plotter.Log("vol", vol[0]);
-                _plotter.Log("nav", NetAssetValue / _initialCash);
+                _plotter.Log(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
+                _plotter.Log("volatility", volatilitySeries[0]);
+                _plotter.Log("net asset value", NetAssetValue / _initialCash);
             }
 
             //---------- post-processing
@@ -120,24 +142,24 @@ namespace FUB_TradingSim
             }
         }
 
+        #region miscellaneous stuff
+        public Demo04_Options()
+        {
+
+        }
+
         public void CreateChart()
         {
-#if CREATE_EXCEL
             _plotter.OpenWithExcel(_excelPath);
-#endif
         }
 
         static void Main(string[] args)
         {
-            DateTime startTime = DateTime.Now;
-
             var algo = new Demo04_Options();
             algo.Run();
             algo.CreateChart();
-
-            DateTime finishTime = DateTime.Now;
-            Debug.WriteLine("Total algorithm run time = {0:F1} seconds", (finishTime - startTime).TotalSeconds);
         }
+        #endregion
     }
 }
 

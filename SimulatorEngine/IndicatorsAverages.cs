@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Moving Averages
+// Name:        IndicatorsAverages
 // Description: collection of moving average indicators
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
