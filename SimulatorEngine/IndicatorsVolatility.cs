@@ -21,10 +21,13 @@ namespace FUB_TradingSim
 {
     public static class IndicatorsVolatility
     {
-        #region Volatility - standard method of calculation
+        #region Volatility
         #region functor cache
         static List<FunctorVolatility> _FunctorCacheVolatility = new List<FunctorVolatility>();
 
+        /// <summary>
+        /// Return volatility of time series
+        /// </summary>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
             FunctorVolatility functor = null;
@@ -86,6 +89,70 @@ namespace FUB_TradingSim
                     : 0.0;
 
                 Value = Math.Sqrt(252.0 * variance);
+            }
+        }
+        #endregion
+        #region VolatilityFromRange
+        #region functor cache
+        static List<FunctorVolatilityFromRange> _FunctorCacheVolatilityFromRange = new List<FunctorVolatilityFromRange>();
+
+        /// <summary>
+        /// Return volatility of time series, based on recent trading range
+        /// </summary>
+        public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
+        {
+            FunctorVolatilityFromRange functor = null;
+            foreach (FunctorVolatilityFromRange f in _FunctorCacheVolatilityFromRange)
+            {
+                if (f.Series == series && f.N == n)
+                {
+                    functor = f;
+                    break;
+                }
+            }
+
+            if (functor == null)
+            {
+                functor = new FunctorVolatilityFromRange(series, n);
+                _FunctorCacheVolatilityFromRange.Add(functor);
+            }
+
+            functor.Calc();
+            return functor;
+        }
+        #endregion
+
+        private class FunctorVolatilityFromRange : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int N;
+
+            public FunctorVolatilityFromRange(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = n;
+            }
+
+            public void Calc()
+            {
+                double hi = Series[0];
+                double lo = Series[0];
+
+                try
+                {
+                    for (int t = 1; t < N; t++)
+                    {
+                        hi = Math.Max(hi, Series[t]);
+                        lo = Math.Min(lo, Series[t]);
+                    }
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                }
+
+                double volatility = 0.63 * Math.Sqrt(252.0 / N) * Math.Log(hi / lo);
+                Value = volatility;
             }
         }
         #endregion
