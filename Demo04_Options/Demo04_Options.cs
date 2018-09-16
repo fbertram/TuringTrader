@@ -58,24 +58,10 @@ namespace FUB_TradingSim
             // loop through all bars
             foreach (DateTime simTime in SimTime)
             {
-                // retrieve the option chain
-                // we can filter the chain to narrow down our search
-                List<Instrument> optionChain = OptionChain(_optionsNickname)
-                        .Where(o => o.OptionIsPut
-                            && (o.OptionExpiry - simTime).Days > 21
-                            && (o.OptionExpiry - simTime).Days < 28
-                            //&& o.Bid[0] > 0.10
-                            && (o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Friday
-                            || o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Saturday))
-                        .ToList();
-                if (optionChain.Count == 0)
-                    continue;
-
                 // find the underlying instrument
-                // this code shows the safe way, via the option chain
-                // the same can be achieved with FindInstruments(_underlyingNickname)
+                // we could also find the underlying from the option chain
                 if (_underlyingInstrument == null)
-                    _underlyingInstrument = Instruments[optionChain.Select(o => o.OptionUnderlying).First()];
+                    _underlyingInstrument = FindInstruments(_underlyingNickname).First();
 
                 // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
@@ -83,17 +69,29 @@ namespace FUB_TradingSim
                     _initialUnderlyingPrice = underlyingPrice;
 
                 // calculate volatility
-                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(20);
-                double volatility = volatilitySeries.Highest(3)[0];
+                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(10);
+                double averageVolatility = volatilitySeries.EMA(21)[0];
+                //double volatility = volatilitySeries.Highest(1)[0];
+                double volatility = Math.Max(averageVolatility, volatilitySeries.Highest(5)[0]);
 
-                // open a new position, if we are flat
+                // retrieve the option chain
+                // we can filter the chain to narrow down our search
+                List<Instrument> optionChain = OptionChain(_optionsNickname)
+                        .Where(o => o.OptionIsPut
+                            && (o.OptionExpiry - simTime).Days > 21
+                            && (o.OptionExpiry - simTime).Days < 28
+                            && (o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Friday
+                            || o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Saturday))
+                        .ToList();
+
+                // if we are currently flat, attempt to open a position
                 if (Positions.Count == 0)
                 {
                     // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
                         / Math.Exp(3.0 * Math.Sqrt(28.0 / 365.25) * volatility);
 
-                    // find contract best fitting our criteria
+                    // find contract closest to our desired strike
                     Instrument shortPut = optionChain
                         .OrderBy(o => Math.Abs(o.OptionStrike - strikePrice))
                         .FirstOrDefault();
@@ -122,7 +120,7 @@ namespace FUB_TradingSim
 
                     // re-evaluate the likely trading range
                     double expectedLowestPrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(2.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
+                        / Math.Exp(1.5 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
                     // exit, when the risk of ending in the money is too high
                     // and, the contract is actively traded
