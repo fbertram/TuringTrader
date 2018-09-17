@@ -9,17 +9,20 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     public class Bar
     {
+        #region Bar(...)
         public Bar(Dictionary<DataSourceValue, string> info, string[] items)
         {
             Symbol = info[DataSourceValue.ticker];
@@ -44,12 +47,12 @@ namespace FUB_TradingSim
                     case DataSourceValue.high:  High = double.Parse(mappedString);  HasOHLC = true; break;
                     case DataSourceValue.low:   Low = double.Parse(mappedString);   HasOHLC = true; break;
                     case DataSourceValue.close: Close = double.Parse(mappedString); HasOHLC = true; break;
-                    case DataSourceValue.volume: Volume = int.Parse(mappedString); break;
+                    case DataSourceValue.volume: Volume = long.Parse(mappedString); break;
 
                     case DataSourceValue.bid:   Bid = double.Parse(mappedString); HasBidAsk = true; break;
                     case DataSourceValue.ask:   Ask = double.Parse(mappedString); HasBidAsk = true; break;
-                    case DataSourceValue.bidSize: BidVolume = int.Parse(mappedString); break;
-                    case DataSourceValue.askSize: AskVolume = int.Parse(mappedString); break;
+                    case DataSourceValue.bidSize: BidVolume = long.Parse(mappedString); break;
+                    case DataSourceValue.askSize: AskVolume = long.Parse(mappedString); break;
 
                     case DataSourceValue.optionStrike:     OptionStrike = double.Parse(mappedString);          break;
                     case DataSourceValue.optionExpiration: OptionExpiry = DateTime.Parse(mappedString);        break;
@@ -68,8 +71,8 @@ namespace FUB_TradingSim
                             OptionIsPut ? "P" : "C",
                             (int)Math.Floor(1000.0 * OptionStrike));
             }
-
         }
+        #endregion
 
         public readonly string Symbol;
         public readonly DateTime Time;
@@ -78,13 +81,13 @@ namespace FUB_TradingSim
         public readonly double High;
         public readonly double Low;
         public readonly double Close;
-        public readonly int Volume;
+        public readonly long Volume;
         public readonly bool HasOHLC;
 
         public readonly double Bid;
         public readonly double Ask;
-        public readonly int BidVolume;
-        public readonly int AskVolume;
+        public readonly long BidVolume;
+        public readonly long AskVolume;
         public readonly bool HasBidAsk;
 
         public readonly bool IsOption;

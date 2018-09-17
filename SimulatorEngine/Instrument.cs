@@ -23,16 +23,16 @@ namespace FUB_TradingSim
     public class Instrument : TimeSeries<Bar>
     {
         #region internal data
-        private class BarSeriesAccessor : ITimeSeries<double>
+        private class BarSeriesAccessor<T> : ITimeSeries<T>
         {
-            private Func<int, double> _accessor;
+            private Func<int, T> _accessor;
 
-            public BarSeriesAccessor(Func<int, double> accessor)
+            public BarSeriesAccessor(Func<int, T> accessor)
             {
                 _accessor = accessor;
             }
 
-            public double this[int daysBack]
+            public T this[int daysBack]
             {
                 get
                 {
@@ -40,14 +40,14 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private readonly BarSeriesAccessor _openSeries;
-        private readonly BarSeriesAccessor _highSeries;
-        private readonly BarSeriesAccessor _lowSeries;
-        private readonly BarSeriesAccessor _closeSeries;
-        private readonly BarSeriesAccessor _bidSeries;
-        private readonly BarSeriesAccessor _askSeries;
-        private readonly BarSeriesAccessor _bidVolume;
-        private readonly BarSeriesAccessor _askVolume;
+        private readonly BarSeriesAccessor<double> _openSeries;
+        private readonly BarSeriesAccessor<double> _highSeries;
+        private readonly BarSeriesAccessor<double> _lowSeries;
+        private readonly BarSeriesAccessor<double> _closeSeries;
+        private readonly BarSeriesAccessor<double> _bidSeries;
+        private readonly BarSeriesAccessor<double> _askSeries;
+        private readonly BarSeriesAccessor<long> _bidVolume;
+        private readonly BarSeriesAccessor<long> _askVolume;
         private readonly Algorithm _algorithm;
         #endregion
 
@@ -59,15 +59,15 @@ namespace FUB_TradingSim
             _algorithm = algorithm;
             DataSource = source;
 
-            _openSeries  = new BarSeriesAccessor(t => this[t].Open);
-            _highSeries  = new BarSeriesAccessor(t => this[t].High);
-            _lowSeries   = new BarSeriesAccessor(t => this[t].Low);
-            _closeSeries = new BarSeriesAccessor(t => this[t].Close);
+            _openSeries  = new BarSeriesAccessor<double>(t => this[t].Open);
+            _highSeries  = new BarSeriesAccessor<double>(t => this[t].High);
+            _lowSeries   = new BarSeriesAccessor<double>(t => this[t].Low);
+            _closeSeries = new BarSeriesAccessor<double>(t => this[t].Close);
 
-            _bidSeries = new BarSeriesAccessor(t => this[t].Bid);
-            _askSeries = new BarSeriesAccessor(t => this[t].Ask);
-            _bidVolume = new BarSeriesAccessor(t => this[t].BidVolume);
-            _askVolume = new BarSeriesAccessor(t => this[t].AskVolume);
+            _bidSeries = new BarSeriesAccessor<double>(t => this[t].Bid);
+            _askSeries = new BarSeriesAccessor<double>(t => this[t].Ask);
+            _bidVolume = new BarSeriesAccessor<long>(t => this[t].BidVolume);
+            _askVolume = new BarSeriesAccessor<long>(t => this[t].AskVolume);
         }
         #endregion
         #region public string Nickname
@@ -232,8 +232,8 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region public ITimeSeries<double> BidVolume
-        public ITimeSeries<double> BidVolume
+        #region public ITimeSeries<long> BidVolume
+        public ITimeSeries<long> BidVolume
         {
             get
             {
@@ -241,8 +241,8 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region public ITimeSeries<double> AskVolume
-        public ITimeSeries<double> AskVolume
+        #region public ITimeSeries<long> AskVolume
+        public ITimeSeries<long> AskVolume
         {
             get
             {
