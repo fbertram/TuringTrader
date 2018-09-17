@@ -9,17 +9,20 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     public class Instrument : TimeSeries<Bar>
     {
+        #region internal data
         private class BarSeriesAccessor : ITimeSeries<double>
         {
             private Func<int, double> _accessor;
@@ -46,9 +49,11 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor _bidVolume;
         private readonly BarSeriesAccessor _askVolume;
         private readonly Algorithm _algorithm;
+        #endregion
 
         public readonly DataSource DataSource;
 
+        #region public Instrument(...)
         public Instrument(Algorithm algorithm, DataSource source)
         {
             _algorithm = algorithm;
@@ -64,7 +69,8 @@ namespace FUB_TradingSim
             _bidVolume = new BarSeriesAccessor(t => this[t].BidVolume);
             _askVolume = new BarSeriesAccessor(t => this[t].AskVolume);
         }
-
+        #endregion
+        #region public string Nickname
         public string Nickname
         {
             get
@@ -72,6 +78,8 @@ namespace FUB_TradingSim
                 return DataSource.Info[DataSourceValue.nickName];
             }
         }
+        #endregion
+        #region public string Name
         public string Name
         {
             get
@@ -79,6 +87,8 @@ namespace FUB_TradingSim
                 return DataSource.Info[DataSourceValue.name];
             }
         }
+        #endregion
+        #region public string Symbol
         public string Symbol
         {
             get
@@ -86,6 +96,8 @@ namespace FUB_TradingSim
                 return this[0].Symbol;
             }
         }
+        #endregion
+        #region public DateTime LastTime
         public DateTime LastTime
         {
             get
@@ -93,7 +105,9 @@ namespace FUB_TradingSim
                 return this[0].Time;
             }
         }
+        #endregion
 
+        #region public bool IsOption
         public bool IsOption
         {
             get
@@ -101,6 +115,8 @@ namespace FUB_TradingSim
                 return DataSource.IsOption;
             }
         }
+        #endregion
+        #region public string OptionUnderlying
         public string OptionUnderlying
         {
             get
@@ -108,6 +124,8 @@ namespace FUB_TradingSim
                 return DataSource.OptionUnderlying;
             }
         }
+        #endregion
+        #region public DateTime OptionExpiry
         public DateTime OptionExpiry
         {
             get
@@ -115,6 +133,8 @@ namespace FUB_TradingSim
                 return this[0].OptionExpiry;
             }
         }
+        #endregion
+        #region public bool OptionIsPut
         public bool OptionIsPut
         {
             get
@@ -122,6 +142,8 @@ namespace FUB_TradingSim
                 return this[0].OptionIsPut;
             }
         }
+        #endregion
+        #region public double OptionStrike
         public double OptionStrike
         {
             get
@@ -129,7 +151,9 @@ namespace FUB_TradingSim
                 return this[0].OptionStrike;
             }
         }
+        #endregion
 
+        #region public void Trade(int quantity, OrderExecution tradeExecution)
         public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
         {
             _algorithm.PendingOrders.Add(
@@ -140,6 +164,8 @@ namespace FUB_TradingSim
                     PriceSpec = OrderPriceSpec.market,
                 });
         }
+        #endregion
+        #region public int Position
         public int Position
         {
             get
@@ -149,7 +175,9 @@ namespace FUB_TradingSim
                         .Sum(x => x.Value);
             }
         }
+        #endregion
 
+        #region public ITimeSeries<double> Open
         public ITimeSeries<double> Open
         {
             get
@@ -157,6 +185,8 @@ namespace FUB_TradingSim
                 return _openSeries;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> High
         public ITimeSeries<double> High
         {
             get
@@ -164,6 +194,8 @@ namespace FUB_TradingSim
                 return _highSeries;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> Low
         public ITimeSeries<double> Low
         {
             get
@@ -171,6 +203,8 @@ namespace FUB_TradingSim
                 return _lowSeries;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> Close
         public ITimeSeries<double> Close
         {
             get
@@ -178,7 +212,9 @@ namespace FUB_TradingSim
                 return _closeSeries;
             }
         }
+        #endregion
 
+        #region public ITimeSeries<double> Bid
         public ITimeSeries<double> Bid
         {
             get
@@ -186,6 +222,8 @@ namespace FUB_TradingSim
                 return _bidSeries;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> Ask
         public ITimeSeries<double> Ask
         {
             get
@@ -193,6 +231,8 @@ namespace FUB_TradingSim
                 return _askSeries;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> BidVolume
         public ITimeSeries<double> BidVolume
         {
             get
@@ -200,6 +240,8 @@ namespace FUB_TradingSim
                 return _bidVolume;
             }
         }
+        #endregion
+        #region public ITimeSeries<double> AskVolume
         public ITimeSeries<double> AskVolume
         {
             get
@@ -207,6 +249,7 @@ namespace FUB_TradingSim
                 return _askVolume;
             }
         }
+        #endregion
     }
 }
 //==============================================================================

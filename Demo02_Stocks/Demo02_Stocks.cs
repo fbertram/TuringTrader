@@ -52,7 +52,7 @@ namespace FUB_TradingSim
             {
                 // find our instrument. if we have only one instrument, 
                 // we can also just use Instrument[0]
-                Instrument instrument = FindInstruments(_instrumentNick);
+                Instrument instrument = FindInstrument(_instrumentNick);
 
                 // calculate moving averages
                 ITimeSeries<double> slow = instrument.Close.EMA(63);
@@ -64,7 +64,7 @@ namespace FUB_TradingSim
                     ? Positions[instrument]
                     : 0;
                 int targetPosition = fast[0] > slow[0]
-                    ? (int)Math.Floor(NetAssetValue / instrument.Close[0]) // go long
+                    ? (int)Math.Floor(NetAssetValue[0] / instrument.Close[0]) // go long
                     : 0;                                                   // short... disabled for this demo
 
                 // place trades
@@ -77,7 +77,7 @@ namespace FUB_TradingSim
                 _plotter.SelectPlot("nav & benchmark vs time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Log(instrument.Symbol, instrument.Close[0] / (double)_initialPrice);
-                _plotter.Log("MA Crossover", NetAssetValue / _initialCash);
+                _plotter.Log("MA Crossover", NetAssetValue[0] / _initialCash);
             }
         }
 

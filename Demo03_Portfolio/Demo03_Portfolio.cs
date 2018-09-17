@@ -72,7 +72,7 @@ namespace FUB_TradingSim
 
                 // this algorithm allocates an equal share of the net asset value
                 // to all active instruments, and rebalances daily
-                double targetEquity = NetAssetValue / Math.Max(1, activeInstruments.Count());
+                double targetEquity = NetAssetValue[0] / Math.Max(1, activeInstruments.Count());
 
                 foreach (Instrument instr in activeInstruments)
                 {
@@ -89,7 +89,7 @@ namespace FUB_TradingSim
 
                 // plot net asset value on Sheet1
                 _plotter.SetX(simTime);
-                _plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
+                _plotter.Log("Net Asset Value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing

@@ -23,18 +23,20 @@ namespace FUB_TradingSim
     public abstract partial class Algorithm
     {
         //---------- internal data
-        DateTime _simTime;
+        private DateTime _simTime;
 
         //---------- internal helpers
         private void ExecOrder(Order ticket)
         {
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
+            double netAssetValue = 0.0;
             double price = 0.00;
             switch(ticket.Execution)
             {
                 case OrderExecution.closeThisBar:
                     execBar = instrument[1];
+                    netAssetValue = NetAssetValue[1];
                     if (execBar.HasBidAsk)
                         price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
                     else
@@ -42,11 +44,13 @@ namespace FUB_TradingSim
                     break;
                 case OrderExecution.openNextBar:
                     execBar = instrument[0];
+                    netAssetValue = NetAssetValue[0];
                     price = execBar.Open;
                     break;
                 case OrderExecution.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    netAssetValue = NetAssetValue[0];
                     price = ticket.Price;
                     break;
             }
@@ -67,6 +71,7 @@ namespace FUB_TradingSim
             {
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
+                NetAssetValue = netAssetValue,
                 FillPrice = price,
                 Commission = 0.00
             };
@@ -182,6 +187,12 @@ namespace FUB_TradingSim
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
+                    // update net asset value
+                    double nav = Cash;
+                    foreach (var instrument in Positions.Keys)
+                        nav += Positions[instrument] * instrument.Close[0];
+                    NetAssetValue.Value = nav;
+
                     // run our algorithm here
                     if (_simTime >= StartTime && _simTime <= EndTime)
                         yield return _simTime;
@@ -191,7 +202,7 @@ namespace FUB_TradingSim
             }
         }
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        protected Instrument FindInstruments(string nickname)
+        protected Instrument FindInstrument(string nickname)
         {
             return Instruments.Values
                 .Where(i => i.Nickname == nickname)
@@ -215,19 +226,7 @@ namespace FUB_TradingSim
         public List<LogEntry> Log = new List<LogEntry>();
 
         protected double Cash;
-        public double NetAssetValue
-        {
-            get
-            {
-                double nav = Cash;
-                foreach (var instrument in Positions.Keys)
-                {
-                    nav += Positions[instrument] * instrument.Close[0];
-                }
-
-                return nav;
-            }
-        }
+        public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
     }
 }
 //==============================================================================

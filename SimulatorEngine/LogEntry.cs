@@ -21,6 +21,7 @@ namespace FUB_TradingSim
     {
         public Order OrderTicket;
         public Bar BarOfExecution;
+        public double NetAssetValue;
         public double FillPrice;
         public double Commission;
     }

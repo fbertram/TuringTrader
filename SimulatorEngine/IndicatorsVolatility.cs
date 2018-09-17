@@ -156,6 +156,68 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        #region FastVariance - exponentially weighted variance
+        #region functor cache
+        static List<FunctorFastVariance> _FunctorCacheFastVariance = new List<FunctorFastVariance>();
+
+        public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
+        {
+            FunctorFastVariance functor = null;
+            foreach (var f in _FunctorCacheFastVariance)
+            {
+                if (f.Series == series && f.N == n)
+                {
+                    functor = f;
+                    break;
+                }
+            }
+
+            if (functor == null)
+            {
+                functor = new FunctorFastVariance(series, n);
+                _FunctorCacheFastVariance.Add(functor);
+            }
+
+            functor.Calc();
+            return functor;
+        }
+        #endregion
+
+        private class FunctorFastVariance : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int N;
+
+            private double _alpha;
+            private double _average;
+
+            public FunctorFastVariance(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = n;
+                _alpha = 2.0 / (n + 1.0);
+            }
+
+            public void Calc()
+            {
+                try
+                {
+                    // calculate exponentially-weighted mean and variance
+                    // see Tony Finch, Incremental calculation of mean and variance
+                    double diff = Series[0] - _average;
+                    double incr = _alpha * diff;
+                    _average = _average + incr;
+                    Value = (1.0 - _alpha) * (this[1] + diff * incr);
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                    _average = Series[0];
+                    Value = 0.0;
+                }
+            }
+        }
+        #endregion
     }
 }
 

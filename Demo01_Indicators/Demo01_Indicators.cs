@@ -52,7 +52,7 @@ namespace FUB_TradingSim
             {
                 // find our instrument. if we have only one instrument, 
                 // we could also just use Instruments.Values.First()
-                Instrument instrument = FindInstruments(_instrumentNick);
+                Instrument instrument = FindInstrument(_instrumentNick);
 
                 // calculate simple indicators
                 // the output of an indicator is a time series

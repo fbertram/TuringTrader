@@ -65,7 +65,6 @@ namespace FUB_TradingSim
                     return Series1[daysBack] + Series2[daysBack];
                 }
             }
-
         }
         #endregion
         #region Subtract

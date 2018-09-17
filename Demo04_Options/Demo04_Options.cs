@@ -61,7 +61,7 @@ namespace FUB_TradingSim
                 // find the underlying instrument
                 // we could also find the underlying from the option chain
                 if (_underlyingInstrument == null)
-                    _underlyingInstrument = FindInstruments(_underlyingNickname);
+                    _underlyingInstrument = FindInstrument(_underlyingNickname);
 
                 // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
@@ -137,7 +137,7 @@ namespace FUB_TradingSim
                 _plotter.SetX(simTime);
                 _plotter.Log(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
                 _plotter.Log("volatility", volatilitySeries[0]);
-                _plotter.Log("net asset value", NetAssetValue / _initialCash);
+                _plotter.Log("net asset value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing

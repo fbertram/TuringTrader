@@ -64,8 +64,7 @@
     <Compile Include="IndicatorsArithmetic.cs" />
     <Compile Include="LogEntry.cs" />
     <Compile Include="Order.cs" />
-    <Compile Include="IndicatorsAverages.cs" />
-    <Compile Include="IndicatorsRange.cs" />
+    <Compile Include="IndicatorsBasic.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
