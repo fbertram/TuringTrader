@@ -51,8 +51,8 @@ namespace FUB_TradingSim
             foreach (DateTime simTime in SimTime)
             {
                 // find our instrument. if we have only one instrument, 
-                // we could also just use Instrument[0]
-                Instrument instrument = FindInstruments(_instrumentNick).First();
+                // we could also just use Instruments.Values.First()
+                Instrument instrument = FindInstruments(_instrumentNick);
 
                 // calculate simple indicators
                 // the output of an indicator is a time series

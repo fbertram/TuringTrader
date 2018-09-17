@@ -52,7 +52,7 @@ namespace FUB_TradingSim
             {
                 // find our instrument. if we have only one instrument, 
                 // we can also just use Instrument[0]
-                Instrument instrument = FindInstruments(_instrumentNick).First();
+                Instrument instrument = FindInstruments(_instrumentNick);
 
                 // calculate moving averages
                 ITimeSeries<double> slow = instrument.Close.EMA(63);

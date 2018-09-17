@@ -191,17 +191,18 @@ namespace FUB_TradingSim
             }
         }
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        protected IEnumerable<Instrument> FindInstruments(string nickname)
+        protected Instrument FindInstruments(string nickname)
         {
             return Instruments.Values
-                .Where(i => i.Nickname == nickname);
+                .Where(i => i.Nickname == nickname)
+                .First();
         }
         protected List<Instrument> OptionChain(string nickname)
         {
-            // TODO: we need to check for nickname!
             List<Instrument> optionChain = Instruments
                     .Select(kv => kv.Value)
-                    .Where(i => i[0].Time == _simTime  // current bar
+                    .Where(i => i.Nickname == nickname // check nickname
+                        && i[0].Time == _simTime       // current bar
                         && i.IsOption                  // is option
                         && i.OptionExpiry > _simTime)  // future expiry
                     .ToList();

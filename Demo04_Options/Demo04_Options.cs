@@ -61,7 +61,7 @@ namespace FUB_TradingSim
                 // find the underlying instrument
                 // we could also find the underlying from the option chain
                 if (_underlyingInstrument == null)
-                    _underlyingInstrument = FindInstruments(_underlyingNickname).First();
+                    _underlyingInstrument = FindInstruments(_underlyingNickname);
 
                 // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
