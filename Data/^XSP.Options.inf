@@ -1,0 +1,13 @@
+name=S&P 500 MINI SPX OPTIONS INDEX
+dataPath=..\..\FUB_TradingSolutions\Data\Data\^XSP.Options
+ticker=XSP
+date={2}
+time=16:00
+bidSize={12}
+bid={13}
+askSize={14}
+ask={15}
+optionExpiration={4}
+optionStrike={5}
+optionRight={6}
+optionUnderlying=^XSP
