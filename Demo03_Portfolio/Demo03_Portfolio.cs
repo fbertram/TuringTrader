@@ -67,7 +67,7 @@ namespace FUB_TradingSim
                 // which of these instruments have received new bars.
                 // also, we want to ignore our benchmark instrument.
                 var activeInstruments = Instruments.Values
-                        .Where(i => i.LastTime == simTime
+                        .Where(i => i.Time[0] == simTime
                             && _tradingInstruments.Contains(i.Nickname));
 
                 // this algorithm allocates an equal share of the net asset value

@@ -40,6 +40,7 @@ namespace FUB_TradingSim
                 }
             }
         }
+        private readonly BarSeriesAccessor<DateTime> _timeSeries;
         private readonly BarSeriesAccessor<double> _openSeries;
         private readonly BarSeriesAccessor<double> _highSeries;
         private readonly BarSeriesAccessor<double> _lowSeries;
@@ -59,6 +60,7 @@ namespace FUB_TradingSim
             _algorithm = algorithm;
             DataSource = source;
 
+            _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
             _openSeries  = new BarSeriesAccessor<double>(t => this[t].Open);
             _highSeries  = new BarSeriesAccessor<double>(t => this[t].High);
             _lowSeries   = new BarSeriesAccessor<double>(t => this[t].Low);
@@ -94,15 +96,6 @@ namespace FUB_TradingSim
             get
             {
                 return this[0].Symbol;
-            }
-        }
-        #endregion
-        #region public DateTime LastTime
-        public DateTime LastTime
-        {
-            get
-            {
-                return this[0].Time;
             }
         }
         #endregion
@@ -177,6 +170,15 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region public ITimeSeries<DateTime> Time
+        public ITimeSeries<DateTime> Time
+        {
+            get
+            {
+                return _timeSeries;
+            }
+        }
+        #endregion
         #region public ITimeSeries<double> Open
         public ITimeSeries<double> Open
         {
