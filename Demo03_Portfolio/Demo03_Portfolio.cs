@@ -59,7 +59,7 @@ namespace FUB_TradingSim
             //---------- simulation
 
             // loop through all bars
-            foreach (DateTime simTime in SimTime)
+            foreach (DateTime simTime in SimTimes)
             {
 
                 // this list of instruments is dynamic: the simulator engine

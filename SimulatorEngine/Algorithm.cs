@@ -9,12 +9,14 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
@@ -22,10 +24,7 @@ namespace FUB_TradingSim
 
     public abstract partial class Algorithm
     {
-        //---------- internal data
-        private DateTime _simTime;
-
-        //---------- internal helpers
+        #region internal helpers
         private void ExecOrder(Order ticket)
         {
             Instrument instrument = ticket.Instrument;
@@ -97,26 +96,36 @@ namespace FUB_TradingSim
             // force execution
             ExecOrder(ticket);
         }
+        #endregion
 
         //---------- for use by trading applications
+        #region public Algorithm()
         public Algorithm()
         {
         }
+        #endregion
+        #region virtual public void Run()
         virtual public void Run()
         {
 
         }
+        #endregion
+        #region virtual public object Report(ReportType)
         virtual public object Report(ReportType reportType)
         {
             return FitnessValue;
         }
+        #endregion
+        #region public double FitnessValue
         public double FitnessValue
         {
             get;
             protected set;
         }
+        #endregion
 
         //---------- for use by algorithms
+        #region protected string DataPath
         protected string DataPath
         {
             set
@@ -132,13 +141,15 @@ namespace FUB_TradingSim
                 return DataSource.DataPath;
             }
         }
-
+        #endregion
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;
         protected DateTime EndTime;
+        protected DateTime SimTime;
 
-        protected IEnumerable<DateTime> SimTime
+        #region protected IEnumerable<DateTime> SimTimes
+        protected IEnumerable<DateTime> SimTimes
         {
             get
             {
@@ -156,7 +167,7 @@ namespace FUB_TradingSim
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    _simTime = DataSources
+                    SimTime = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
@@ -165,7 +176,7 @@ namespace FUB_TradingSim
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == _simTime)
+                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime)
                         {
                             if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
@@ -181,7 +192,7 @@ namespace FUB_TradingSim
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < _simTime.Date)
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime.Date)
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
@@ -194,32 +205,37 @@ namespace FUB_TradingSim
                     NetAssetValue.Value = nav;
 
                     // run our algorithm here
-                    if (_simTime >= StartTime && _simTime <= EndTime)
-                        yield return _simTime;
+                    if (SimTime >= StartTime && SimTime <= EndTime)
+                        yield return SimTime;
                 }
 
                 yield break;
             }
         }
+        #endregion
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        #region protected Instrument FindInstrument(string)
         protected Instrument FindInstrument(string nickname)
         {
             return Instruments.Values
                 .Where(i => i.Nickname == nickname)
                 .First();
         }
+        #endregion
+        #region protected List<Instrument> OptionChain(string)
         protected List<Instrument> OptionChain(string nickname)
         {
             List<Instrument> optionChain = Instruments
                     .Select(kv => kv.Value)
                     .Where(i => i.Nickname == nickname // check nickname
-                        && i[0].Time == _simTime       // current bar
+                        && i[0].Time == SimTime       // current bar
                         && i.IsOption                  // is option
-                        && i.OptionExpiry > _simTime)  // future expiry
+                        && i.OptionExpiry > SimTime)  // future expiry
                     .ToList();
 
             return optionChain;
         }
+        #endregion
 
         public List<Order> PendingOrders = new List<Order>();
         public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();

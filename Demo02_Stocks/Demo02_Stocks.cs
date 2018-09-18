@@ -48,7 +48,7 @@ namespace FUB_TradingSim
 
             //---------- simulation
 
-            foreach (DateTime simTime in SimTime)
+            foreach (DateTime simTime in SimTimes)
             {
                 // find our instrument. if we have only one instrument, 
                 // we can also just use Instrument[0]

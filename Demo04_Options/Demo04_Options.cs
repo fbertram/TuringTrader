@@ -56,7 +56,7 @@ namespace FUB_TradingSim
             //---------- simulation
 
             // loop through all bars
-            foreach (DateTime simTime in SimTime)
+            foreach (DateTime simTime in SimTimes)
             {
                 // find the underlying instrument
                 // we could also find the underlying from the option chain
