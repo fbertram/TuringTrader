@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        InstrumentDataCsv
+// Name:        DataSourceCsv
 // Description: Csv instrument data
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
@@ -9,6 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,17 +18,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression; // requires reference to System.IO.Compression.dll
+#endregion
 
 namespace FUB_TradingSim
 {
+    /// <summary>
+    /// data source for CSV files
+    /// </summary>
     public class DataSourceCsv : DataSource
     {
-        //---------- internal data
+        #region internal data
         private List<Bar> _data;
         private IEnumerator<Bar> _barEnumerator;
         public static int TotalRecordsRead = 0;
-
-        //---------- internal helpers
+        #endregion
+        #region internal helpers
         private void LoadDir(string path, DateTime startTime)
         {
             DirectoryInfo d = new DirectoryInfo(path);
@@ -89,8 +94,10 @@ namespace FUB_TradingSim
                 TotalRecordsRead++;
             }
         }
+        #endregion
 
         //---------- API
+        #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
         public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
         {
             // expand relative paths, if required
@@ -107,6 +114,8 @@ namespace FUB_TradingSim
                 if (!Directory.Exists(Info[DataSourceValue.dataPath]))
                     throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
         }
+        #endregion
+        #region override public IEnumerator<Bar> BarEnumerator
         override public IEnumerator<Bar> BarEnumerator
         {
             get
@@ -116,6 +125,8 @@ namespace FUB_TradingSim
                 return _barEnumerator;
             }
         }
+        #endregion
+        #region override public void LoadData(DateTime startTime)
         override public void LoadData(DateTime startTime)
         {
             DateTime t1 = DateTime.Now;
@@ -131,6 +142,7 @@ namespace FUB_TradingSim
             DateTime t2 = DateTime.Now;
             Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
         }
+        #endregion
     }
 }
 //==============================================================================

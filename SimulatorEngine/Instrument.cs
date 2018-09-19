@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        BarCollection
-// Description: collection of bars
+// Name:        Instrument
+// Description: instrument, a time series of bars
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
+    /// <summary>
+    /// class representing a tradeable instrument, holding time series data
+    /// </summary>
     public class Instrument : TimeSeries<Bar>
     {
         #region internal data
@@ -45,14 +48,13 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor<double> _highSeries;
         private readonly BarSeriesAccessor<double> _lowSeries;
         private readonly BarSeriesAccessor<double> _closeSeries;
+        private readonly BarSeriesAccessor<long> _volumeSeries;
         private readonly BarSeriesAccessor<double> _bidSeries;
         private readonly BarSeriesAccessor<double> _askSeries;
         private readonly BarSeriesAccessor<long> _bidVolume;
         private readonly BarSeriesAccessor<long> _askVolume;
         private readonly Algorithm _algorithm;
         #endregion
-
-        public readonly DataSource DataSource;
 
         #region public Instrument(...)
         public Instrument(Algorithm algorithm, DataSource source)
@@ -61,17 +63,20 @@ namespace FUB_TradingSim
             DataSource = source;
 
             _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
-            _openSeries  = new BarSeriesAccessor<double>(t => this[t].Open);
-            _highSeries  = new BarSeriesAccessor<double>(t => this[t].High);
-            _lowSeries   = new BarSeriesAccessor<double>(t => this[t].Low);
+            _openSeries = new BarSeriesAccessor<double>(t => this[t].Open);
+            _highSeries = new BarSeriesAccessor<double>(t => this[t].High);
+            _lowSeries = new BarSeriesAccessor<double>(t => this[t].Low);
             _closeSeries = new BarSeriesAccessor<double>(t => this[t].Close);
-
+            _volumeSeries = new BarSeriesAccessor<long>(t => this[t].Volume);
             _bidSeries = new BarSeriesAccessor<double>(t => this[t].Bid);
             _askSeries = new BarSeriesAccessor<double>(t => this[t].Ask);
             _bidVolume = new BarSeriesAccessor<long>(t => this[t].BidVolume);
             _askVolume = new BarSeriesAccessor<long>(t => this[t].AskVolume);
         }
         #endregion
+
+        //----- general info
+        public readonly DataSource DataSource;
         #region public string Nickname
         public string Nickname
         {
@@ -100,6 +105,7 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        //----- option-specific info
         #region public bool IsOption
         public bool IsOption
         {
@@ -146,30 +152,7 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region public void Trade(int quantity, OrderExecution tradeExecution)
-        public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
-        {
-            _algorithm.PendingOrders.Add(
-                new Order() {
-                    Instrument = this,
-                    Quantity = quantity,
-                    Execution = tradeExecution,
-                    PriceSpec = OrderPriceSpec.market,
-                });
-        }
-        #endregion
-        #region public int Position
-        public int Position
-        {
-            get
-            {
-                return _algorithm.Positions
-                        .Where(p => p.Key == this)
-                        .Sum(x => x.Value);
-            }
-        }
-        #endregion
-
+        //----- time series
         #region public ITimeSeries<DateTime> Time
         public ITimeSeries<DateTime> Time
         {
@@ -215,7 +198,15 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-
+        #region public ITimeSeries<long> Volume
+        public ITimeSeries<long> Volume
+        {
+            get
+            {
+                return _volumeSeries;
+            }
+        }
+        #endregion
         #region public ITimeSeries<double> Bid
         public ITimeSeries<double> Bid
         {
@@ -249,6 +240,33 @@ namespace FUB_TradingSim
             get
             {
                 return _askVolume;
+            }
+        }
+        #endregion
+
+        //----- trading
+        #region public void Trade(int quantity, OrderExecution tradeExecution)
+        public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
+        {
+            _algorithm.PendingOrders.Add(
+                new Order()
+                {
+                    Instrument = this,
+                    Quantity = quantity,
+                    Execution = tradeExecution,
+                    PriceSpec = OrderPriceSpec.market,
+                });
+        }
+        #endregion
+        #region public int Position
+        public int Position
+        {
+            get
+            {
+                // TODO: does this crash, when there is no position?
+                return _algorithm.Positions
+                        .Where(p => p.Key == this)
+                        .Sum(x => x.Value);
             }
         }
         #endregion

@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
+    /// <summary>
+    /// container holding info for single bar
+    /// </summary>
     public class Bar
     {
         #region Bar(...)

@@ -9,17 +9,22 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
 namespace FUB_TradingSim
 {
     public enum OrderExecution { closeThisBar, openNextBar, optionExpiryClose };
     public enum OrderPriceSpec { market };
 
+    /// <summary>
+    /// order ticket
+    /// </summary>
     public class Order
     {
         public Instrument Instrument;

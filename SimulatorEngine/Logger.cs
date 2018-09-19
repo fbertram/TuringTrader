@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define ENABLE_R
+//#define ENABLE_R
 // for R, we need RDotNet installed. comment the line above to disable R
 // install with the following command: nuget install R.Net.Community
 // tested successfully w/ MultiCharts 11 and RDotNet 1.7.0
@@ -48,28 +48,31 @@ namespace FUB_TradingSim
 {
     public class Logger
     {
-        #region data
+        #region internal data
         //private CStudyControl Host;
         private string CurrentPlot;
         private Dictionary<string, string> XLabels;
         private Dictionary<string, List<Dictionary<string, string>>> LogData;
         #endregion
-        #region initialization & cleanup
+        #region internal helpers
+        private void _Log(string yLabel, string yValue)
+        {
+            LogData[CurrentPlot].Last()[yLabel] = yValue;
+        }
+        #endregion
+
+        //----- initialization & cleanup
         public Logger() { }
-
-        ~Logger()
-        { }
-
-        /// <summary>
-        /// clear all logs
-        /// </summary>
+        #region public void Clear()
         public void Clear()
         {
             XLabels = null;
             LogData = null;
         }
         #endregion
-        #region logging values
+
+        //----- logging values
+        #region public void SelectPlot(string plotTitle, string xLabel)
         /// <summary>
         /// select current plot
         /// </summary>
@@ -84,7 +87,9 @@ namespace FUB_TradingSim
 
             XLabels[plotTitle] = xLabel;
         }
+        #endregion
 
+        #region public void SetX(double xValue)
         /// <summary>
         /// set value along x-asis
         /// </summary>
@@ -95,7 +100,8 @@ namespace FUB_TradingSim
             string xValueStr = string.Format("{0}", xValue);
             SetX(xValueStr);
         }
-
+        #endregion
+        #region public void SetX(DateTime xValue)
         /// <summary>
         /// set x-axis, select plot
         /// </summary>
@@ -106,7 +112,8 @@ namespace FUB_TradingSim
             string xValueStr = string.Format("{0:MM/dd/yyyy}", xValue);
             SetX(xValueStr);
         }
-
+        #endregion
+        #region public void SetX(string xValue)
         /// <summary>
         /// set x-axis, select plot
         /// </summary>
@@ -131,7 +138,9 @@ namespace FUB_TradingSim
             // save xValue
             LogData[CurrentPlot].Last()[XLabels[CurrentPlot]] = xValue;
         }
+        #endregion
 
+        #region public void Log(string yLabel, double yValue)
         /// <summary>
         /// add log to current x-axis/ plot
         /// </summary>
@@ -142,24 +151,17 @@ namespace FUB_TradingSim
             string yValueStr = string.Format("{0}", yValue);
             _Log(yLabel, yValueStr);
         }
-
+        #endregion
+        #region public void Log(string yLabel, string yValue)
         public void Log(string yLabel, string yValue)
         {
             string yValueStr = string.Format("\"{0}\"", yValue);
             _Log(yLabel, yValueStr);
         }
-
-        /// <summary>
-        /// add log to current x-axis/ plot
-        /// </summary>
-        /// <param name="yLabel">y-axis label</param>
-        /// <param name="yValue">y-axis value</param>
-        private void _Log(string yLabel, string yValue)
-        {
-            LogData[CurrentPlot].Last()[yLabel] = yValue;
-        }
         #endregion
-        #region save as CSV
+
+        //----- output
+        #region public int SaveAsCsv(string filePath, string plotTitle = null)
         /// <summary>
         /// save log as CSV file
         /// </summary>
@@ -195,13 +197,13 @@ namespace FUB_TradingSim
             return LogData[plotTitle].Count;
         }
         #endregion
-        #region open with Excel
+        #region public void OpenWithExcel(string pathToExcelTemplate)
 #if ENABLE_EXCEL
         /// <summary>
         /// open log with existing Excel sheet, containing UPDATE_ALL macro
         /// </summary>
-        /// <param name="pathToExcelFile">path to existing excel file</param>
-        public void OpenWithExcel(string pathToExcelFile = @"C:\ProgramData\TS Support\MultiCharts .NET64\__FUB_Research.xlsm")
+        /// <param name="pathToExcelTemplate">path to existing excel file</param>
+        public void OpenWithExcel(string pathToExcelTemplate)
         {
             if (LogData == null || LogData.Keys.Count == 0)
                 return;
@@ -228,7 +230,7 @@ namespace FUB_TradingSim
             excel.Visible = true;
             var wbooks = excel.Workbooks;
             //var wbook = wbooks.Open(pathToExcelFile);
-            var wbook = wbooks.Add(pathToExcelFile); // create new w/ file as template
+            var wbook = wbooks.Add(pathToExcelTemplate); // create new w/ file as template
             Thread.Sleep(500); // this is ugly but prevents Excel from crashing
 
             List<string> plots = LogData.Keys.ToList();
@@ -256,7 +258,7 @@ namespace FUB_TradingSim
 			}
 #endif // ENABLE_EXCEL
         #endregion
-        #region open with R
+        #region public void OpenWithR(List<string> RCommands = null)
 #if ENABLE_R
         /// <summary>
         /// open and plot log with R

@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
+    /// <summary>
+    /// time series implementation
+    /// </summary>
     public class TimeSeries<T> : ITimeSeries<T>
     {
         #region internal data
@@ -33,6 +36,7 @@ namespace FUB_TradingSim
 
         }
         #endregion
+
         #region public T Value
         public T Value
         {
@@ -63,7 +67,7 @@ namespace FUB_TradingSim
             }
         }
 #endregion
-#region public int BarsAvailable
+        #region public int BarsAvailable
         public int BarsAvailable
         {
             get
@@ -71,7 +75,7 @@ namespace FUB_TradingSim
                 return _data.Count();
             }
         }
-#endregion
+        #endregion
     }
 }
 
