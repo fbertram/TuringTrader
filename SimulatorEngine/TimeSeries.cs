@@ -24,6 +24,8 @@ namespace FUB_TradingSim
     /// </summary>
     public class TimeSeries<T> : ITimeSeries<T>
     {
+#if false
+        // safe: implementation with C# List<T>
         #region internal data
         private int _maxBarsBack;
         private List<T> _data = new List<T>();
@@ -66,7 +68,7 @@ namespace FUB_TradingSim
                 return _data[daysBack];
             }
         }
-#endregion
+        #endregion
         #region public int BarsAvailable
         public int BarsAvailable
         {
@@ -76,6 +78,64 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+#else
+        // faster: implementation with diy cyclic buffer
+        #region internal data
+        private int _maxBarsBack;
+        private T[] _barData;
+        private int _newestBar;
+        private int _numBars;
+        #endregion
+
+        #region public TimeSeries(int maxBarsBack)
+        public TimeSeries(int maxBarsBack = 256)
+        {
+            _maxBarsBack = maxBarsBack;
+            _barData = new T[_maxBarsBack];
+            _newestBar = -1;
+            _numBars = 0;
+        }
+        #endregion
+
+        #region public T Value
+        public T Value
+        {
+            set
+            {
+                _newestBar = (_newestBar + 1) % _maxBarsBack;
+                _numBars = Math.Min(_numBars + 1, _maxBarsBack);
+                _barData[_newestBar] = value;
+            }
+        }
+        #endregion
+        #region public T this[int daysBack]
+        public T this[int daysBack]
+        {
+            get
+            {
+                if (_numBars < 1)
+                    throw new Exception("time series lookup past available bars");
+
+                // adjust daysBack, if exceeding # of available bars
+                daysBack = Math.Max(Math.Min(daysBack, _numBars - 1), 0);
+
+                int idx = (_newestBar + _maxBarsBack - daysBack) % _maxBarsBack;
+                T value = _barData[idx];
+
+                return value;
+            }
+        }
+        #endregion
+        #region public int BarsAvailable
+        public int BarsAvailable
+        {
+            get
+            {
+                return _numBars;
+            }
+        }
+        #endregion
+#endif
     }
 }
 
