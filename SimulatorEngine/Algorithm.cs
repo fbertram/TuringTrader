@@ -22,11 +22,17 @@ namespace FUB_TradingSim
 {
     public enum ReportType { FitnessValue, Plot, Excel };
 
+    /// <summary>
+    /// base class for trading algorithms
+    /// </summary>
     public abstract partial class Algorithm
     {
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
+            if (SimTime < StartTime)
+                return;
+
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
             double netAssetValue = 0.0;
@@ -145,6 +151,7 @@ namespace FUB_TradingSim
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;
+        protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
         protected DateTime SimTime;
 
@@ -153,13 +160,17 @@ namespace FUB_TradingSim
         {
             get
             {
+                DateTime warmupStartTime = WarmupStartTime != null
+                    ? (DateTime)WarmupStartTime
+                    : StartTime;
+
                 // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
                 foreach (DataSource instr in DataSources)
                 {
-                    instr.LoadData(StartTime);
+                    instr.LoadData(warmupStartTime);
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
@@ -205,7 +216,7 @@ namespace FUB_TradingSim
                     NetAssetValue.Value = nav;
 
                     // run our algorithm here
-                    if (SimTime >= StartTime && SimTime <= EndTime)
+                    if (SimTime >= warmupStartTime && SimTime <= EndTime)
                         yield return SimTime;
                 }
 
