@@ -30,7 +30,7 @@ namespace FUB_TradingSim
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
-            if (SimTime < StartTime)
+            if (SimTime[0] < StartTime)
                 return;
 
             Instrument instrument = ticket.Instrument;
@@ -153,13 +153,16 @@ namespace FUB_TradingSim
         protected DateTime StartTime;
         protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
-        protected DateTime SimTime;
+
+        protected TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        protected bool IsLastBar;
 
         #region protected IEnumerable<DateTime> SimTimes
         protected IEnumerable<DateTime> SimTimes
         {
             get
             {
+                // initialization
                 DateTime warmupStartTime = WarmupStartTime != null
                     ? (DateTime)WarmupStartTime
                     : StartTime;
@@ -178,7 +181,7 @@ namespace FUB_TradingSim
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    SimTime = DataSources
+                    SimTime.Value = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
@@ -187,7 +190,7 @@ namespace FUB_TradingSim
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime)
+                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
                         {
                             if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
@@ -203,7 +206,7 @@ namespace FUB_TradingSim
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime.Date)
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime[0].Date)
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
@@ -215,9 +218,12 @@ namespace FUB_TradingSim
                         nav += Positions[instrument] * instrument.Close[0];
                     NetAssetValue.Value = nav;
 
+                    // update IsLastBar
+                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() > 0;
+
                     // run our algorithm here
-                    if (SimTime >= warmupStartTime && SimTime <= EndTime)
-                        yield return SimTime;
+                    if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
+                        yield return SimTime[0];
                 }
 
                 yield break;
@@ -238,10 +244,10 @@ namespace FUB_TradingSim
         {
             List<Instrument> optionChain = Instruments
                     .Select(kv => kv.Value)
-                    .Where(i => i.Nickname == nickname // check nickname
-                        && i[0].Time == SimTime       // current bar
-                        && i.IsOption                  // is option
-                        && i.OptionExpiry > SimTime)  // future expiry
+                    .Where(i => i.Nickname == nickname  // check nickname
+                        && i[0].Time == SimTime[0]      // current bar
+                        && i.IsOption                   // is option
+                        && i.OptionExpiry > SimTime[0]) // future expiry
                     .ToList();
 
             return optionChain;
