@@ -113,7 +113,6 @@ namespace FUB_TradingSim
         #region virtual public void Run()
         virtual public void Run()
         {
-
         }
         #endregion
         #region virtual public object Report(ReportType)

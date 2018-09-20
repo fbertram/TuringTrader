@@ -4,15 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{279F2A6E-FAA4-4E8A-9E75-DAFC7D8DABB3}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{899AE52A-F33D-4908-B461-3D9C26330B50}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FUB_TradingSim</RootNamespace>
-    <AssemblyName>SimulatorEngine</AssemblyName>
+    <RootNamespace>Demo05_Optimizer</RootNamespace>
+    <AssemblyName>Demo05_Optimizer</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -30,23 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DynamicInterop">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\DynamicInterop.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\..\..\..\Windows\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c\Microsoft.Office.Interop.Excel.dll</HintPath>
-    </Reference>
-    <Reference Include="RDotNet">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="RDotNet.NativeLibrary">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.NativeLibrary.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,22 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm.cs" />
-    <Compile Include="Instrument.cs" />
-    <Compile Include="Bar.cs" />
-    <Compile Include="DataSource.cs" />
-    <Compile Include="DataSourceCsv.cs" />
-    <Compile Include="ITimeSeries.cs" />
-    <Compile Include="IndicatorsArithmetic.cs" />
-    <Compile Include="LogEntry.cs" />
-    <Compile Include="MultiThreadedJobQueue.cs" />
-    <Compile Include="OptimizerExhaustive.cs" />
-    <Compile Include="Order.cs" />
-    <Compile Include="IndicatorsBasic.cs" />
-    <Compile Include="TimeSeries.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Demo05_Optimizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IndicatorsVolatility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimulatorEngine\SimulatorEngine.csproj">
+      <Project>{279f2a6e-faa4-4e8a-9e75-dafc7d8dabb3}</Project>
+      <Name>SimulatorEngine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
