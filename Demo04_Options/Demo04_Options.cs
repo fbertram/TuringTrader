@@ -40,7 +40,8 @@ namespace FUB_TradingSim
             //---------- initialization
 
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2007");
+            WarmupStartTime = DateTime.Parse("01/01/2007");
+            StartTime = DateTime.Parse("01/01/2008");
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
@@ -74,14 +75,24 @@ namespace FUB_TradingSim
                 //double volatility = volatilitySeries.Highest(1)[0];
                 double volatility = Math.Max(averageVolatility, volatilitySeries.Highest(5)[0]);
 
-                // retrieve the option chain
-                // we can filter the chain to narrow down our search
+                // find all expiry dates on the 3rd Friday of the month
+                List<DateTime> expiryDates = OptionChain(_optionsNickname)
+                    .Where(o => o.OptionExpiry.DayOfWeek == DayOfWeek.Friday && o.OptionExpiry.Day >= 15 && o.OptionExpiry.Day <= 21
+                            || o.OptionExpiry.DayOfWeek == DayOfWeek.Saturday && o.OptionExpiry.Day >= 16 && o.OptionExpiry.Day <= 22)
+                    .Select(o => o.OptionExpiry)
+                    .Distinct()
+                    .ToList();
+
+                // select expiry 3 to 4 weeks out
+                DateTime expiryDate = expiryDates
+                        .Where(d => (d - simTime).TotalDays >= 21
+                            && (d - simTime).TotalDays <= 28)
+                        .FirstOrDefault();
+
+                // retrieve option chain for this expiry
                 List<Instrument> optionChain = OptionChain(_optionsNickname)
                         .Where(o => o.OptionIsPut
-                            && (o.OptionExpiry - simTime).Days > 21
-                            && (o.OptionExpiry - simTime).Days < 28
-                            && (o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Friday
-                            || o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Saturday))
+                            && o.OptionExpiry == expiryDate)
                         .ToList();
 
                 // if we are currently flat, attempt to open a position
@@ -89,7 +100,7 @@ namespace FUB_TradingSim
                 {
                     // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(3.0 * Math.Sqrt(28.0 / 365.25) * volatility);
+                        / Math.Exp(3.0 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
 
                     // find contract closest to our desired strike
                     Instrument shortPut = optionChain
