@@ -259,6 +259,8 @@ namespace FUB_TradingSim
 
         protected double Cash;
         public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
+
+        public bool IsOptimizing = false;
     }
 }
 //==============================================================================

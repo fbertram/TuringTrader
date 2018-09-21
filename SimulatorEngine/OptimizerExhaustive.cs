@@ -51,6 +51,92 @@ namespace FUB_TradingSim
     }
     #endregion
 
+    #region public static class OptimizerSupport
+    public static class OptimizerSupport
+    {
+        public static void FindValues(this Algorithm algo, Dictionary<string, int> dict)
+        {
+            Type algoType = algo.GetType();
+
+            IEnumerable<PropertyInfo> properties = algoType.GetProperties()
+                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
+
+            foreach (PropertyInfo property in properties)
+                dict[property.Name] = (int)property.GetValue(algo);
+
+            IEnumerable<FieldInfo> fields = algoType.GetFields()
+                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
+
+            foreach (FieldInfo field in fields)
+                dict[field.Name] = (int)field.GetValue(algo);
+        }
+
+        public static OptimizerParamAttribute GetAttribute(this Algorithm algo, string name)
+        {
+            Type algoType = algo.GetType();
+
+            PropertyInfo property = algoType.GetProperties()
+                .Where(p => p.Name == name)
+                .FirstOrDefault();
+
+            if (property != null)
+                return (OptimizerParamAttribute)property.GetCustomAttribute(typeof(OptimizerParamAttribute));
+
+            FieldInfo field = algoType.GetFields()
+                .Where(f => f.Name == name)
+                .FirstOrDefault();
+
+            if (field != null)
+                return (OptimizerParamAttribute)field.GetCustomAttribute(typeof(OptimizerParamAttribute));
+
+            throw new Exception(string.Format("GetAttribute: parameter {0} not found", name));
+        }
+
+        public static void SetValue(this Algorithm algo, string name, int value)
+        {
+            Type algoType = algo.GetType();
+
+            PropertyInfo property = algoType.GetProperties()
+                .Where(p => p.Name == name)
+                .FirstOrDefault();
+
+            if (property != null)
+                property.SetValue(algo, value);
+
+            FieldInfo field = algoType.GetFields()
+                .Where(f => f.Name == name)
+                .FirstOrDefault();
+
+            if (field != null)
+                field.SetValue(algo, value);
+
+            if (property == null && field == null)
+                throw new Exception(string.Format("SetValue: parameter {0} not found", name));
+        }
+
+        public static int GetValue(this Algorithm algo, string name)
+        {
+            Type algoType = algo.GetType();
+
+            PropertyInfo property = algoType.GetProperties()
+                .Where(p => p.Name == name)
+                .FirstOrDefault();
+
+            if (property != null)
+                return (int)property.GetValue(algo);
+
+            FieldInfo field = algoType.GetFields()
+                .Where(f => f.Name == name)
+                .FirstOrDefault();
+
+            if (field != null)
+                return (int)field.GetValue(algo);
+
+            throw new Exception(string.Format("GetValue: parameter {0} not found", name));
+        }
+    }
+    #endregion
+
     /// <summary>
     /// class to run exhaustive optimization
     /// </summary>
@@ -58,63 +144,29 @@ namespace FUB_TradingSim
     {
         #region internal data
         private Algorithm _algorithm;
-        private Type _algoType;
-        private List<PropertyInfo> _properties;
-        private List<FieldInfo> _fields;
-        private Dictionary<int, string> _names = new Dictionary<int, string>();
-        private Dictionary<int, int> _values = new Dictionary<int, int>();
+        private Dictionary<string, int> _parameters;
         private MultiThreadedJobQueue _jobQueue = new MultiThreadedJobQueue();
         #endregion
 
-        #region private void SetPropertyValue(Algorithm instance, PropertyInfo property, double value)
-        private void SetPropertyValue(Algorithm instance, PropertyInfo property, double value)
-        {
-            if (property.PropertyType == typeof(int))
-            {
-                property.SetValue(instance, (int)value);
-            }
-            else
-            {
-                throw new Exception(string.Format("optimizer property of type {0} not supported", property.PropertyType));
-            }
-        }
-        #endregion
-        #region private void SetFieldValue(Algorithm instance, FieldInfo field, double value)
-        private void SetFieldValue(Algorithm instance, FieldInfo field, double value)
-        {
-            if (field.FieldType == typeof(int))
-            {
-                field.SetValue(instance, (int)value);
-            }
-            else
-            {
-                throw new Exception(string.Format("optimizer field of type {0} not supported", field.FieldType));
-            }
-        }
-        #endregion
+
         #region private void RunIteration(bool firstRun = true)
         private Algorithm RunIteration(bool firstRun = true)
         {
             // create algorithm instance to run
-            Algorithm instanceToRun = (Algorithm)Activator.CreateInstance(_algoType);
+            Type algoType = _algorithm.GetType();
+            Algorithm instanceToRun = (Algorithm)Activator.CreateInstance(algoType);
+            instanceToRun.IsOptimizing = true;
 
-            // apply optimizer values
-            for (int i = 0; i < _properties.Count + _fields.Count; i++)
-            {
-                if (i < _properties.Count)
-                    SetPropertyValue(instanceToRun, _properties[i], _values[i]);
-                else
-                    SetFieldValue(instanceToRun, _fields[i - _properties.Count], _values[i]);
-            }
+            // apply optimizer values to new instance
+            foreach (var parameter in _parameters)
+                instanceToRun.SetValue(parameter.Key, parameter.Value);
 
             if (firstRun)
             {
                 // create result entry
                 OptimizerResult result = new OptimizerResult();
-                for (int i = 0; i < _properties.Count + _fields.Count; i++)
-                {
-                    result.Parameters[_names[i]] = _values[i];
-                }
+                foreach (var parameter in _parameters)
+                    result.Parameters[parameter.Key] = parameter.Value;
                 result.Fitness = null;
                 Results.Add(result);
 
@@ -137,29 +189,18 @@ namespace FUB_TradingSim
         #region private void IterateLevel(int level)
         private void IterateLevel(int level)
         {
-            if (level < _properties.Count)
-            {
-                PropertyInfo property = _properties[level];
-                OptimizerParamAttribute propertyParams =
-                    (OptimizerParamAttribute)property.GetCustomAttribute(typeof(OptimizerParamAttribute));
+            string name = _parameters
+                    .Select(p => p.Key)
+                    .Skip(level)
+                    .FirstOrDefault();
 
-                for (int i = propertyParams.Start; i <= propertyParams.End; i += propertyParams.Increment)
-                {
-                    _names[level] = property.Name;
-                    _values[level] = i;
-                    IterateLevel(level + 1);
-                }
-            }
-            else if (level - _properties.Count < _fields.Count)
+            if (name != default(string))
             {
-                FieldInfo field = _fields[level - _properties.Count];
-                OptimizerParamAttribute propertyParams =
-                    (OptimizerParamAttribute)field.GetCustomAttribute(typeof(OptimizerParamAttribute));
+                OptimizerParamAttribute param = _algorithm.GetAttribute(name);
 
-                for (int i = propertyParams.Start; i <= propertyParams.End; i += propertyParams.Increment)
+                for (int value = param.Start; value <= param.End; value += param.Increment)
                 {
-                    _names[level] = field.Name;
-                    _values[level] = i;
+                    _parameters[name] = value;
                     IterateLevel(level + 1);
                 }
             }
@@ -183,15 +224,8 @@ namespace FUB_TradingSim
             Results = new List<OptimizerResult>();
 
             // gather info about algorithm to optimize
-            _algoType = _algorithm.GetType();
-
-            _properties = _algoType.GetProperties()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)))
-                .ToList();
-
-            _fields = _algoType.GetFields()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)))
-                .ToList();
+            _parameters = new Dictionary<string, int>();
+            _algorithm.FindValues(_parameters);
 
             // create and queue iterations
             IterateLevel(0);
@@ -227,14 +261,7 @@ namespace FUB_TradingSim
         public Algorithm ReRun(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)
-            {
-                int index = _names
-                    .Where(n => n.Value == parameter.Key)
-                    .Select(n => n.Key)
-                    .First();
-
-                _values[index] = parameter.Value;
-            }
+                _parameters[parameter.Key] = parameter.Value;
 
             return RunIteration();
         }
