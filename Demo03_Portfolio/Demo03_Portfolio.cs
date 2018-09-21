@@ -100,7 +100,7 @@ namespace FUB_TradingSim
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
                 _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("instr", entry.Symbol);
                 _plotter.Log("price", entry.FillPrice);
             }
         }

@@ -12,7 +12,7 @@
 //#define NO_THREADS
 // when NO_THREADS is defined, QueueJob translates to a plain function call
 
-//#define SINGLE_THREAD
+#define SINGLE_THREAD
 // with SINGLE_THREAD defined, only one worker thread will be used
 
 #region libraries
@@ -41,7 +41,7 @@ namespace FUB_TradingSim
             get
             {
 #if SINGLE_THREAD
-                return 1;
+                return 8;
 #else
                 // https://stackoverflow.com/questions/1542213/how-to-find-the-number-of-cpu-cores-via-net-c
                 return Environment.ProcessorCount; // number of logical processors
