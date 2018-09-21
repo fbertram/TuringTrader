@@ -22,7 +22,7 @@ namespace FUB_TradingSim
 {
     static public class IndicatorsArithmetic
     {
-        #region Add
+        #region public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         #region functor caching
         private static List<FunctorAdd> _functorCacheAdd = new List<FunctorAdd>();
 
@@ -67,7 +67,7 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region Subtract
+        #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         #region functor caching
         private static List<FunctorSubtract> _functorCacheSub = new List<FunctorSubtract>();
 
@@ -113,7 +113,7 @@ namespace FUB_TradingSim
 
         }
         #endregion
-        #region Multiply
+        #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         #region functor caching
         private static List<FunctorMultiply> _functorCacheMul = new List<FunctorMultiply>();
 
