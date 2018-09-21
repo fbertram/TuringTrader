@@ -22,31 +22,19 @@ namespace FUB_TradingSim
     public static class IndicatorsBasic
     {
         #region Highest - highest value
-        #region functor caching
-        static List<FunctorHighest> _FunctorCacheHighest = new List<FunctorHighest>();
-
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         {
-            FunctorHighest functor = null;
-            foreach (FunctorHighest f in _FunctorCacheHighest)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorHighest(series, n);
-                _FunctorCacheHighest.Add(functor);
-            }
+            var functor = DataCache<FunctorHighest>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorHighest(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
+
         private class FunctorHighest : TimeSeries<double>
         {
             public ITimeSeries<double> Series;
@@ -75,33 +63,21 @@ namespace FUB_TradingSim
                 Value = value;
             }
         }
-        #endregion
+#endregion
         #region Lowest - lowest value
-        #region functor caching
-        static List<FunctorLowest> _FunctorCacheLowest = new List<FunctorLowest>();
-
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
-            FunctorLowest functor = null;
-            foreach (FunctorLowest f in _FunctorCacheLowest)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorLowest(series, n);
-                _FunctorCacheLowest.Add(functor);
-            }
+            var functor = DataCache<FunctorLowest>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorLowest(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
+
         private class FunctorLowest : TimeSeries<double>
         {
             public ITimeSeries<double> Series;
@@ -130,34 +106,21 @@ namespace FUB_TradingSim
                 Value = value;
             }
         }
-        #endregion
+#endregion
 
         #region SMA - Simple Moving Average
-        #region functor cache
-        static List<FunctorSMA> _FunctorCacheSMA = new List<FunctorSMA>();
-
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
-            FunctorSMA sma = null;
-            foreach (FunctorSMA f in _FunctorCacheSMA)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    sma = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (sma == null)
-            {
-                sma = new FunctorSMA(series, n);
-                _FunctorCacheSMA.Add(sma);
-            }
+            var functor = DataCache<FunctorSMA>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorSMA(series, n));
 
-            sma.Calc();
-            return sma;
+            functor.Calc();
+
+            return functor;
         }
-        #endregion
 
         private class FunctorSMA : TimeSeries<double>
         {
@@ -191,35 +154,23 @@ namespace FUB_TradingSim
                 Value = sum / num;
             }
         }
-        #endregion
+#endregion
         #region EMA - Exponentially Weighted Moving Average
-        #region functor cache
-        static List<FunctorEMA> _FunctorCacheEMA = new List<FunctorEMA>();
         /// <summary>
         /// Exponentially Weighted Moving Average
         /// </summary>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
-            FunctorEMA ema = null;
-            foreach (FunctorEMA e in _FunctorCacheEMA)
-            {
-                if (e.Series == series && e.N == n)
-                {
-                    ema = e;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (ema == null)
-            {
-                ema = new FunctorEMA(series, n);
-                _FunctorCacheEMA.Add(ema);
-            }
+            var functor = DataCache<FunctorEMA>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorEMA(series, n));
 
-            ema.Calc();
-            return ema;
+            functor.Calc();
+
+            return functor;
         }
-        #endregion
 
         private class FunctorEMA : TimeSeries<double>
         {
@@ -248,33 +199,19 @@ namespace FUB_TradingSim
                 }
             }
         }
-        #endregion
+#endregion
 
         #region AbsReturn - absolute return
-        #region functor cache
-        static List<FunctorAbsReturn> _FunctorCacheAbsReturn = new List<FunctorAbsReturn>();
-
         public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
         {
-            FunctorAbsReturn functor = null;
-            foreach (var f in _FunctorCacheAbsReturn)
-            {
-                if (f.Series == series)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}", series.GetHashCode());
 
-            if (functor == null)
-            {
-                functor = new FunctorAbsReturn(series);
-                _FunctorCacheAbsReturn.Add(functor);
-            }
+            var functor = DataCache<FunctorAbsReturn>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorAbsReturn(series));
 
             return functor;
         }
-        #endregion
 
         private class FunctorAbsReturn : ITimeSeries<double>
         {
@@ -295,30 +232,16 @@ namespace FUB_TradingSim
         }
         #endregion
         #region LogReturn - logarithmic return
-        #region functor cache
-        static List<FunctorLogReturn> _FunctorCacheLogReturn = new List<FunctorLogReturn>();
-
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         {
-            FunctorLogReturn functor = null;
-            foreach (var f in _FunctorCacheLogReturn)
-            {
-                if (f.Series == series)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}", series.GetHashCode());
 
-            if (functor == null)
-            {
-                functor = new FunctorLogReturn(series);
-                _FunctorCacheLogReturn.Add(functor);
-            }
+            var functor = DataCache<FunctorLogReturn>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorLogReturn(series));
 
             return functor;
         }
-        #endregion
 
         private class FunctorLogReturn : ITimeSeries<double>
         {

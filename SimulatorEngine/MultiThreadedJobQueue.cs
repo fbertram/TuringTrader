@@ -12,7 +12,7 @@
 //#define NO_THREADS
 // when NO_THREADS is defined, QueueJob translates to a plain function call
 
-#define SINGLE_THREAD
+//#define SINGLE_THREAD
 // with SINGLE_THREAD defined, only one worker thread will be used
 
 #region libraries
@@ -41,15 +41,15 @@ namespace FUB_TradingSim
             get
             {
 #if SINGLE_THREAD
-                return 8;
+                return 1;
 #else
                 // https://stackoverflow.com/questions/1542213/how-to-find-the-number-of-cpu-cores-via-net-c
                 return Environment.ProcessorCount; // number of logical processors
 #endif
             }
         }
-#endregion
-#region private void CheckQueue()
+        #endregion
+        #region private void CheckQueue()
         private void CheckQueue()
         {
             Thread nextThread = null;
@@ -67,8 +67,8 @@ namespace FUB_TradingSim
             if (nextThread != null)
                 nextThread.Start();
         }
-#endregion
-#region private void JobRunner(Action job)
+        #endregion
+        #region private void JobRunner(Action job)
         private void JobRunner(Action job)
         {
             job();
@@ -80,9 +80,9 @@ namespace FUB_TradingSim
 
             CheckQueue();
         }
-#endregion
+        #endregion
 
-#region public void QueueJob(Action job)
+        #region public void QueueJob(Action job)
         public void QueueJob(Action job)
         {
 #if NO_THREADS
@@ -97,8 +97,8 @@ namespace FUB_TradingSim
             CheckQueue();
 #endif
         }
-#endregion
-#region public void WaitForCompletion()
+        #endregion
+        #region public void WaitForCompletion()
         public void WaitForCompletion()
         {
 #if NO_THREADS
@@ -118,7 +118,7 @@ namespace FUB_TradingSim
             } while (jobsToDo > 0);
 #endif
         }
-#endregion
+        #endregion
     }
 }
 

@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define DISABLE_CACHE
+//#define DISABLE_CACHE
 // with DISABLE_CACHE defined, no data will be cached, 
 // and retrieval function will be called directly
 
@@ -26,13 +26,20 @@ namespace FUB_TradingSim
     class DataCache<T>
     {
         private static Dictionary<string, T> _cache = new Dictionary<string, T>();
+        private static object _lockCache = new object();
 
         static public T GetCachedData(string key, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
             return initialRetrieval();
 #else
-            // TODO: implement this!
+            lock(_lockCache)
+            {
+                if (!_cache.ContainsKey(key))
+                    _cache[key] = initialRetrieval();
+
+                return _cache[key];
+            }
 #endif
         }
     }

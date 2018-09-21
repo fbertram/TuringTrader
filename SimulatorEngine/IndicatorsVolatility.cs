@@ -22,34 +22,21 @@ namespace FUB_TradingSim
     public static class IndicatorsVolatility
     {
         #region Volatility
-        #region functor cache
-        static List<FunctorVolatility> _FunctorCacheVolatility = new List<FunctorVolatility>();
-
         /// <summary>
         /// Return volatility of time series
         /// </summary>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
-            FunctorVolatility functor = null;
-            foreach (FunctorVolatility f in _FunctorCacheVolatility)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorVolatility(series, n);
-                _FunctorCacheVolatility.Add(functor);
-            }
+            var functor = DataCache<FunctorVolatility>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorVolatility(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
 
         private class FunctorVolatility : TimeSeries<double>
         {
@@ -91,36 +78,23 @@ namespace FUB_TradingSim
                 Value = Math.Sqrt(252.0 * variance);
             }
         }
-        #endregion
+#endregion
         #region VolatilityFromRange
-        #region functor cache
-        static List<FunctorVolatilityFromRange> _FunctorCacheVolatilityFromRange = new List<FunctorVolatilityFromRange>();
-
         /// <summary>
         /// Return volatility of time series, based on recent trading range
         /// </summary>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
-            FunctorVolatilityFromRange functor = null;
-            foreach (FunctorVolatilityFromRange f in _FunctorCacheVolatilityFromRange)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorVolatilityFromRange(series, n);
-                _FunctorCacheVolatilityFromRange.Add(functor);
-            }
+            var functor = DataCache<FunctorVolatilityFromRange>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorVolatilityFromRange(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
 
         private class FunctorVolatilityFromRange : TimeSeries<double>
         {
@@ -155,33 +129,20 @@ namespace FUB_TradingSim
                 Value = volatility;
             }
         }
-        #endregion
+#endregion
         #region FastVariance - exponentially weighted variance
-        #region functor cache
-        static List<FunctorFastVariance> _FunctorCacheFastVariance = new List<FunctorFastVariance>();
-
         public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         {
-            FunctorFastVariance functor = null;
-            foreach (var f in _FunctorCacheFastVariance)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorFastVariance(series, n);
-                _FunctorCacheFastVariance.Add(functor);
-            }
+            var functor = DataCache<FunctorFastVariance>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorFastVariance(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
 
         private class FunctorFastVariance : TimeSeries<double>
         {

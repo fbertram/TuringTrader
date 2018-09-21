@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define BACKTEST
+//#define BACKTEST
 // with BACKTEST defined, this will run a backtest
 // otherwise, we will run an optimization
 
@@ -172,12 +172,12 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void OptimizeEntryExit()
-        //[OptimizerParam(200, 300, 25)]
-        [OptimizerParam(200, 200, 25)]
+        [OptimizerParam(200, 300, 25)]
+        //[OptimizerParam(200, 200, 25)]
         public int ENTRY_STDEV = 200;
 
-        //[OptimizerParam(50, 150, 25)]
-        [OptimizerParam(75, 75, 25)]
+        [OptimizerParam(50, 150, 25)]
+        //[OptimizerParam(75, 75, 25)]
         public int EXIT_STDEV = 75;
 
         public void OptimizeEntryExit()
