@@ -9,6 +9,10 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#define BACKTEST
+// with BACKTEST defined, this will run a backtest
+// otherwise, we will run an optimization
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -26,7 +30,8 @@ namespace FUB_TradingSim
         #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _excelTableTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -35,6 +40,7 @@ namespace FUB_TradingSim
         private Instrument _underlyingInstrument;
         #endregion
 
+        #region override public void Run()
         override public void Run()
         {
             //---------- initialization
@@ -100,7 +106,7 @@ namespace FUB_TradingSim
                 {
                     // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(3.0 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
+                        / Math.Exp(ENTRY_STDEV/100.0 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
 
                     // find contract closest to our desired strike
                     Instrument shortPut = optionChain
@@ -131,7 +137,7 @@ namespace FUB_TradingSim
 
                     // re-evaluate the likely trading range
                     double expectedLowestPrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(1.5 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
+                        / Math.Exp(EXIT_STDEV/100.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
                     // exit, when the risk of ending in the money is too high
                     // and, the contract is actively traded
@@ -161,55 +167,56 @@ namespace FUB_TradingSim
                 _plotter.Log("instr", entry.Symbol);
                 _plotter.Log("price", entry.FillPrice);
             }
-        }
 
-        [OptimizerParam(100, 400, 50)]
-        public int ENTRY_STDEV;
-        [OptimizerParam(100, 200, 25)]
-        public int EXIT_STDEV;
+            FitnessValue = NetAssetValue[0];
+        }
+        #endregion
+        #region public void OptimizeEntryExit()
+        //[OptimizerParam(200, 300, 25)]
+        [OptimizerParam(200, 200, 25)]
+        public int ENTRY_STDEV = 200;
+
+        //[OptimizerParam(50, 150, 25)]
+        [OptimizerParam(75, 75, 25)]
+        public int EXIT_STDEV = 75;
 
         public void OptimizeEntryExit()
         {
             OptimizerExhaustive optimizer = new OptimizerExhaustive(this);
             optimizer.Run();
 
-            // we can present the result in Excel
-            optimizer.ResultsToExcel(_excelPath);
+            // display a result table in Excel
+            optimizer.ResultsToExcel(_excelTableTemplate);
 
-            // we can walk through the results
+            // walk through the results
             OptimizerResult bestResult = optimizer.Results
                     .OrderByDescending(r => r.Fitness)
                     .First();
 
-            // and re-run any of the results for a detailed report
+            // re-run any the best result for a detailed report
             Demo04_Options algo = (Demo04_Options)optimizer.ReRun(bestResult);
             algo.CreateChart();
         }
+        #endregion
 
         #region miscellaneous stuff
-        public Demo04_Options()
-        {
-            ENTRY_STDEV = 300;
-            EXIT_STDEV = 150;
-        }
-
         public void CreateChart()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWithExcel(_excelChartTemplate);
         }
 
         static void Main(string[] args)
         {
             var algo = new Demo04_Options();
 
-#if true
-            algo.OptimizeEntryExit();
-#else
+#if BACKTEST
             algo.Run();
             algo.CreateChart();
+#else
+            algo.OptimizeEntryExit();
 #endif
         }
-#endregion
+        #endregion
     }
 }
 

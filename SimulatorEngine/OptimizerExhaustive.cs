@@ -146,6 +146,8 @@ namespace FUB_TradingSim
         private Algorithm _algorithm;
         private Dictionary<string, int> _parameters;
         private MultiThreadedJobQueue _jobQueue = new MultiThreadedJobQueue();
+        private int _numIterationsTotal;
+        private int _numIterationsCompleted;
         #endregion
 
 
@@ -176,6 +178,9 @@ namespace FUB_TradingSim
                     instanceToRun.Run();
                     result.Fitness = instanceToRun.FitnessValue;
                     instanceToRun = null;
+                    _numIterationsCompleted++;
+                    Debug.WriteLine("{0} of {1} optimizer iterations completed",
+                        _numIterationsCompleted, _numIterationsTotal);
                 });
             }
             else
@@ -228,6 +233,20 @@ namespace FUB_TradingSim
             _parameters = new Dictionary<string, int>();
             _algorithm.FindValues(_parameters);
 
+            // figure out total number of iterations
+            _numIterationsCompleted = 0;
+            _numIterationsTotal = 1;
+            foreach (string param in _parameters.Keys)
+            {
+                OptimizerParamAttribute paramAttribute = _algorithm.GetAttribute(param);
+
+                int iterationsThisLevel = 0;
+                for (int i = paramAttribute.Start; i <= paramAttribute.End; i += paramAttribute.Increment)
+                    iterationsThisLevel++;
+
+                _numIterationsTotal *= iterationsThisLevel;
+            }
+
             // create and queue iterations
             IterateLevel(0);
 
@@ -264,7 +283,7 @@ namespace FUB_TradingSim
             foreach (var parameter in result.Parameters)
                 _parameters[parameter.Key] = parameter.Value;
 
-            return RunIteration();
+            return RunIteration(false);
         }
         #endregion
     }
