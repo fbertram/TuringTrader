@@ -24,6 +24,7 @@ namespace FUB_TradingSim
     /// </summary>
     public class LogEntry
     {
+        public string Symbol; // we need this, as we clear the instrument from the OrderTicket
         public Order OrderTicket;
         public Bar BarOfExecution;
         public double NetAssetValue;

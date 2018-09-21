@@ -175,6 +175,7 @@ namespace FUB_TradingSim
                 {
                     instanceToRun.Run();
                     result.Fitness = instanceToRun.FitnessValue;
+                    instanceToRun = null;
                 });
             }
             else

@@ -12,6 +12,9 @@
 //#define NO_THREADS
 // when NO_THREADS is defined, QueueJob translates to a plain function call
 
+//#define SINGLE_THREAD
+// with SINGLE_THREAD defined, only one worker thread will be used
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -32,24 +35,28 @@ namespace FUB_TradingSim
         private int _jobsRunning = 0;
         #endregion
 
-        #region private int NumberOfLogicalProcessors
-        private int NumberOfLogicalProcessors
+        #region private int MaximumNumberOfThreads
+        private int MaximumNumberOfThreads
         {
             get
             {
+#if SINGLE_THREAD
+                return 1;
+#else
                 // https://stackoverflow.com/questions/1542213/how-to-find-the-number-of-cpu-cores-via-net-c
-                return Environment.ProcessorCount;
+                return Environment.ProcessorCount; // number of logical processors
+#endif
             }
         }
-        #endregion
-        #region private void CheckQueue()
+#endregion
+#region private void CheckQueue()
         private void CheckQueue()
         {
             Thread nextThread = null;
 
             lock(_queueLock)
             {
-                if (_jobsRunning < NumberOfLogicalProcessors
+                if (_jobsRunning < MaximumNumberOfThreads
                 && _jobQueue.Count > 0)
                 {
                     nextThread = _jobQueue.Dequeue();
@@ -60,8 +67,8 @@ namespace FUB_TradingSim
             if (nextThread != null)
                 nextThread.Start();
         }
-        #endregion
-        #region private void JobRunner(Action job)
+#endregion
+#region private void JobRunner(Action job)
         private void JobRunner(Action job)
         {
             job();
@@ -73,9 +80,9 @@ namespace FUB_TradingSim
 
             CheckQueue();
         }
-        #endregion
+#endregion
 
-        #region public void QueueJob(Action job)
+#region public void QueueJob(Action job)
         public void QueueJob(Action job)
         {
 #if NO_THREADS
@@ -90,8 +97,8 @@ namespace FUB_TradingSim
             CheckQueue();
 #endif
         }
-        #endregion
-        #region public void WaitForCompletion()
+#endregion
+#region public void WaitForCompletion()
         public void WaitForCompletion()
         {
 #if NO_THREADS
@@ -111,7 +118,7 @@ namespace FUB_TradingSim
             } while (jobsToDo > 0);
 #endif
         }
-        #endregion
+#endregion
     }
 }
 

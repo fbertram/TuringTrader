@@ -74,12 +74,14 @@ namespace FUB_TradingSim
             // add log entry
             LogEntry log = new LogEntry()
             {
+                Symbol = ticket.Instrument.Symbol,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
                 FillPrice = price,
                 Commission = 0.00
             };
+            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void ExpireOption(Instrument instr)
@@ -224,6 +226,14 @@ namespace FUB_TradingSim
                     if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
                         yield return SimTime[0];
                 }
+
+                // attempt to free up resources
+#if true
+                Instruments.Clear();
+                Positions.Clear();
+                PendingOrders.Clear();
+                DataSources.Clear();
+#endif
 
                 yield break;
             }

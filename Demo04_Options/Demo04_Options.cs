@@ -147,15 +147,39 @@ namespace FUB_TradingSim
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
                 _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("instr", entry.Symbol);
                 _plotter.Log("price", entry.FillPrice);
             }
+        }
+
+        [OptimizerParam(100, 400, 50)]
+        public int ENTRY_STDEV;
+        [OptimizerParam(100, 200, 25)]
+        public int EXIT_STDEV;
+
+        public void OptimizeEntryExit()
+        {
+            OptimizerExhaustive optimizer = new OptimizerExhaustive(this);
+            optimizer.Run();
+
+            // we can present the result in Excel
+            optimizer.ResultsToExcel(_excelPath);
+
+            // we can walk through the results
+            OptimizerResult bestResult = optimizer.Results
+                    .OrderByDescending(r => r.Fitness)
+                    .First();
+
+            // and re-run any of the results for a detailed report
+            Demo04_Options algo = (Demo04_Options)optimizer.ReRun(bestResult);
+            algo.CreateChart();
         }
 
         #region miscellaneous stuff
         public Demo04_Options()
         {
-
+            ENTRY_STDEV = 300;
+            EXIT_STDEV = 150;
         }
 
         public void CreateChart()
@@ -166,10 +190,15 @@ namespace FUB_TradingSim
         static void Main(string[] args)
         {
             var algo = new Demo04_Options();
+
+#if true
+            algo.OptimizeEntryExit();
+#else
             algo.Run();
             algo.CreateChart();
+#endif
         }
-        #endregion
+#endregion
     }
 }
 
