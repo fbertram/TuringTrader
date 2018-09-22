@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        InstrumentDataCsv
+// Name:        DataSourceCsv
 // Description: Csv instrument data
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
@@ -9,6 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,18 +18,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression; // requires reference to System.IO.Compression.dll
+#endregion
 
 namespace FUB_TradingSim
 {
+    /// <summary>
+    /// data source for CSV files
+    /// </summary>
     public class DataSourceCsv : DataSource
     {
-        //---------- internal data
+        #region internal data
         private List<Bar> _data;
         private IEnumerator<Bar> _barEnumerator;
         public static int TotalRecordsRead = 0;
-
-        //---------- internal helpers
-        private void LoadDir(string path, DateTime startTime)
+        #endregion
+        #region internal helpers
+        private void LoadDir(List<Bar> data, string path, DateTime startTime, DateTime endTime)
         {
             DirectoryInfo d = new DirectoryInfo(path);
             FileInfo[] Files = d.GetFiles("*.*");
@@ -38,10 +43,10 @@ namespace FUB_TradingSim
 
             foreach (FileInfo file in Files)
             {
-                LoadFile(file.FullName, startTime);
+                LoadFile(data, file.FullName, startTime, endTime);
             }
         }
-        private void LoadFile(string filePath, DateTime startTime)
+        private void LoadFile(List<Bar> data, string filePath, DateTime startTime, DateTime endTime)
         {
             if (Path.GetExtension(filePath).Equals(".zip"))
             {
@@ -55,7 +60,7 @@ namespace FUB_TradingSim
                             using (Stream unzippedFile = zippedFile.Open())
                             using (StreamReader reader = new StreamReader(unzippedFile))
                             {
-                                LoadCsv(reader, startTime);
+                                LoadCsv(data, reader, startTime, endTime);
                             }
                         }
                     }
@@ -69,11 +74,11 @@ namespace FUB_TradingSim
             {
                 using (StreamReader sr = new StreamReader(filePath))
                 {
-                    LoadCsv(sr, startTime);
+                    LoadCsv(data, sr, startTime, endTime);
                 }
             }
         }
-        private void LoadCsv(StreamReader sr, DateTime startTime)
+        private void LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime, DateTime endTime)
         {
             sr.ReadLine(); // skip header line
 
@@ -83,14 +88,17 @@ namespace FUB_TradingSim
                 string[] items = line.Split(',');
 
                 Bar bar = new Bar(Info, items);
-                if (bar.Time >= startTime)
-                    _data.Add(bar);
+                if (bar.Time >= startTime
+                &&  bar.Time <= endTime)
+                    data.Add(bar);
 
                 TotalRecordsRead++;
             }
         }
+        #endregion
 
         //---------- API
+        #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
         public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
         {
             // expand relative paths, if required
@@ -107,6 +115,8 @@ namespace FUB_TradingSim
                 if (!Directory.Exists(Info[DataSourceValue.dataPath]))
                     throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
         }
+        #endregion
+        #region override public IEnumerator<Bar> BarEnumerator
         override public IEnumerator<Bar> BarEnumerator
         {
             get
@@ -116,21 +126,33 @@ namespace FUB_TradingSim
                 return _barEnumerator;
             }
         }
-        override public void LoadData(DateTime startTime)
+        #endregion
+        #region override public void LoadData(DateTime startTime, DateTime endTime)
+        override public void LoadData(DateTime startTime, DateTime endTime)
         {
-            DateTime t1 = DateTime.Now;
-            Debug.Write(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
+            string cacheKey = string.Format("{0}-{1}-{2}", Info[DataSourceValue.nickName], startTime, endTime);
 
-            _data = new List<Bar>();
+            Func<List<Bar>> retrievalFunction = delegate ()
+            {
+                DateTime t1 = DateTime.Now;
+                Debug.Write(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
 
-            if (File.Exists(Info[DataSourceValue.dataPath]))
-                LoadFile(Info[DataSourceValue.dataPath], startTime);
-            else
-                LoadDir(Info[DataSourceValue.dataPath], startTime);
+                List<Bar> data = new List<Bar>();
 
-            DateTime t2 = DateTime.Now;
-            Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                if (File.Exists(Info[DataSourceValue.dataPath]))
+                    LoadFile(data, Info[DataSourceValue.dataPath], startTime, endTime);
+                else
+                    LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
+
+                DateTime t2 = DateTime.Now;
+                Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                return data;
+            };
+
+            _data = DataCache<List<Bar>>.GetCachedData(cacheKey, retrievalFunction);
         }
+        #endregion
     }
 }
 //==============================================================================

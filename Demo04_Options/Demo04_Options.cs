@@ -26,7 +26,8 @@ namespace FUB_TradingSim
         #region internal data
         private Logger _plotter = new Logger();
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _excelTableTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -35,12 +36,14 @@ namespace FUB_TradingSim
         private Instrument _underlyingInstrument;
         #endregion
 
+        #region override public void Run()
         override public void Run()
         {
             //---------- initialization
 
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2007");
+            WarmupStartTime = DateTime.Parse("01/01/2007");
+            StartTime = DateTime.Parse("01/01/2008");
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
@@ -56,12 +59,12 @@ namespace FUB_TradingSim
             //---------- simulation
 
             // loop through all bars
-            foreach (DateTime simTime in SimTime)
+            foreach (DateTime simTime in SimTimes)
             {
                 // find the underlying instrument
                 // we could also find the underlying from the option chain
                 if (_underlyingInstrument == null)
-                    _underlyingInstrument = FindInstruments(_underlyingNickname);
+                    _underlyingInstrument = FindInstrument(_underlyingNickname);
 
                 // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
@@ -74,14 +77,24 @@ namespace FUB_TradingSim
                 //double volatility = volatilitySeries.Highest(1)[0];
                 double volatility = Math.Max(averageVolatility, volatilitySeries.Highest(5)[0]);
 
-                // retrieve the option chain
-                // we can filter the chain to narrow down our search
+                // find all expiry dates on the 3rd Friday of the month
+                List<DateTime> expiryDates = OptionChain(_optionsNickname)
+                    .Where(o => o.OptionExpiry.DayOfWeek == DayOfWeek.Friday && o.OptionExpiry.Day >= 15 && o.OptionExpiry.Day <= 21
+                            || o.OptionExpiry.DayOfWeek == DayOfWeek.Saturday && o.OptionExpiry.Day >= 16 && o.OptionExpiry.Day <= 22)
+                    .Select(o => o.OptionExpiry)
+                    .Distinct()
+                    .ToList();
+
+                // select expiry 3 to 4 weeks out
+                DateTime expiryDate = expiryDates
+                        .Where(d => (d - simTime).TotalDays >= 21
+                            && (d - simTime).TotalDays <= 28)
+                        .FirstOrDefault();
+
+                // retrieve option chain for this expiry
                 List<Instrument> optionChain = OptionChain(_optionsNickname)
                         .Where(o => o.OptionIsPut
-                            && (o.OptionExpiry - simTime).Days > 21
-                            && (o.OptionExpiry - simTime).Days < 28
-                            && (o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Friday
-                            || o.OptionExpiry.Date.DayOfWeek == DayOfWeek.Saturday))
+                            && o.OptionExpiry == expiryDate)
                         .ToList();
 
                 // if we are currently flat, attempt to open a position
@@ -89,7 +102,7 @@ namespace FUB_TradingSim
                 {
                     // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(3.0 * Math.Sqrt(28.0 / 365.25) * volatility);
+                        / Math.Exp(1.75 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
 
                     // find contract closest to our desired strike
                     Instrument shortPut = optionChain
@@ -120,7 +133,7 @@ namespace FUB_TradingSim
 
                     // re-evaluate the likely trading range
                     double expectedLowestPrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(1.5 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
+                        / Math.Exp(0.60 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
                     // exit, when the risk of ending in the money is too high
                     // and, the contract is actively traded
@@ -137,7 +150,7 @@ namespace FUB_TradingSim
                 _plotter.SetX(simTime);
                 _plotter.Log(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
                 _plotter.Log("volatility", volatilitySeries[0]);
-                _plotter.Log("net asset value", NetAssetValue / _initialCash);
+                _plotter.Log("net asset value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing
@@ -147,20 +160,18 @@ namespace FUB_TradingSim
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
                 _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("instr", entry.Symbol);
                 _plotter.Log("price", entry.FillPrice);
             }
+
+            FitnessValue = NetAssetValue[0];
         }
+        #endregion
 
         #region miscellaneous stuff
-        public Demo04_Options()
-        {
-
-        }
-
         public void CreateChart()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWithExcel(_excelChartTemplate);
         }
 
         static void Main(string[] args)

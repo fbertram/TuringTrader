@@ -22,34 +22,21 @@ namespace FUB_TradingSim
     public static class IndicatorsVolatility
     {
         #region Volatility
-        #region functor cache
-        static List<FunctorVolatility> _FunctorCacheVolatility = new List<FunctorVolatility>();
-
         /// <summary>
         /// Return volatility of time series
         /// </summary>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
-            FunctorVolatility functor = null;
-            foreach (FunctorVolatility f in _FunctorCacheVolatility)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorVolatility(series, n);
-                _FunctorCacheVolatility.Add(functor);
-            }
+            var functor = DataCache<FunctorVolatility>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorVolatility(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
 
         private class FunctorVolatility : TimeSeries<double>
         {
@@ -91,36 +78,23 @@ namespace FUB_TradingSim
                 Value = Math.Sqrt(252.0 * variance);
             }
         }
-        #endregion
+#endregion
         #region VolatilityFromRange
-        #region functor cache
-        static List<FunctorVolatilityFromRange> _FunctorCacheVolatilityFromRange = new List<FunctorVolatilityFromRange>();
-
         /// <summary>
         /// Return volatility of time series, based on recent trading range
         /// </summary>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
-            FunctorVolatilityFromRange functor = null;
-            foreach (FunctorVolatilityFromRange f in _FunctorCacheVolatilityFromRange)
-            {
-                if (f.Series == series && f.N == n)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            if (functor == null)
-            {
-                functor = new FunctorVolatilityFromRange(series, n);
-                _FunctorCacheVolatilityFromRange.Add(functor);
-            }
+            var functor = DataCache<FunctorVolatilityFromRange>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorVolatilityFromRange(series, n));
 
             functor.Calc();
+
             return functor;
         }
-        #endregion
 
         private class FunctorVolatilityFromRange : TimeSeries<double>
         {
@@ -153,6 +127,55 @@ namespace FUB_TradingSim
 
                 double volatility = 0.63 * Math.Sqrt(252.0 / N) * Math.Log(hi / lo);
                 Value = volatility;
+            }
+        }
+#endregion
+        #region FastVariance - exponentially weighted variance
+        public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
+        {
+            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
+
+            var functor = DataCache<FunctorFastVariance>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorFastVariance(series, n));
+
+            functor.Calc();
+
+            return functor;
+        }
+
+        private class FunctorFastVariance : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int N;
+
+            private double _alpha;
+            private double _average;
+
+            public FunctorFastVariance(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = n;
+                _alpha = 2.0 / (n + 1.0);
+            }
+
+            public void Calc()
+            {
+                try
+                {
+                    // calculate exponentially-weighted mean and variance
+                    // see Tony Finch, Incremental calculation of mean and variance
+                    double diff = Series[0] - _average;
+                    double incr = _alpha * diff;
+                    _average = _average + incr;
+                    Value = (1.0 - _alpha) * (this[1] + diff * incr);
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                    _average = Series[0];
+                    Value = 0.0;
+                }
             }
         }
         #endregion

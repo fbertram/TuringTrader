@@ -9,32 +9,40 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+#endregion
 
 namespace FUB_TradingSim
 {
     public enum ReportType { FitnessValue, Plot, Excel };
 
+    /// <summary>
+    /// base class for trading algorithms
+    /// </summary>
     public abstract partial class Algorithm
     {
-        //---------- internal data
-        DateTime _simTime;
-
-        //---------- internal helpers
+        #region internal helpers
         private void ExecOrder(Order ticket)
         {
+            if (SimTime[0] < StartTime)
+                return;
+
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
+            double netAssetValue = 0.0;
             double price = 0.00;
             switch(ticket.Execution)
             {
                 case OrderExecution.closeThisBar:
                     execBar = instrument[1];
+                    netAssetValue = NetAssetValue[1];
                     if (execBar.HasBidAsk)
                         price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
                     else
@@ -42,11 +50,13 @@ namespace FUB_TradingSim
                     break;
                 case OrderExecution.openNextBar:
                     execBar = instrument[0];
+                    netAssetValue = NetAssetValue[0];
                     price = execBar.Open;
                     break;
                 case OrderExecution.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    netAssetValue = NetAssetValue[0];
                     price = ticket.Price;
                     break;
             }
@@ -65,11 +75,14 @@ namespace FUB_TradingSim
             // add log entry
             LogEntry log = new LogEntry()
             {
+                Symbol = ticket.Instrument.Symbol,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
+                NetAssetValue = netAssetValue,
                 FillPrice = price,
                 Commission = 0.00
             };
+            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void ExpireOption(Instrument instr)
@@ -92,26 +105,40 @@ namespace FUB_TradingSim
             // force execution
             ExecOrder(ticket);
         }
+        #endregion
 
         //---------- for use by trading applications
+        #region public Algorithm()
         public Algorithm()
         {
+            // initialize the time series.
+            // this is generally not required, but 
+            // without this line the optimizer demo
+            // will crash, as it has zero bars
+            NetAssetValue.Value = 0.0;
         }
+        #endregion
+        #region virtual public void Run()
         virtual public void Run()
         {
-
         }
+        #endregion
+        #region virtual public object Report(ReportType)
         virtual public object Report(ReportType reportType)
         {
             return FitnessValue;
         }
+        #endregion
+        #region public double FitnessValue
         public double FitnessValue
         {
             get;
             protected set;
         }
+        #endregion
 
         //---------- for use by algorithms
+        #region protected string DataPath
         protected string DataPath
         {
             set
@@ -127,23 +154,33 @@ namespace FUB_TradingSim
                 return DataSource.DataPath;
             }
         }
-
+        #endregion
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;
+        protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
 
-        protected IEnumerable<DateTime> SimTime
+        protected TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        protected bool IsLastBar = false;
+
+        #region protected IEnumerable<DateTime> SimTimes
+        protected IEnumerable<DateTime> SimTimes
         {
             get
             {
+                // initialization
+                DateTime warmupStartTime = WarmupStartTime != null
+                    ? (DateTime)WarmupStartTime
+                    : StartTime;
+
                 // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
                 foreach (DataSource instr in DataSources)
                 {
-                    instr.LoadData(StartTime);
+                    instr.LoadData(warmupStartTime, EndTime);
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
@@ -151,7 +188,7 @@ namespace FUB_TradingSim
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    _simTime = DataSources
+                    SimTime.Value = DataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
@@ -160,7 +197,7 @@ namespace FUB_TradingSim
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == _simTime)
+                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
                         {
                             if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
@@ -176,58 +213,71 @@ namespace FUB_TradingSim
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < _simTime.Date)
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime[0].Date)
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
+                    // update net asset value
+                    double nav = Cash;
+                    foreach (var instrument in Positions.Keys)
+                        nav += Positions[instrument] * instrument.Close[0];
+                    NetAssetValue.Value = nav;
+
+                    // update IsLastBar
+                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
+                    Debug.WriteLine("{0}: hasDate = {1}", SimTime, hasData.Select(x => x.Value ? 1 : 0).Sum());
+
                     // run our algorithm here
-                    if (_simTime >= StartTime && _simTime <= EndTime)
-                        yield return _simTime;
+                    if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
+                        yield return SimTime[0];
                 }
+
+                // attempt to free up resources
+#if true
+                Instruments.Clear();
+                Positions.Clear();
+                PendingOrders.Clear();
+                DataSources.Clear();
+#endif
 
                 yield break;
             }
         }
+        #endregion
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        protected Instrument FindInstruments(string nickname)
+        #region protected Instrument FindInstrument(string)
+        protected Instrument FindInstrument(string nickname)
         {
             return Instruments.Values
                 .Where(i => i.Nickname == nickname)
                 .First();
         }
+        #endregion
+        #region protected List<Instrument> OptionChain(string)
         protected List<Instrument> OptionChain(string nickname)
         {
             List<Instrument> optionChain = Instruments
                     .Select(kv => kv.Value)
-                    .Where(i => i.Nickname == nickname // check nickname
-                        && i[0].Time == _simTime       // current bar
-                        && i.IsOption                  // is option
-                        && i.OptionExpiry > _simTime)  // future expiry
+                    .Where(i => i.Nickname == nickname  // check nickname
+                        && i[0].Time == SimTime[0]      // current bar
+                        && i.IsOption                   // is option
+                        && i.OptionExpiry > SimTime[0]) // future expiry
                     .ToList();
 
             return optionChain;
         }
+        #endregion
 
         public List<Order> PendingOrders = new List<Order>();
         public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();
         public List<LogEntry> Log = new List<LogEntry>();
 
         protected double Cash;
-        public double NetAssetValue
-        {
-            get
-            {
-                double nav = Cash;
-                foreach (var instrument in Positions.Keys)
-                {
-                    nav += Positions[instrument] * instrument.Close[0];
-                }
+        public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
 
-                return nav;
-            }
-        }
+        public bool IsOptimizing = false;
     }
 }
 //==============================================================================

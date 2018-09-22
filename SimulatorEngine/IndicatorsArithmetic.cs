@@ -22,31 +22,18 @@ namespace FUB_TradingSim
 {
     static public class IndicatorsArithmetic
     {
-        #region Add
-        #region functor caching
-        private static List<FunctorAdd> _functorCacheAdd = new List<FunctorAdd>();
-
+        #region public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            FunctorAdd functor = null;
-            foreach (FunctorAdd f in _functorCacheAdd)
-            {
-                if (f.Series1 == series1 && f.Series2 == series2)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            if (functor == null)
-            {
-                functor = new FunctorAdd(series1, series2);
-                _functorCacheAdd.Add(functor);
-            }
+            var functor = DataCache<FunctorAdd>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorAdd(series1, series2));
 
             return functor;
         }
-        #endregion
+
         private class FunctorAdd : ITimeSeries<double>
         {
             public ITimeSeries<double> Series1;
@@ -65,34 +52,20 @@ namespace FUB_TradingSim
                     return Series1[daysBack] + Series2[daysBack];
                 }
             }
-
         }
         #endregion
-        #region Subtract
-        #region functor caching
-        private static List<FunctorSubtract> _functorCacheSub = new List<FunctorSubtract>();
-
+        #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            FunctorSubtract functor = null;
-            foreach (FunctorSubtract f in _functorCacheSub)
-            {
-                if (f.Series1 == series1 && f.Series2 == series2)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            if (functor == null)
-            {
-                functor = new FunctorSubtract(series1, series2);
-                _functorCacheSub.Add(functor);
-            }
+            var functor = DataCache<FunctorSubtract>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorSubtract(series1, series2));
 
             return functor;
         }
-        #endregion
+
         private class FunctorSubtract : ITimeSeries<double>
         {
             public ITimeSeries<double> Series1;
@@ -114,31 +87,18 @@ namespace FUB_TradingSim
 
         }
         #endregion
-        #region Multiply
-        #region functor caching
-        private static List<FunctorMultiply> _functorCacheMul = new List<FunctorMultiply>();
-
+        #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            FunctorMultiply functor = null;
-            foreach (FunctorMultiply f in _functorCacheMul)
-            {
-                if (f.Series1 == series1 && f.Series2 == series2)
-                {
-                    functor = f;
-                    break;
-                }
-            }
+            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            if (functor == null)
-            {
-                functor = new FunctorMultiply(series1, series2);
-                _functorCacheMul.Add(functor);
-            }
+            var functor = DataCache<FunctorMultiply>.GetCachedData(
+                    cacheKey,
+                    () => new FunctorMultiply(series1, series2));
 
             return functor;
         }
-        #endregion
+
         private class FunctorMultiply : ITimeSeries<double>
         {
             public ITimeSeries<double> Series1;

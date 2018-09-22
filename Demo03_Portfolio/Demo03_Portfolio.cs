@@ -59,7 +59,7 @@ namespace FUB_TradingSim
             //---------- simulation
 
             // loop through all bars
-            foreach (DateTime simTime in SimTime)
+            foreach (DateTime simTime in SimTimes)
             {
 
                 // this list of instruments is dynamic: the simulator engine
@@ -67,12 +67,12 @@ namespace FUB_TradingSim
                 // which of these instruments have received new bars.
                 // also, we want to ignore our benchmark instrument.
                 var activeInstruments = Instruments.Values
-                        .Where(i => i.LastTime == simTime
+                        .Where(i => i.Time[0] == simTime
                             && _tradingInstruments.Contains(i.Nickname));
 
                 // this algorithm allocates an equal share of the net asset value
                 // to all active instruments, and rebalances daily
-                double targetEquity = NetAssetValue / Math.Max(1, activeInstruments.Count());
+                double targetEquity = NetAssetValue[0] / Math.Max(1, activeInstruments.Count());
 
                 foreach (Instrument instr in activeInstruments)
                 {
@@ -89,7 +89,7 @@ namespace FUB_TradingSim
 
                 // plot net asset value on Sheet1
                 _plotter.SetX(simTime);
-                _plotter.Log("Net Asset Value", NetAssetValue / _initialCash);
+                _plotter.Log("Net Asset Value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing
@@ -100,7 +100,7 @@ namespace FUB_TradingSim
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
                 _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.OrderTicket.Instrument.Symbol);
+                _plotter.Log("instr", entry.Symbol);
                 _plotter.Log("price", entry.FillPrice);
             }
         }
