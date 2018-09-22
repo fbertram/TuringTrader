@@ -16,6 +16,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 #endregion
 
 namespace FUB_TradingSim
@@ -110,6 +111,11 @@ namespace FUB_TradingSim
         #region public Algorithm()
         public Algorithm()
         {
+            // initialize the time series.
+            // this is generally not required, but 
+            // without this line the optimizer demo
+            // will crash, as it has zero bars
+            NetAssetValue.Value = 0.0;
         }
         #endregion
         #region virtual public void Run()
@@ -156,7 +162,7 @@ namespace FUB_TradingSim
         protected DateTime EndTime;
 
         protected TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
-        protected bool IsLastBar;
+        protected bool IsLastBar = false;
 
         #region protected IEnumerable<DateTime> SimTimes
         protected IEnumerable<DateTime> SimTimes
@@ -174,7 +180,7 @@ namespace FUB_TradingSim
                 // reset all enumerators
                 foreach (DataSource instr in DataSources)
                 {
-                    instr.LoadData(warmupStartTime);
+                    instr.LoadData(warmupStartTime, EndTime);
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
@@ -220,7 +226,8 @@ namespace FUB_TradingSim
                     NetAssetValue.Value = nav;
 
                     // update IsLastBar
-                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() > 0;
+                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
+                    Debug.WriteLine("{0}: hasDate = {1}", SimTime, hasData.Select(x => x.Value ? 1 : 0).Sum());
 
                     // run our algorithm here
                     if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)

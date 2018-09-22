@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class DataCache<T>
+    public class DataCache<T>
     {
         private static Dictionary<string, T> _cache = new Dictionary<string, T>();
         private static object _lockCache = new object();

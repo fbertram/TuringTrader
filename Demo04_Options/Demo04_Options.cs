@@ -9,10 +9,6 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-//#define BACKTEST
-// with BACKTEST defined, this will run a backtest
-// otherwise, we will run an optimization
-
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -106,7 +102,7 @@ namespace FUB_TradingSim
                 {
                     // determine strike price: far away from spot price
                     double strikePrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(ENTRY_STDEV/100.0 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
+                        / Math.Exp(1.75 * Math.Sqrt((expiryDate - simTime).TotalDays / 365.25) * volatility);
 
                     // find contract closest to our desired strike
                     Instrument shortPut = optionChain
@@ -137,7 +133,7 @@ namespace FUB_TradingSim
 
                     // re-evaluate the likely trading range
                     double expectedLowestPrice = _underlyingInstrument.Close[0]
-                        / Math.Exp(EXIT_STDEV/100.0 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
+                        / Math.Exp(0.60 * Math.Sqrt((shortPut.OptionExpiry - simTime).Days / 365.25) * volatility);
 
                     // exit, when the risk of ending in the money is too high
                     // and, the contract is actively traded
@@ -171,33 +167,6 @@ namespace FUB_TradingSim
             FitnessValue = NetAssetValue[0];
         }
         #endregion
-        #region public void OptimizeEntryExit()
-        [OptimizerParam(200, 300, 25)]
-        //[OptimizerParam(200, 200, 25)]
-        public int ENTRY_STDEV = 200;
-
-        [OptimizerParam(50, 150, 25)]
-        //[OptimizerParam(75, 75, 25)]
-        public int EXIT_STDEV = 75;
-
-        public void OptimizeEntryExit()
-        {
-            OptimizerExhaustive optimizer = new OptimizerExhaustive(this);
-            optimizer.Run();
-
-            // display a result table in Excel
-            optimizer.ResultsToExcel(_excelTableTemplate);
-
-            // walk through the results
-            OptimizerResult bestResult = optimizer.Results
-                    .OrderByDescending(r => r.Fitness)
-                    .First();
-
-            // re-run any the best result for a detailed report
-            Demo04_Options algo = (Demo04_Options)optimizer.ReRun(bestResult);
-            algo.CreateChart();
-        }
-        #endregion
 
         #region miscellaneous stuff
         public void CreateChart()
@@ -208,13 +177,8 @@ namespace FUB_TradingSim
         static void Main(string[] args)
         {
             var algo = new Demo04_Options();
-
-#if BACKTEST
             algo.Run();
             algo.CreateChart();
-#else
-            algo.OptimizeEntryExit();
-#endif
         }
         #endregion
     }

@@ -33,7 +33,7 @@ namespace FUB_TradingSim
         public static int TotalRecordsRead = 0;
         #endregion
         #region internal helpers
-        private void LoadDir(List<Bar> data, string path, DateTime startTime)
+        private void LoadDir(List<Bar> data, string path, DateTime startTime, DateTime endTime)
         {
             DirectoryInfo d = new DirectoryInfo(path);
             FileInfo[] Files = d.GetFiles("*.*");
@@ -43,10 +43,10 @@ namespace FUB_TradingSim
 
             foreach (FileInfo file in Files)
             {
-                LoadFile(data, file.FullName, startTime);
+                LoadFile(data, file.FullName, startTime, endTime);
             }
         }
-        private void LoadFile(List<Bar> data, string filePath, DateTime startTime)
+        private void LoadFile(List<Bar> data, string filePath, DateTime startTime, DateTime endTime)
         {
             if (Path.GetExtension(filePath).Equals(".zip"))
             {
@@ -60,7 +60,7 @@ namespace FUB_TradingSim
                             using (Stream unzippedFile = zippedFile.Open())
                             using (StreamReader reader = new StreamReader(unzippedFile))
                             {
-                                LoadCsv(data, reader, startTime);
+                                LoadCsv(data, reader, startTime, endTime);
                             }
                         }
                     }
@@ -74,11 +74,11 @@ namespace FUB_TradingSim
             {
                 using (StreamReader sr = new StreamReader(filePath))
                 {
-                    LoadCsv(data, sr, startTime);
+                    LoadCsv(data, sr, startTime, endTime);
                 }
             }
         }
-        private void LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime)
+        private void LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime, DateTime endTime)
         {
             sr.ReadLine(); // skip header line
 
@@ -88,7 +88,8 @@ namespace FUB_TradingSim
                 string[] items = line.Split(',');
 
                 Bar bar = new Bar(Info, items);
-                if (bar.Time >= startTime)
+                if (bar.Time >= startTime
+                &&  bar.Time <= endTime)
                     data.Add(bar);
 
                 TotalRecordsRead++;
@@ -126,10 +127,10 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region override public void LoadData(DateTime startTime)
-        override public void LoadData(DateTime startTime)
+        #region override public void LoadData(DateTime startTime, DateTime endTime)
+        override public void LoadData(DateTime startTime, DateTime endTime)
         {
-            string cacheKey = string.Format("{0}-{1}", Info[DataSourceValue.nickName], startTime);
+            string cacheKey = string.Format("{0}-{1}-{2}", Info[DataSourceValue.nickName], startTime, endTime);
 
             Func<List<Bar>> retrievalFunction = delegate ()
             {
@@ -139,9 +140,9 @@ namespace FUB_TradingSim
                 List<Bar> data = new List<Bar>();
 
                 if (File.Exists(Info[DataSourceValue.dataPath]))
-                    LoadFile(data, Info[DataSourceValue.dataPath], startTime);
+                    LoadFile(data, Info[DataSourceValue.dataPath], startTime, endTime);
                 else
-                    LoadDir(data, Info[DataSourceValue.dataPath], startTime);
+                    LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
 
                 DateTime t2 = DateTime.Now;
                 Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));

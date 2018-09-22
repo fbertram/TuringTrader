@@ -122,7 +122,7 @@ namespace FUB_TradingSim
             get;
         }
         #endregion
-        abstract public void LoadData(DateTime startTime);
+        abstract public void LoadData(DateTime startTime, DateTime endTime);
     }
 }
 //==============================================================================

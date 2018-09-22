@@ -47,6 +47,7 @@ namespace FUB_TradingSim
     public class OptimizerResult
     {
         public Dictionary<string, int> Parameters = new Dictionary<string, int>();
+        public double? NetAssetValue;
         public double? Fitness;
     }
     #endregion
@@ -150,14 +151,12 @@ namespace FUB_TradingSim
         private int _numIterationsCompleted;
         #endregion
 
-
         #region private void RunIteration(bool firstRun = true)
         private Algorithm RunIteration(bool firstRun = true)
         {
             // create algorithm instance to run
             Type algoType = _algorithm.GetType();
             Algorithm instanceToRun = (Algorithm)Activator.CreateInstance(algoType);
-            instanceToRun.IsOptimizing = true;
 
             // apply optimizer values to new instance
             foreach (var parameter in _parameters)
@@ -165,6 +164,9 @@ namespace FUB_TradingSim
 
             if (firstRun)
             {
+                // mark this as an optimizer run
+                instanceToRun.IsOptimizing = true;
+
                 // create result entry
                 OptimizerResult result = new OptimizerResult();
                 foreach (var parameter in _parameters)
@@ -176,6 +178,7 @@ namespace FUB_TradingSim
                 _jobQueue.QueueJob(() =>
                 {
                     instanceToRun.Run();
+                    result.NetAssetValue = instanceToRun.NetAssetValue[0];
                     result.Fitness = instanceToRun.FitnessValue;
                     instanceToRun = null;
                     _numIterationsCompleted++;
@@ -268,6 +271,7 @@ namespace FUB_TradingSim
                 OptimizerResult result = Results[i];
 
                 logger.SetX(i);
+                logger.Log("NetAssetValue", (result.NetAssetValue != null) ? string.Format("{0}", result.NetAssetValue) : "");
                 logger.Log("Fitness", (result.Fitness != null) ? string.Format("{0}", result.Fitness) : "");
 
                 foreach (var parameter in result.Parameters)
