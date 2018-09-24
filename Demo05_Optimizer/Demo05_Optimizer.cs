@@ -54,7 +54,7 @@ namespace FUB_TradingSim
         // a brute-force iteration through all parameter combinations
         public void OptimizeSimple()
         {
-            OptimizerExhaustive optimizer = new OptimizerExhaustive(this);
+            OptimizerGrid optimizer = new OptimizerGrid(this);
             optimizer.Run();
 
             // we can present the result in Excel

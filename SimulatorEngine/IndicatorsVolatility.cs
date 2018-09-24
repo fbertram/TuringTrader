@@ -29,7 +29,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorVolatility>.GetCachedData(
+            var functor = Cache<FunctorVolatility>.GetData(
                     cacheKey,
                     () => new FunctorVolatility(series, n));
 
@@ -87,7 +87,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorVolatilityFromRange>.GetCachedData(
+            var functor = Cache<FunctorVolatilityFromRange>.GetData(
                     cacheKey,
                     () => new FunctorVolatilityFromRange(series, n));
 
@@ -135,7 +135,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorFastVariance>.GetCachedData(
+            var functor = Cache<FunctorFastVariance>.GetData(
                     cacheKey,
                     () => new FunctorFastVariance(series, n));
 

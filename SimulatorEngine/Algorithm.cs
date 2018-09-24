@@ -161,7 +161,7 @@ namespace FUB_TradingSim
         protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
 
-        protected TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
         protected bool IsLastBar = false;
 
         #region protected IEnumerable<DateTime> SimTimes
@@ -247,8 +247,8 @@ namespace FUB_TradingSim
         }
         #endregion
         protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        #region protected Instrument FindInstrument(string)
-        protected Instrument FindInstrument(string nickname)
+        #region public Instrument FindInstrument(string)
+        public Instrument FindInstrument(string nickname)
         {
             return Instruments.Values
                 .Where(i => i.Nickname == nickname)

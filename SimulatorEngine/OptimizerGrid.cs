@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        OptimizerExhaustive
+// Name:        OptimizerGrid
 // Description: exhaustive parameter optimizer
 // History:     2018ix20, FUB, created
 //------------------------------------------------------------------------------
@@ -141,12 +141,12 @@ namespace FUB_TradingSim
     /// <summary>
     /// class to run exhaustive optimization
     /// </summary>
-    public class OptimizerExhaustive
+    public class OptimizerGrid
     {
         #region internal data
         private Algorithm _algorithm;
         private Dictionary<string, int> _parameters;
-        private MultiThreadedJobQueue _jobQueue = new MultiThreadedJobQueue();
+        private MTJobQueue _jobQueue = new MTJobQueue();
         private int _numIterationsTotal;
         private int _numIterationsCompleted;
         #endregion
@@ -221,7 +221,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region public OptimizerExhaustive(Algorithm algorithm)
-        public OptimizerExhaustive(Algorithm algorithm)
+        public OptimizerGrid(Algorithm algorithm)
         {
             _algorithm = algorithm;
         }

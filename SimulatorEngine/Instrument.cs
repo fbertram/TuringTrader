@@ -53,13 +53,12 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor<double> _askSeries;
         private readonly BarSeriesAccessor<long> _bidVolume;
         private readonly BarSeriesAccessor<long> _askVolume;
-        private readonly Algorithm _algorithm;
         #endregion
 
         #region public Instrument(...)
         public Instrument(Algorithm algorithm, DataSource source)
         {
-            _algorithm = algorithm;
+            Algorithm = algorithm;
             DataSource = source;
 
             _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
@@ -76,6 +75,7 @@ namespace FUB_TradingSim
         #endregion
 
         //----- general info
+        public readonly Algorithm Algorithm;
         public readonly DataSource DataSource;
         #region public string Nickname
         public string Nickname
@@ -248,7 +248,7 @@ namespace FUB_TradingSim
         #region public void Trade(int quantity, OrderExecution tradeExecution)
         public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
         {
-            _algorithm.PendingOrders.Add(
+            Algorithm.PendingOrders.Add(
                 new Order()
                 {
                     Instrument = this,
@@ -264,7 +264,7 @@ namespace FUB_TradingSim
             get
             {
                 // TODO: does this crash, when there is no position?
-                return _algorithm.Positions
+                return Algorithm.Positions
                         .Where(p => p.Key == this)
                         .Sum(x => x.Value);
             }

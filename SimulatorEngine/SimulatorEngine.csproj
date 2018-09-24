@@ -56,7 +56,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
-    <Compile Include="DataCache.cs" />
+    <Compile Include="BlackScholes.cs" />
+    <Compile Include="Cache.cs" />
     <Compile Include="Instrument.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="DataSource.cs" />
@@ -64,8 +65,8 @@
     <Compile Include="ITimeSeries.cs" />
     <Compile Include="IndicatorsArithmetic.cs" />
     <Compile Include="LogEntry.cs" />
-    <Compile Include="MultiThreadedJobQueue.cs" />
-    <Compile Include="OptimizerExhaustive.cs" />
+    <Compile Include="MTJobQueue.cs" />
+    <Compile Include="OptimizerGrid.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="IndicatorsBasic.cs" />
     <Compile Include="TimeSeries.cs" />

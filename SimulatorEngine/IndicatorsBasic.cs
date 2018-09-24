@@ -26,7 +26,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorHighest>.GetCachedData(
+            var functor = Cache<FunctorHighest>.GetData(
                     cacheKey,
                     () => new FunctorHighest(series, n));
 
@@ -69,7 +69,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorLowest>.GetCachedData(
+            var functor = Cache<FunctorLowest>.GetData(
                     cacheKey,
                     () => new FunctorLowest(series, n));
 
@@ -113,7 +113,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorSMA>.GetCachedData(
+            var functor = Cache<FunctorSMA>.GetData(
                     cacheKey,
                     () => new FunctorSMA(series, n));
 
@@ -163,7 +163,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
 
-            var functor = DataCache<FunctorEMA>.GetCachedData(
+            var functor = Cache<FunctorEMA>.GetData(
                     cacheKey,
                     () => new FunctorEMA(series, n));
 
@@ -206,7 +206,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}", series.GetHashCode());
 
-            var functor = DataCache<FunctorAbsReturn>.GetCachedData(
+            var functor = Cache<FunctorAbsReturn>.GetData(
                     cacheKey,
                     () => new FunctorAbsReturn(series));
 
@@ -236,7 +236,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}", series.GetHashCode());
 
-            var functor = DataCache<FunctorLogReturn>.GetCachedData(
+            var functor = Cache<FunctorLogReturn>.GetData(
                     cacheKey,
                     () => new FunctorLogReturn(series));
 

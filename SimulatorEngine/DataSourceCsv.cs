@@ -150,7 +150,7 @@ namespace FUB_TradingSim
                 return data;
             };
 
-            _data = DataCache<List<Bar>>.GetCachedData(cacheKey, retrievalFunction);
+            _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
         }
         #endregion
     }
