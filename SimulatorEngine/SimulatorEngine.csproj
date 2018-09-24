@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
-    <Compile Include="BlackScholes.cs" />
+    <Compile Include="OptionSupport.cs" />
     <Compile Include="Cache.cs" />
     <Compile Include="Instrument.cs" />
     <Compile Include="Bar.cs" />

@@ -246,7 +246,7 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        protected Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        public Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
         #region public Instrument FindInstrument(string)
         public Instrument FindInstrument(string nickname)
         {

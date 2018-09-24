@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        BlackScholes
-// Description: Black Scholes option pricer
+// Name:        OptionSupport
+// Description: option support functionality
 // History:     2018ix21, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    static class OptionSupport
+    public static class OptionSupport
     {
         #region internal helpers
         /// <summary>
@@ -63,12 +63,11 @@ namespace FUB_TradingSim
             if (!contract.IsOption)
                 return 0.00;
 
-            Algorithm algo = contract.Algorithm;
-
             // see https://en.wikipedia.org/wiki/Black–Scholes_model
 
-            double T = (contract.OptionExpiry - algo.SimTime[0]).Days / 365.25;
-            double S = algo.FindInstrument(contract.OptionUnderlying).Close[0];
+            DateTime today = contract.Algorithm.SimTime[0];
+            double T = (contract.OptionExpiry - today).Duration().Days / 365.25;
+            double S = contract.Algorithm.Instruments[contract.OptionUnderlying].Close[0];
             double K = contract.OptionStrike;
             double r = riskFreeRate;
             double v = volatility;
@@ -77,8 +76,8 @@ namespace FUB_TradingSim
             double d2 = d1 - v * Math.Sqrt(T);
 
             return contract.OptionIsPut
-                    ? CDF(-d2) * K * Math.Exp(-r * T) - CDF(d1) * S // put
-                    : CDF(d1) * S - CDF(d2) * K * Math.Exp(-r * T); // call
+                    ? CDF(-d2) * K * Math.Exp(-r * T) - CDF(-d1) * S // put
+                    : CDF(d1) * S - CDF(d2) * K * Math.Exp(-r * T);  // call
         }
         #endregion
     }
@@ -86,3 +85,4 @@ namespace FUB_TradingSim
 
 //==============================================================================
 // end of file
+              
