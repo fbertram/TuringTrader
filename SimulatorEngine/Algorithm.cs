@@ -224,10 +224,11 @@ namespace FUB_TradingSim
                     foreach (var instrument in Positions.Keys)
                         nav += Positions[instrument] * instrument.Close[0];
                     NetAssetValue.Value = nav;
+                    NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, NetAssetValue[0]);
+                    NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - NetAssetValue[0] / NetAssetValueHighestHigh);
 
                     // update IsLastBar
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
-                    Debug.WriteLine("{0}: hasDate = {1}", SimTime, hasData.Select(x => x.Value ? 1 : 0).Sum());
 
                     // run our algorithm here
                     if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
@@ -276,6 +277,8 @@ namespace FUB_TradingSim
 
         protected double Cash;
         public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
+        protected double NetAssetValueHighestHigh = 0.0;
+        protected double NetAssetValueMaxDrawdown = 1e-10;
 
         public bool IsOptimizing = false;
     }
