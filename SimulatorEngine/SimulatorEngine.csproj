@@ -56,6 +56,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
+    <Compile Include="IndicatorsMomentum.cs" />
+    <Compile Include="IndicatorsTrend.cs" />
+    <Compile Include="IndicatorsVolume.cs" />
     <Compile Include="OptionSupport.cs" />
     <Compile Include="Cache.cs" />
     <Compile Include="Instrument.cs" />

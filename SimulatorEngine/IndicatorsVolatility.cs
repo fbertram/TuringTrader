@@ -179,6 +179,9 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+
+        // - Bollinger Bands
+        // - Average True Range
     }
 }
 
