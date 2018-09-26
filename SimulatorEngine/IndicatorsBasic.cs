@@ -46,7 +46,7 @@ namespace FUB_TradingSim
             public FunctorHighest(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
+                N = Math.Max(1, n);
             }
 
             public void Calc()
@@ -92,7 +92,7 @@ namespace FUB_TradingSim
             public FunctorLowest(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
+                N = Math.Max(1, n);
             }
 
             public void Calc()

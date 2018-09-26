@@ -46,7 +46,7 @@ namespace FUB_TradingSim
             public FunctorSMA(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
+                N = Math.Max(1, n);
             }
 
             public void Calc()
@@ -98,8 +98,8 @@ namespace FUB_TradingSim
             public FunctorEMA(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
-                _alpha = 2.0 / (n + 1.0);
+                N = Math.Max(1, n);
+                _alpha = 2.0 / (N + 1.0);
             }
 
             public void Calc()
