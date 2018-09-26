@@ -106,7 +106,11 @@ namespace FUB_TradingSim
             {
                 try
                 {
-                    Value = _alpha * (Series[0] - this[1]) + this[0];
+                    // prevent output from becoming
+                    // noisy with N == 1
+                    Value = N > 1
+                        ? _alpha * (Series[0] - this[1]) + this[0]
+                        : Series[0];
                 }
                 catch (Exception)
                 {
