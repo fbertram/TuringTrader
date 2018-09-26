@@ -53,6 +53,7 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor<double> _askSeries;
         private readonly BarSeriesAccessor<long> _bidVolume;
         private readonly BarSeriesAccessor<long> _askVolume;
+        private readonly BarSeriesAccessor<bool> _bidAskValid;
         #endregion
 
         #region public Instrument(...)
@@ -71,6 +72,7 @@ namespace FUB_TradingSim
             _askSeries = new BarSeriesAccessor<double>(t => this[t].Ask);
             _bidVolume = new BarSeriesAccessor<long>(t => this[t].BidVolume);
             _askVolume = new BarSeriesAccessor<long>(t => this[t].AskVolume);
+            _bidAskValid = new BarSeriesAccessor<bool>(t => this[t].IsBidAskValid);
         }
         #endregion
 
@@ -148,6 +150,24 @@ namespace FUB_TradingSim
             get
             {
                 return this[0].OptionStrike;
+            }
+        }
+        #endregion
+        #region public bool HasOHLC
+        public bool HasOHLC
+        {
+            get
+            {
+                return this[0].HasOHLC;
+            }
+        }
+        #endregion
+        #region public bool HasBidAsk
+        public bool HasBidAsk
+        {
+            get
+            {
+                return this[0].HasBidAsk;
             }
         }
         #endregion
@@ -240,6 +260,15 @@ namespace FUB_TradingSim
             get
             {
                 return _askVolume;
+            }
+        }
+        #endregion
+        #region public ITimeSeries<bool> IsBidAskValid
+        public ITimeSeries<bool> IsBidAskValid
+        {
+            get
+            {
+                return _bidAskValid;
             }
         }
         #endregion

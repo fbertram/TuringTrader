@@ -105,6 +105,34 @@ namespace FUB_TradingSim
             // force execution
             ExecOrder(ticket);
         }
+        private double CalcNetAssetValue()
+        {
+            double nav = Cash;
+
+            foreach (var instrument in Positions.Keys)
+            {
+                double price = 0.00;
+
+                if (instrument.HasBidAsk && instrument.IsBidAskValid[0])
+                {
+                    price = Positions[instrument] > 0
+                        ? instrument.Bid[0]
+                        : instrument.Ask[0];
+                }
+                else if (instrument.HasOHLC)
+                {
+                    price = instrument.Close[0];
+                }
+
+                double quantity = instrument.IsOption
+                    ? 100.0 * Positions[instrument]
+                    : Positions[instrument];
+
+                nav += quantity * price;
+            }
+
+            return nav;
+        }
         #endregion
 
         //---------- for use by trading applications
@@ -220,12 +248,10 @@ namespace FUB_TradingSim
                         ExpireOption(instr);
 
                     // update net asset value
-                    double nav = Cash;
-                    foreach (var instrument in Positions.Keys)
-                        nav += Positions[instrument] * instrument.Close[0];
-                    NetAssetValue.Value = nav;
-                    NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, NetAssetValue[0]);
-                    NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - NetAssetValue[0] / NetAssetValueHighestHigh);
+                    NetAssetValue.Value = CalcNetAssetValue();
+                    ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
+                    NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, filteredNAV[0]);
+                    NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - filteredNAV[0] / NetAssetValueHighestHigh);
 
                     // update IsLastBar
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
@@ -264,7 +290,8 @@ namespace FUB_TradingSim
                     .Where(i => i.Nickname == nickname  // check nickname
                         && i[0].Time == SimTime[0]      // current bar
                         && i.IsOption                   // is option
-                        && i.OptionExpiry > SimTime[0]) // future expiry
+                        && i.OptionExpiry > SimTime[0]  // future expiry
+                        && i.IsBidAskValid[0])          // bid/ask seems legit
                     .ToList();
 
             return optionChain;

@@ -74,6 +74,10 @@ namespace FUB_TradingSim
                             OptionIsPut ? "P" : "C",
                             (int)Math.Floor(1000.0 * OptionStrike));
             }
+
+            IsBidAskValid = 5.0 * Bid > Ask
+                && BidVolume > 0
+                && AskVolume > 0;
         }
         #endregion
 
@@ -92,6 +96,7 @@ namespace FUB_TradingSim
         public readonly long BidVolume;
         public readonly long AskVolume;
         public readonly bool HasBidAsk;
+        public readonly bool IsBidAskValid;
 
         public readonly bool IsOption;
         public readonly DateTime OptionExpiry;
