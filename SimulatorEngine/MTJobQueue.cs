@@ -52,20 +52,16 @@ namespace FUB_TradingSim
         #region private void CheckQueue()
         private void CheckQueue()
         {
-            Thread nextThread = null;
-
             lock(_queueLock)
             {
-                if (_jobsRunning < MaximumNumberOfThreads
+                while (_jobsRunning < MaximumNumberOfThreads
                 && _jobQueue.Count > 0)
                 {
-                    nextThread = _jobQueue.Dequeue();
                     _jobsRunning++;
+                    Thread nextThread = _jobQueue.Dequeue();
+                    nextThread.Start();
                 }
             }
-
-            if (nextThread != null)
-                nextThread.Start();
         }
         #endregion
         #region private void JobRunner(Action job)
