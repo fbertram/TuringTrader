@@ -274,16 +274,16 @@ namespace FUB_TradingSim
         #endregion
 
         //----- trading
-        #region public void Trade(int quantity, OrderExecution tradeExecution)
-        public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
+        #region public void Trade(int quantity, OrderExecution tradeExecution, double price)
+        public void Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
         {
             Algorithm.PendingOrders.Add(
                 new Order()
                 {
                     Instrument = this,
                     Quantity = quantity,
-                    Execution = tradeExecution,
-                    PriceSpec = OrderPriceSpec.market,
+                    Type = tradeExecution,
+                    Price = price,
                 });
         }
         #endregion

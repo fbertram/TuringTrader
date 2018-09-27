@@ -19,8 +19,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum OrderExecution { closeThisBar, openNextBar, optionExpiryClose };
-    public enum OrderPriceSpec { market };
+    public enum OrderType { closeThisBar, openNextBar, optionExpiryClose, stopNextBar };
 
     /// <summary>
     /// order ticket
@@ -28,9 +27,8 @@ namespace FUB_TradingSim
     public class Order
     {
         public Instrument Instrument;
+        public OrderType Type;
         public int Quantity;
-        public OrderExecution Execution;
-        public OrderPriceSpec PriceSpec;
         public double Price;
     }
 }

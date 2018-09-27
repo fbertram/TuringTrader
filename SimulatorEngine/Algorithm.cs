@@ -38,9 +38,9 @@ namespace FUB_TradingSim
             Bar execBar = null;
             double netAssetValue = 0.0;
             double price = 0.00;
-            switch(ticket.Execution)
+            switch(ticket.Type)
             {
-                case OrderExecution.closeThisBar:
+                case OrderType.closeThisBar:
                     execBar = instrument[1];
                     netAssetValue = NetAssetValue[1];
                     if (execBar.HasBidAsk)
@@ -48,16 +48,37 @@ namespace FUB_TradingSim
                     else
                         price = execBar.Close;
                     break;
-                case OrderExecution.openNextBar:
+
+                case OrderType.openNextBar:
                     execBar = instrument[0];
                     netAssetValue = NetAssetValue[0];
                     price = execBar.Open;
                     break;
-                case OrderExecution.optionExpiryClose:
+
+                case OrderType.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
                     netAssetValue = NetAssetValue[0];
                     price = ticket.Price;
+                    break;
+
+                case OrderType.stopNextBar:
+                    execBar = instrument[0];
+                    netAssetValue = NetAssetValue[0];
+                    if (ticket.Quantity > 0)
+                    {
+                        if (ticket.Price > execBar.High)
+                            return;
+
+                        price = Math.Max(ticket.Price, execBar.Open);
+                    }
+                    else
+                    {
+                        if (ticket.Price < execBar.Low)
+                            return;
+
+                        price = Math.Min(ticket.Price, execBar.Open);
+                    }
                     break;
             }
 
@@ -68,9 +89,15 @@ namespace FUB_TradingSim
             if (Positions[instrument] == 0)
                 Positions.Remove(instrument);
 
+            // determine # of shares
+            int numberOfShares = instrument.IsOption
+                ? 100 * ticket.Quantity 
+                : ticket.Quantity;
+
             // pay for it
-            Cash -= (instrument.IsOption ? 100.0 : 1.0)
-                * ticket.Quantity * price;
+            Cash = Cash
+                - numberOfShares * price
+                - Math.Abs(numberOfShares) * CommissionPerShare;
 
             // add log entry
             LogEntry log = new LogEntry()
@@ -80,7 +107,7 @@ namespace FUB_TradingSim
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
                 FillPrice = price,
-                Commission = 0.00
+                Commission = Math.Abs(numberOfShares) * CommissionPerShare,
             };
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
@@ -95,8 +122,7 @@ namespace FUB_TradingSim
             {
                 Instrument = instr,
                 Quantity = -Positions[instr],
-                Execution = OrderExecution.optionExpiryClose,
-                PriceSpec = OrderPriceSpec.market,
+                Type = OrderType.optionExpiryClose,
                 Price = instr.OptionIsPut
                     ? Math.Max(0.00, instr.OptionStrike - price) 
                     : Math.Max(0.00, price - instr.OptionStrike),
@@ -306,6 +332,8 @@ namespace FUB_TradingSim
         public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
         protected double NetAssetValueHighestHigh = 0.0;
         protected double NetAssetValueMaxDrawdown = 1e-10;
+
+        protected double CommissionPerShare = 0.00;
 
         public bool IsOptimizing = false;
     }

@@ -69,7 +69,7 @@ namespace FUB_TradingSim
 
                 // place trades
                 if (targetPosition != currentPosition)
-                    instrument.Trade(targetPosition - currentPosition, OrderExecution.openNextBar);
+                    instrument.Trade(targetPosition - currentPosition, OrderType.openNextBar);
 
                 // plot net asset value versus benchmark
                 if (_initialPrice == null) _initialPrice = instrument.Close[0];
