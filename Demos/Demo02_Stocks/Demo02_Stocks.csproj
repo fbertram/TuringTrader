@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimulatorEngine\SimulatorEngine.csproj">
+    <ProjectReference Include="..\..\SimulatorEngine\SimulatorEngine.csproj">
       <Project>{279f2a6e-faa4-4e8a-9e75-dafc7d8dabb3}</Project>
       <Name>SimulatorEngine</Name>
     </ProjectReference>
