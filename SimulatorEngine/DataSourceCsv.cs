@@ -135,7 +135,7 @@ namespace FUB_TradingSim
             Func<List<Bar>> retrievalFunction = delegate ()
             {
                 DateTime t1 = DateTime.Now;
-                Debug.Write(string.Format("loading csv data for {0}...", Info[DataSourceValue.nickName]));
+                Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceValue.nickName]));
 
                 List<Bar> data = new List<Bar>();
 
@@ -145,12 +145,12 @@ namespace FUB_TradingSim
                     LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
 
                 DateTime t2 = DateTime.Now;
-                Debug.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                 return data;
             };
 
-            _data = DataCache<List<Bar>>.GetCachedData(cacheKey, retrievalFunction);
+            _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
         }
         #endregion
     }

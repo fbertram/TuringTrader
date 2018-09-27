@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        DataCache
+// Name:        Cache
 // Description: data cache, to reduce memory footprint and cpu use
 // History:     2018ix21, FUB, created
 //------------------------------------------------------------------------------
@@ -23,12 +23,12 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class DataCache<T>
+    public class Cache<T>
     {
         private static Dictionary<string, T> _cache = new Dictionary<string, T>();
         private static object _lockCache = new object();
 
-        static public T GetCachedData(string key, Func<T> initialRetrieval)
+        static public T GetData(string key, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
             return initialRetrieval();

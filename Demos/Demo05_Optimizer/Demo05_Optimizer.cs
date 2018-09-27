@@ -25,7 +25,7 @@ namespace FUB_TradingSim
     class Demo05_Optimizer : Algorithm
     {
         #region internal data
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleTable.xlsm";
         #endregion
 
         // these are the parameters to optimize. note that
@@ -54,7 +54,7 @@ namespace FUB_TradingSim
         // a brute-force iteration through all parameter combinations
         public void OptimizeSimple()
         {
-            OptimizerExhaustive optimizer = new OptimizerExhaustive(this);
+            OptimizerGrid optimizer = new OptimizerGrid(this);
             optimizer.Run();
 
             // we can present the result in Excel

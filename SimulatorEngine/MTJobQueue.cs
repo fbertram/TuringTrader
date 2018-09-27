@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        MultiThreadedJobQueue
+// Name:        MTJobQueue
 // Description: multi-threaded job queue to support optimizer
 // History:     2018ix20, FUB, created
 //------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class MultiThreadedJobQueue
+    class MTJobQueue
     {
         #region internal data
         private readonly object _queueLock = new object();
@@ -52,20 +52,16 @@ namespace FUB_TradingSim
         #region private void CheckQueue()
         private void CheckQueue()
         {
-            Thread nextThread = null;
-
             lock(_queueLock)
             {
-                if (_jobsRunning < MaximumNumberOfThreads
+                while (_jobsRunning < MaximumNumberOfThreads
                 && _jobQueue.Count > 0)
                 {
-                    nextThread = _jobQueue.Dequeue();
                     _jobsRunning++;
+                    Thread nextThread = _jobQueue.Dequeue();
+                    nextThread.Start();
                 }
             }
-
-            if (nextThread != null)
-                nextThread.Start();
         }
         #endregion
         #region private void JobRunner(Action job)

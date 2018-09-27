@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Order
-// Description: order ticket
+// Name:        Output
+// Description: output methods
 // History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -12,6 +12,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,17 +20,25 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum OrderType { closeThisBar, openNextBar, optionExpiryClose, stopNextBar };
-
-    /// <summary>
-    /// order ticket
-    /// </summary>
-    public class Order
+    public class Output
     {
-        public Instrument Instrument;
-        public OrderType Type;
-        public int Quantity;
-        public double Price;
+        public static void Write(string format)
+        {
+#if DEBUG
+            Debug.Write(format);
+#else
+            Console.Write(format);
+#endif
+        }
+
+        public static void WriteLine(string format, params object[] args)
+        {
+#if DEBUG
+            Debug.WriteLine(format, args);
+#else
+            Console.WriteLine(format, args);
+#endif
+        }
     }
 }
 

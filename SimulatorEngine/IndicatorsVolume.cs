@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Order
-// Description: order ticket
-// History:     2018ix11, FUB, created
+// Name:        IndicatorsVolume
+// Description: collection of volume-based indicators
+// History:     2018ix15, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -19,17 +19,11 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public enum OrderType { closeThisBar, openNextBar, optionExpiryClose, stopNextBar };
-
-    /// <summary>
-    /// order ticket
-    /// </summary>
-    public class Order
+    public static class IndicatorsVolume
     {
-        public Instrument Instrument;
-        public OrderType Type;
-        public int Quantity;
-        public double Price;
+        // - Chaikin Oscillator
+        // - On-Balance Volume
+        // - Volume Rate of Change
     }
 }
 

@@ -27,7 +27,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            var functor = DataCache<FunctorAdd>.GetCachedData(
+            var functor = Cache<FunctorAdd>.GetData(
                     cacheKey,
                     () => new FunctorAdd(series1, series2));
 
@@ -59,7 +59,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            var functor = DataCache<FunctorSubtract>.GetCachedData(
+            var functor = Cache<FunctorSubtract>.GetData(
                     cacheKey,
                     () => new FunctorSubtract(series1, series2));
 
@@ -92,7 +92,7 @@ namespace FUB_TradingSim
         {
             string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
 
-            var functor = DataCache<FunctorMultiply>.GetCachedData(
+            var functor = Cache<FunctorMultiply>.GetData(
                     cacheKey,
                     () => new FunctorMultiply(series1, series2));
 

@@ -4,17 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{57E72A44-8C6A-4090-803E-D71731B48D3C}</ProjectGuid>
+    <ProjectGuid>{554DC89A-391D-4D12-B461-D49B43D2CE27}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Algorithm1</RootNamespace>
-    <AssemblyName>Algorithm1</AssemblyName>
+    <RootNamespace>Algorithm2</RootNamespace>
+    <AssemblyName>Algorithm2</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -43,14 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Demo03_Portfolio.cs" />
+    <Compile Include="Demo04_Options.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimulatorEngine\SimulatorEngine.csproj">
+    <ProjectReference Include="..\..\SimulatorEngine\SimulatorEngine.csproj">
       <Project>{279f2a6e-faa4-4e8a-9e75-dafc7d8dabb3}</Project>
       <Name>SimulatorEngine</Name>
     </ProjectReference>

@@ -53,13 +53,13 @@ namespace FUB_TradingSim
         private readonly BarSeriesAccessor<double> _askSeries;
         private readonly BarSeriesAccessor<long> _bidVolume;
         private readonly BarSeriesAccessor<long> _askVolume;
-        private readonly Algorithm _algorithm;
+        private readonly BarSeriesAccessor<bool> _bidAskValid;
         #endregion
 
         #region public Instrument(...)
         public Instrument(Algorithm algorithm, DataSource source)
         {
-            _algorithm = algorithm;
+            Algorithm = algorithm;
             DataSource = source;
 
             _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
@@ -72,10 +72,12 @@ namespace FUB_TradingSim
             _askSeries = new BarSeriesAccessor<double>(t => this[t].Ask);
             _bidVolume = new BarSeriesAccessor<long>(t => this[t].BidVolume);
             _askVolume = new BarSeriesAccessor<long>(t => this[t].AskVolume);
+            _bidAskValid = new BarSeriesAccessor<bool>(t => this[t].IsBidAskValid);
         }
         #endregion
 
         //----- general info
+        public readonly Algorithm Algorithm;
         public readonly DataSource DataSource;
         #region public string Nickname
         public string Nickname
@@ -148,6 +150,24 @@ namespace FUB_TradingSim
             get
             {
                 return this[0].OptionStrike;
+            }
+        }
+        #endregion
+        #region public bool HasOHLC
+        public bool HasOHLC
+        {
+            get
+            {
+                return this[0].HasOHLC;
+            }
+        }
+        #endregion
+        #region public bool HasBidAsk
+        public bool HasBidAsk
+        {
+            get
+            {
+                return this[0].HasBidAsk;
             }
         }
         #endregion
@@ -243,18 +263,27 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        #region public ITimeSeries<bool> IsBidAskValid
+        public ITimeSeries<bool> IsBidAskValid
+        {
+            get
+            {
+                return _bidAskValid;
+            }
+        }
+        #endregion
 
         //----- trading
-        #region public void Trade(int quantity, OrderExecution tradeExecution)
-        public void Trade(int quantity, OrderExecution tradeExecution = OrderExecution.openNextBar)
+        #region public void Trade(int quantity, OrderExecution tradeExecution, double price)
+        public void Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
         {
-            _algorithm.PendingOrders.Add(
+            Algorithm.PendingOrders.Add(
                 new Order()
                 {
                     Instrument = this,
                     Quantity = quantity,
-                    Execution = tradeExecution,
-                    PriceSpec = OrderPriceSpec.market,
+                    Type = tradeExecution,
+                    Price = price,
                 });
         }
         #endregion
@@ -264,7 +293,7 @@ namespace FUB_TradingSim
             get
             {
                 // TODO: does this crash, when there is no position?
-                return _algorithm.Positions
+                return Algorithm.Positions
                         .Where(p => p.Key == this)
                         .Sum(x => x.Value);
             }

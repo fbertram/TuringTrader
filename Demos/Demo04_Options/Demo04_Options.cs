@@ -25,9 +25,8 @@ namespace FUB_TradingSim
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
-        private readonly string _excelTableTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
+        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleChart.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -48,6 +47,7 @@ namespace FUB_TradingSim
 
             // set account value
             Cash = _initialCash;
+            CommissionPerShare = 0.01;
 
             // add instruments
             // the underlying must be added explicitly,
@@ -119,7 +119,7 @@ namespace FUB_TradingSim
                                             0.10 * underlyingPrice);
                         int contracts = (int)Math.Floor(Math.Max(0.0, _regTMarginToUse * Cash / (100.0 * margin)));
 
-                        shortPut.Trade(-contracts, OrderExecution.closeThisBar);
+                        shortPut.Trade(-contracts, OrderType.closeThisBar);
                     }
                 }
 
@@ -141,7 +141,7 @@ namespace FUB_TradingSim
                     &&  shortPut.BidVolume[0] > 0
                     &&  shortPut.Ask[0] < 2 * shortPut.Bid[0])
                     {
-                        shortPut.Trade(-Positions[shortPut], OrderExecution.closeThisBar);
+                        shortPut.Trade(-Positions[shortPut], OrderType.closeThisBar);
                     }
                 }
 
@@ -154,15 +154,6 @@ namespace FUB_TradingSim
             }
 
             //---------- post-processing
-
-            _plotter.SelectPlot("trades", "time"); // this will go to Sheet2
-            foreach (LogEntry entry in Log)
-            {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.Symbol);
-                _plotter.Log("price", entry.FillPrice);
-            }
 
             FitnessValue = NetAssetValue[0];
         }

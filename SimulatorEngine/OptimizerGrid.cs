@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        OptimizerExhaustive
+// Name:        OptimizerGrid
 // Description: exhaustive parameter optimizer
 // History:     2018ix20, FUB, created
 //------------------------------------------------------------------------------
@@ -141,14 +141,16 @@ namespace FUB_TradingSim
     /// <summary>
     /// class to run exhaustive optimization
     /// </summary>
-    public class OptimizerExhaustive
+    public class OptimizerGrid
     {
         #region internal data
         private Algorithm _algorithm;
         private Dictionary<string, int> _parameters;
-        private MultiThreadedJobQueue _jobQueue = new MultiThreadedJobQueue();
+        private MTJobQueue _jobQueue = new MTJobQueue();
+        private readonly object _optimizerLock = new object();
         private int _numIterationsTotal;
         private int _numIterationsCompleted;
+        private double _maxFitness = -1e10;
         #endregion
 
         #region private void RunIteration(bool firstRun = true)
@@ -181,9 +183,14 @@ namespace FUB_TradingSim
                     result.NetAssetValue = instanceToRun.NetAssetValue[0];
                     result.Fitness = instanceToRun.FitnessValue;
                     instanceToRun = null;
-                    _numIterationsCompleted++;
-                    Debug.WriteLine("{0} of {1} optimizer iterations completed",
-                        _numIterationsCompleted, _numIterationsTotal);
+                    lock (_optimizerLock)
+                    {
+                        _numIterationsCompleted++;
+                        _maxFitness = Math.Max(_maxFitness, (double)result.Fitness);
+                        Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2}",
+                            _numIterationsCompleted, _numIterationsTotal, _maxFitness);
+
+                    }
                 });
             }
             else
@@ -221,7 +228,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region public OptimizerExhaustive(Algorithm algorithm)
-        public OptimizerExhaustive(Algorithm algorithm)
+        public OptimizerGrid(Algorithm algorithm)
         {
             _algorithm = algorithm;
         }
@@ -249,6 +256,7 @@ namespace FUB_TradingSim
 
                 _numIterationsTotal *= iterationsThisLevel;
             }
+            Output.WriteLine("GridOptimizer: {0} total iterations", _numIterationsTotal);
 
             // create and queue iterations
             IterateLevel(0);

@@ -24,8 +24,8 @@ namespace FUB_TradingSim
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
         private double? _initialPrice = null;
         private readonly string _instrumentNick = "AAPL.Stock";
@@ -69,7 +69,7 @@ namespace FUB_TradingSim
 
                 // place trades
                 if (targetPosition != currentPosition)
-                    instrument.Trade(targetPosition - currentPosition, OrderExecution.openNextBar);
+                    instrument.Trade(targetPosition - currentPosition, OrderType.openNextBar);
 
                 // plot net asset value versus benchmark
                 if (_initialPrice == null) _initialPrice = instrument.Close[0];
