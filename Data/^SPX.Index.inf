@@ -1,0 +1,11 @@
+name=S&P 500
+dataPath=Data\^SPX.Index
+ticker=^SPX
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume=0
+updateWeb=https://stooq.com/q/d/l/?s=^spx&d1={0:yyyy}{0:MM}{0:dd}&d2={5:yyyy}{5:MM}{5:dd}&i=d
