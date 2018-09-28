@@ -18,6 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression; // requires reference to System.IO.Compression.dll
+using System.Text.RegularExpressions;
 #endregion
 
 namespace FUB_TradingSim
@@ -33,6 +34,66 @@ namespace FUB_TradingSim
         public static int TotalRecordsRead = 0;
         #endregion
         #region internal helpers
+        private Bar CreateBar(string[] items)
+        {
+            string symbol = Info[DataSourceValue.ticker];
+            DateTime date = default(DateTime);
+            DateTime time = default(DateTime);
+
+            bool hasOHLC = false;
+            double open = default(double);
+            double high = default(double);
+            double low = default(double);
+            double close = default(double);
+            long volume = default(long);
+
+            bool hasBidAsk = false;
+            double bid = default(double);
+            double ask = default(double);
+            long bidVolume = default(long);
+            long askVolume = default(long);
+
+            DateTime optionExpiry = default(DateTime);
+            double optionStrike = default(double);
+            bool optionIsPut = false;
+
+            foreach (var mapping in Info)
+            {
+                string mappedString = string.Format(mapping.Value, items);
+
+                switch (mapping.Key)
+                {
+                    // for stocks, symbol matches ticker
+                    // for options, the symbol adds expiry, right, and strike to the ticker
+                    //case DataSourceValue.symbol: Symbol = mappedString;                break;
+                    case DataSourceValue.date: date = DateTime.Parse(mappedString); break;
+                    case DataSourceValue.time: time = DateTime.Parse(mappedString); break;
+
+                    case DataSourceValue.open: open = double.Parse(mappedString); hasOHLC = true; break;
+                    case DataSourceValue.high: high = double.Parse(mappedString); hasOHLC = true; break;
+                    case DataSourceValue.low: low = double.Parse(mappedString); hasOHLC = true; break;
+                    case DataSourceValue.close: close = double.Parse(mappedString); hasOHLC = true; break;
+                    case DataSourceValue.volume: volume = long.Parse(mappedString); break;
+
+                    case DataSourceValue.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
+                    case DataSourceValue.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
+                    case DataSourceValue.bidSize: bidVolume = long.Parse(mappedString); break;
+                    case DataSourceValue.askSize: askVolume = long.Parse(mappedString); break;
+
+                    case DataSourceValue.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
+                    case DataSourceValue.optionStrike: optionStrike = double.Parse(mappedString); break;
+                    case DataSourceValue.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
+                }
+            }
+
+            DateTime barTime = date.Date + time.TimeOfDay;
+
+            return new Bar(
+                            symbol, barTime,
+                            open, high, low, close, volume, hasOHLC,
+                            bid, ask, bidVolume, askVolume, hasBidAsk,
+                            optionExpiry, optionStrike, optionIsPut);
+        }
         private void LoadDir(List<Bar> data, string path, DateTime startTime, DateTime endTime)
         {
             DirectoryInfo d = new DirectoryInfo(path);
@@ -84,10 +145,13 @@ namespace FUB_TradingSim
 
             for (string line; (line = sr.ReadLine()) != null;)
             {
+                if (line.Length == 0)
+                    continue; // to handle end of file
+
                 line = Info[DataSourceValue.ticker] + "," + line;
                 string[] items = line.Split(',');
 
-                Bar bar = new Bar(Info, items);
+                Bar bar = CreateBar(items);
                 if (bar.Time >= startTime
                 &&  bar.Time <= endTime)
                     data.Add(bar);
@@ -114,6 +178,9 @@ namespace FUB_TradingSim
             if (!File.Exists(Info[DataSourceValue.dataPath]))
                 if (!Directory.Exists(Info[DataSourceValue.dataPath]))
                     throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
+
+            // TODO: not sure what proper error handling should be.
+            // IDEA: if no data found, trigger UpdateData?
         }
         #endregion
         #region override public IEnumerator<Bar> BarEnumerator

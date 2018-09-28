@@ -26,58 +26,43 @@ namespace FUB_TradingSim
     public class Bar
     {
         #region Bar(...)
-        public Bar(Dictionary<DataSourceValue, string> info, string[] items)
+        public Bar(
+            string symbol, DateTime time,
+            double open, double high, double low, double close, long volume, bool hasOHLC,
+            double bid, double ask, long bidVolume, long askVolume, bool hasBidAsk,
+            DateTime optionExpiry, double optionStrike, bool optionIsPut)
         {
-            Symbol = info[DataSourceValue.ticker];
-            DateTime date = default(DateTime);
-            DateTime time = default(DateTime);
-            HasOHLC = false;
-            HasBidAsk = false;
+            Symbol = symbol;
+            Time = time;
 
-            foreach (var mapping in info)
-            {
-                string mappedString = string.Format(mapping.Value, items);
+            Open = open;
+            High = high;
+            Low = low;
+            Close = close;
+            Volume = volume;
+            HasOHLC = hasOHLC;
 
-                switch (mapping.Key)
-                {
-                    // for stocks, symbol matches ticker
-                    // for options, the symbol adds expiry, right, and strike to the ticker
-                    //case DataSourceValue.symbol: Symbol = mappedString;                break;
-                    case DataSourceValue.date:   date = DateTime.Parse(mappedString);  break;
-                    case DataSourceValue.time:   time = DateTime.Parse(mappedString);  break;
+            Bid = bid;
+            Ask = ask;
+            BidVolume = bidVolume;
+            AskVolume = askVolume;
+            HasBidAsk = hasBidAsk;
+            IsBidAskValid = 5.0 * Bid > Ask
+                && BidVolume > 0
+                && AskVolume > 0;
 
-                    case DataSourceValue.open:  Open = double.Parse(mappedString);  HasOHLC = true; break;
-                    case DataSourceValue.high:  High = double.Parse(mappedString);  HasOHLC = true; break;
-                    case DataSourceValue.low:   Low = double.Parse(mappedString);   HasOHLC = true; break;
-                    case DataSourceValue.close: Close = double.Parse(mappedString); HasOHLC = true; break;
-                    case DataSourceValue.volume: Volume = long.Parse(mappedString); break;
-
-                    case DataSourceValue.bid:   Bid = double.Parse(mappedString); HasBidAsk = true; break;
-                    case DataSourceValue.ask:   Ask = double.Parse(mappedString); HasBidAsk = true; break;
-                    case DataSourceValue.bidSize: BidVolume = long.Parse(mappedString); break;
-                    case DataSourceValue.askSize: AskVolume = long.Parse(mappedString); break;
-
-                    case DataSourceValue.optionStrike:     OptionStrike = double.Parse(mappedString);          break;
-                    case DataSourceValue.optionExpiration: OptionExpiry = DateTime.Parse(mappedString);        break;
-                    case DataSourceValue.optionRight:      OptionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
-                }
-            }
-
-            Time = date.Date + time.TimeOfDay;
-
-            IsOption = OptionStrike != default(double);
+            OptionExpiry = optionExpiry;
+            OptionStrike = optionStrike;
+            OptionIsPut = optionIsPut;
+            IsOption = optionStrike != default(double);
             if (IsOption)
             {
                 Symbol = string.Format("{0}{1:yyMMdd}{2}{3:D8}",
-                            info[DataSourceValue.ticker],
+                            Symbol,
                             OptionExpiry,
                             OptionIsPut ? "P" : "C",
                             (int)Math.Floor(1000.0 * OptionStrike));
             }
-
-            IsBidAskValid = 5.0 * Bid > Ask
-                && BidVolume > 0
-                && AskVolume > 0;
         }
         #endregion
 
@@ -98,10 +83,10 @@ namespace FUB_TradingSim
         public readonly bool HasBidAsk;
         public readonly bool IsBidAskValid;
 
-        public readonly bool IsOption;
         public readonly DateTime OptionExpiry;
         public readonly double OptionStrike;
         public readonly bool OptionIsPut;
+        public readonly bool IsOption;
     }
 }
 //==============================================================================
