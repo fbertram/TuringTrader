@@ -210,6 +210,17 @@ namespace FUB_TradingSim
         }
         #endregion
         protected List<DataSource> DataSources = new List<DataSource>();
+        #region protected void UpdateData()
+        protected void UpdateData()
+        {
+            DateTime startTime = WarmupStartTime != null
+                ? (DateTime)WarmupStartTime
+                : StartTime;
+
+            foreach (DataSource d in DataSources)
+                d.UpdateData(startTime, EndTime);
+        }
+        #endregion
 
         protected DateTime StartTime;
         protected DateTime? WarmupStartTime = null;

@@ -28,7 +28,8 @@ namespace FUB_TradingSim
         date, time,
         open, high, low, close, bid, ask,
         volume, bidSize, askSize,
-        optionExpiration, optionStrike, optionRight, optionUnderlying
+        optionExpiration, optionStrike, optionRight, optionUnderlying,
+        updateWeb
     };
     #endregion
 
@@ -112,6 +113,15 @@ namespace FUB_TradingSim
             {
                 return Info[DataSourceValue.optionUnderlying];
             }
+        }
+        #endregion
+
+        //----- data updater 
+        #region public void UpdateData(DateTime startTime, DateTime endTime)
+        public void UpdateData(DateTime startTime, DateTime endTime)
+        {
+            DataUpdater updater = DataUpdater.New(Info);
+            updater.UpdateData(startTime, endTime);
         }
         #endregion
 
