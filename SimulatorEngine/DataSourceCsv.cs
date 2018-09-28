@@ -152,6 +152,13 @@ namespace FUB_TradingSim
                 string[] items = line.Split(',');
 
                 Bar bar = CreateBar(items);
+
+                if (FirstTime == null || bar.Time < FirstTime)
+                    FirstTime = bar.Time;
+
+                if (LastTime == null || bar.Time > LastTime)
+                    LastTime = bar.Time;
+
                 if (bar.Time >= startTime
                 &&  bar.Time <= endTime)
                     data.Add(bar);

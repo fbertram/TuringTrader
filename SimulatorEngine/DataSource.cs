@@ -86,6 +86,8 @@ namespace FUB_TradingSim
         protected DataSource(Dictionary<DataSourceValue, string> info)
         {
             Info = info;
+            FirstTime = null;
+            LastTime = null;
         }
         #endregion
 
@@ -113,6 +115,20 @@ namespace FUB_TradingSim
             {
                 return Info[DataSourceValue.optionUnderlying];
             }
+        }
+        #endregion
+        #region public DateTime? FirstTime
+        public DateTime? FirstTime
+        {
+            get;
+            protected set;
+        }
+        #endregion
+        #region public DateTime? LastTime
+        public DateTime? LastTime
+        {
+            get;
+            protected set;
         }
         #endregion
 
