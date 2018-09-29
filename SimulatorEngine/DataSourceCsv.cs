@@ -31,7 +31,7 @@ namespace FUB_TradingSim
         #region internal data
         private List<Bar> _data;
         private IEnumerator<Bar> _barEnumerator;
-        public static int TotalRecordsRead = 0;
+        private static int _totalBarsRead = 0;
         #endregion
         #region internal helpers
         private Bar CreateBar(string[] items)
@@ -59,30 +59,37 @@ namespace FUB_TradingSim
 
             foreach (var mapping in Info)
             {
-                string mappedString = string.Format(mapping.Value, items);
-
-                switch (mapping.Key)
+                try
                 {
-                    // for stocks, symbol matches ticker
-                    // for options, the symbol adds expiry, right, and strike to the ticker
-                    //case DataSourceValue.symbol: Symbol = mappedString;                break;
-                    case DataSourceValue.date: date = DateTime.Parse(mappedString); break;
-                    case DataSourceValue.time: time = DateTime.Parse(mappedString); break;
+                    // extract the relevant sub-string
+                    string mappedString = string.Format(mapping.Value, items);
 
-                    case DataSourceValue.open: open = double.Parse(mappedString); hasOHLC = true; break;
-                    case DataSourceValue.high: high = double.Parse(mappedString); hasOHLC = true; break;
-                    case DataSourceValue.low: low = double.Parse(mappedString); hasOHLC = true; break;
-                    case DataSourceValue.close: close = double.Parse(mappedString); hasOHLC = true; break;
-                    case DataSourceValue.volume: volume = long.Parse(mappedString); break;
+                    // assign sub-string to field
+                    switch (mapping.Key)
+                    {
+                        case DataSourceValue.date: date = DateTime.Parse(mappedString); break;
+                        case DataSourceValue.time: time = DateTime.Parse(mappedString); break;
 
-                    case DataSourceValue.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
-                    case DataSourceValue.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
-                    case DataSourceValue.bidSize: bidVolume = long.Parse(mappedString); break;
-                    case DataSourceValue.askSize: askVolume = long.Parse(mappedString); break;
+                        case DataSourceValue.open: open = double.Parse(mappedString); hasOHLC = true; break;
+                        case DataSourceValue.high: high = double.Parse(mappedString); hasOHLC = true; break;
+                        case DataSourceValue.low: low = double.Parse(mappedString); hasOHLC = true; break;
+                        case DataSourceValue.close: close = double.Parse(mappedString); hasOHLC = true; break;
+                        case DataSourceValue.volume: volume = long.Parse(mappedString); break;
 
-                    case DataSourceValue.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
-                    case DataSourceValue.optionStrike: optionStrike = double.Parse(mappedString); break;
-                    case DataSourceValue.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
+                        case DataSourceValue.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
+                        case DataSourceValue.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
+                        case DataSourceValue.bidSize: bidVolume = long.Parse(mappedString); break;
+                        case DataSourceValue.askSize: askVolume = long.Parse(mappedString); break;
+
+                        case DataSourceValue.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
+                        case DataSourceValue.optionStrike: optionStrike = double.Parse(mappedString); break;
+                        case DataSourceValue.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
+                    }
+                }
+                catch
+                {
+                    // there are a lot of things that can go wrong here
+                    // we try to move on, as long as we can parse at least part of the fields
                 }
             }
 
@@ -99,8 +106,9 @@ namespace FUB_TradingSim
             DirectoryInfo d = new DirectoryInfo(path);
             FileInfo[] Files = d.GetFiles("*.*");
 
-            if (Files.Count() == 0)
-                throw new Exception(string.Format("no files to load for {0}", Info[DataSourceValue.ticker]));
+            // an empty directory should not hinder us from updating
+            //if (Files.Count() == 0)
+            //    throw new Exception(string.Format("no files to load for {0}", Info[DataSourceValue.ticker]));
 
             foreach (FileInfo file in Files.OrderBy(f => f.Name))
             {
@@ -139,15 +147,16 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private int LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime, DateTime endTime, StreamWriter sw = null)
+        private int LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime,
+            StreamWriter writer = null, DateTime writeStartTime = default(DateTime))
         {
-            int numRecordsLoaded = 0;
+            int numBarsWritten = 0;
 
-            string header = sr.ReadLine(); // skip header line
-            if (sw != null)
-                sw.WriteLine(header);
+            string header = reader.ReadLine(); // skip header line
+            if (writer != null)
+                writer.WriteLine(header);
 
-            for (string line; (line = sr.ReadLine()) != null;)
+            for (string line; (line = reader.ReadLine()) != null;)
             {
                 if (line.Length == 0)
                     continue; // to handle end of file
@@ -164,29 +173,39 @@ namespace FUB_TradingSim
                     LastTime = bar.Time;
 
                 if (bar.Time < LastTime)
-                    throw new Exception("DataSourceCsv: bars not in sequence");
+                    throw new Exception("DataSourceCsv: bars out of sequence");
 
-                if (bar.Time >= startTime
-                && bar.Time <= endTime)
-                {
+                if (bar.Time >= loadStartTime
+                && bar.Time <= loadEndTime)
                     data.Add(bar);
 
-                    if (sw != null)
-                        sw.WriteLine(line);
-
-                    numRecordsLoaded++;
+                if (writer != null
+                && bar.Time >= writeStartTime
+                && bar.Time <= loadEndTime)
+                {
+                    writer.WriteLine(line);
+                    numBarsWritten++;
                 }
 
-                TotalRecordsRead++;
+                _totalBarsRead++;
             }
 
-            return numRecordsLoaded;
+            return numBarsWritten;
         }
         private void UpdateData(List<Bar> data, DateTime startTime, DateTime endTime)
         {
-            DateTime newStartTime = LastTime != null
+            // we have two start times
+            // - the time at which we start loading bars into memory
+            // - the time at which we start writing bars to the update file
+            // as our update can only append to the end, we need to make
+            // sure we start our database early (e.g. 1990) when we
+            // start initializing an empty data set
+            DateTime loadStartTime = LastTime != null
                 ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
                 : startTime;
+            DateTime writeStartTime = LastTime != null
+                ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
+                : DateTime.Parse("01/01/1990");
 
             DataUpdater updater = DataUpdater.New(Info);
             if (updater != null)
@@ -196,11 +215,11 @@ namespace FUB_TradingSim
 
                 // retrieve raw update data
                 // these might contain more bars than we need
-                string rawData = updater.UpdateData(newStartTime, endTime);
+                string rawData = updater.UpdateData(writeStartTime, endTime);
 
                 // location of update file to write
                 string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
-                    string.Format("update-{0:yyyy-MM-dd}.csv", DateTime.Now));
+                    string.Format("{0:yyyy-MM-dd}-update.csv", endTime));
 
                 // true, if we will write an update file
                 // if there is a file collision, we won't overwrite
@@ -212,16 +231,16 @@ namespace FUB_TradingSim
 
                 // create reader for our update data, and writer for our update file
                 using (MemoryStream mem = new MemoryStream(Encoding.UTF8.GetBytes(rawData ?? "")))
-                using (StreamReader sr = new StreamReader(mem))
-                using (StreamWriter sw = writeUpdateFile
+                using (StreamReader reader = new StreamReader(mem))
+                using (StreamWriter writer = writeUpdateFile
                             ? new StreamWriter(updateFilePath)
                             : null)
                 {
-                    numBarsWritten = LoadCsv(data, sr, newStartTime, endTime, sw);
+                    numBarsWritten = LoadCsv(data, reader, loadStartTime, endTime,
+                                                    writer, writeStartTime);
                 }
 
-                // if we wanted to write an update file,
-                // but somehow didnt: delete the empty file
+                // delete files with no bars
                 if (numBarsWritten == 0
                 && writeUpdateFile)
                 {
@@ -246,14 +265,11 @@ namespace FUB_TradingSim
                     Info[DataSourceValue.infoPath], Info[DataSourceValue.dataPath]);
             }
 
-            // dataPath is either a file name, or a directory
-            // throw, if it's neither
-            if (!File.Exists(Info[DataSourceValue.dataPath]))
-                if (!Directory.Exists(Info[DataSourceValue.dataPath]))
-                    throw new Exception(string.Format("data location for {0} not found", Info[DataSourceValue.symbol]));
-
-            // TODO: not sure what proper error handling should be.
-            // IDEA: if no data found, trigger UpdateData?
+            // dataPath should be either a file name, or a directory
+            // if it's neither, try to create a directory
+            if (!File.Exists(Info[DataSourceValue.dataPath])
+            && !Directory.Exists(Info[DataSourceValue.dataPath]))
+                Directory.CreateDirectory(Info[DataSourceValue.dataPath]);
         }
         #endregion
         #region override public IEnumerator<Bar> BarEnumerator
@@ -283,19 +299,25 @@ namespace FUB_TradingSim
                     LoadFile(data, Info[DataSourceValue.dataPath], startTime, endTime);
                 else if (Directory.Exists(Info[DataSourceValue.dataPath]))
                     LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
+
+                // this should never happen - we create an empty directory in DataSource.New
                 else
                     throw new Exception("DataSourceCsv: data path not found");
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                if (LastTime < endTime)
+                if (LastTime == null
+                || LastTime < endTime)
                     UpdateData(data, startTime, endTime);
 
                 return data;
             };
 
             _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+
+            if (_data.Count == 0)
+                throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceValue.nickName]));
         }
         #endregion
     }

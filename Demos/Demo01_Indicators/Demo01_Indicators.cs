@@ -45,7 +45,6 @@ namespace FUB_TradingSim
             // add instruments
             DataPath = _dataPath;
             DataSources.Add(DataSource.New(_instrumentNick));
-            //UpdateData();
 
             //---------- simulation
 
