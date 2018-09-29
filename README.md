@@ -1,7 +1,8 @@
 # FUB Trading Simulator
 This project implements a trading simulator for stocks and options with the following features:
 
-* import data in CSV format, either as plain files, or zipped archives with customizable column-mapping
+* import data in various CSV formats and with customizable column-mapping
+* automatic download/ update of data files from web sources
 * calculate indicators, with a growing library of standard indicators
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
@@ -15,7 +16,6 @@ This project implements a trading simulator for stocks and options with the foll
 The following features are planned for the near future:
 
 * support for limit orders
-* automatic download/ update of data files
 * API documentation
 
 The following environment is required for building and running the simulator:
