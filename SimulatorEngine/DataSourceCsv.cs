@@ -148,7 +148,7 @@ namespace FUB_TradingSim
             }
         }
         private int LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime,
-            StreamWriter writer = null, DateTime writeStartTime = default(DateTime))
+            StreamWriter writer = null, DateTime writeStartTime = default(DateTime), DateTime writeEndTime = default(DateTime))
         {
             int numBarsWritten = 0;
 
@@ -181,7 +181,7 @@ namespace FUB_TradingSim
 
                 if (writer != null
                 && bar.Time >= writeStartTime
-                && bar.Time <= loadEndTime)
+                && bar.Time <= writeEndTime)
                 {
                     writer.WriteLine(line);
                     numBarsWritten++;
@@ -207,6 +207,16 @@ namespace FUB_TradingSim
                 ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
                 : DateTime.Parse("01/01/1990");
 
+            // we also have two end times
+            // - the time at which we stop loading bars into memory
+            // - the time at which we stop writing bars to the update file
+            // we run our update for a few days more than requested (if that's possible)
+            // to make sure we don't run it again, in case the same update is requested again
+            DateTime loadEndTime = endTime;
+            DateTime writeEndTime = endTime.Date + TimeSpan.FromDays(4) - TimeSpan.FromSeconds(1);
+            if (writeEndTime > DateTime.Now)
+                writeEndTime = DateTime.Now;
+
             DataUpdater updater = DataUpdater.New(Info);
             if (updater != null)
             {
@@ -215,11 +225,11 @@ namespace FUB_TradingSim
 
                 // retrieve raw update data
                 // these might contain more bars than we need
-                string rawData = updater.UpdateData(writeStartTime, endTime);
+                string rawData = updater.UpdateData(writeStartTime, writeEndTime);
 
                 // location of update file to write
                 string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
-                    string.Format("{0:yyyy-MM-dd}-update.csv", endTime));
+                    string.Format("{0:yyyy-MM-dd}-update.csv", writeEndTime));
 
                 // true, if we will write an update file
                 // if there is a file collision, we won't overwrite
@@ -236,12 +246,12 @@ namespace FUB_TradingSim
                             ? new StreamWriter(updateFilePath)
                             : null)
                 {
-                    numBarsWritten = LoadCsv(data, reader, loadStartTime, endTime,
-                                                    writer, writeStartTime);
+                    numBarsWritten = LoadCsv(data, reader, loadStartTime, loadEndTime,
+                                                    writer, writeStartTime, writeEndTime);
                 }
 
-                // delete files with no bars
-                if (numBarsWritten == 0
+                // delete files with only very few bars
+                if (numBarsWritten < 1
                 && writeUpdateFile)
                 {
                     File.Delete(updateFilePath);
