@@ -40,11 +40,12 @@ namespace FUB_TradingSim
         #endregion
 
         #region override public void UpdateData(DateTime startTime, DateTime endTime)
-        override public void UpdateData(DateTime startTime, DateTime endTime)
+        override public string UpdateData(DateTime startTime, DateTime endTime)
         {
             // examples:
             //   stooq.com:
-            //     updateWeb=https://stooq.com/q/d/l/?s=^spx&d1=20050101&d2=20180927&i=d
+            //     updateWeb=https://stooq.com/q/d/l/?s=^spx&d1={0:yyyy}{0:MM}{0:dd}&d2={5:yyyy}{5:MM}{5:dd}&i=d
+            //              =https://stooq.com/q/d/l/?s=^spx&d1=20050101&d2=20180927&i=d
 
             string url = string.Format(
                 Info[DataSourceValue.updateWeb],
@@ -63,12 +64,7 @@ namespace FUB_TradingSim
 
             using (var client = new WebClient())
             {
-                string rawData = client.DownloadString(url);
-
-                using (StreamWriter sw = new StreamWriter(Info[DataSourceValue.dataPath]))
-                {
-                    sw.WriteLine(rawData);
-                }
+                return client.DownloadString(url);
             }
         }
         #endregion

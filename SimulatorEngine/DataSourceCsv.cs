@@ -102,7 +102,7 @@ namespace FUB_TradingSim
             if (Files.Count() == 0)
                 throw new Exception(string.Format("no files to load for {0}", Info[DataSourceValue.ticker]));
 
-            foreach (FileInfo file in Files)
+            foreach (FileInfo file in Files.OrderBy(f => f.Name))
             {
                 LoadFile(data, file.FullName, startTime, endTime);
             }
@@ -128,7 +128,7 @@ namespace FUB_TradingSim
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(string.Format("failed to load zipped data file {0}, {1}", filePath, e.Message));
+                    throw new Exception(string.Format("DataSourceCSv: failed to load zipped data file {0}, {1}", filePath, e.Message));
                 }
             }
             else
@@ -139,31 +139,97 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private void LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime, DateTime endTime)
+        private int LoadCsv(List<Bar> data, StreamReader sr, DateTime startTime, DateTime endTime, StreamWriter sw = null)
         {
-            sr.ReadLine(); // skip header line
+            int numRecordsLoaded = 0;
+
+            string header = sr.ReadLine(); // skip header line
+            if (sw != null)
+                sw.WriteLine(header);
 
             for (string line; (line = sr.ReadLine()) != null;)
             {
                 if (line.Length == 0)
                     continue; // to handle end of file
 
-                line = Info[DataSourceValue.ticker] + "," + line;
-                string[] items = line.Split(',');
+                string line2 = Info[DataSourceValue.ticker] + "," + line;
+                string[] items = line2.Split(',');
 
                 Bar bar = CreateBar(items);
 
-                if (FirstTime == null || bar.Time < FirstTime)
+                if (FirstTime == null)
                     FirstTime = bar.Time;
 
                 if (LastTime == null || bar.Time > LastTime)
                     LastTime = bar.Time;
 
+                if (bar.Time < LastTime)
+                    throw new Exception("DataSourceCsv: bars not in sequence");
+
                 if (bar.Time >= startTime
-                &&  bar.Time <= endTime)
+                && bar.Time <= endTime)
+                {
                     data.Add(bar);
 
+                    if (sw != null)
+                        sw.WriteLine(line);
+
+                    numRecordsLoaded++;
+                }
+
                 TotalRecordsRead++;
+            }
+
+            return numRecordsLoaded;
+        }
+        private void UpdateData(List<Bar> data, DateTime startTime, DateTime endTime)
+        {
+            DateTime newStartTime = LastTime != null
+                ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
+                : startTime;
+
+            DataUpdater updater = DataUpdater.New(Info);
+            if (updater != null)
+            {
+                DateTime t1 = DateTime.Now;
+                Output.Write(string.Format("DataSourceCsv: updating data for {0}...", Info[DataSourceValue.nickName]));
+
+                // retrieve raw update data
+                // these might contain more bars than we need
+                string rawData = updater.UpdateData(newStartTime, endTime);
+
+                // location of update file to write
+                string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
+                    string.Format("update-{0:yyyy-MM-dd}.csv", DateTime.Now));
+
+                // true, if we will write an update file
+                // if there is a file collision, we won't overwrite
+                // the existing file
+                bool writeUpdateFile = Directory.Exists(Info[DataSourceValue.dataPath])
+                        && !File.Exists(updateFilePath);
+
+                int numBarsWritten;
+
+                // create reader for our update data, and writer for our update file
+                using (MemoryStream mem = new MemoryStream(Encoding.UTF8.GetBytes(rawData ?? "")))
+                using (StreamReader sr = new StreamReader(mem))
+                using (StreamWriter sw = writeUpdateFile
+                            ? new StreamWriter(updateFilePath)
+                            : null)
+                {
+                    numBarsWritten = LoadCsv(data, sr, newStartTime, endTime, sw);
+                }
+
+                // if we wanted to write an update file,
+                // but somehow didnt: delete the empty file
+                if (numBarsWritten == 0
+                && writeUpdateFile)
+                {
+                    File.Delete(updateFilePath);
+                }
+
+                DateTime t2 = DateTime.Now;
+                Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
             }
         }
         #endregion
@@ -215,11 +281,16 @@ namespace FUB_TradingSim
 
                 if (File.Exists(Info[DataSourceValue.dataPath]))
                     LoadFile(data, Info[DataSourceValue.dataPath], startTime, endTime);
-                else
+                else if (Directory.Exists(Info[DataSourceValue.dataPath]))
                     LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
+                else
+                    throw new Exception("DataSourceCsv: data path not found");
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                if (LastTime < endTime)
+                    UpdateData(data, startTime, endTime);
 
                 return data;
             };

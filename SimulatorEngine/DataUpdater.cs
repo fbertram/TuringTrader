@@ -40,7 +40,7 @@ namespace FUB_TradingSim
 
         public readonly Dictionary<DataSourceValue, string> Info;
 
-        abstract public void UpdateData(DateTime startTime, DateTime endTime);
+        abstract public string UpdateData(DateTime startTime, DateTime endTime);
     }
 }
 

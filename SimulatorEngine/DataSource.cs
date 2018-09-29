@@ -132,15 +132,6 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        //----- data updater 
-        #region public void UpdateData(DateTime startTime, DateTime endTime)
-        public void UpdateData(DateTime startTime, DateTime endTime)
-        {
-            DataUpdater updater = DataUpdater.New(Info);
-            updater.UpdateData(startTime, endTime);
-        }
-        #endregion
-
         //----- abstract methods to be implemented by derived classes
         #region abstract public IEnumerator<Bar> BarEnumerator
         abstract public IEnumerator<Bar> BarEnumerator
