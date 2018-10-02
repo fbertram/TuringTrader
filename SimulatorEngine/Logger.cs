@@ -246,7 +246,7 @@ namespace FUB_TradingSim
                 //    excel,
                 //    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
                 //                        tmpFile, plots.Count, i});
-                excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i);
+                excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i, plot);
 
                 Thread.Sleep(500); // this is ugly but prevents Excel from crashing
             }
