@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
     <Compile Include="DataUpdater.cs" />
+    <Compile Include="DataUpdaterIQFeed.cs" />
     <Compile Include="DataUpdaterWeb.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
@@ -79,6 +80,12 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IndicatorsVolatility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\IQFeed.CSharpApiClient\src\IQFeed.CSharpApiClient\IQFeed.CSharpApiClient.csproj">
+      <Project>{cd7fc7c1-9cca-4685-80de-cf9e849ec9cf}</Project>
+      <Name>IQFeed.CSharpApiClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

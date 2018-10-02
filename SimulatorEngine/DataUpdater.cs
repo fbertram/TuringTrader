@@ -25,14 +25,16 @@ namespace FUB_TradingSim
         #region static public DataUpdate New(Dictionary<DataSourceValue, string> info)
         static public DataUpdater New(Dictionary<DataSourceValue, string> info)
         {
+
             if (info.ContainsKey(DataSourceValue.updateWeb))
-                return new DataUpdaterWeb(info);
+                return new DataUpdaterIQFeed(info);
+                //return new DataUpdaterWeb(info);
             else
                 return null;
         }
         #endregion
-        #region public DataUpdate(Dictionary<DataSourceValue, string> info)
-        public DataUpdater(Dictionary<DataSourceValue, string> info)
+        #region protected DataUpdate(Dictionary<DataSourceValue, string> info)
+        protected DataUpdater(Dictionary<DataSourceValue, string> info)
         {
             Info = info;
         }
@@ -40,7 +42,8 @@ namespace FUB_TradingSim
 
         public readonly Dictionary<DataSourceValue, string> Info;
 
-        abstract public string UpdateData(DateTime startTime, DateTime endTime);
+        abstract public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime);
+        abstract public string Name {get;}
     }
 }
 

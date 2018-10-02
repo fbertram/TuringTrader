@@ -34,8 +34,10 @@ namespace FUB_TradingSim
         private static int _totalBarsRead = 0;
         #endregion
         #region internal helpers
-        private Bar CreateBar(string[] items)
+        private Bar CreateBar(string line)
         {
+            string[] items = (Info[DataSourceValue.ticker] + "," + line).Split(',');
+
             string symbol = Info[DataSourceValue.ticker];
             DateTime date = default(DateTime);
             DateTime time = default(DateTime);
@@ -90,6 +92,7 @@ namespace FUB_TradingSim
                 {
                     // there are a lot of things that can go wrong here
                     // we try to move on, as long as we can parse at least part of the fields
+                    Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", Info[DataSourceValue.nickName], line, mapping.Key, mapping.Value);
                 }
             }
 
@@ -147,24 +150,16 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private int LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime,
-            StreamWriter writer = null, DateTime writeStartTime = default(DateTime), DateTime writeEndTime = default(DateTime))
+        private void LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime)
         {
-            int numBarsWritten = 0;
-
             string header = reader.ReadLine(); // skip header line
-            if (writer != null)
-                writer.WriteLine(header);
 
             for (string line; (line = reader.ReadLine()) != null;)
             {
                 if (line.Length == 0)
                     continue; // to handle end of file
 
-                string line2 = Info[DataSourceValue.ticker] + "," + line;
-                string[] items = line2.Split(',');
-
-                Bar bar = CreateBar(items);
+                Bar bar = CreateBar(line);
 
                 if (FirstTime == null)
                     FirstTime = bar.Time;
@@ -179,18 +174,30 @@ namespace FUB_TradingSim
                 && bar.Time <= loadEndTime)
                     data.Add(bar);
 
-                if (writer != null
-                && bar.Time >= writeStartTime
-                && bar.Time <= writeEndTime)
-                {
-                    writer.WriteLine(line);
-                    numBarsWritten++;
-                }
-
                 _totalBarsRead++;
             }
+        }
+        private void WriteCsv(string name, IEnumerable<Bar> updateBars)
+        {
+            string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
+                string.Format("{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), name.ToLower()));
 
-            return numBarsWritten;
+            if (Directory.Exists(Info[DataSourceValue.dataPath])
+            && !File.Exists(updateFilePath))
+            {
+                using (StreamWriter writer = new StreamWriter(updateFilePath))
+                {
+                    // TODO: need to write with the proper column mapping
+                    //       as defined by the Info property
+                    writer.WriteLine("Date,Open,High,Low,Close,Volume");
+
+                    foreach (Bar bar in updateBars)
+                    {
+                        writer.WriteLine("{0:MM/dd/yyyy},{1},{2},{3},{4},{5}",
+                            bar.Time, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                    }
+                }
+            }
         }
         private void UpdateData(List<Bar> data, DateTime startTime, DateTime endTime)
         {
@@ -203,7 +210,7 @@ namespace FUB_TradingSim
             DateTime loadStartTime = LastTime != null
                 ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
                 : startTime;
-            DateTime writeStartTime = LastTime != null
+            DateTime updateStartTime = LastTime != null
                 ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
                 : DateTime.Parse("01/01/1990");
 
@@ -213,9 +220,9 @@ namespace FUB_TradingSim
             // we run our update for a few days more than requested (if that's possible)
             // to make sure we don't run it again, in case the same update is requested again
             DateTime loadEndTime = endTime;
-            DateTime writeEndTime = endTime.Date + TimeSpan.FromDays(4) - TimeSpan.FromSeconds(1);
-            if (writeEndTime > DateTime.Now)
-                writeEndTime = DateTime.Now;
+            DateTime updateEndTime = endTime.Date + TimeSpan.FromDays(4) - TimeSpan.FromSeconds(1);
+            if (updateEndTime > DateTime.Now)
+                updateEndTime = DateTime.Now;
 
             DataUpdater updater = DataUpdater.New(Info);
             if (updater != null)
@@ -224,38 +231,15 @@ namespace FUB_TradingSim
                 Output.Write(string.Format("DataSourceCsv: updating data for {0}...", Info[DataSourceValue.nickName]));
 
                 // retrieve raw update data
-                // these might contain more bars than we need
-                string rawData = updater.UpdateData(writeStartTime, writeEndTime);
+                IEnumerable<Bar> updateBars = updater.UpdateData(updateStartTime, updateEndTime);
 
-                // location of update file to write
-                string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
-                    string.Format("{0:yyyy-MM-dd}-update.csv", writeEndTime));
+                // write a new csv file
+                if (updateBars.Count() > 0)
+                    WriteCsv(updater.Name, updateBars);
 
-                // true, if we will write an update file
-                // if there is a file collision, we won't overwrite
-                // the existing file
-                bool writeUpdateFile = Directory.Exists(Info[DataSourceValue.dataPath])
-                        && !File.Exists(updateFilePath);
-
-                int numBarsWritten;
-
-                // create reader for our update data, and writer for our update file
-                using (MemoryStream mem = new MemoryStream(Encoding.UTF8.GetBytes(rawData ?? "")))
-                using (StreamReader reader = new StreamReader(mem))
-                using (StreamWriter writer = writeUpdateFile
-                            ? new StreamWriter(updateFilePath)
-                            : null)
-                {
-                    numBarsWritten = LoadCsv(data, reader, loadStartTime, loadEndTime,
-                                                    writer, writeStartTime, writeEndTime);
-                }
-
-                // delete files with only very few bars
-                if (numBarsWritten < 1
-                && writeUpdateFile)
-                {
-                    File.Delete(updateFilePath);
-                }
+                // load the bars into memory
+                foreach (Bar bar in updateBars.Where(b => b.Time >= loadStartTime && b.Time <= loadEndTime))
+                    data.Add(bar);
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));

@@ -39,9 +39,11 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region override public void UpdateData(DateTime startTime, DateTime endTime)
-        override public string UpdateData(DateTime startTime, DateTime endTime)
+        #region override List<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
+            return null;
+
             // examples:
             //   stooq.com:
             //     updateWeb=https://stooq.com/q/d/l/?s=^spx&d1={0:yyyy}{0:MM}{0:dd}&d2={5:yyyy}{5:MM}{5:dd}&i=d
@@ -64,7 +66,17 @@ namespace FUB_TradingSim
 
             using (var client = new WebClient())
             {
-                return client.DownloadString(url);
+                //return client.DownloadString(url);
+            }
+        }
+        #endregion
+
+        #region public override string Name
+        public override string Name
+        {
+            get
+            {
+                return "Web";
             }
         }
         #endregion
