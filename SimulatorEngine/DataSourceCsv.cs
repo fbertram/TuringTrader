@@ -230,7 +230,7 @@ namespace FUB_TradingSim
                 DateTime t1 = DateTime.Now;
                 Output.Write(string.Format("DataSourceCsv: updating data for {0}...", Info[DataSourceValue.nickName]));
 
-                // retrieve raw update data
+                // retrieve update data
                 IEnumerable<Bar> updateBars = updater.UpdateData(updateStartTime, updateEndTime);
 
                 // write a new csv file
