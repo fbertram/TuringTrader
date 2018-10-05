@@ -2,7 +2,7 @@
 This project implements a trading simulator for stocks and options with the following features:
 
 * import data in various CSV formats and with configurable column-mapping
-* automatic download/ update of data files from web sources
+* automatic download/ update of data files from web IQFeed, Yahoo, and Stooq
 * calculate indicators, with a growing library of standard indicators
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
@@ -17,6 +17,8 @@ The following features are planned for the near future:
 
 * support for limit orders
 * API documentation
+* Windows Universal UI
+* Unit tests
 
 The following environment is required for building and running the simulator:
 
