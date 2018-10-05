@@ -40,8 +40,11 @@ namespace FUB_TradingSim
         optionRight,
         optionUnderlying,
 
-        updateWeb,
-        updateIqfeed
+        symbolIqfeed,
+        symbolStooq,
+        symbolYahoo,
+        symbolInteractiveBrokers,
+        dataUpdater,
     };
 }
 

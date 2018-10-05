@@ -8,4 +8,6 @@ high={3}
 low={4}
 close={5}
 volume={6}
-updateWeb=https://stooq.com/q/d/l/?s=fb.us&d1={0:yyyy}{0:MM}{0:dd}&d2={5:yyyy}{5:MM}{5:dd}&i=d
+symbolStooq=fb.us
+symbolYahoo=fb
+dataUpdater=yahoo

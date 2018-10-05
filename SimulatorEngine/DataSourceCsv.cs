@@ -150,7 +150,7 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private void LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime)
+        public void LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime)
         {
             string header = reader.ReadLine(); // skip header line
 

@@ -25,12 +25,21 @@ namespace FUB_TradingSim
         #region static public DataUpdate New(Dictionary<DataSourceValue, string> info)
         static public DataUpdater New(Dictionary<DataSourceValue, string> info)
         {
-
-            if (info.ContainsKey(DataSourceValue.updateWeb))
-                return new DataUpdaterIQFeed(info);
-                //return new DataUpdaterWeb(info);
-            else
+            if (!info.ContainsKey(DataSourceValue.dataUpdater))
                 return null;
+
+            string dataUpdater = info[DataSourceValue.dataUpdater].ToLower();
+
+            if (dataUpdater.Contains("iqfeed") && info.ContainsKey(DataSourceValue.symbolIqfeed))
+                return new DataUpdaterIQFeed(info);
+
+            if (dataUpdater.Contains("yahoo") && info.ContainsKey(DataSourceValue.symbolYahoo))
+                return new DataUpdaterYahoo(info);
+
+            if (dataUpdater.Contains("stooq") && info.ContainsKey(DataSourceValue.symbolStooq))
+                return new DataUpdaterStooq(info);
+
+            return null;
         }
         #endregion
         #region protected DataUpdate(Dictionary<DataSourceValue, string> info)
