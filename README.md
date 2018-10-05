@@ -2,7 +2,7 @@
 This project implements a trading simulator for stocks and options with the following features:
 
 * import data in various CSV formats and with configurable column-mapping
-* automatic download/ update of data files from web IQFeed, Yahoo, and Stooq
+* automatic download/ update of data files from IQFeed, Yahoo, and Stooq
 * calculate indicators, with a growing library of standard indicators
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
