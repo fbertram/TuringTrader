@@ -172,6 +172,15 @@ namespace FUB_TradingSim
             NetAssetValue.Value = 0.0;
         }
         #endregion
+        #region public string Name
+        public string Name
+        {
+            get
+            {
+                return this.GetType().Name;
+            }
+        }
+        #endregion
         #region virtual public void Run()
         virtual public void Run()
         {

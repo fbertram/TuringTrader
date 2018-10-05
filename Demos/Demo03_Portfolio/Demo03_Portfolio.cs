@@ -28,7 +28,6 @@ namespace FUB_TradingSim
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
-        private readonly string _benchmarkInstrument = "^GSPC.Index";
         private readonly List<string> _tradingInstruments = new List<string>()
         {
             "FB.Stock",
@@ -52,7 +51,6 @@ namespace FUB_TradingSim
 
             // add instruments
             DataPath = _dataPath;
-            DataSources.Add(DataSource.New(_benchmarkInstrument));
             foreach (string nickname in _tradingInstruments)
                 DataSources.Add(DataSource.New(nickname));
 

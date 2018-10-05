@@ -30,23 +30,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DynamicInterop">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\DynamicInterop.dll</HintPath>
+    <Reference Include="DynamicInterop, Version=0.8.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalProjects\DynamicInterop\DynamicInterop.dll</HintPath>
+    </Reference>
+    <Reference Include="IQFeed.CSharpApiClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalProjects\IQFeed.CSharpApiClient\IQFeed.CSharpApiClient.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>..\..\..\..\..\..\..\..\Windows\assembly\GAC_MSIL\Microsoft.Office.Interop.Excel\15.0.0.0__71e9bce111e9429c\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
-    <Reference Include="RDotNet">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalProjects\Newtonsoft.Json\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RDotNet.NativeLibrary">
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\TS Support\MultiCharts .NET64\Libraries\RDotNet.NativeLibrary.dll</HintPath>
+    <Reference Include="RDotNet, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalProjects\RDotNet\RDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="RDotNet.NativeLibrary, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalProjects\RDotNet\RDotNet.NativeLibrary.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,6 +68,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
+    <Compile Include="DataSourceValue.cs" />
+    <Compile Include="DataUpdater.cs" />
+    <Compile Include="DataUpdaterIQFeed.cs" />
+    <Compile Include="DataUpdaterStooq.cs" />
+    <Compile Include="DataUpdaterYahoo.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolume.cs" />

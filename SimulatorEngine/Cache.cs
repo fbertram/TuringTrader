@@ -12,6 +12,8 @@
 //#define DISABLE_CACHE
 // with DISABLE_CACHE defined, no data will be cached, 
 // and retrieval function will be called directly
+// please note that indicators require caching to
+// be enabled
 
 #region libraries
 using System;

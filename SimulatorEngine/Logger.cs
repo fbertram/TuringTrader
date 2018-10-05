@@ -2,7 +2,7 @@
 // Project:     Trading Simulator
 // Name:        Plotter
 // Description: logging class to connect w/ CSV Files, Excel, R
-// History:     2017xii08,   FUB, created
+// History:     2017xii08, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -12,7 +12,7 @@
 //#define ENABLE_R
 // for R, we need RDotNet installed. comment the line above to disable R
 // install with the following command: nuget install R.Net.Community
-// tested successfully w/ MultiCharts 11 and RDotNet 1.7.0
+// tested successfully w/ MSVC 2017 and RDotNet 1.7.0
 // add assembly references to the following DLLs
 // - DynamicInterop.dll
 // - RDotNet.dll
@@ -246,7 +246,7 @@ namespace FUB_TradingSim
                 //    excel,
                 //    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
                 //                        tmpFile, plots.Count, i});
-                excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i);
+                excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i, plot);
 
                 Thread.Sleep(500); // this is ugly but prevents Excel from crashing
             }
@@ -254,7 +254,7 @@ namespace FUB_TradingSim
 #else // ENABLE_EXCEL
 			public void OpenWithExcel(string pathToExcelFile = @"C:\ProgramData\TS Support\MultiCharts .NET64\__FUB_Research.xlsm")
 			{
-				Debug.WriteLine("Logger: OpenWithExcel bypassed w/ ENABLE_EXCEL switch");
+				Output.WriteLine("Logger: OpenWithExcel bypassed w/ ENABLE_EXCEL switch");
 			}
 #endif // ENABLE_EXCEL
         #endregion
@@ -331,10 +331,10 @@ namespace FUB_TradingSim
             engine.Dispose();
         }
 #else // ENABLE_R
-			public void OpenWithR(List<string> RCommands = null)
-			{
-				Debug.WriteLine("Logger: OpenWithR bypassed w/ ENABLE_R switch");
-			}
+        public void OpenWithR(List<string> RCommands = null)
+        {
+            Output.WriteLine("Logger: OpenWithR bypassed w/ ENABLE_R switch");
+        }
 #endif // ENABLE_R
         #endregion
     }

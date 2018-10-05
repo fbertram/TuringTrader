@@ -1,7 +1,8 @@
 # FUB Trading Simulator
 This project implements a trading simulator for stocks and options with the following features:
 
-* import data in CSV format, either as plain files, or zipped archives with customizable column-mapping
+* import data in various CSV formats and with configurable column-mapping
+* automatic download/ update of data files from web IQFeed, Yahoo, and Stooq
 * calculate indicators, with a growing library of standard indicators
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
@@ -15,14 +16,15 @@ This project implements a trading simulator for stocks and options with the foll
 The following features are planned for the near future:
 
 * support for limit orders
-* automatic download/ update of data files
 * API documentation
+* Windows Universal UI
+* Unit tests
 
 The following environment is required for building and running the simulator:
 
 * Microsoft Visual Studio, Community 2015 or better
 * Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
 * R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
-* data files for the instruments to simulate. For convenience, some end-of-day quotes are included
+* data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured
 
 

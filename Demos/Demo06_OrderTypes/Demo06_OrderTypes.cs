@@ -27,7 +27,7 @@ namespace FUB_TradingSim
         private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleTable.xlsm";
         private readonly double _initialCash = 100000.00;
-        private readonly string _instrumentNick = "^GSPC.Index";
+        private readonly string _instrumentNick = "^SPX.Index";
         #endregion
 
         override public void Run()

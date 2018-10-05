@@ -21,7 +21,7 @@ namespace FUB_TradingSim
 {
     public static class IndicatorsVolatility
     {
-        #region Volatility
+        #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Return volatility of time series
         /// </summary>
@@ -46,7 +46,7 @@ namespace FUB_TradingSim
             public FunctorVolatility(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
+                N = Math.Max(2, n);
             }
 
             public void Calc()
@@ -78,8 +78,8 @@ namespace FUB_TradingSim
                 Value = Math.Sqrt(252.0 * variance);
             }
         }
-#endregion
-        #region VolatilityFromRange
+        #endregion
+        #region public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Return volatility of time series, based on recent trading range
         /// </summary>
@@ -104,7 +104,7 @@ namespace FUB_TradingSim
             public FunctorVolatilityFromRange(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
+                N = Math.Max(2, n);
             }
 
             public void Calc()
@@ -129,8 +129,8 @@ namespace FUB_TradingSim
                 Value = volatility;
             }
         }
-#endregion
-        #region FastVariance - exponentially weighted variance
+        #endregion
+        #region public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         {
             string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
@@ -155,8 +155,8 @@ namespace FUB_TradingSim
             public FunctorFastVariance(ITimeSeries<double> series, int n)
             {
                 Series = series;
-                N = n;
-                _alpha = 2.0 / (n + 1.0);
+                N = Math.Max(2, n);
+                _alpha = 2.0 / (N + 1.0);
             }
 
             public void Calc()
@@ -179,9 +179,40 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        #region public static ITimeSeries<double> TrueRange(this Instrument series)
+        public static ITimeSeries<double> TrueRange(this Instrument series)
+        {
+            string cacheKey = string.Format("{0}", series.GetHashCode());
+
+            var functor = Cache<FunctorTrueRange>.GetData(
+                    cacheKey,
+                    () => new FunctorTrueRange(series));
+
+            functor.Calc();
+
+            return functor;
+        }
+
+        private class FunctorTrueRange : TimeSeries<double>
+        {
+            public Instrument Series;
+
+            public FunctorTrueRange(Instrument series)
+            {
+                Series = series;
+            }
+
+            public void Calc()
+            {
+                double high = Math.Max(Series[0].High, Series[1].Close);
+                double low = Math.Min(Series[0].Low, Series[1].Close);
+
+                Value = high - low;
+            }
+        }
+        #endregion
 
         // - Bollinger Bands
-        // - Average True Range
     }
 }
 
