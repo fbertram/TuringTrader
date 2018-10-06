@@ -9,6 +9,14 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+// for this to work, IQfeed credentials must be placed in the environment as follows:
+// Run rundll32 sysdm.cpl,EditEnvironmentVariables to open the Environment Variables
+// In your User variables, create 4 new ones: 
+// IQCONNECT_LOGIN
+// IQCONNECT_PASSWORD
+// IQCONNECT_PRODUCT_ID
+// IQCONNECT_PRODUCT_VERSION(not mandatory, will fallback to 1.0.0.0)
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -33,7 +41,7 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            IQFeedLauncher.Start("473776", "80424284", "ONDEMAND_SERVER", "1.0");
+            IQFeedLauncher.Start(null, null, "ONDEMAND_SERVER", "1.0");
             var lookupClient = LookupClientFactory.CreateNew();
             lookupClient.Connect();
 
