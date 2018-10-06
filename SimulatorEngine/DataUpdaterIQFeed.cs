@@ -33,7 +33,7 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            IQFeedLauncher.Start("473776", "80424284", "ONDEMAND_SERVER", "1.0");
+            IQFeedLauncher.Start(null, null, "ONDEMAND_SERVER", "1.0");
             var lookupClient = LookupClientFactory.CreateNew();
             lookupClient.Connect();
 
