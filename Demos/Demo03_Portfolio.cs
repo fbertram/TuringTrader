@@ -21,12 +21,12 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Demo03_Portfolio: Algorithm
+    public class Demo03_Portfolio: Algorithm
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly double _initialCash = 100000.00;
         private readonly List<string> _tradingInstruments = new List<string>()
         {
@@ -103,22 +103,11 @@ namespace FUB_TradingSim
             }
         }
 
-        #region miscellaneous stuff
-        public Demo03_Portfolio()
-        { }
-
-        public void CreateChart()
+        override public void Report()
         {
             _plotter.OpenWithExcel(_excelPath);
         }
 
-        public static void Main(string[] args)
-        {
-            var algo = new Demo03_Portfolio();
-            algo.Run();
-            algo.CreateChart();
-        }
-        #endregion
     }
 }
 

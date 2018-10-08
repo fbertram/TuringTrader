@@ -20,12 +20,12 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Demo06_OrderTypes : Algorithm
+    public class Demo06_OrderTypes : Algorithm
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleTable.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
+        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         #endregion
@@ -94,19 +94,10 @@ namespace FUB_TradingSim
             }
         }
 
-        #region miscellaneous stuff
-        public void CreateChart()
+        override public void Report()
         {
             _plotter.OpenWithExcel(_excelPath);
         }
-
-        static void Main(string[] args)
-        {
-            var algo = new Demo06_OrderTypes();
-            algo.Run();
-            algo.CreateChart();
-        }
-        #endregion
     }
 }
 

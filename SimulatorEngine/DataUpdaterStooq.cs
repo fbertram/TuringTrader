@@ -56,15 +56,32 @@ namespace FUB_TradingSim
                 using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(rawData)))
                 using (StreamReader reader = new StreamReader(ms))
                 {
-                    // TODO: revisit this - using DataSourceCsv
-                    //       might not be the best idea, maybe
-                    //       we should just hardcode a very basic
-                    //       parser here instead
-                    DataSourceCsv parser = new DataSourceCsv(_parseInfo);
-                    List<Bar> bars = new List<Bar>();
-                    parser.LoadCsv(bars, reader, startTime, endTime);
+                    string header = reader.ReadLine(); // skip header line
 
-                    return bars;
+                    for (string line; (line = reader.ReadLine()) != null;)
+                    {
+                        if (line.Length == 0)
+                            continue; // to handle end of file
+
+                        string[] items = line.Split(',');
+
+                        DateTime time = DateTime.Parse(items[0]).Date + DateTime.Parse("16:00").TimeOfDay;
+                        double open = double.Parse(items[1]);
+                        double high = double.Parse(items[2]);
+                        double low = double.Parse(items[3]);
+                        double close = double.Parse(items[4]);
+                        long volume = long.Parse(items[5]);
+
+                        Bar bar = new Bar(
+                            Info[DataSourceValue.symbol], time,
+                            open, high, low, close, volume, true,
+                            default(double), default(double), default(long), default(long), false,
+                            default(DateTime), default(double), false);
+
+                        yield return bar;
+                    }
+
+                    yield break;
                 }
             }
         }

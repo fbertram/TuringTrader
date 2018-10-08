@@ -21,12 +21,12 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Demo04_Options : Algorithm
+    public class Demo04_Options : Algorithm
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Data";
-        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
+        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -159,19 +159,10 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region miscellaneous stuff
-        public void CreateChart()
+        override public void Report()
         {
             _plotter.OpenWithExcel(_excelChartTemplate);
         }
-
-        static void Main(string[] args)
-        {
-            var algo = new Demo04_Options();
-            algo.Run();
-            algo.CreateChart();
-        }
-        #endregion
     }
 }
 

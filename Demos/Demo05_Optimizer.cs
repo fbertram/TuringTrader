@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class Demo05_Optimizer : Algorithm
+    public class Demo05_Optimizer : Algorithm
     {
         #region internal data
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\..\Excel\SimpleTable.xlsm";

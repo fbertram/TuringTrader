@@ -21,8 +21,6 @@ using System.Diagnostics;
 
 namespace FUB_TradingSim
 {
-    public enum ReportType { FitnessValue, Plot, Excel };
-
     /// <summary>
     /// base class for trading algorithms
     /// </summary>
@@ -186,10 +184,9 @@ namespace FUB_TradingSim
         {
         }
         #endregion
-        #region virtual public object Report(ReportType)
-        virtual public object Report(ReportType reportType)
+        #region virtual public object Report()
+        virtual public void Report()
         {
-            return FitnessValue;
         }
         #endregion
         #region public double FitnessValue
