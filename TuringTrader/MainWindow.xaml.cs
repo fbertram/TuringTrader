@@ -48,12 +48,18 @@ namespace TuringTrader
         {
             RunButton.IsEnabled = false;
             ReportButton.IsEnabled = false;
+            LogOutput.Text = "";
 
             string algorithmName = AlgoSelector.SelectedItem.ToString();
             _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
 
+            DateTime timeStamp1 = DateTime.Now;
+
             if (_currentAlgorithm != null)
                 _currentAlgorithm.Run();
+
+            DateTime timeStamp2 = DateTime.Now;
+            WriteEventHandler(string.Format("done, finished after {0:F1} seconds", (timeStamp2 - timeStamp1).TotalSeconds));
 
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = true;
@@ -62,6 +68,16 @@ namespace TuringTrader
         private void ReportButton_Click(object sender, RoutedEventArgs e)
         {
             _currentAlgorithm.Report();
+        }
+
+        private void WriteEventHandler(string message)
+        {
+            LogOutput.Text += message;
+        }
+
+        private void LogOutput_Loaded(object sender, RoutedEventArgs e)
+        {
+            Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
         }
     }
 }

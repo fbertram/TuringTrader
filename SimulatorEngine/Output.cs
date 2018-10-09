@@ -22,22 +22,23 @@ namespace FUB_TradingSim
 {
     public class Output
     {
-        public static void Write(string format)
+        public delegate void WriteEventDelegate(string message);
+        public static WriteEventDelegate WriteEvent;
+
+        public static void Write(string format, params object[] args)
         {
-#if DEBUG
-            Debug.Write(format);
-#else
-            Console.Write(format);
-#endif
+            string message = string.Format(format, args);
+
+            if (WriteEvent == null)
+                Debug.Write(message);
+            else
+                WriteEvent(message);
         }
 
         public static void WriteLine(string format, params object[] args)
         {
-#if DEBUG
-            Debug.WriteLine(format, args);
-#else
-            Console.WriteLine(format, args);
-#endif
+            Write(format, args);
+            Write(Environment.NewLine);
         }
     }
 }

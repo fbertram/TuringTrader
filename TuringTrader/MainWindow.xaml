@@ -10,6 +10,6 @@
         <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="239,51,0,0" VerticalAlignment="Top" Width="169" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged"/>
         <Button x:Name="RunButton" Content="Run" HorizontalAlignment="Left" Margin="333,98,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="RunButton_Click"/>
         <Button x:Name="ReportButton" Content="Report" HorizontalAlignment="Left" Margin="333,143,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="ReportButton_Click"/>
-
+        <TextBlock x:Name="LogOutput"  HorizontalAlignment="Left" Margin="82,269,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="94" Width="444" Loaded="LogOutput_Loaded"/>
     </Grid>
 </Window>
