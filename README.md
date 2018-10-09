@@ -1,4 +1,4 @@
-# FUB Trading Simulator
+# Turing Trader
 This project implements a trading simulator for stocks and options with the following features:
 
 * import data in various CSV formats and with configurable column-mapping

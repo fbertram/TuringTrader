@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,15 +27,19 @@ namespace TuringTrader
     public partial class MainWindow : Window
     {
         private Algorithm _currentAlgorithm = null;
+        private readonly SynchronizationContext synchronizationContext;
+        private string messageUpdate;
+        private DateTime lastLogUpdate;
 
         public MainWindow()
         {
             InitializeComponent();
+            synchronizationContext = SynchronizationContext.Current;
         }
 
         private void AlgoSelector_Loaded(object sender, RoutedEventArgs e)
         {
-            foreach (Type algorithmType in AlgorithmLoader.GetAllAlgorithms())
+            foreach (Type algorithmType in AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name))
                 AlgoSelector.Items.Add(algorithmType.Name);
         }
 
@@ -44,7 +49,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = false;
         }
 
-        private void RunButton_Click(object sender, RoutedEventArgs e)
+        private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
             ReportButton.IsEnabled = false;
@@ -53,13 +58,22 @@ namespace TuringTrader
             string algorithmName = AlgoSelector.SelectedItem.ToString();
             _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
 
-            DateTime timeStamp1 = DateTime.Now;
-
             if (_currentAlgorithm != null)
-                _currentAlgorithm.Run();
+                await Task.Run(() =>
+                {
+                    DateTime timeStamp1 = DateTime.Now;
 
-            DateTime timeStamp2 = DateTime.Now;
-            WriteEventHandler(string.Format("done, finished after {0:F1} seconds", (timeStamp2 - timeStamp1).TotalSeconds));
+                    WriteEventHandler(
+                        string.Format("running algorithm {0}", _currentAlgorithm.Name)
+                        + Environment.NewLine);
+                    _currentAlgorithm.Run();
+
+                    DateTime timeStamp2 = DateTime.Now;
+                    WriteEventHandler(
+                        string.Format("finished algorithm {0} after {1:F1} seconds", _currentAlgorithm.Name, (timeStamp2 - timeStamp1).TotalSeconds)
+                        + Environment.NewLine);
+                    WriteEventHandler(""); // will force flush
+                });
 
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = true;
@@ -72,12 +86,43 @@ namespace TuringTrader
 
         private void WriteEventHandler(string message)
         {
-            LogOutput.Text += message;
+#if true
+            LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                messageUpdate += message;
+
+                DateTime timeNow = DateTime.Now;
+                if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
+                    return;
+                lastLogUpdate = timeNow;
+
+                LogOutput.AppendText(messageUpdate);
+                messageUpdate = "";
+            }));
+#else
+            synchronizationContext.Post(new SendOrPostCallback(o =>
+            {
+                messageUpdate += message;
+
+                DateTime timeNow = DateTime.Now;
+                if ((timeNow - lastLogUpdate).TotalMilliseconds < 200)
+                    return;
+                lastLogUpdate = timeNow;
+
+                LogOutput.AppendText(messageUpdate);
+                messageUpdate = "";
+            }), null);
+#endif
         }
 
         private void LogOutput_Loaded(object sender, RoutedEventArgs e)
         {
             Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
+        }
+
+        private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            LogOutput.ScrollToEnd();
         }
     }
 }

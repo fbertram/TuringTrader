@@ -7,9 +7,13 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="239,51,0,0" VerticalAlignment="Top" Width="169" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged"/>
-        <Button x:Name="RunButton" Content="Run" HorizontalAlignment="Left" Margin="333,98,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="RunButton_Click"/>
-        <Button x:Name="ReportButton" Content="Report" HorizontalAlignment="Left" Margin="333,143,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="ReportButton_Click"/>
-        <TextBlock x:Name="LogOutput"  HorizontalAlignment="Left" Margin="82,269,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="94" Width="444" Loaded="LogOutput_Loaded"/>
+        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="282" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged"/>
+        <Button x:Name="RunButton" Content="Run" HorizontalAlignment="Left" Margin="612,10,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="RunButton_Click"/>
+        <Button x:Name="ReportButton" Content="Report" HorizontalAlignment="Left" Margin="707,10,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="ReportButton_Click"/>
+        <TextBox x:Name="LogOutput" HorizontalAlignment="Left" Height="362" VerticalScrollBarVisibility="Auto" Margin="10,47,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="772" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged"/>
+        <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Left" Height="361" Margin="10,48,0,0" VerticalAlignment="Top" Width="772" >
+            <TextBox x:Name="LogOutput" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged"/>
+        </ScrollViewer> -->
+
     </Grid>
 </Window>
