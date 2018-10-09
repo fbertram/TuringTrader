@@ -1,4 +1,5 @@
 ﻿using FUB_TradingSim;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,6 +19,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Path = System.IO.Path;
+using Avalon.Windows.Dialogs;
+using System.Windows.Threading;
 
 namespace TuringTrader
 {
@@ -27,14 +30,23 @@ namespace TuringTrader
     public partial class MainWindow : Window
     {
         private Algorithm _currentAlgorithm = null;
-        private readonly SynchronizationContext synchronizationContext;
         private string messageUpdate;
         private DateTime lastLogUpdate;
+        private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
 
         public MainWindow()
         {
             InitializeComponent();
-            synchronizationContext = SynchronizationContext.Current;
+
+            string path = GlobalSettings.DataPath;
+            if (path == null)
+            {
+                MenuDataLocation_Click(null, null);
+            }
+
+            _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
+            _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
+            _dispatcherTimer.Start();
         }
 
         private void AlgoSelector_Loaded(object sender, RoutedEventArgs e)
@@ -53,6 +65,7 @@ namespace TuringTrader
         {
             RunButton.IsEnabled = false;
             ReportButton.IsEnabled = false;
+            messageUpdate = "";
             LogOutput.Text = "";
 
             string algorithmName = AlgoSelector.SelectedItem.ToString();
@@ -86,33 +99,18 @@ namespace TuringTrader
 
         private void WriteEventHandler(string message)
         {
-#if true
             LogOutput.Dispatcher.BeginInvoke(new Action(() =>
             {
                 messageUpdate += message;
 
-                DateTime timeNow = DateTime.Now;
-                if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
-                    return;
-                lastLogUpdate = timeNow;
+                //DateTime timeNow = DateTime.Now;
+                //if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
+                //    return;
+                //lastLogUpdate = timeNow;
 
-                LogOutput.AppendText(messageUpdate);
-                messageUpdate = "";
+                //LogOutput.AppendText(messageUpdate);
+                //messageUpdate = "";
             }));
-#else
-            synchronizationContext.Post(new SendOrPostCallback(o =>
-            {
-                messageUpdate += message;
-
-                DateTime timeNow = DateTime.Now;
-                if ((timeNow - lastLogUpdate).TotalMilliseconds < 200)
-                    return;
-                lastLogUpdate = timeNow;
-
-                LogOutput.AppendText(messageUpdate);
-                messageUpdate = "";
-            }), null);
-#endif
         }
 
         private void LogOutput_Loaded(object sender, RoutedEventArgs e)
@@ -123,6 +121,35 @@ namespace TuringTrader
         private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
         {
             LogOutput.ScrollToEnd();
+        }
+
+        private void MenuFileExit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
+        }
+
+        private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+            folderDialog.Title = "Select Data Location";
+
+            bool? result = folderDialog.ShowDialog();
+            if (result == true)
+            {
+                GlobalSettings.DataPath = folderDialog.SelectedPath;
+            }
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            LogOutput.AppendText(messageUpdate);
+            messageUpdate = "";
         }
     }
 }

@@ -25,14 +25,29 @@ namespace FUB_TradingSim
     /// </summary>
     public abstract class DataSource
     {
-        public static string DataPath = @".\Data";
+        #region public static string DataPath
+        public static string DataPath
+        {
+            get
+            {
+                return GlobalSettings.DataPath;
+            }
+            set
+            {
+                if (!Directory.Exists(value))
+                    throw new Exception(string.Format("DataSource: invalid data path {0}", value));
+
+                GlobalSettings.DataPath = value;
+            }
+        }
+        #endregion
 
         //----- object factory
         #region static public DataSource New(string nickname)
         static public DataSource New(string nickname)
         {
             // check for info file
-            string infoPathName = string.Format(@"{0}\{1}.inf", DataPath, nickname);
+            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
 
             if (!File.Exists(infoPathName))
                 throw new Exception("failed to locate data source info for " + nickname);

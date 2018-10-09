@@ -198,7 +198,7 @@ namespace FUB_TradingSim
         #endregion
 
         //---------- for use by algorithms
-        #region protected string DataPath
+        /*#region protected string DataPath
         protected string DataPath
         {
             set
@@ -214,7 +214,7 @@ namespace FUB_TradingSim
                 return DataSource.DataPath;
             }
         }
-        #endregion
+        #endregion*/
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;

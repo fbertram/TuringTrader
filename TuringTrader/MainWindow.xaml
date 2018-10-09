@@ -5,15 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="TuringTrader" Height="450" Width="800"
+        ResizeMode="NoResize">
     <Grid>
-        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="282" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged"/>
-        <Button x:Name="RunButton" Content="Run" HorizontalAlignment="Left" Margin="612,10,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="RunButton_Click"/>
-        <Button x:Name="ReportButton" Content="Report" HorizontalAlignment="Left" Margin="707,10,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="ReportButton_Click"/>
-        <TextBox x:Name="LogOutput" HorizontalAlignment="Left" Height="362" VerticalScrollBarVisibility="Auto" Margin="10,47,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="772" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged"/>
-        <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Left" Height="361" Margin="10,48,0,0" VerticalAlignment="Top" Width="772" >
-            <TextBox x:Name="LogOutput" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged"/>
-        </ScrollViewer> -->
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="65*"/>
+            <ColumnDefinition Width="133*"/>
+        </Grid.ColumnDefinitions>
+        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="282" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged" Grid.ColumnSpan="2"/>
+        <Button x:Name="RunButton" Content="Run" Margin="356,45,102,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8"/>
+        <Button x:Name="ReportButton" Content="Report" Margin="448,45,10,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1"/>
+        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,85,10,10" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
+        <Menu Height="30" VerticalAlignment="Top" Grid.ColumnSpan="2">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
+                <MenuItem Header="Data Location..." Click="MenuDataLocation_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
+            </MenuItem>
+        </Menu>
     </Grid>
 </Window>

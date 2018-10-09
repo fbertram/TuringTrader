@@ -1,0 +1,19 @@
+﻿<Window x:Class="TuringTrader.AboutBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TuringTrader"
+        mc:Ignorable="d"
+        Title="About TuringTrader" Height="167.553" Width="309.308">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="10,10,10,48" TextWrapping="Wrap" Grid.ColumnSpan="3"><Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/><Run Text="Copyright (c) 2011-2018, Bertram Solutions LLC"/><LineBreak/><Run/><LineBreak/><Run Text="TuringTrader is licensed under GPL-3.0-or-later."/></TextBlock>
+        <Button Content="OK" Width="75" Grid.Column="1" Margin="0,0,0,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click"/>
+
+    </Grid>
+</Window>

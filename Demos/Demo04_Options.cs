@@ -25,7 +25,6 @@ namespace FUB_TradingSim
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
@@ -52,7 +51,6 @@ namespace FUB_TradingSim
             // add instruments
             // the underlying must be added explicitly,
             // as the simulation engine requires it
-            DataPath = _dataPath;
             DataSources.Add(DataSource.New(_underlyingNickname));
             DataSources.Add(DataSource.New(_optionsNickname));
 

@@ -24,7 +24,6 @@ namespace FUB_TradingSim
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _dataPath = Directory.GetCurrentDirectory() + @"\..\..\..\Data";
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
@@ -42,7 +41,6 @@ namespace FUB_TradingSim
             CommissionPerShare = 0.015;
 
             // add instruments
-            DataPath = _dataPath;
             DataSources.Add(DataSource.New(_instrumentNick));
 
             //---------- simulation

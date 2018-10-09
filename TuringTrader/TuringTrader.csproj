@@ -50,6 +50,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AvalonLibrary">
+      <HintPath>..\ExternalProjects\AvalonLibrary\AvalonLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -70,10 +73,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AboutBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="AboutBox.xaml.cs">
+      <DependentUpon>AboutBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AlgorithmLoader.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -123,10 +133,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\FUB_TradingSolutions\Algorithms\Algorithms.csproj">
-      <Project>{c1f417cd-b71a-41c5-92e2-7aba8b04a348}</Project>
-      <Name>Algorithms</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Demos\Demos.csproj">
       <Project>{2e5c8dfa-b485-431a-9f54-d1473fff8b65}</Project>
       <Name>Demos</Name>

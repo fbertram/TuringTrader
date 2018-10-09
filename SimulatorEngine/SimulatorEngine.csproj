@@ -7,7 +7,7 @@
     <ProjectGuid>{5D08F12A-F6BE-4D9F-ADBE-014E261A6D51}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimulatorEngine</RootNamespace>
+    <RootNamespace>FUB_TradingSim</RootNamespace>
     <AssemblyName>SimulatorEngine</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -71,6 +71,7 @@
     <Compile Include="DataUpdaterIQFeed.cs" />
     <Compile Include="DataUpdaterStooq.cs" />
     <Compile Include="DataUpdaterYahoo.cs" />
+    <Compile Include="GlobalSettings.cs" />
     <Compile Include="IndicatorsArithmetic.cs" />
     <Compile Include="IndicatorsBasic.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
