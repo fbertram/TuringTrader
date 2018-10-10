@@ -13,9 +13,9 @@
             <ColumnDefinition Width="133*"/>
         </Grid.ColumnDefinitions>
         <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="373" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged" Grid.ColumnSpan="2"/>
-        <Button x:Name="RunButton" Content="Run" Margin="252,45,206,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8"/>
-        <Button x:Name="ReportButton" Content="Report" Margin="350,45,108,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1"/>
-        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,85,10,10" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
+        <Button x:Name="RunButton" Content="Run" Margin="0,45,306,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="ReportButton" Content="Report" Margin="0,45,213,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1" HorizontalAlignment="Right" Width="75"/>
+        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,112,10,10" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
         <Menu Height="30" VerticalAlignment="Top" Grid.ColumnSpan="2">
             <MenuItem Header="_File">
                 <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
@@ -25,6 +25,8 @@
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Button x:Name="OptimizerButton" Content="Optimize" Grid.Column="1" HorizontalAlignment="Left" Margin="448,45,0,0" VerticalAlignment="Top" Width="75" Click="OptimizeButton_Click" IsEnabled="False"/>
+        <Button x:Name="OptimizerButton" Content="Optimize" Grid.Column="1" Margin="0,45,118,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
+        <TextBlock x:Name="AlgoParameters" HorizontalAlignment="Left" Margin="10,83,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="763"/>
+        <Button x:Name="ResultsButton" Content="Opt Results" Grid.Column="1" Margin="0,45,21,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
     </Grid>
 </Window>

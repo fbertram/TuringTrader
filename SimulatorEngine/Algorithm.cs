@@ -202,6 +202,18 @@ namespace FUB_TradingSim
         #endregion
 
         public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
+        #region public string OptimizerParamsAsString
+        public string OptimizerParamsAsString
+        {
+            get
+            {
+                string retval = "";
+                foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
+                    retval += string.Format("{0}={1} ", parameter.Name, parameter.Value);
+                return retval;
+            }
+        }
+        #endregion
 
         protected List<DataSource> DataSources = new List<DataSource>();
 

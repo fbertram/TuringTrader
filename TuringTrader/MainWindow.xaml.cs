@@ -61,10 +61,13 @@ namespace TuringTrader
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = true;
+            ResultsButton.IsEnabled = false;
 
             string algorithmName = AlgoSelector.SelectedItem.ToString();
             _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
             _optimizer = null;
+
+            AlgoParameters.Text = _currentAlgorithm.OptimizerParamsAsString;
         }
 
         private async void RunButton_Click(object sender, RoutedEventArgs e)
@@ -157,14 +160,36 @@ namespace TuringTrader
 
         private void OptimizeButton_Click(object sender, RoutedEventArgs e)
         {
+            RunButton.IsEnabled = false;
+            ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = false;
+            ResultsButton.IsEnabled = false;
+
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             optimizerSettings.ShowDialog();
 
             _optimizer = new OptimizerGrid(_currentAlgorithm);
             _optimizer.Run();
 
+            RunButton.IsEnabled = true;
+            ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = true;
+            ResultsButton.IsEnabled = true;
+
+            ResultsButton_Click(null, null);
+        }
+
+        private void ResultsButton_Click(object sender, RoutedEventArgs e)
+        {
             var optimizerResults = new OptimizerResults(_optimizer);
             optimizerResults.ShowDialog();
+
+            RunButton.IsEnabled = true;
+            ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = true;
+            ResultsButton.IsEnabled = true;
+
+            AlgoParameters.Text = _currentAlgorithm.OptimizerParamsAsString;
         }
     }
 }
