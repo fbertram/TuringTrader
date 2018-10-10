@@ -44,6 +44,9 @@ namespace FUB_TradingSim
             // add instruments
             DataSources.Add(DataSource.New(_instrumentNick));
 
+            // clear plotters
+            _plotter.Clear();
+
             //---------- simulation
 
             foreach (DateTime simTime in SimTimes)

@@ -26,7 +26,7 @@ namespace FUB_TradingSim
         static private RegistryKey OpenSubKey(bool writable = false)
         {
             string subKey = "Software"
-                + "\\" + Assembly.GetEntryAssembly().GetName().Name
+                //+ "\\" + Assembly.GetEntryAssembly().GetName().Name
                 + "\\" + Assembly.GetExecutingAssembly().GetName().Name;
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(subKey, writable);
@@ -62,6 +62,20 @@ namespace FUB_TradingSim
             set
             {
                 SetRegistryValue("DataPath", value);
+            }
+        }
+
+        static public string MostRecentAlgorithm
+        {
+            get
+            {
+                object value = GetRegistryValue("MostRecentAlgorithm");
+                if (value == null) return null;
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("MostRecentAlgorithm", value);
             }
         }
     }

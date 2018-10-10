@@ -52,6 +52,9 @@ namespace FUB_TradingSim
             foreach (string nickname in _tradingInstruments)
                 DataSources.Add(DataSource.New(nickname));
 
+            // clear plotters
+            _plotter.Clear();
+
             //---------- simulation
 
             // loop through all bars

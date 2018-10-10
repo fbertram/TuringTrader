@@ -54,6 +54,9 @@ namespace FUB_TradingSim
             DataSources.Add(DataSource.New(_underlyingNickname));
             DataSources.Add(DataSource.New(_optionsNickname));
 
+            // clear plotters
+            _plotter.Clear();
+
             //---------- simulation
 
             // loop through all bars

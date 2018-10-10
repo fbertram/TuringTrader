@@ -26,11 +26,11 @@ namespace FUB_TradingSim
     {
         // these are the parameters to optimize. note that
         // we can optimize fields and properties alike
-        [OptimizerParam(0, 9, 1)]
-        public int X;
-
         [OptimizerParam(0, 90, 10)]
-        public int Y { get; set; }
+        public int X { get; set; }
+
+        [OptimizerParam(0, 9, 1)]
+        public int Y;
 
         // this is just a dummy for the algorithm's internal functionality.
         // the algorithm should set the Fitness value of this iteration
@@ -54,8 +54,8 @@ namespace FUB_TradingSim
         // our parameters to reasonable default values
         public Demo05_Optimizer()
         {
-            X = 2;
-            Y = 40;
+            X = 40;
+            Y = 2;
         }
     }
 }

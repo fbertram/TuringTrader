@@ -172,6 +172,8 @@ namespace FUB_TradingSim
             OptimizerParams = new Dictionary<string, OptimizerParam>();
             foreach (OptimizerParam param in OptimizerParam.GetParams(this))
                 OptimizerParams[param.Name] = param;
+
+            GlobalSettings.MostRecentAlgorithm = Name;
         }
         #endregion
         #region public string Name
@@ -244,6 +246,9 @@ namespace FUB_TradingSim
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
+
+                // reset trade log
+                Log.Clear();
 
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
