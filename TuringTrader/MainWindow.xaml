@@ -12,10 +12,10 @@
             <ColumnDefinition Width="65*"/>
             <ColumnDefinition Width="133*"/>
         </Grid.ColumnDefinitions>
-        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="373" Loaded="AlgoSelector_Loaded" SelectionChanged="AlgoSelector_SelectionChanged" Grid.ColumnSpan="2"/>
+        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="373" SelectionChanged="AlgoSelector_SelectionChanged" Grid.ColumnSpan="2"/>
         <Button x:Name="RunButton" Content="Run" Margin="0,45,319,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
         <Button x:Name="ReportButton" Content="Report" Margin="0,45,218,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1" HorizontalAlignment="Right" Width="75"/>
-        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,112,10,10" TextWrapping="Wrap" Text="" Loaded="LogOutput_Loaded" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,112,10,10" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
         <Menu Height="30" VerticalAlignment="Top" Grid.ColumnSpan="2">
             <MenuItem Header="_File">
                 <MenuItem Header="Data Location..." Click="MenuDataLocation_Click"/>

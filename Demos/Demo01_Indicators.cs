@@ -65,7 +65,7 @@ namespace FUB_TradingSim
                 ITimeSeries<double> signal = macd.EMA(9);
 
                 // plot our data
-                _plotter.SelectPlot("indicator vs time", "date");
+                _plotter.SelectPlot("indicators vs time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Log(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Log("ema26", ema26[0] + _offsetPrice);

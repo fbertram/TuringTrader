@@ -87,6 +87,7 @@ namespace FUB_TradingSim
                 }
 
                 // plot net asset value on Sheet1
+                _plotter.SelectPlot("Performance vs Time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Log("Net Asset Value", NetAssetValue[0] / _initialCash);
             }

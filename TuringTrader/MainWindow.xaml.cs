@@ -1,4 +1,16 @@
-﻿using FUB_TradingSim;
+﻿//==============================================================================
+// Project:     TuringTrader
+// Name:        MainWindow
+// Description: main window code-behind
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL-3.0-or-later
+//==============================================================================
+
+#region Libraries
+using FUB_TradingSim;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -21,6 +33,7 @@ using System.Windows.Shapes;
 using Path = System.IO.Path;
 using Avalon.Windows.Dialogs;
 using System.Windows.Threading;
+#endregion
 
 namespace TuringTrader
 {
@@ -29,29 +42,32 @@ namespace TuringTrader
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region internal data
         private Algorithm _currentAlgorithm = null;
         private OptimizerGrid _optimizer = null;
 
         private string messageUpdate;
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
+        #endregion
 
+        #region public MainWindow()
         public MainWindow()
         {
             InitializeComponent();
 
+            //--- set data location
             string path = GlobalSettings.DataPath;
             if (path == null)
             {
                 MenuDataLocation_Click(null, null);
             }
 
+            //--- set timer event
             _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
             _dispatcherTimer.Start();
-        }
 
-        private void AlgoSelector_Loaded(object sender, RoutedEventArgs e)
-        {
+            //--- initialize algorithm selector
             foreach (Type algorithmType in AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name))
                 AlgoSelector.Items.Add(algorithmType.Name);
 
@@ -64,8 +80,74 @@ namespace TuringTrader
                         .ToList()
                         .FindIndex(t => t.Name == mostRecentAlgorithm);
             }
-        }
 
+            //--- redirect log output
+            Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
+        }
+        #endregion
+
+        //----- log
+        #region private void WriteEventHandler(string message)
+        private void WriteEventHandler(string message)
+        {
+            LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                messageUpdate += message;
+
+                //DateTime timeNow = DateTime.Now;
+                //if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
+                //    return;
+                //lastLogUpdate = timeNow;
+
+                //LogOutput.AppendText(messageUpdate);
+                //messageUpdate = "";
+            }));
+        }
+        #endregion
+        #region private void DispatcherTimer_Tick(object sender, EventArgs e)
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            LogOutput.AppendText(messageUpdate);
+            messageUpdate = "";
+        }
+        #endregion
+        #region private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
+        private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            LogOutput.ScrollToEnd();
+        }
+        #endregion
+
+        //----- menu
+        #region private void MenuFileExit_Click(object sender, RoutedEventArgs e)
+        private void MenuFileExit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+        #endregion
+        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
+        }
+        #endregion
+        #region private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
+        private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+            folderDialog.Title = "Select Data Location";
+
+            bool? result = folderDialog.ShowDialog();
+            if (result == true)
+            {
+                GlobalSettings.DataPath = folderDialog.SelectedPath;
+            }
+        }
+        #endregion
+
+        //----- buttons
+        #region private void AlgoSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         private void AlgoSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string algorithmName = AlgoSelector.SelectedItem.ToString();
@@ -82,7 +164,8 @@ namespace TuringTrader
                     ? _currentAlgorithm.OptimizerParamsAsString
                     : "n/a");
         }
-
+        #endregion
+        #region private async void RunButton_Click(object sender, RoutedEventArgs e)
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
@@ -110,67 +193,14 @@ namespace TuringTrader
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = true;
         }
-
+        #endregion
+        #region private void ReportButton_Click(object sender, RoutedEventArgs e)
         private void ReportButton_Click(object sender, RoutedEventArgs e)
         {
             _currentAlgorithm.Report();
         }
-
-        private void WriteEventHandler(string message)
-        {
-            LogOutput.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                messageUpdate += message;
-
-                //DateTime timeNow = DateTime.Now;
-                //if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
-                //    return;
-                //lastLogUpdate = timeNow;
-
-                //LogOutput.AppendText(messageUpdate);
-                //messageUpdate = "";
-            }));
-        }
-
-        private void LogOutput_Loaded(object sender, RoutedEventArgs e)
-        {
-            Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
-        }
-
-        private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            LogOutput.ScrollToEnd();
-        }
-
-        private void MenuFileExit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
-
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutBox = new AboutBox();
-            aboutBox.ShowDialog();
-        }
-
-        private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
-        {
-            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
-            folderDialog.Title = "Select Data Location";
-
-            bool? result = folderDialog.ShowDialog();
-            if (result == true)
-            {
-                GlobalSettings.DataPath = folderDialog.SelectedPath;
-            }
-        }
-
-        private void DispatcherTimer_Tick(object sender, EventArgs e)
-        {
-            LogOutput.AppendText(messageUpdate);
-            messageUpdate = "";
-        }
-
+        #endregion
+        #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
         private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
@@ -197,7 +227,8 @@ namespace TuringTrader
                 }));
             });
         }
-
+        #endregion
+        #region private void ResultsButton_Click(object sender, RoutedEventArgs e)
         private void ResultsButton_Click(object sender, RoutedEventArgs e)
         {
             var optimizerResults = new OptimizerResults(_optimizer);
@@ -210,5 +241,9 @@ namespace TuringTrader
 
             AlgoParameters.Text = _currentAlgorithm.OptimizerParamsAsString;
         }
+        #endregion
     }
 }
+
+//==============================================================================
+// end of file

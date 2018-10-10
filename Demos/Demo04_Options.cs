@@ -54,8 +54,10 @@ namespace FUB_TradingSim
             DataSources.Add(DataSource.New(_underlyingNickname));
             DataSources.Add(DataSource.New(_optionsNickname));
 
-            // clear plotters
+            // clear plotters & possible relicts from previous run
             _plotter.Clear();
+            _underlyingInstrument = null;
+            _initialUnderlyingPrice = null;
 
             //---------- simulation
 
@@ -160,10 +162,12 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region override public void Report()
         override public void Report()
         {
             _plotter.OpenWithExcel(_excelChartTemplate);
         }
+        #endregion
     }
 }
 

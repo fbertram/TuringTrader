@@ -250,6 +250,9 @@ namespace FUB_TradingSim
                 // reset trade log
                 Log.Clear();
 
+                // reset fitness
+                FitnessValue = 0.0;
+
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {

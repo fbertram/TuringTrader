@@ -1,4 +1,15 @@
-﻿using System;
+﻿//==============================================================================
+// Project:     TuringTrader
+// Name:        App
+// Description: application code-behind
+// History:     2018ix10, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL-3.0-or-later
+//==============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -15,3 +26,6 @@ namespace TuringTrader
     {
     }
 }
+
+//==============================================================================
+// end of file
