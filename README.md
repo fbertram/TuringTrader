@@ -1,6 +1,7 @@
 # Turing Trader
 This project implements a trading simulator for stocks and options with the following features:
 
+* simple Windows Desktop UI for interactive sessions
 * import data in various CSV formats and with configurable column-mapping
 * automatic download/ update of data files from IQFeed, Yahoo, and Stooq
 * calculate indicators, with a growing library of standard indicators
@@ -17,7 +18,6 @@ The following features are planned for the near future:
 
 * support for limit orders
 * API documentation
-* Windows Universal UI
 * Unit tests
 
 The following environment is required for building and running the simulator:
