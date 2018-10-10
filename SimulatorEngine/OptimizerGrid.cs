@@ -21,25 +21,6 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    #region public class OptimizerParamAttribute
-    /// <summary>
-    /// attribute class to set optimzation range of field or property
-    /// </summary>
-    public class OptimizerParamAttribute : Attribute
-    {
-        public readonly int Start;
-        public readonly int End;
-        public readonly int Increment;
-
-        public OptimizerParamAttribute(int start, int end, int increment)
-        {
-            Start = start;
-            End = end;
-            Increment = increment;
-        }
-    }
-    #endregion
-
     #region public class OptimizerResult
     /// <summary>
     /// container to store parameters and fitness of optimiation iteration
@@ -72,7 +53,7 @@ namespace FUB_TradingSim
                 dict[field.Name] = (int)field.GetValue(algo);
         }
 
-        public static OptimizerParamAttribute GetAttribute(this Algorithm algo, string name)
+        public static OptimizerParamAttribute GetParamAttribute(this Algorithm algo, string name)
         {
             Type algoType = algo.GetType();
 
@@ -93,7 +74,25 @@ namespace FUB_TradingSim
             throw new Exception(string.Format("GetAttribute: parameter {0} not found", name));
         }
 
-        public static void SetValue(this Algorithm algo, string name, int value)
+        public static IEnumerable<string> GetParamNames(this Algorithm algo)
+        {
+            Type algoType = algo.GetType();
+
+            IEnumerable<PropertyInfo> properties = algoType.GetProperties()
+                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
+
+            foreach (PropertyInfo property in properties)
+                yield return property.Name;
+
+            IEnumerable<FieldInfo> fields = algoType.GetFields()
+                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
+
+            foreach (FieldInfo field in fields)
+                yield return field.Name;
+
+            yield break;
+        }
+        public static void SetParamValue(this Algorithm algo, string name, int value)
         {
             Type algoType = algo.GetType();
 
@@ -115,7 +114,7 @@ namespace FUB_TradingSim
                 throw new Exception(string.Format("SetValue: parameter {0} not found", name));
         }
 
-        public static int GetValue(this Algorithm algo, string name)
+        public static int GetParamValue(this Algorithm algo, string name)
         {
             Type algoType = algo.GetType();
 
@@ -162,7 +161,7 @@ namespace FUB_TradingSim
 
             // apply optimizer values to new instance
             foreach (var parameter in _parameters)
-                instanceToRun.SetValue(parameter.Key, parameter.Value);
+                instanceToRun.SetParamValue(parameter.Key, parameter.Value);
 
             if (firstRun)
             {
@@ -212,7 +211,7 @@ namespace FUB_TradingSim
 
             if (name != default(string))
             {
-                OptimizerParamAttribute param = _algorithm.GetAttribute(name);
+                OptimizerParamAttribute param = _algorithm.GetParamAttribute(name);
 
                 for (int value = param.Start; value <= param.End; value += param.Increment)
                 {
@@ -248,7 +247,7 @@ namespace FUB_TradingSim
             _numIterationsTotal = 1;
             foreach (string param in _parameters.Keys)
             {
-                OptimizerParamAttribute paramAttribute = _algorithm.GetAttribute(param);
+                OptimizerParamAttribute paramAttribute = _algorithm.GetParamAttribute(param);
 
                 int iterationsThisLevel = 0;
                 for (int i = paramAttribute.Start; i <= paramAttribute.End; i += paramAttribute.Increment)

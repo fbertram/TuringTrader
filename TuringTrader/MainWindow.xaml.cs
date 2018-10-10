@@ -59,6 +59,10 @@ namespace TuringTrader
         {
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = true;
+
+            string algorithmName = AlgoSelector.SelectedItem.ToString();
+            _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
         }
 
         private async void RunButton_Click(object sender, RoutedEventArgs e)
@@ -67,9 +71,6 @@ namespace TuringTrader
             ReportButton.IsEnabled = false;
             messageUpdate = "";
             LogOutput.Text = "";
-
-            string algorithmName = AlgoSelector.SelectedItem.ToString();
-            _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
 
             if (_currentAlgorithm != null)
                 await Task.Run(() =>
@@ -150,6 +151,17 @@ namespace TuringTrader
         {
             LogOutput.AppendText(messageUpdate);
             messageUpdate = "";
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OptimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
+            optimizerSettings.ShowDialog();
         }
     }
 }

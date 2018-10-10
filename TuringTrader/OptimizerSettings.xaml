@@ -1,0 +1,32 @@
+﻿<Window x:Class="TuringTrader.OptimizerSettings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TuringTrader"
+        mc:Ignorable="d"
+        Title="Optimizer Settings" Height="450" Width="800"
+        ResizeMode="NoResize">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="RunButton" Content="Run Optimizer" HorizontalAlignment="Right" Margin="0,0,0,10" Width="75" Grid.Column="1" Height="20" VerticalAlignment="Bottom" Click="RunButton_Click"/>
+        <DataGrid x:Name="ParamGrid" 
+                  ItemsSource="{Binding}"
+                  HorizontalAlignment="Left" 
+                  Margin="10,10,0,51" Width="774" 
+                  Grid.ColumnSpan="3" 
+                  AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Attribute.Enabled}" Width="*"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Start" Binding="{Binding Attribute.Start}" Width="*"/>
+                <DataGridTextColumn Header="End" Binding="{Binding Attribute.End}" Width="*"/>
+                <DataGridTextColumn Header="Step" Binding="{Binding Attribute.Increment}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
