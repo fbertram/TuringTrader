@@ -20,32 +20,19 @@ namespace TuringTrader
     /// </summary>
     public partial class OptimizerSettings : Window
     {
-        private Algorithm _masterAlgorithm;
+        private Algorithm _algorithm;
 
-        public OptimizerSettings(Algorithm masterAlgorithm)
+        public OptimizerSettings(Algorithm algorithm)
         {
             InitializeComponent();
 
-            _masterAlgorithm = masterAlgorithm;
-            var paramAttributes = _masterAlgorithm.GetParamNames()
-                .Select(n => new
-                {
-                    Name = n,
-                    Attribute = _masterAlgorithm.GetParamAttribute(n)
-                })
-                .ToList();
-
-            ParamGrid.ItemsSource = paramAttributes;
-        }
-
-        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
+            _algorithm = algorithm;
+            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
         }
 
         private void RunButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Close();
         }
     }
 }

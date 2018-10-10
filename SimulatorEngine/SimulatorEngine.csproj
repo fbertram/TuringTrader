@@ -84,7 +84,10 @@
     <Compile Include="Logger.cs" />
     <Compile Include="MTJobQueue.cs" />
     <Compile Include="OptimizerGrid.cs" />
+    <Compile Include="OptimizerParam.cs" />
     <Compile Include="OptimizerParamAttribute.cs" />
+    <Compile Include="OptimizerResult.cs" />
+    <Compile Include="OptimizerSupport.cs" />
     <Compile Include="OptionSupport.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="Output.cs" />

@@ -21,11 +21,11 @@
                   Grid.ColumnSpan="3" 
                   AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Attribute.Enabled}" Width="*"/>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Start" Binding="{Binding Attribute.Start}" Width="*"/>
-                <DataGridTextColumn Header="End" Binding="{Binding Attribute.End}" Width="*"/>
-                <DataGridTextColumn Header="Step" Binding="{Binding Attribute.Increment}" Width="*"/>
+                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="*"/>
+                <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Start" Binding="{Binding Start}" Width="*"/>
+                <DataGridTextColumn Header="End" Binding="{Binding End}" Width="*"/>
+                <DataGridTextColumn Header="Step" Binding="{Binding Step}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

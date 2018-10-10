@@ -30,8 +30,9 @@ namespace TuringTrader
     public partial class MainWindow : Window
     {
         private Algorithm _currentAlgorithm = null;
+        private OptimizerGrid _optimizer = null;
+
         private string messageUpdate;
-        private DateTime lastLogUpdate;
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
 
         public MainWindow()
@@ -63,6 +64,7 @@ namespace TuringTrader
 
             string algorithmName = AlgoSelector.SelectedItem.ToString();
             _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
+            _optimizer = null;
         }
 
         private async void RunButton_Click(object sender, RoutedEventArgs e)
@@ -153,15 +155,14 @@ namespace TuringTrader
             messageUpdate = "";
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void OptimizeButton_Click(object sender, RoutedEventArgs e)
         {
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             optimizerSettings.ShowDialog();
+
+            _optimizer = new OptimizerGrid(_currentAlgorithm);
+            _optimizer.Run();
+            Output.WriteLine("num results = {0}", _optimizer.Results.Count);
         }
     }
 }

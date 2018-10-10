@@ -159,7 +159,6 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        //---------- for use by trading applications
         #region public Algorithm()
         public Algorithm()
         {
@@ -168,6 +167,11 @@ namespace FUB_TradingSim
             // without this line the optimizer demo
             // will crash, as it has zero bars
             NetAssetValue.Value = 0.0;
+
+            // create a dictionary of optimizer parameters
+            OptimizerParams = new Dictionary<string, OptimizerParam>();
+            foreach (OptimizerParam param in OptimizerParam.GetParams(this))
+                OptimizerParams[param.Name] = param;
         }
         #endregion
         #region public string Name
@@ -197,24 +201,8 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        //---------- for use by algorithms
-        /*#region protected string DataPath
-        protected string DataPath
-        {
-            set
-            {
-                if (!Directory.Exists(value))
-                    throw new Exception(string.Format("invalid data path {0}", value));
+        public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
 
-                DataSource.DataPath = value;
-            }
-
-            get
-            {
-                return DataSource.DataPath;
-            }
-        }
-        #endregion*/
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;

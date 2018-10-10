@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        OptimizerParamAttribute
-// Description: optimizer parameter
+// Name:        OptimizerResult
+// Description: optimizer result
 // History:     2018x09, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#region Libraries
+#region Libaries
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,20 +20,13 @@ using System.Threading.Tasks;
 namespace FUB_TradingSim
 {
     /// <summary>
-    /// attribute class to set optimzation range of field or property
+    /// container to store parameters and fitness of optimiation iteration
     /// </summary>
-    public class OptimizerParamAttribute : Attribute
+    public class OptimizerResult
     {
-        public readonly int Start;
-        public readonly int End;
-        public readonly int Step;
-
-        public OptimizerParamAttribute(int start, int end, int increment)
-        {
-            Start = start;
-            End = end;
-            Step = increment;
-        }
+        public Dictionary<string, int> Parameters = new Dictionary<string, int>();
+        public double? NetAssetValue;
+        public double? Fitness;
     }
 }
 

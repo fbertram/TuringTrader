@@ -21,121 +21,6 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    #region public class OptimizerResult
-    /// <summary>
-    /// container to store parameters and fitness of optimiation iteration
-    /// </summary>
-    public class OptimizerResult
-    {
-        public Dictionary<string, int> Parameters = new Dictionary<string, int>();
-        public double? NetAssetValue;
-        public double? Fitness;
-    }
-    #endregion
-
-    #region public static class OptimizerSupport
-    public static class OptimizerSupport
-    {
-        public static void FindValues(this Algorithm algo, Dictionary<string, int> dict)
-        {
-            Type algoType = algo.GetType();
-
-            IEnumerable<PropertyInfo> properties = algoType.GetProperties()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
-
-            foreach (PropertyInfo property in properties)
-                dict[property.Name] = (int)property.GetValue(algo);
-
-            IEnumerable<FieldInfo> fields = algoType.GetFields()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
-
-            foreach (FieldInfo field in fields)
-                dict[field.Name] = (int)field.GetValue(algo);
-        }
-
-        public static OptimizerParamAttribute GetParamAttribute(this Algorithm algo, string name)
-        {
-            Type algoType = algo.GetType();
-
-            PropertyInfo property = algoType.GetProperties()
-                .Where(p => p.Name == name)
-                .FirstOrDefault();
-
-            if (property != null)
-                return (OptimizerParamAttribute)property.GetCustomAttribute(typeof(OptimizerParamAttribute));
-
-            FieldInfo field = algoType.GetFields()
-                .Where(f => f.Name == name)
-                .FirstOrDefault();
-
-            if (field != null)
-                return (OptimizerParamAttribute)field.GetCustomAttribute(typeof(OptimizerParamAttribute));
-
-            throw new Exception(string.Format("GetAttribute: parameter {0} not found", name));
-        }
-
-        public static IEnumerable<string> GetParamNames(this Algorithm algo)
-        {
-            Type algoType = algo.GetType();
-
-            IEnumerable<PropertyInfo> properties = algoType.GetProperties()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
-
-            foreach (PropertyInfo property in properties)
-                yield return property.Name;
-
-            IEnumerable<FieldInfo> fields = algoType.GetFields()
-                .Where(p => Attribute.IsDefined(p, typeof(OptimizerParamAttribute)));
-
-            foreach (FieldInfo field in fields)
-                yield return field.Name;
-
-            yield break;
-        }
-        public static void SetParamValue(this Algorithm algo, string name, int value)
-        {
-            Type algoType = algo.GetType();
-
-            PropertyInfo property = algoType.GetProperties()
-                .Where(p => p.Name == name)
-                .FirstOrDefault();
-
-            if (property != null)
-                property.SetValue(algo, value);
-
-            FieldInfo field = algoType.GetFields()
-                .Where(f => f.Name == name)
-                .FirstOrDefault();
-
-            if (field != null)
-                field.SetValue(algo, value);
-
-            if (property == null && field == null)
-                throw new Exception(string.Format("SetValue: parameter {0} not found", name));
-        }
-
-        public static int GetParamValue(this Algorithm algo, string name)
-        {
-            Type algoType = algo.GetType();
-
-            PropertyInfo property = algoType.GetProperties()
-                .Where(p => p.Name == name)
-                .FirstOrDefault();
-
-            if (property != null)
-                return (int)property.GetValue(algo);
-
-            FieldInfo field = algoType.GetFields()
-                .Where(f => f.Name == name)
-                .FirstOrDefault();
-
-            if (field != null)
-                return (int)field.GetValue(algo);
-
-            throw new Exception(string.Format("GetValue: parameter {0} not found", name));
-        }
-    }
-    #endregion
 
     /// <summary>
     /// class to run exhaustive optimization
@@ -143,8 +28,7 @@ namespace FUB_TradingSim
     public class OptimizerGrid
     {
         #region internal data
-        private Algorithm _algorithm;
-        private Dictionary<string, int> _parameters;
+        private Algorithm _masterInstance;
         private MTJobQueue _jobQueue = new MTJobQueue();
         private readonly object _optimizerLock = new object();
         private int _numIterationsTotal;
@@ -156,12 +40,12 @@ namespace FUB_TradingSim
         private Algorithm RunIteration(bool firstRun = true)
         {
             // create algorithm instance to run
-            Type algoType = _algorithm.GetType();
+            Type algoType = _masterInstance.GetType();
             Algorithm instanceToRun = (Algorithm)Activator.CreateInstance(algoType);
 
             // apply optimizer values to new instance
-            foreach (var parameter in _parameters)
-                instanceToRun.SetParamValue(parameter.Key, parameter.Value);
+            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
+                instanceToRun.OptimizerParams[parameter.Name].Value = parameter.Value;
 
             if (firstRun)
             {
@@ -170,8 +54,8 @@ namespace FUB_TradingSim
 
                 // create result entry
                 OptimizerResult result = new OptimizerResult();
-                foreach (var parameter in _parameters)
-                    result.Parameters[parameter.Key] = parameter.Value;
+                foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
+                    result.Parameters[parameter.Name] = parameter.Value;
                 result.Fitness = null;
                 Results.Add(result);
 
@@ -204,18 +88,22 @@ namespace FUB_TradingSim
         #region private void IterateLevel(int level)
         private void IterateLevel(int level)
         {
-            string name = _parameters
-                    .Select(p => p.Key)
+            OptimizerParam parameter = _masterInstance.OptimizerParams.Values
                     .Skip(level)
                     .FirstOrDefault();
 
-            if (name != default(string))
+            if (parameter != default(OptimizerParam))
             {
-                OptimizerParamAttribute param = _algorithm.GetParamAttribute(name);
-
-                for (int value = param.Start; value <= param.End; value += param.Increment)
+                if (parameter.IsEnabled)
                 {
-                    _parameters[name] = value;
+                    for (int value = parameter.Start; value <= parameter.End; value += parameter.Step)
+                    {
+                        parameter.Value = value;
+                        IterateLevel(level + 1);
+                    }
+                }
+                else
+                {
                     IterateLevel(level + 1);
                 }
             }
@@ -229,7 +117,7 @@ namespace FUB_TradingSim
         #region public OptimizerExhaustive(Algorithm algorithm)
         public OptimizerGrid(Algorithm algorithm)
         {
-            _algorithm = algorithm;
+            _masterInstance = algorithm;
         }
         #endregion
         #region public void Run()
@@ -238,24 +126,25 @@ namespace FUB_TradingSim
             // create new results list
             Results = new List<OptimizerResult>();
 
-            // gather info about algorithm to optimize
-            _parameters = new Dictionary<string, int>();
-            _algorithm.FindValues(_parameters);
-
             // figure out total number of iterations
             _numIterationsCompleted = 0;
             _numIterationsTotal = 1;
-            foreach (string param in _parameters.Keys)
+            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
             {
-                OptimizerParamAttribute paramAttribute = _algorithm.GetParamAttribute(param);
-
                 int iterationsThisLevel = 0;
-                for (int i = paramAttribute.Start; i <= paramAttribute.End; i += paramAttribute.Increment)
-                    iterationsThisLevel++;
+                if (parameter.IsEnabled)
+                {
+                    for (int i = parameter.Start; i <= parameter.End; i += parameter.Step)
+                        iterationsThisLevel++;
+                }
+                else
+                {
+                    iterationsThisLevel = 1;
+                }
 
                 _numIterationsTotal *= iterationsThisLevel;
             }
-            Output.WriteLine("GridOptimizer: {0} total iterations", _numIterationsTotal);
+            Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations
             IterateLevel(0);
@@ -292,7 +181,7 @@ namespace FUB_TradingSim
         public Algorithm ReRun(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)
-                _parameters[parameter.Key] = parameter.Value;
+                _masterInstance.OptimizerParams[parameter.Key].Value = parameter.Value;
 
             return RunIteration(false);
         }
