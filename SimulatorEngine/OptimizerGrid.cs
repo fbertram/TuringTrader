@@ -177,13 +177,11 @@ namespace FUB_TradingSim
             logger.OpenWithExcel(excelPath);
         }
         #endregion
-        #region public Algorithm ReRun(OptimizerResult result)
-        public Algorithm ReRun(OptimizerResult result)
+        #region public void SetParametersFromResult(OptimizerResult result)
+        public void SetParametersFromResult(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)
                 _masterInstance.OptimizerParams[parameter.Key].Value = parameter.Value;
-
-            return RunIteration(false);
         }
         #endregion
     }

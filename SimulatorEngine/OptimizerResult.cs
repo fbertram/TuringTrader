@@ -25,8 +25,18 @@ namespace FUB_TradingSim
     public class OptimizerResult
     {
         public Dictionary<string, int> Parameters = new Dictionary<string, int>();
-        public double? NetAssetValue;
-        public double? Fitness;
+        public string ParametersAsString
+        {
+            get
+            {
+                string retval = "";
+                foreach (var parameter in Parameters.OrderBy(p => p.Key))
+                    retval += string.Format("{0}={1} ", parameter.Key, parameter.Value);
+                return retval;
+            }
+        }
+        public double? NetAssetValue { get; set; }
+        public double? Fitness { get; set; }
     }
 }
 

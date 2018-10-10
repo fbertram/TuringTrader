@@ -162,7 +162,9 @@ namespace TuringTrader
 
             _optimizer = new OptimizerGrid(_currentAlgorithm);
             _optimizer.Run();
-            Output.WriteLine("num results = {0}", _optimizer.Results.Count);
+
+            var optimizerResults = new OptimizerResults(_optimizer);
+            optimizerResults.ShowDialog();
         }
     }
 }
