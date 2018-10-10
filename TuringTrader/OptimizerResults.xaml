@@ -27,8 +27,34 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Fitness" IsReadOnly="True" Binding="{Binding Fitness}" Width="*"/>
-                <DataGridTextColumn Header="Settings" IsReadOnly="True" Binding="{Binding ParametersAsString}" Width="*"/>
+                <DataGridTextColumn Header="Net Asset Value" IsReadOnly="True" Binding="{Binding NetAssetValue, StringFormat=C2}" Width="Auto">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Max Drawdown" IsReadOnly="True" Binding="{Binding MaxDrawdown, StringFormat=P2}" Width="Auto">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Fitness" IsReadOnly="True" Binding="{Binding Fitness, StringFormat=F4}" Width="Auto">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Settings" IsReadOnly="True" Binding="{Binding ParametersAsString}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

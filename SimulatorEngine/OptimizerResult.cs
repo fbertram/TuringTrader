@@ -36,6 +36,7 @@ namespace FUB_TradingSim
             }
         }
         public double? NetAssetValue { get; set; }
+        public double? MaxDrawdown { get; set; }
         public double? Fitness { get; set; }
     }
 }

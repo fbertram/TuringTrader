@@ -64,6 +64,7 @@ namespace FUB_TradingSim
                 {
                     instanceToRun.Run();
                     result.NetAssetValue = instanceToRun.NetAssetValue[0];
+                    result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
                     result.Fitness = instanceToRun.FitnessValue;
                     instanceToRun = null;
                     lock (_optimizerLock)

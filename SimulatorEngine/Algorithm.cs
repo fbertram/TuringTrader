@@ -344,8 +344,8 @@ namespace FUB_TradingSim
 
         protected double Cash;
         public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
-        protected double NetAssetValueHighestHigh = 0.0;
-        protected double NetAssetValueMaxDrawdown = 1e-10;
+        public double NetAssetValueHighestHigh = 0.0;
+        public double NetAssetValueMaxDrawdown = 1e-10;
 
         protected double CommissionPerShare = 0.00;
 

@@ -26,8 +26,9 @@ namespace FUB_TradingSim
         static private RegistryKey OpenSubKey(bool writable = false)
         {
             string subKey = "Software"
-                //+ "\\" + Assembly.GetEntryAssembly().GetName().Name
-                + "\\" + Assembly.GetExecutingAssembly().GetName().Name;
+                + "\\" + Assembly.GetEntryAssembly().GetName().Name
+                //+ "\\" + Assembly.GetExecutingAssembly().GetName().Name
+                ;
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(subKey, writable);
             key = key ?? Registry.CurrentUser.CreateSubKey(subKey);

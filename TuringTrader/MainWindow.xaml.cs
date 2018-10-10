@@ -68,15 +68,15 @@ namespace TuringTrader
             _dispatcherTimer.Start();
 
             //--- initialize algorithm selector
-            foreach (Type algorithmType in AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name))
+            var allAlgoTypes = AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name);
+            foreach (Type algorithmType in allAlgoTypes)
                 AlgoSelector.Items.Add(algorithmType.Name);
 
             // attempt to recover most-recent algo
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
             if (mostRecentAlgorithm != default(string))
             {
-                AlgoSelector.SelectedIndex =
-                    AlgorithmLoader.GetAllAlgorithms()
+                AlgoSelector.SelectedIndex = allAlgoTypes
                         .ToList()
                         .FindIndex(t => t.Name == mostRecentAlgorithm);
             }
