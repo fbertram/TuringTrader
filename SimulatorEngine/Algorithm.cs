@@ -21,8 +21,6 @@ using System.Diagnostics;
 
 namespace FUB_TradingSim
 {
-    public enum ReportType { FitnessValue, Plot, Excel };
-
     /// <summary>
     /// base class for trading algorithms
     /// </summary>
@@ -161,7 +159,6 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        //---------- for use by trading applications
         #region public Algorithm()
         public Algorithm()
         {
@@ -170,6 +167,13 @@ namespace FUB_TradingSim
             // without this line the optimizer demo
             // will crash, as it has zero bars
             NetAssetValue.Value = 0.0;
+
+            // create a dictionary of optimizer parameters
+            OptimizerParams = new Dictionary<string, OptimizerParam>();
+            foreach (OptimizerParam param in OptimizerParam.GetParams(this))
+                OptimizerParams[param.Name] = param;
+
+            GlobalSettings.MostRecentAlgorithm = Name;
         }
         #endregion
         #region public string Name
@@ -186,10 +190,9 @@ namespace FUB_TradingSim
         {
         }
         #endregion
-        #region virtual public object Report(ReportType)
-        virtual public object Report(ReportType reportType)
+        #region virtual public object Report()
+        virtual public void Report()
         {
-            return FitnessValue;
         }
         #endregion
         #region public double FitnessValue
@@ -200,24 +203,20 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        //---------- for use by algorithms
-        #region protected string DataPath
-        protected string DataPath
+        public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
+        #region public string OptimizerParamsAsString
+        public string OptimizerParamsAsString
         {
-            set
-            {
-                if (!Directory.Exists(value))
-                    throw new Exception(string.Format("invalid data path {0}", value));
-
-                DataSource.DataPath = value;
-            }
-
             get
             {
-                return DataSource.DataPath;
+                string retval = "";
+                foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
+                    retval += string.Format("{0}={1} ", parameter.Name, parameter.Value);
+                return retval;
             }
         }
         #endregion
+
         protected List<DataSource> DataSources = new List<DataSource>();
 
         protected DateTime StartTime;
@@ -247,6 +246,12 @@ namespace FUB_TradingSim
                     instr.BarEnumerator.Reset();
                     hasData[instr] = instr.BarEnumerator.MoveNext();
                 }
+
+                // reset trade log
+                Log.Clear();
+
+                // reset fitness
+                FitnessValue = 0.0;
 
                 // loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
@@ -339,8 +344,8 @@ namespace FUB_TradingSim
 
         protected double Cash;
         public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
-        protected double NetAssetValueHighestHigh = 0.0;
-        protected double NetAssetValueMaxDrawdown = 1e-10;
+        public double NetAssetValueHighestHigh = 0.0;
+        public double NetAssetValueMaxDrawdown = 1e-10;
 
         protected double CommissionPerShare = 0.00;
 

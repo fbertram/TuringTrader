@@ -1,18 +1,17 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Output
-// Description: output methods
-// History:     2018ix11, FUB, created
+// Name:        OptimizerParamAttribute
+// Description: optimizer parameter
+// History:     2018x09, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#region libraries
+#region Libraries
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,25 +19,20 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class Output
+    /// <summary>
+    /// attribute class to set optimzation range of field or property
+    /// </summary>
+    public class OptimizerParamAttribute : Attribute
     {
-        public delegate void WriteEventDelegate(string message);
-        public static WriteEventDelegate WriteEvent;
+        public readonly int Start;
+        public readonly int End;
+        public readonly int Step;
 
-        public static void Write(string format, params object[] args)
+        public OptimizerParamAttribute(int start, int end, int increment)
         {
-            string message = string.Format(format, args);
-
-            if (WriteEvent == null)
-                Debug.Write(message);
-            else
-                WriteEvent(message);
-        }
-
-        public static void WriteLine(string format, params object[] args)
-        {
-            Write(format, args);
-            Write(Environment.NewLine);
+            Start = start;
+            End = end;
+            Step = increment;
         }
     }
 }

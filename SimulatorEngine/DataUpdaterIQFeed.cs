@@ -9,7 +9,9 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-// for this to work, IQfeed credentials must be placed in the environment as follows:
+// the login credentials are taken from HKEY_CURRENT_USER\Software\DTN\IQFeed\Startup,
+// which is where the IQFeed launcher will store them.
+// if this doesn't work, credentials may be placed in the environment as follows:
 // Run rundll32 sysdm.cpl,EditEnvironmentVariables to open the Environment Variables
 // In your User variables, create 4 new ones: 
 // IQCONNECT_LOGIN
@@ -26,12 +28,42 @@ using System.Threading.Tasks;
 using IQFeed.CSharpApiClient;
 using IQFeed.CSharpApiClient.Lookup;
 using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
+using Microsoft.Win32;
 #endregion
 
 namespace FUB_TradingSim
 {
     class DataUpdaterIQFeed : DataUpdater
     {
+        #region internal helpers
+        private string LoginName
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\DTN\IQFeed\Startup"))
+                {
+                    if (key != null)
+                        return (string)key.GetValue("Login");
+                    else
+                        return null;
+                }
+            }
+        }
+        private string Password
+        {
+            get
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\DTN\IQFeed\Startup"))
+                {
+                    if (key != null)
+                        return (string)key.GetValue("Password");
+                    else
+                        return null;
+                }
+            }
+        }
+        #endregion
+
         #region public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
         public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
         {
@@ -41,7 +73,7 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            IQFeedLauncher.Start(null, null, "ONDEMAND_SERVER", "1.0");
+            IQFeedLauncher.Start(this.LoginName, this.Password, "ONDEMAND_SERVER", "1.0");
             var lookupClient = LookupClientFactory.CreateNew();
             lookupClient.Connect();
 
