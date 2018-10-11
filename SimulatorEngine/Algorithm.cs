@@ -211,7 +211,10 @@ namespace FUB_TradingSim
             {
                 string retval = "";
                 foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
-                    retval += string.Format("{0}={1} ", parameter.Name, parameter.Value);
+                {
+                    retval += retval.Length > 0 ? ", " : "";
+                    retval += string.Format("{0}={1}", parameter.Name, parameter.Value);
+                }
                 return retval;
             }
         }

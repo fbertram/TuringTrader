@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        DataUpdaterStooq
+// Name:        DataUpdaterYahoo
 // Description: Web data updater, Yahoo! finance
 // History:     2018x05, FUB, created
 //------------------------------------------------------------------------------

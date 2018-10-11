@@ -16,7 +16,7 @@
         <Button x:Name="RunButton" Content="Run" Margin="0,45,319,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
         <Button x:Name="ReportButton" Content="Report" Margin="0,45,218,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1" HorizontalAlignment="Right" Width="75"/>
         <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
-        <Menu Height="30" VerticalAlignment="Top" Grid.ColumnSpan="2">
+        <Menu Height="23" VerticalAlignment="Top" Grid.ColumnSpan="2">
             <MenuItem Header="_File">
                 <MenuItem Header="Data Location..." Click="MenuDataLocation_Click"/>
                 <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
