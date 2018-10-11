@@ -1,5 +1,5 @@
 # Turing Trader
-This project implements a trading simulator for stocks and options with the following features:
+This project implements a trading simulator/ backtester for stocks and options with the following features:
 
 * simple Windows Desktop UI for interactive sessions
 * import data in various CSV formats and with configurable column-mapping
@@ -17,12 +17,13 @@ This project implements a trading simulator for stocks and options with the foll
 The following features are planned for the near future:
 
 * support for limit orders
+* Data management tool
 * API documentation
 * Unit tests
 
 The following environment is required for building and running the simulator:
 
-* Microsoft Visual Studio, Community 2015 or better
+* Microsoft Visual Studio, Community 2017
 * Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
 * R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
 * data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured
