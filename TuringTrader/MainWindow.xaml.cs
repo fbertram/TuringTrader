@@ -45,8 +45,10 @@ namespace TuringTrader
         #region internal data
         private Algorithm _currentAlgorithm = null;
         private OptimizerGrid _optimizer = null;
+        private bool _runningBacktest = false;
+        private bool _runningOptimization = false;
 
-        private string messageUpdate;
+        private string _messageUpdate;
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
         #endregion
         #region internal helpers
@@ -59,7 +61,7 @@ namespace TuringTrader
         }
         private void ClearLog()
         {
-            messageUpdate = "";
+            _messageUpdate = "";
             LogOutput.Text = "";
         }
         #endregion
@@ -106,7 +108,7 @@ namespace TuringTrader
         {
             LogOutput.Dispatcher.BeginInvoke(new Action(() =>
             {
-                messageUpdate += message;
+                _messageUpdate += message;
 
                 //DateTime timeNow = DateTime.Now;
                 //if ((timeNow - lastLogUpdate).TotalMilliseconds < 200 && message.Length > 0)
@@ -121,11 +123,23 @@ namespace TuringTrader
         #region private void DispatcherTimer_Tick(object sender, EventArgs e)
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            LogOutput.AppendText(messageUpdate);
-            messageUpdate = "";
+            LogOutput.AppendText(_messageUpdate);
+            _messageUpdate = "";
 
-            if (_currentAlgorithm != null && Progress.Visibility == Visibility.Visible)
+            if (_runningBacktest)
+            {
+                Progress.Visibility = Visibility.Visible;
                 Progress.Value = _currentAlgorithm.Progress;
+            }
+            else if (_runningOptimization)
+            {
+                Progress.Visibility = Visibility.Visible;
+                Progress.Value = _optimizer.Progress;
+            }
+            else
+            {
+                Progress.Visibility = Visibility.Hidden;
+            }
         }
         #endregion
         #region private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
@@ -190,7 +204,7 @@ namespace TuringTrader
             bool saveResultsButton = ResultsButton.IsEnabled;
             ResultsButton.IsEnabled = false;
             AlgoSelector.IsEnabled = false;
-            Progress.Visibility = Visibility.Visible;
+            _runningBacktest = true;
 
             ClearLog();
 
@@ -216,7 +230,7 @@ namespace TuringTrader
             OptimizerButton.IsEnabled = saveOptimizerButton;
             ResultsButton.IsEnabled = saveResultsButton;
             AlgoSelector.IsEnabled = true;
-            Progress.Visibility = Visibility.Hidden;
+            _runningBacktest = false;
         }
         #endregion
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
@@ -237,6 +251,8 @@ namespace TuringTrader
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             if (optimizerSettings.ShowDialog() == true)
             {
+                _runningOptimization = true;
+
                 await Task.Run(() =>
                 {
                     _optimizer = new OptimizerGrid(_currentAlgorithm);
@@ -249,6 +265,7 @@ namespace TuringTrader
                         OptimizerButton.IsEnabled = true;
                         ResultsButton.IsEnabled = true;
                         AlgoSelector.IsEnabled = true;
+                        _runningOptimization = false;
 
                         ResultsButton_Click(null, null);
                     }));
@@ -261,6 +278,7 @@ namespace TuringTrader
                 OptimizerButton.IsEnabled = true;
                 ResultsButton.IsEnabled = false;
                 AlgoSelector.IsEnabled = true;
+                _runningOptimization = false;
             }
         }
         #endregion

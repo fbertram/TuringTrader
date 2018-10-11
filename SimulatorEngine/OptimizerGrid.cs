@@ -164,6 +164,22 @@ namespace FUB_TradingSim
             _jobQueue.WaitForCompletion();
         }
         #endregion
+        #region public double Progress
+        public double Progress
+        {
+            get
+            {
+                try
+                {
+                    return 100.0 * _numIterationsCompleted / _numIterationsTotal;
+                }
+                catch (Exception)
+                {
+                    return 0.0;
+                }
+            }
+        }
+        #endregion
 
         public List<OptimizerResult> Results;
         #region public void ResultsToExcel(string excelPath)
