@@ -225,6 +225,24 @@ namespace FUB_TradingSim
 
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
         protected bool IsLastBar = false;
+        #region public double Progress
+        public double Progress
+        {
+            get
+            {
+                try
+                {
+                    double doneDays = (SimTime[0] - (DateTime)WarmupStartTime).TotalDays;
+                    double totalDays = (EndTime - (DateTime)WarmupStartTime).TotalDays;
+                    return 100.0 * doneDays / totalDays;
+                }
+                catch (Exception)
+                {
+                    return 0.0;
+                }
+            }
+        }
+        #endregion
 
         #region protected IEnumerable<DateTime> SimTimes
         protected IEnumerable<DateTime> SimTimes

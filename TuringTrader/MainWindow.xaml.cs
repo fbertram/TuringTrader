@@ -123,6 +123,9 @@ namespace TuringTrader
         {
             LogOutput.AppendText(messageUpdate);
             messageUpdate = "";
+
+            if (_currentAlgorithm != null && Progress.Visibility == Visibility.Visible)
+                Progress.Value = _currentAlgorithm.Progress;
         }
         #endregion
         #region private void LogOutput_TextChanged(object sender, TextChangedEventArgs e)
@@ -187,6 +190,7 @@ namespace TuringTrader
             bool saveResultsButton = ResultsButton.IsEnabled;
             ResultsButton.IsEnabled = false;
             AlgoSelector.IsEnabled = false;
+            Progress.Visibility = Visibility.Visible;
 
             ClearLog();
 
@@ -212,6 +216,7 @@ namespace TuringTrader
             OptimizerButton.IsEnabled = saveOptimizerButton;
             ResultsButton.IsEnabled = saveResultsButton;
             AlgoSelector.IsEnabled = true;
+            Progress.Visibility = Visibility.Hidden;
         }
         #endregion
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
