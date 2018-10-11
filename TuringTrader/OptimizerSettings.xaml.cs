@@ -45,7 +45,13 @@ namespace TuringTrader
 
         private void RunButton_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = true;
             Close();
+        }
+
+        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
+        {
+            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
         }
     }
 }

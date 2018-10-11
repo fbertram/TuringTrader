@@ -36,6 +36,31 @@ namespace FUB_TradingSim
         private double _maxFitness = -1e10;
         #endregion
 
+        #region public static int NumIterations(Algorithm algo)
+        public static int NumIterations(Algorithm algo)
+        {
+            // figure out total number of iterations
+            int numIterationsTotal = 1;
+            foreach (OptimizerParam parameter in algo.OptimizerParams.Values)
+            {
+                int iterationsThisLevel = 0;
+                if (parameter.IsEnabled)
+                {
+                    for (int i = parameter.Start; i <= parameter.End; i += parameter.Step)
+                        iterationsThisLevel++;
+                }
+                else
+                {
+                    iterationsThisLevel = 1;
+                }
+
+                numIterationsTotal *= iterationsThisLevel;
+            }
+
+            return numIterationsTotal;
+        }
+        #endregion
+
         #region private void RunIteration(bool firstRun = true)
         private Algorithm RunIteration(bool firstRun = true)
         {
@@ -129,22 +154,7 @@ namespace FUB_TradingSim
 
             // figure out total number of iterations
             _numIterationsCompleted = 0;
-            _numIterationsTotal = 1;
-            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
-            {
-                int iterationsThisLevel = 0;
-                if (parameter.IsEnabled)
-                {
-                    for (int i = parameter.Start; i <= parameter.End; i += parameter.Step)
-                        iterationsThisLevel++;
-                }
-                else
-                {
-                    iterationsThisLevel = 1;
-                }
-
-                _numIterationsTotal *= iterationsThisLevel;
-            }
+            _numIterationsTotal = NumIterations(_masterInstance);
             Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations

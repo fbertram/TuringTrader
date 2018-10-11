@@ -16,9 +16,8 @@
         </Grid.ColumnDefinitions>
         <Button x:Name="CloseButton" Content="Close" HorizontalAlignment="Right" Margin="0,0,0,10" Width="75" Grid.Column="1" Height="20" VerticalAlignment="Bottom" Click="CloseButton_Click"/>
         <DataGrid x:Name="ResultGrid" 
-                  ItemsSource="{Binding}"
-                  HorizontalAlignment="Left" 
-                  Margin="10,10,0,51" Width="774" 
+                  ItemsSource="{Binding}" 
+                  Margin="10,10,10,51" 
                   Grid.ColumnSpan="3" 
                   AutoGenerateColumns="False">
             <DataGrid.Resources>
@@ -41,7 +40,7 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Fitness" IsReadOnly="True" Binding="{Binding Fitness, StringFormat=F4}" Width="Auto">
+                <DataGridTextColumn Header="Fitness Value" IsReadOnly="True" Binding="{Binding Fitness, StringFormat=F4}" Width="Auto">
                     <DataGridTextColumn.ElementStyle>
                         <Style>
                             <Setter Property="TextBlock.TextAlignment" Value="Right" />
@@ -51,7 +50,7 @@
                 <DataGridTextColumn Header="Settings" IsReadOnly="True" Binding="{Binding ParametersAsString}" Width="*">
                     <DataGridTextColumn.ElementStyle>
                         <Style>
-                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                            <Setter Property="TextBlock.TextAlignment" Value="Left" />
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
