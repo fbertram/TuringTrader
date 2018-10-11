@@ -77,13 +77,12 @@ namespace FUB_TradingSim
             var lookupClient = LookupClientFactory.CreateNew();
             lookupClient.Connect();
 
-            string symbol = Info[DataSourceValue.ticker];
+            string symbol = Info[DataSourceValue.symbolIqfeed];
 
             IEnumerable<IDailyWeeklyMonthlyMessage> dailyMessages =
                 lookupClient.Historical.ReqHistoryDailyTimeframeAsync(
                     symbol, startTime, endTime).Result;
 
-            List<Bar> newBars = new List<Bar>();
             foreach (IDailyWeeklyMonthlyMessage msg in dailyMessages)
             {
                 DateTime barTime = msg.Timestamp.Date + DateTime.Parse("16:00").TimeOfDay;
@@ -93,12 +92,13 @@ namespace FUB_TradingSim
                     msg.Open, msg.High, msg.Low, msg.Close, msg.PeriodVolume, true,
                     0.0, 0.0, 0, 0, false,
                     default(DateTime), 0.0, false);
-                newBars.Add(newBar);
+
+                if (newBar.Time >= startTime
+                && newBar.Time <= endTime)
+                    yield return newBar;
             }
 
-            return newBars
-                .Where(b => b.Time >= startTime && b.Time <= endTime)
-                .OrderBy(b => b.Time);
+            yield break;
         }
         #endregion
 
