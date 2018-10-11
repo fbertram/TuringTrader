@@ -49,6 +49,20 @@ namespace TuringTrader
         private string messageUpdate;
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
         #endregion
+        #region internal helpers
+        private void UpdateParameterDisplay()
+        {
+            AlgoParameters.Text = "Parameters: "
+                + (_currentAlgorithm.OptimizerParams.Count > 0
+                    ? _currentAlgorithm.OptimizerParamsAsString
+                    : "n/a");
+        }
+        private void ClearLog()
+        {
+            messageUpdate = "";
+            LogOutput.Text = "";
+        }
+        #endregion
 
         #region public MainWindow()
         public MainWindow()
@@ -154,10 +168,8 @@ namespace TuringTrader
             _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
             _optimizer = null;
 
-            AlgoParameters.Text = "Parameters: "
-                + (_currentAlgorithm.OptimizerParams.Count > 0
-                    ? _currentAlgorithm.OptimizerParamsAsString
-                    : "n/a");
+            UpdateParameterDisplay();
+            ClearLog();
 
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = false;
@@ -176,8 +188,7 @@ namespace TuringTrader
             ResultsButton.IsEnabled = false;
             AlgoSelector.IsEnabled = false;
 
-            messageUpdate = "";
-            LogOutput.Text = "";
+            ClearLog();
 
             if (_currentAlgorithm != null)
                 await Task.Run(() =>
@@ -266,7 +277,7 @@ namespace TuringTrader
             ResultsButton.IsEnabled = true;
             AlgoSelector.IsEnabled = true;
 
-            AlgoParameters.Text = _currentAlgorithm.OptimizerParamsAsString;
+            UpdateParameterDisplay();
         }
         #endregion
     }

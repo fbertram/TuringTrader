@@ -41,7 +41,7 @@ namespace FUB_TradingSim
 
             // while optimizing, we should avoid printing to the log
             if (!IsOptimizing)
-                Output.WriteLine("Run: X={0}, Y={1}", X, Y);
+                Output.WriteLine("Run: {0}", OptimizerParamsAsString);
         }
 
         // create a report. typically, we would create a pretty plot here
