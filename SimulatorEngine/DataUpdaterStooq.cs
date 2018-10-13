@@ -78,7 +78,9 @@ namespace FUB_TradingSim
                             default(double), default(double), default(long), default(long), false,
                             default(DateTime), default(double), false);
 
-                        yield return bar;
+                        if (bar.Time >= startTime
+                        &&  bar.Time <= endTime)
+                            yield return bar;
                     }
 
                     yield break;

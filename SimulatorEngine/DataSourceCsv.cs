@@ -221,8 +221,12 @@ namespace FUB_TradingSim
             // to make sure we don't run it again, in case the same update is requested again
             DateTime loadEndTime = endTime;
             DateTime updateEndTime = endTime.Date + TimeSpan.FromDays(4) - TimeSpan.FromSeconds(1);
-            if (updateEndTime > DateTime.Now)
-                updateEndTime = DateTime.Now;
+
+            // it doesn't seem to bother our update clients, if we request a time in the future
+            // this also helps overcoming the issue of not requesting enough data, due to 
+            // differences in time zone
+            //if (updateEndTime > DateTime.Now)
+            //    updateEndTime = DateTime.Now;
 
             DataUpdater updater = DataUpdater.New(Info);
             if (updater != null)
@@ -231,7 +235,8 @@ namespace FUB_TradingSim
                 Output.Write(string.Format("DataSourceCsv: updating data for {0}...", Info[DataSourceValue.nickName]));
 
                 // retrieve update data
-                IEnumerable<Bar> updateBars = updater.UpdateData(updateStartTime, updateEndTime);
+                // we copy these to a list, to avoid evaluating this multiple times
+                IEnumerable<Bar> updateBars = updater.UpdateData(updateStartTime, updateEndTime).ToList();
 
                 // write a new csv file
                 if (updateBars.Count() > 0)

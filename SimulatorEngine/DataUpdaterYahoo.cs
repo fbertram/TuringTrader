@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        DataUpdaterStooq
+// Name:        DataUpdaterYahoo
 // Description: Web data updater, Yahoo! finance
 // History:     2018x05, FUB, created
 //------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ namespace FUB_TradingSim
                     adjClose.MoveNext();
                     volume.MoveNext();
 
-                    yield return new Bar(Info[DataSourceValue.symbol],
+                    Bar newBar = new Bar(Info[DataSourceValue.symbol],
                         FromUnixTime(timeStamp.Current),
                         open.Current,
                         high.Current,
@@ -107,6 +107,10 @@ namespace FUB_TradingSim
                         true,
                         0.0, 0.0, 0, 0, false,
                         default(DateTime), 0.00, false);
+
+                    if (newBar.Time >= startTime
+                    &&  newBar.Time <= endTime)
+                        yield return newBar;
                 }
 
                 yield break;
