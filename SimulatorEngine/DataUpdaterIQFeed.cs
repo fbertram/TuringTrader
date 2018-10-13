@@ -83,7 +83,7 @@ namespace FUB_TradingSim
                 lookupClient.Historical.ReqHistoryDailyTimeframeAsync(
                     symbol, startTime, endTime).Result;
 
-            foreach (IDailyWeeklyMonthlyMessage msg in dailyMessages)
+            foreach (IDailyWeeklyMonthlyMessage msg in dailyMessages.OrderBy(m => m.Timestamp))
             {
                 DateTime barTime = msg.Timestamp.Date + DateTime.Parse("16:00").TimeOfDay;
 

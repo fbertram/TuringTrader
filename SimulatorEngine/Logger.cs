@@ -59,6 +59,15 @@ namespace FUB_TradingSim
         {
             LogData[CurrentPlot].Last()[yLabel] = yValue;
         }
+        private string AddQuotesAsRequired(string value)
+        {
+            char[] needsQuotes = " ,".ToCharArray();
+
+            if (value.IndexOfAny(needsQuotes) >= 0)
+                return string.Format("\"{0}\"", value);
+            else
+                return value;
+        }
         #endregion
 
         //----- initialization & cleanup
@@ -155,8 +164,7 @@ namespace FUB_TradingSim
         #region public void Log(string yLabel, string yValue)
         public void Log(string yLabel, string yValue)
         {
-            string yValueStr = string.Format("\"{0}\"", yValue);
-            _Log(yLabel, yValueStr);
+            _Log(yLabel, yValue);
         }
         #endregion
 
@@ -176,17 +184,17 @@ namespace FUB_TradingSim
                 Debug.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
 
                 //--- header row
-                file.Write("\"{0}\"", XLabels[plotTitle]);
+                file.Write(AddQuotesAsRequired(XLabels[plotTitle]));
                 foreach (string label in LogData[plotTitle][0].Keys)
-                    if (label != XLabels[plotTitle]) file.Write(",\"{0}\"", label);
+                    if (label != XLabels[plotTitle]) file.Write("," + AddQuotesAsRequired(label));
                 file.WriteLine("");
 
                 //--- data rows
                 foreach (var row in LogData[plotTitle])
                 {
-                    file.Write("{0}", row[XLabels[plotTitle]]);
+                    file.Write(AddQuotesAsRequired(row[XLabels[plotTitle]]));
                     foreach (string label in row.Keys)
-                        if (label != XLabels[plotTitle]) file.Write(",{0}", row[label]);
+                        if (label != XLabels[plotTitle]) file.Write("," + AddQuotesAsRequired(row[label]));
                     file.WriteLine("");
                 }
 

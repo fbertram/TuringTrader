@@ -29,6 +29,7 @@ namespace FUB_TradingSim
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
+            // no trades during warmup phase
             if (SimTime[0] < StartTime)
                 return;
 
@@ -109,6 +110,10 @@ namespace FUB_TradingSim
             };
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
+
+            // start trading day counter
+            if (TradingDays == null)
+                TradingDays = 0;
         }
         private void ExpireOption(Instrument instr)
         {
@@ -225,6 +230,7 @@ namespace FUB_TradingSim
         protected DateTime StartTime;
         protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
+        public int? TradingDays = null;
 
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
         protected bool IsLastBar = false;
@@ -252,7 +258,7 @@ namespace FUB_TradingSim
         {
             get
             {
-                // initialization
+                //----- initialization
                 DateTime warmupStartTime = WarmupStartTime != null
                     ? (DateTime)WarmupStartTime
                     : StartTime;
@@ -273,8 +279,9 @@ namespace FUB_TradingSim
 
                 // reset fitness
                 FitnessValue = 0.0;
+                TradingDays = null;
 
-                // loop, until we've consumed all data
+                //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
                     SimTime.Value = DataSources
@@ -317,12 +324,16 @@ namespace FUB_TradingSim
                     // update IsLastBar
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
+                    // update TradingDays
+                    if (TradingDays != null)
+                        TradingDays++;
+
                     // run our algorithm here
                     if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
                         yield return SimTime[0];
                 }
 
-                // attempt to free up resources
+                //----- attempt to free up resources
 #if true
                 Instruments.Clear();
                 Positions.Clear();
