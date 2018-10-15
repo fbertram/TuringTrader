@@ -36,7 +36,7 @@ namespace FUB_TradingSim
     class DataUpdaterIQFeed : DataUpdater
     {
         #region internal helpers
-        private string LoginName
+        private string _username
         {
             get
             {
@@ -49,7 +49,7 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private string Password
+        private string _password
         {
             get
             {
@@ -73,9 +73,21 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            IQFeedLauncher.Start(this.LoginName, this.Password, "ONDEMAND_SERVER", "1.0");
+            // create a lookup client
             var lookupClient = LookupClientFactory.CreateNew();
-            lookupClient.Connect();
+
+            // try to connect to it
+            try
+            {
+                lookupClient.Connect();
+            }
+
+            // if it fails: run the launcher and retry
+            catch (Exception)
+            {
+                IQFeedLauncher.Start(_username, _password, "ONDEMAND_SERVER", "1.0");
+                lookupClient.Connect();
+            }
 
             string symbol = Info[DataSourceValue.symbolIqfeed];
 
