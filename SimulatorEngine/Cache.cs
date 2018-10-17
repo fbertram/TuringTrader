@@ -27,10 +27,10 @@ namespace FUB_TradingSim
 {
     public class Cache<T>
     {
-        private static Dictionary<string, T> _cache = new Dictionary<string, T>();
+        private static Dictionary<int, T> _cache = new Dictionary<int, T>();
         private static object _lockCache = new object();
 
-        static public T GetData(string key, Func<T> initialRetrieval)
+        static public T GetData(int key, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
             return initialRetrieval();

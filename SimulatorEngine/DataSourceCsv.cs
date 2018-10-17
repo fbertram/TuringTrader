@@ -385,7 +385,7 @@ namespace FUB_TradingSim
         #region override public void LoadData(DateTime startTime, DateTime endTime)
         override public void LoadData(DateTime startTime, DateTime endTime)
         {
-            string cacheKey = string.Format("{0}-{1}-{2}", Info[DataSourceValue.nickName], startTime, endTime);
+            int cacheKey = Tuple.Create(Info[DataSourceValue.nickName], startTime, endTime).GetHashCode();
 
             Func<List<Bar>> retrievalFunction = delegate ()
             {
