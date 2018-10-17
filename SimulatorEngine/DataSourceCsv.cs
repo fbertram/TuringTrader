@@ -177,18 +177,117 @@ namespace FUB_TradingSim
                 _totalBarsRead++;
             }
         }
-        private void WriteCsv(string name, IEnumerable<Bar> updateBars)
+        private void WriteCsv(string sourceName, IEnumerable<Bar> updateBars)
         {
             string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
-                string.Format("{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), name.ToLower()));
+                string.Format("{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), sourceName.ToLower()));
+
+            DirectoryInfo d = new DirectoryInfo(Info[DataSourceValue.dataPath]);
+            FileInfo[] files = d.GetFiles("*.*");
+            if (files.Select(i => i.Name).OrderByDescending(n => n).FirstOrDefault().CompareTo(updateFilePath) > 0)
+            {
+                updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
+                    string.Format("zzz-{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), sourceName.ToLower()));
+            }
+
 
             if (Directory.Exists(Info[DataSourceValue.dataPath])
             && !File.Exists(updateFilePath))
             {
                 using (StreamWriter writer = new StreamWriter(updateFilePath))
                 {
-                    // TODO: need to write with the proper column mapping
-                    //       as defined by the Info property
+#if true
+                    //--- find mapping
+                    Dictionary<int, DataSourceValue> mapping = new Dictionary<int, DataSourceValue>();
+                    for (int column = 1; column < 20; column++)
+                    {
+                        string map1 = string.Format("{{{0}}}", column);
+                        string map2 = string.Format("{{{0}:", column);
+
+                        DataSourceValue value = Info
+                            .Where(i => i.Value.Contains(map1) || i.Value.Contains(map2))
+                            .Select(i => i.Key)
+                            .FirstOrDefault();
+
+                        if (value != default(DataSourceValue))
+                            mapping[column] = value;
+                    }
+
+                    //--- write header row
+                    int highestColumn = mapping.Keys.Max(i => i);
+                    for (int column = 1; column <= highestColumn; column++)
+                    {
+                        if (mapping.ContainsKey(column))
+                            writer.Write("{0},", mapping[column]);
+                        else
+                            writer.Write(",");
+                    }
+                    writer.WriteLine();
+
+                    //--- write bars
+                    foreach (Bar bar in updateBars)
+                    {
+                        for (int column = 1; column <= highestColumn; column++)
+                        {
+                            if (mapping.ContainsKey(column))
+                            {
+                                DataSourceValue prop = mapping[column];
+                                object value = null;
+                                switch (prop)
+                                {
+                                    case DataSourceValue.date:
+                                        value = bar.Time.Date;
+                                        break;
+                                    case DataSourceValue.time:
+                                        value = bar.Time.TimeOfDay;
+                                        break;
+
+                                    case DataSourceValue.open:
+                                        value = bar.Open;
+                                        break;
+                                    case DataSourceValue.high:
+                                        value = bar.High;
+                                        break;
+                                    case DataSourceValue.low:
+                                        value = bar.Low;
+                                        break;
+                                    case DataSourceValue.close:
+                                        value = bar.Close;
+                                        break;
+                                    case DataSourceValue.volume:
+                                        value = bar.Volume;
+                                        break;
+
+                                    case DataSourceValue.bid:
+                                        value = bar.Bid;
+                                        break;
+                                    case DataSourceValue.ask:
+                                        value = bar.Ask;
+                                        break;
+                                    case DataSourceValue.bidSize:
+                                        value = bar.BidVolume;
+                                        break;
+                                    case DataSourceValue.askSize:
+                                        value = bar.AskVolume;
+                                        break;
+
+                                    case DataSourceValue.optionExpiration:
+                                        value = bar.OptionExpiry;
+                                        break;
+                                    case DataSourceValue.optionStrike:
+                                        value = bar.OptionStrike;
+                                        break;
+                                    case DataSourceValue.optionRight:
+                                        value = bar.OptionIsPut ? "P" : "C";
+                                        break;
+                                }
+                                writer.Write(Info[prop], Enumerable.Range(1, 20).Select(i => value).ToArray());
+                            }
+                            writer.Write(",");
+                        }
+                        writer.WriteLine();
+                    }
+#else
                     writer.WriteLine("Date,Open,High,Low,Close,Volume");
 
                     foreach (Bar bar in updateBars)
@@ -196,6 +295,7 @@ namespace FUB_TradingSim
                         writer.WriteLine("{0:MM/dd/yyyy},{1},{2},{3},{4},{5}",
                             bar.Time, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
                     }
+#endif
                 }
             }
         }

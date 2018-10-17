@@ -22,7 +22,7 @@ using Newtonsoft.Json.Linq;
 
 namespace FUB_TradingSim
 {
-    class DataUpdaterYahoo : DataUpdater
+    public class DataUpdaterYahoo : DataUpdater
     {
         #region internal data & helpers
         // URL discovered with MultiCharts' QuoteManager
