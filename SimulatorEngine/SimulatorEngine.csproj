@@ -71,9 +71,11 @@
     <Compile Include="DataUpdaterIQFeed.cs" />
     <Compile Include="DataUpdaterStooq.cs" />
     <Compile Include="DataUpdaterYahoo.cs" />
+    <Compile Include="DataUpdaterYahooOptions.cs" />
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IndicatorsArithmetic.cs" />
     <Compile Include="IndicatorsBasic.cs" />
+    <Compile Include="IndicatorsMarket.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />
