@@ -267,11 +267,12 @@ namespace FUB_TradingSim
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
-                foreach (DataSource instr in DataSources)
+                foreach (DataSource source in DataSources)
                 {
-                    instr.LoadData(warmupStartTime, EndTime);
-                    instr.BarEnumerator.Reset();
-                    hasData[instr] = instr.BarEnumerator.MoveNext();
+                    source.Algorithm = this; // we'd love to do this during construction
+                    source.LoadData(warmupStartTime, EndTime);
+                    source.BarEnumerator.Reset();
+                    hasData[source] = source.BarEnumerator.MoveNext();
                 }
 
                 // reset trade log

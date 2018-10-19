@@ -34,6 +34,9 @@
     <Reference Include="DynamicInterop">
       <HintPath>..\ExternalProjects\DynamicInterop\DynamicInterop.dll</HintPath>
     </Reference>
+    <Reference Include="IBApi">
+      <HintPath>..\ExternalProjects\IBApi\IBApi.dll</HintPath>
+    </Reference>
     <Reference Include="IQFeed.CSharpApiClient">
       <HintPath>..\ExternalProjects\IQFeed.CSharpApiClient\IQFeed.CSharpApiClient.dll</HintPath>
     </Reference>
@@ -63,11 +66,14 @@
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="BrokerClientIB.cs" />
+    <Compile Include="BrokerClientIBBase.cs" />
     <Compile Include="Cache.cs" />
     <Compile Include="DataSource.cs" />
     <Compile Include="DataSourceCsv.cs" />
     <Compile Include="DataSourceValue.cs" />
     <Compile Include="DataUpdater.cs" />
+    <Compile Include="DataUpdaterIBOptions.cs" />
     <Compile Include="DataUpdaterIQFeed.cs" />
     <Compile Include="DataUpdaterStooq.cs" />
     <Compile Include="DataUpdaterYahoo.cs" />

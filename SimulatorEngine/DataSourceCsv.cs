@@ -328,7 +328,7 @@ namespace FUB_TradingSim
             //if (updateEndTime > DateTime.Now)
             //    updateEndTime = DateTime.Now;
 
-            DataUpdater updater = DataUpdater.New(Info);
+            DataUpdater updater = DataUpdater.New(Algorithm, Info);
             if (updater != null)
             {
                 DateTime t1 = DateTime.Now;

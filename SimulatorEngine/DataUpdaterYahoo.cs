@@ -42,8 +42,8 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region public DataUpdaterYahoo(Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterYahoo(Dictionary<DataSourceValue, string> info) : base(info)
+        #region public DataUpdaterYahoo(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
+        public DataUpdaterYahoo(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
         {
         }
         #endregion
