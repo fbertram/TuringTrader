@@ -73,6 +73,9 @@ namespace FUB_TradingSim
                     string right = option.Details.Summary.Right;
                     double strike = option.Details.Summary.Strike;
 
+                    // FIXME: this is really slow. accessing option.Bid and option.Ask will
+                    //        trigger a request for market data, which takes about 1 second
+                    //        per option to complete.
                     Bar newBar = new Bar(
                         symbol, time,
                         default(double), default(double), default(double), default(double), default(long), false,

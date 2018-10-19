@@ -82,7 +82,7 @@ namespace FUB_TradingSim
                 lookupClient.Connect();
             }
 
-            // if it fails: run the launcher and retry
+            // if connection fails: run the launcher and retry
             catch (Exception)
             {
                 IQFeedLauncher.Start(_username, _password, "ONDEMAND_SERVER", "1.0");

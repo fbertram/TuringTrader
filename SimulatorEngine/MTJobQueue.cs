@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    class MTJobQueue
+    public class MTJobQueue
     {
         #region internal data
         private readonly object _queueLock = new object();
