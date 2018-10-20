@@ -9,10 +9,10 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-//#define ENABLE_R
+#define ENABLE_R
 // for R, we need RDotNet installed. comment the line above to disable R
 // install with the following command: nuget install R.Net.Community
-// tested successfully w/ MSVC 2017 and RDotNet 1.7.0
+// tested successfully w/ MSVC 2017, R 3.4.3, and RDotNet 1.7.0
 // add assembly references to the following DLLs
 // - DynamicInterop.dll
 // - RDotNet.dll
