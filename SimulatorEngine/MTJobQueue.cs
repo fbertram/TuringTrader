@@ -32,29 +32,16 @@ namespace FUB_TradingSim
         #region internal data
         private readonly object _queueLock = new object();
         private readonly Queue<Thread> _jobQueue = new Queue<Thread>();
+        private readonly int _maximumNumberOfThreads;
         private int _jobsRunning = 0;
         #endregion
 
-        #region private int MaximumNumberOfThreads
-        private int MaximumNumberOfThreads
-        {
-            get
-            {
-#if SINGLE_THREAD
-                return 1;
-#else
-                // https://stackoverflow.com/questions/1542213/how-to-find-the-number-of-cpu-cores-via-net-c
-                return Environment.ProcessorCount; // number of logical processors
-#endif
-            }
-        }
-        #endregion
         #region private void CheckQueue()
         private void CheckQueue()
         {
             lock(_queueLock)
             {
-                while (_jobsRunning < MaximumNumberOfThreads
+                while (_jobsRunning < _maximumNumberOfThreads
                 && _jobQueue.Count > 0)
                 {
                     _jobsRunning++;
@@ -78,6 +65,24 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region public MTJobQueue(int maxNumberOfThreads = 0)
+        public MTJobQueue(int maxNumberOfThreads = 0)
+        {
+#if SINGLE_THREAD
+                _maximumNumberOfThreads = 1;
+#else
+            if (maxNumberOfThreads == 0)
+            {
+                // https://stackoverflow.com/questions/1542213/how-to-find-the-number-of-cpu-cores-via-net-c
+                _maximumNumberOfThreads = Environment.ProcessorCount; // number of logical processors
+            }
+            else
+            {
+                _maximumNumberOfThreads = maxNumberOfThreads;
+            }
+#endif
+        }
+        #endregion
         #region public void QueueJob(Action job)
         public void QueueJob(Action job)
         {
