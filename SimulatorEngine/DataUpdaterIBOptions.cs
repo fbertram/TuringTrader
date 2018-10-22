@@ -56,10 +56,42 @@ namespace FUB_TradingSim
                 string exchange = mapping.Count() >= 3 ? mapping[2] : "SMART";
                 string currency = mapping.Count() >= 4 ? mapping[3] : "USD";
 
+                //----- get option chain
                 var optionChain = ibClient.ContractDetails(symbol, type, exchange, currency);
+                Output.Write("found {0} contracts...", optionChain.Count());
 
+                //----- multi-threaded bid/ask price query
+                MTJobQueue mtJobQueue = new MTJobQueue(10);
+                int num = 0;
                 foreach (var option in optionChain)
                 {
+                    mtJobQueue.QueueJob(() =>
+                    {
+                        try
+                        {
+                            double bid = option.Bid;
+                            double ask = option.Ask;
+                            lock ((object)num)
+                            {
+                                if (++num % 1000 == 0) Output.Write("|");
+                                else if (num % 100 == 0) Output.Write(".");
+                            }
+                        }
+                        catch
+                        {
+                            option.Bid = 0.0;
+                            option.Ask = 0.0;
+                        }
+                    });
+                }
+                mtJobQueue.WaitForCompletion();
+
+                //----- return bars
+                foreach (var option in optionChain)
+                {
+                    if (option.Bid == 0.0 || option.Ask == 0.0)
+                        continue;
+
                     // FIXME: this is far from pretty: need better timezone conversion
                     DateTime time = DateTime.Now + TimeSpan.FromHours(3);
                     DateTime expiration = new DateTime(
@@ -72,17 +104,19 @@ namespace FUB_TradingSim
 
                     string right = option.Details.Summary.Right;
                     double strike = option.Details.Summary.Strike;
+                    double bid = option.Bid;
+                    double ask = option.Ask;
 
-                    // FIXME: this is really slow. accessing option.Bid and option.Ask will
-                    //        trigger a request for market data, which takes about 1 second
-                    //        per option to complete.
-                    Bar newBar = new Bar(
-                        symbol, time,
-                        default(double), default(double), default(double), default(double), default(long), false,
-                        option.Bid, option.Ask, default(long), default(long), true,
-                        expiration, strike, right == "P");
+                    if (bid > 0 && ask > 0)
+                    {
+                        Bar newBar = new Bar(
+                            symbol, time,
+                            default(double), default(double), default(double), default(double), default(long), false,
+                            bid, ask, default(long), default(long), true,
+                            expiration, strike, right == "P");
 
-                    yield return newBar;
+                        yield return newBar;
+                    }
                 }
 
                 yield break;

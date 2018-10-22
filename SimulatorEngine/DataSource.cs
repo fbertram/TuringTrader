@@ -135,6 +135,30 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region protected Bar ValidateBar(Bar bar)
+        protected Bar ValidateBar(Bar bar)
+        {
+            DateTime barTime = bar.Time;
+            if (barTime.DayOfWeek >= DayOfWeek.Monday
+            && barTime.DayOfWeek <= DayOfWeek.Friday)
+            {
+                if (barTime.TimeOfDay.TotalHours >= 9.5
+                && barTime.TimeOfDay.TotalHours <= 16.0)
+                {
+                    return bar;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
+
         //----- abstract methods to be implemented by derived classes
         #region abstract public IEnumerator<Bar> BarEnumerator
         abstract public IEnumerator<Bar> BarEnumerator

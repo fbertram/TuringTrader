@@ -30,7 +30,7 @@ namespace FUB_TradingSim
 
             string dataUpdater = info[DataSourceValue.dataUpdater].ToLower();
 
-            if (dataUpdater.Contains("iqfeed") 
+            if (dataUpdater.Contains("iq") 
             &&  info.ContainsKey(DataSourceValue.symbolIqfeed))
                 return new DataUpdaterIQFeed(algorithm, info);
 
@@ -39,7 +39,7 @@ namespace FUB_TradingSim
                 return new DataUpdaterIBOptions(algorithm, info);
 
             if (dataUpdater.Contains("yahoo") 
-            &&  dataUpdater.Contains("option") 
+            &&  dataUpdater.Contains("opt") 
             &&  info.ContainsKey(DataSourceValue.symbolYahoo))
                 return new DataUpdaterYahooOptions(algorithm, info);
 

@@ -47,6 +47,7 @@ namespace FUB_TradingSim
         symbolYahoo,
         symbolInteractiveBrokers,
         dataUpdater,
+        dataUpdaterPriceMultiplier,
     };
 }
 

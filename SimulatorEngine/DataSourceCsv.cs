@@ -159,7 +159,9 @@ namespace FUB_TradingSim
                 if (line.Length == 0)
                     continue; // to handle end of file
 
-                Bar bar = CreateBar(line);
+                Bar bar = ValidateBar(CreateBar(line));
+                if (bar == null)
+                    continue;
 
                 if (FirstTime == null)
                     FirstTime = bar.Time;
@@ -343,8 +345,16 @@ namespace FUB_TradingSim
                     WriteCsv(updater.Name, updateBars);
 
                 // load the bars into memory
-                foreach (Bar bar in updateBars.Where(b => b.Time >= loadStartTime && b.Time <= loadEndTime))
-                    data.Add(bar);
+                foreach (Bar b in updateBars)
+                {
+                    Bar bar = ValidateBar(b);
+                    if (bar == null)
+                        continue;
+
+                    if (bar.Time >= loadStartTime
+                    && bar.Time <= loadEndTime)
+                        data.Add(bar);
+                }
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));

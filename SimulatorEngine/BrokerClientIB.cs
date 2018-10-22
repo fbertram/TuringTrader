@@ -119,7 +119,7 @@ namespace FUB_TradingSim
             {
                 get
                 {
-                    GetQuoteValue(() => _bid != null);
+                    GetQuoteValue(() => _bid != null && _ask != null);
                     return (double)_bid;
                 }
                 set
@@ -133,7 +133,7 @@ namespace FUB_TradingSim
             {
                 get
                 {
-                    GetQuoteValue(() => _ask != null);
+                    GetQuoteValue(() => _bid != null && _ask != null);
                     return (double)_ask;
                 }
                 set
@@ -309,7 +309,7 @@ namespace FUB_TradingSim
             }
 
 #if true
-            Console.WriteLine("BrokerClientInteractiveBrokers: wait for 60 seconds");
+            Output.WriteLine("BrokerClientInteractiveBrokers: wait for 60 seconds");
             Thread.Sleep(TimeSpan.FromSeconds(60));
 #else
             for (DateTime start = DateTime.Now; (DateTime.Now - start).TotalSeconds < 60;)
@@ -342,6 +342,10 @@ namespace FUB_TradingSim
 
             Output.WriteLine("BrokerClientInteractiveBrokers: failed to connect to TWS on port {0}", port);
 #endif
+        }
+        override public void nextValidId(int orderId)
+        {
+            NextOrderId = orderId;
         }
         #endregion
         #region public void Connect(string username, string password, int port = 7497, string ip = "127.0.0.1")
@@ -391,7 +395,7 @@ namespace FUB_TradingSim
         override public void error(Exception e)
         {
             Console.WriteLine("Exception thrown: " + e);
-            throw e;
+            //throw e;
         }
 
         override public void error(string str)

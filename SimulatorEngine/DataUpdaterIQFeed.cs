@@ -136,7 +136,8 @@ namespace FUB_TradingSim
                 Output.Write("found {0} contracts...", optionChain.Count());
 
                 // FIXME: this is far from pretty: need better timezone conversion
-                DateTime time = DateTime.Now + TimeSpan.FromHours(3);
+                //DateTime time = DateTime.Now + TimeSpan.FromHours(3);
+                DateTime time = DateTime.Now.Date + TimeSpan.FromHours(16);
 
                 //----- get snapshots for many options in parallel
                 MTJobQueue jobQueue = new MTJobQueue(50);
