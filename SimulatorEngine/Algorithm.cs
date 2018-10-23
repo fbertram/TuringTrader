@@ -167,12 +167,6 @@ namespace FUB_TradingSim
         #region public Algorithm()
         public Algorithm()
         {
-            // initialize the time series.
-            // this is generally not required, but 
-            // without this line the optimizer demo
-            // will crash, as it has zero bars
-            NetAssetValue.Value = 0.0;
-
             // create a dictionary of optimizer parameters
             OptimizerParams = new Dictionary<string, OptimizerParam>();
             foreach (OptimizerParam param in OptimizerParam.GetParams(this))
@@ -282,6 +276,14 @@ namespace FUB_TradingSim
                 FitnessValue = 0.0;
                 TradingDays = null;
 
+                // reset net asset value
+                // we create a new time-series here, to make sure that
+                // any indicators depending on it, are also re-created
+                NetAssetValue = new TimeSeries<double>();
+                NetAssetValue.Value = Cash;
+                NetAssetValueHighestHigh = 0.0;
+                NetAssetValueMaxDrawdown = 1e-10;
+
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
@@ -335,12 +337,10 @@ namespace FUB_TradingSim
                 }
 
                 //----- attempt to free up resources
-#if true
                 Instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
                 DataSources.Clear();
-#endif
 
                 yield break;
             }
@@ -376,9 +376,9 @@ namespace FUB_TradingSim
         public List<LogEntry> Log = new List<LogEntry>();
 
         protected double Cash;
-        public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
-        public double NetAssetValueHighestHigh = 0.0;
-        public double NetAssetValueMaxDrawdown = 1e-10;
+        public TimeSeries<double> NetAssetValue;
+        public double NetAssetValueHighestHigh;
+        public double NetAssetValueMaxDrawdown;
 
         protected double CommissionPerShare = 0.00;
 
