@@ -96,7 +96,7 @@ namespace FUB_TradingSim
                     {
                         _numIterationsCompleted++;
                         _maxFitness = Math.Max(_maxFitness, (double)result.Fitness);
-                        Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2}",
+                        Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}",
                             _numIterationsCompleted, _numIterationsTotal, _maxFitness);
 
                     }
@@ -149,6 +149,8 @@ namespace FUB_TradingSim
         #region public void Run()
         public void Run()
         {
+            DateTime t1 = DateTime.Now;
+
             // create new results list
             Results = new List<OptimizerResult>();
 
@@ -162,6 +164,10 @@ namespace FUB_TradingSim
 
             // wait for completion
             _jobQueue.WaitForCompletion();
+
+            DateTime t2 = DateTime.Now;
+            TimeSpan t = t2 - t1;
+            Output.WriteLine("GridOptimizer: finished after {0}:{1}:{2}", Math.Floor(t.TotalHours), t.Minutes, t.Seconds);
         }
         #endregion
         #region public double Progress

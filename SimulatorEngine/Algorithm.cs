@@ -110,10 +110,6 @@ namespace FUB_TradingSim
             };
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
-
-            // start trading day counter
-            if (TradingDays == null)
-                TradingDays = 0;
         }
         private void ExpireOption(Instrument instr)
         {
@@ -224,7 +220,7 @@ namespace FUB_TradingSim
         protected DateTime StartTime;
         protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
-        public int? TradingDays = null;
+        public int TradingDays;
 
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
         protected bool IsLastBar = false;
@@ -274,7 +270,7 @@ namespace FUB_TradingSim
 
                 // reset fitness
                 FitnessValue = 0.0;
-                TradingDays = null;
+                TradingDays = 0;
 
                 // reset net asset value
                 // we create a new time-series here, to make sure that
@@ -328,7 +324,8 @@ namespace FUB_TradingSim
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
                     // update TradingDays
-                    if (TradingDays != null)
+                    if (TradingDays == 0 && Positions.Count > 0 // start counter w/ 1st position
+                    || TradingDays > 0)
                         TradingDays++;
 
                     // run our algorithm here
