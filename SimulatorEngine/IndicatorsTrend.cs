@@ -116,6 +116,62 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        #region
+        public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
+        {
+
+            var functor = Cache<FunctorKAMA>.GetData(
+                    Tuple.Create(series, erPeriod, fastEma, slowEma).GetHashCode(),
+                    () => new FunctorKAMA(series, erPeriod, fastEma, slowEma));
+
+            functor.Calc();
+
+            return functor;
+        }
+
+        private class FunctorKAMA : TimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+            public int ErPeriod;
+            public int FastEma;
+            public int SlowEma;
+
+            private double _scFast;
+            private double _scSlow;
+
+            public FunctorKAMA(ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
+            {
+                Series = series;
+                ErPeriod = erPeriod;
+                FastEma = fastEma;
+                SlowEma = slowEma;
+
+                _scFast = 2.0 / (FastEma + 1.0);
+                _scSlow = 2.0 / (SlowEma + 1.0);
+            }
+
+            public void Calc()
+            {
+
+                try
+                {
+                    double change = Math.Abs(Series[0] - Series[ErPeriod]);
+                    double volatility = Enumerable.Range(0, ErPeriod)
+                        .Sum(t => Math.Abs(Series[t] - Series[t + 1]));
+
+                    double efficiencyRatio = change / Math.Max(1e-10, volatility);
+                    double smoothingConstant = Math.Pow(efficiencyRatio * (_scFast - _scSlow) + _scSlow, 2);
+
+                    Value = this[1] + smoothingConstant * (Series[0] - this[1]);
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                    Value = Series[0];
+                }
+            }
+        }
+        #endregion
     }
 }
 
