@@ -231,6 +231,8 @@ namespace TuringTrader
             ResultsButton.IsEnabled = saveResultsButton;
             AlgoSelector.IsEnabled = true;
             _runningBacktest = false;
+
+            ReportButton_Click(null, null);
         }
         #endregion
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)

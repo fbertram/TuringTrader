@@ -116,8 +116,8 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region
-        public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
+        #region public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
+        public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
 
             var functor = Cache<FunctorKAMA>.GetData(
@@ -139,7 +139,7 @@ namespace FUB_TradingSim
             private double _scFast;
             private double _scSlow;
 
-            public FunctorKAMA(ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
+            public FunctorKAMA(ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
             {
                 Series = series;
                 ErPeriod = erPeriod;
