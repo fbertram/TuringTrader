@@ -169,6 +169,13 @@ namespace FUB_TradingSim
                 OptimizerParams[param.Name] = param;
 
             GlobalSettings.MostRecentAlgorithm = Name;
+
+            // this is not required, a new object will be assigned
+            // during SimTime's initialization. we assign an object
+            // here, to avoid a crash in Demo05_Optimizer, which does
+            // not have any bars, and does not call SimTime
+            NetAssetValue = new TimeSeries<double>();
+            NetAssetValue.Value = 0.0;
         }
         #endregion
         #region public string Name
