@@ -15,6 +15,12 @@
 // please note that indicators require caching to
 // be enabled
 
+//#define DISABLE_STACK_ID
+// with DISABLE_STACK_ID defined, no stack id will be
+// calculated. Therefore, there might be a one to many
+// relationship between functor objects, and indicator
+// calls, leading to incorrect results
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -27,9 +33,32 @@ namespace FUB_TradingSim
 {
     public class Cache<T>
     {
+        #region internal data
         private static Dictionary<int, T> _cache = new Dictionary<int, T>();
         private static object _lockCache = new object();
+        #endregion
 
+        #region static public int GetStackId()
+        static public int GetStackId()
+        {
+#if DISABLE_STACK_ID
+            return 0;
+#else
+            string uniqueId = "";
+
+            System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
+            foreach (System.Diagnostics.StackFrame stackFrame in stackTrace.GetFrames())
+            {
+                uniqueId += stackFrame.GetMethod() + ":";
+                uniqueId += stackFrame.GetNativeOffset().ToString() + "/";
+            }
+
+            // 2 identical strings will have the same hash code
+            return uniqueId.GetHashCode();
+#endif
+        }
+        #endregion
+        #region static public T GetData(int key, Func<T> initialRetrieval)
         static public T GetData(int key, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
@@ -44,6 +73,7 @@ namespace FUB_TradingSim
             }
 #endif
         }
+        #endregion
     }
 }
 
