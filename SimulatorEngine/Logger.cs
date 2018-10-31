@@ -181,7 +181,7 @@ namespace FUB_TradingSim
 
             using (StreamWriter file = new StreamWriter(filePath))
             {
-                Debug.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
+                Output.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
 
                 //--- header row
                 file.Write(AddQuotesAsRequired(XLabels[plotTitle]));
@@ -218,7 +218,7 @@ namespace FUB_TradingSim
 
             int rows = LogData.Keys
                 .Select(item => LogData[item].Count)
-                .Min();
+                .Max();
             if (rows <= 1)
             {
                 Clear();

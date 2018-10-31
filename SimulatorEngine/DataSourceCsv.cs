@@ -186,8 +186,10 @@ namespace FUB_TradingSim
 
             DirectoryInfo d = new DirectoryInfo(Info[DataSourceValue.dataPath]);
             FileInfo[] files = d.GetFiles("*.*");
-            if (files.Select(i => i.Name).OrderByDescending(n => n).FirstOrDefault().CompareTo(updateFilePath) > 0)
+            if (files.Count() >0
+            && files.Select(i => i.Name).OrderByDescending(n => n).FirstOrDefault().CompareTo(updateFilePath) > 0)
             {
+                // try filename at end of the alphabet
                 updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
                     string.Format("zzz-{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), sourceName.ToLower()));
             }

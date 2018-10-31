@@ -162,7 +162,7 @@ namespace FUB_TradingSim
                     double diff = Series[0] - _average;
                     double incr = _alpha * diff;
                     _average = _average + incr;
-                    Value = (1.0 - _alpha) * (this[1] + diff * incr);
+                    Value = (1.0 - _alpha) * (this[0] + diff * incr);
                 }
                 catch (Exception)
                 {

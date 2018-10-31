@@ -93,10 +93,15 @@ namespace FUB_TradingSim
                 ? 100 * ticket.Quantity 
                 : ticket.Quantity;
 
+            // determine commission (no commission on expiry)
+            double commission = ticket.Type != OrderType.optionExpiryClose
+                ? Math.Abs(numberOfShares) * CommissionPerShare
+                : 0.00;
+
             // pay for it
             Cash = Cash
                 - numberOfShares * price
-                - Math.Abs(numberOfShares) * CommissionPerShare;
+                - commission;
 
             // add log entry
             LogEntry log = new LogEntry()
@@ -106,7 +111,7 @@ namespace FUB_TradingSim
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
                 FillPrice = price,
-                Commission = Math.Abs(numberOfShares) * CommissionPerShare,
+                Commission = commission,
             };
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);

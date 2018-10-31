@@ -216,7 +216,16 @@ namespace TuringTrader
                     WriteEventHandler(
                         string.Format("running algorithm {0}", _currentAlgorithm.Name)
                         + Environment.NewLine);
-                    _currentAlgorithm.Run();
+                    try
+                    {
+                        _currentAlgorithm.Run();
+                    }
+                    catch (Exception exception)
+                    {
+                        WriteEventHandler(
+                            string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                            + Environment.NewLine);
+                    }
 
                     DateTime timeStamp2 = DateTime.Now;
                     WriteEventHandler(
@@ -249,6 +258,8 @@ namespace TuringTrader
             OptimizerButton.IsEnabled = false;
             ResultsButton.IsEnabled = false;
             AlgoSelector.IsEnabled = false;
+
+            ClearLog();
 
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             if (optimizerSettings.ShowDialog() == true)

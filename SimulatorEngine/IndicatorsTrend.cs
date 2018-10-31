@@ -105,7 +105,7 @@ namespace FUB_TradingSim
                     // prevent output from becoming
                     // noisy with N == 1
                     Value = N > 1
-                        ? _alpha * (Series[0] - this[1]) + this[0]
+                        ? _alpha * (Series[0] - this[0]) + this[0]
                         : Series[0];
                 }
                 catch (Exception)
@@ -162,7 +162,7 @@ namespace FUB_TradingSim
                     double efficiencyRatio = change / Math.Max(1e-10, volatility);
                     double smoothingConstant = Math.Pow(efficiencyRatio * (_scFast - _scSlow) + _scSlow, 2);
 
-                    Value = this[1] + smoothingConstant * (Series[0] - this[1]);
+                    Value = this[0] + smoothingConstant * (Series[0] - this[0]);
                 }
                 catch (Exception)
                 {

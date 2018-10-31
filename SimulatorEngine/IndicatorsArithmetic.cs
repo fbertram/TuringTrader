@@ -114,6 +114,34 @@ namespace FUB_TradingSim
 
         }
         #endregion
+        #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        {
+            var functor = Cache<FunctorAbsValue>.GetData(
+                    Tuple.Create(series).GetHashCode(),
+                    () => new FunctorAbsValue(series));
+
+            return functor;
+        }
+
+        private class FunctorAbsValue : ITimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+
+            public FunctorAbsValue(ITimeSeries<double> series)
+            {
+                Series = series;
+            }
+
+            public double this[int daysBack]
+            {
+                get
+                {
+                    return Math.Abs(Series[daysBack]);
+                }
+            }
+        }
+        #endregion
     }
 }
 
