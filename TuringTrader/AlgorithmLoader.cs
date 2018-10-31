@@ -35,9 +35,23 @@ namespace TuringTrader
                 Assembly.LoadFrom(file.FullName);
 
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-                foreach (Type type in assembly.GetTypes())
+            {
+                Type[] Types;
+                try
+                {
+                    // under certain circumstances, this might throw
+                    Types = assembly.GetTypes();
+                }
+                catch (Exception)
+                {
+                    // just ignore
+                    continue;
+                }
+
+                foreach (Type type in Types)
                     if (!type.IsAbstract && type.IsSubclassOf(typeof(Algorithm)))
                         yield return type;
+            }
 
             yield break;
         }

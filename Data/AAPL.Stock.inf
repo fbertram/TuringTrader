@@ -1,12 +1,12 @@
 name=Apple Inc.
 dataPath=Data\AAPL.Stock
 ticker=AAPL
-date={1}
+date={1:MM/dd/yyyy}
 time=16:00
-open={2}
-high={3}
-low={4}
-close={5}
+open={2:F2}
+high={3:F2}
+low={4:F2}
+close={5:F2}
 volume={6}
 symbolStooq=aapl.us
 symbolYahoo=aapl

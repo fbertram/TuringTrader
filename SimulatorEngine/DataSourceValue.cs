@@ -13,6 +13,8 @@ namespace FUB_TradingSim
 {
     public enum DataSourceValue
     {
+        error,    // to make sure default(DataSourceValue) is none of the defined values
+
         infoPath,
         dataPath,
 
@@ -45,6 +47,7 @@ namespace FUB_TradingSim
         symbolYahoo,
         symbolInteractiveBrokers,
         dataUpdater,
+        dataUpdaterPriceMultiplier,
     };
 }
 

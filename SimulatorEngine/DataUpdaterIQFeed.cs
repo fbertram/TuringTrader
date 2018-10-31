@@ -28,7 +28,11 @@ using System.Threading.Tasks;
 using IQFeed.CSharpApiClient;
 using IQFeed.CSharpApiClient.Lookup;
 using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
+using IQFeed.CSharpApiClient.Lookup.Chains.Equities;
+using IQFeed.CSharpApiClient.Streaming.Level1;
 using Microsoft.Win32;
+using IQFeed.CSharpApiClient.Streaming.Level1.Messages;
+using IQFeed.CSharpApiClient.Lookup.Chains;
 #endregion
 
 namespace FUB_TradingSim
@@ -36,7 +40,7 @@ namespace FUB_TradingSim
     class DataUpdaterIQFeed : DataUpdater
     {
         #region internal helpers
-        private string LoginName
+        private string _username
         {
             get
             {
@@ -49,7 +53,7 @@ namespace FUB_TradingSim
                 }
             }
         }
-        private string Password
+        private string _password
         {
             get
             {
@@ -65,7 +69,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
+        public DataUpdaterIQFeed(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
         {
         }
         #endregion
@@ -73,30 +77,118 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            IQFeedLauncher.Start(this.LoginName, this.Password, "ONDEMAND_SERVER", "1.0");
+            // create clients for IQFeed
             var lookupClient = LookupClientFactory.CreateNew();
-            lookupClient.Connect();
+            var level1Client = Level1ClientFactory.CreateNew();
+
+            // try to connect
+            try
+            {
+                lookupClient.Connect();
+                level1Client.Connect();
+            }
+
+            // if connection fails: run the launcher and retry
+            catch (Exception)
+            {
+                IQFeedLauncher.Start(_username, _password, "ONDEMAND_SERVER", "1.0");
+                lookupClient.Connect();
+                level1Client.Connect();
+            }
 
             string symbol = Info[DataSourceValue.symbolIqfeed];
 
-            IEnumerable<IDailyWeeklyMonthlyMessage> dailyMessages =
-                lookupClient.Historical.ReqHistoryDailyTimeframeAsync(
-                    symbol, startTime, endTime).Result;
-
-            foreach (IDailyWeeklyMonthlyMessage msg in dailyMessages.OrderBy(m => m.Timestamp))
+            // TODO: should connect this to DataSource.IsOption
+            if (!Info.ContainsKey(DataSourceValue.optionExpiration))
             {
-                DateTime barTime = msg.Timestamp.Date + DateTime.Parse("16:00").TimeOfDay;
+                IEnumerable<IDailyWeeklyMonthlyMessage> dailyMessages =
+                    lookupClient.Historical.ReqHistoryDailyTimeframeAsync(
+                        symbol, startTime, endTime).Result;
 
-                Bar newBar = new Bar(
-                    Info[DataSourceValue.ticker], barTime,
-                    msg.Open, msg.High, msg.Low, msg.Close, msg.PeriodVolume, true,
-                    0.0, 0.0, 0, 0, false,
-                    default(DateTime), 0.0, false);
+                foreach (IDailyWeeklyMonthlyMessage msg in dailyMessages.OrderBy(m => m.Timestamp))
+                {
+                    DateTime barTime = msg.Timestamp.Date + DateTime.Parse("16:00").TimeOfDay;
 
-                if (newBar.Time >= startTime
-                && newBar.Time <= endTime)
-                    yield return newBar;
+                    Bar newBar = new Bar(
+                        Info[DataSourceValue.ticker], barTime,
+                        msg.Open, msg.High, msg.Low, msg.Close, msg.PeriodVolume, true,
+                        0.0, 0.0, 0, 0, false,
+                        default(DateTime), 0.0, false);
+
+                    if (newBar.Time >= startTime
+                    && newBar.Time <= endTime)
+                        yield return newBar;
+                }
             }
+            else
+            {
+                //----- get option chain
+                // see http://www.iqfeed.net/symbolguide/index.cfm?symbolguide=guide&displayaction=support&section=guide&web=iqfeed&guide=options&web=IQFeed&type=indices
+                IEnumerable<EquityOption> optionChain = lookupClient.Chains.ReqChainIndexEquityOptionAsync(
+                    symbol,
+                    OptionSideFilterType.CP,
+                    "ABCDEFGHIJKLMNOPQRSTUVWX", // month codes: Calls A-L, Puts M-X
+                    null)                       // nearMonth
+                    .Result
+                    .Where(i => (i.Expiration - DateTime.Now).TotalDays < 180)
+                    .ToList();
+
+                Output.Write("found {0} contracts...", optionChain.Count());
+
+                // FIXME: this is far from pretty: need better timezone conversion
+                //DateTime time = DateTime.Now + TimeSpan.FromHours(3);
+                DateTime time = DateTime.Now.Date + TimeSpan.FromHours(16);
+
+                //----- get snapshots for many options in parallel
+                MTJobQueue jobQueue = new MTJobQueue(50);
+                HashSet<Tuple<EquityOption, UpdateSummaryMessage>> quotes = new HashSet<Tuple<EquityOption, UpdateSummaryMessage>>();
+                int num = 0;
+                foreach (var option in optionChain)
+                {
+                    jobQueue.QueueJob(() =>
+                    {
+                        try
+                        {
+                            UpdateSummaryMessage snapshot = level1Client
+                                .GetUpdateSummarySnapshotAsync(option.Symbol)
+                                .Result;
+
+                            if (snapshot != null)
+                            {
+                                lock (quotes)
+                                {
+                                    quotes.Add(Tuple.Create(option, snapshot));
+
+                                    if (++num % 1000 == 0) Output.Write("|");
+                                    else if (num % 100 == 0) Output.Write(".");
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // we occasionally get a task cancelled exception
+                            // ignore this, and move on
+                        }
+                    });
+                }
+
+                jobQueue.WaitForCompletion();
+
+                //----- return bars
+                foreach (var quote in quotes)
+                {
+                    EquityOption option = quote.Item1;
+                    UpdateSummaryMessage snapshot = quote.Item2;
+
+                    Bar newBar = new Bar(
+                        symbol, time,
+                        default(double), default(double), default(double), default(double), default(long), false,
+                        snapshot.Bid, snapshot.Ask, snapshot.BidSize, snapshot.AskSize, true,
+                        option.Expiration, option.StrikePrice, option.Side == OptionSide.Put);
+
+                    yield return newBar;
+                }
+            } // if (!Info.ContainsKey(DataSourceValue.optionExpiration))
 
             yield break;
         }

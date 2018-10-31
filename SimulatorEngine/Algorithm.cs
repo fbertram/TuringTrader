@@ -93,10 +93,15 @@ namespace FUB_TradingSim
                 ? 100 * ticket.Quantity 
                 : ticket.Quantity;
 
+            // determine commission (no commission on expiry)
+            double commission = ticket.Type != OrderType.optionExpiryClose
+                ? Math.Abs(numberOfShares) * CommissionPerShare
+                : 0.00;
+
             // pay for it
             Cash = Cash
                 - numberOfShares * price
-                - Math.Abs(numberOfShares) * CommissionPerShare;
+                - commission;
 
             // add log entry
             LogEntry log = new LogEntry()
@@ -106,14 +111,10 @@ namespace FUB_TradingSim
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
                 FillPrice = price,
-                Commission = Math.Abs(numberOfShares) * CommissionPerShare,
+                Commission = commission,
             };
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
-
-            // start trading day counter
-            if (TradingDays == null)
-                TradingDays = 0;
         }
         private void ExpireOption(Instrument instr)
         {
@@ -167,18 +168,19 @@ namespace FUB_TradingSim
         #region public Algorithm()
         public Algorithm()
         {
-            // initialize the time series.
-            // this is generally not required, but 
-            // without this line the optimizer demo
-            // will crash, as it has zero bars
-            NetAssetValue.Value = 0.0;
-
             // create a dictionary of optimizer parameters
             OptimizerParams = new Dictionary<string, OptimizerParam>();
             foreach (OptimizerParam param in OptimizerParam.GetParams(this))
                 OptimizerParams[param.Name] = param;
 
             GlobalSettings.MostRecentAlgorithm = Name;
+
+            // this is not required, a new object will be assigned
+            // during SimTime's initialization. we assign an object
+            // here, to avoid a crash in Demo05_Optimizer, which does
+            // not have any bars, and does not call SimTime
+            NetAssetValue = new TimeSeries<double>();
+            NetAssetValue.Value = 0.0;
         }
         #endregion
         #region public string Name
@@ -230,7 +232,7 @@ namespace FUB_TradingSim
         protected DateTime StartTime;
         protected DateTime? WarmupStartTime = null;
         protected DateTime EndTime;
-        public int? TradingDays = null;
+        public int TradingDays;
 
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
         protected bool IsLastBar = false;
@@ -267,11 +269,12 @@ namespace FUB_TradingSim
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
-                foreach (DataSource instr in DataSources)
+                foreach (DataSource source in DataSources)
                 {
-                    instr.LoadData(warmupStartTime, EndTime);
-                    instr.BarEnumerator.Reset();
-                    hasData[instr] = instr.BarEnumerator.MoveNext();
+                    source.Algorithm = this; // we'd love to do this during construction
+                    source.LoadData(warmupStartTime, EndTime);
+                    source.BarEnumerator.Reset();
+                    hasData[source] = source.BarEnumerator.MoveNext();
                 }
 
                 // reset trade log
@@ -279,7 +282,15 @@ namespace FUB_TradingSim
 
                 // reset fitness
                 FitnessValue = 0.0;
-                TradingDays = null;
+                TradingDays = 0;
+
+                // reset net asset value
+                // we create a new time-series here, to make sure that
+                // any indicators depending on it, are also re-created
+                NetAssetValue = new TimeSeries<double>();
+                NetAssetValue.Value = Cash;
+                NetAssetValueHighestHigh = 0.0;
+                NetAssetValueMaxDrawdown = 1e-10;
 
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
@@ -325,7 +336,8 @@ namespace FUB_TradingSim
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
                     // update TradingDays
-                    if (TradingDays != null)
+                    if (TradingDays == 0 && Positions.Count > 0 // start counter w/ 1st position
+                    || TradingDays > 0)
                         TradingDays++;
 
                     // run our algorithm here
@@ -334,12 +346,10 @@ namespace FUB_TradingSim
                 }
 
                 //----- attempt to free up resources
-#if true
                 Instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
                 DataSources.Clear();
-#endif
 
                 yield break;
             }
@@ -375,9 +385,9 @@ namespace FUB_TradingSim
         public List<LogEntry> Log = new List<LogEntry>();
 
         protected double Cash;
-        public TimeSeries<double> NetAssetValue = new TimeSeries<double>();
-        public double NetAssetValueHighestHigh = 0.0;
-        public double NetAssetValueMaxDrawdown = 1e-10;
+        public TimeSeries<double> NetAssetValue;
+        public double NetAssetValueHighestHigh;
+        public double NetAssetValueMaxDrawdown;
 
         protected double CommissionPerShare = 0.00;
 

@@ -61,9 +61,7 @@ namespace FUB_TradingSim
 
                 // determine current and target position size,
                 // based on a simple moving average crossover strategy
-                int currentPosition = Positions.ContainsKey(instrument)
-                    ? Positions[instrument]
-                    : 0;
+                int currentPosition = instrument.Position;
                 int targetPosition = fast[0] > slow[0]
                     ? (int)Math.Floor(NetAssetValue[0] / instrument.Close[0]) // go long
                     : 0;                                                   // short... disabled for this demo

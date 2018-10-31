@@ -77,9 +77,7 @@ namespace FUB_TradingSim
                 {
                     // determine # of shares
                     int targetShares = (int)Math.Floor(targetEquity / instr.Close[0]);
-                    int currentShares = Positions.ContainsKey(instr)
-                        ? Positions[instr]
-                        : 0;
+                    int currentShares = instr.Position;
 
                     // place trades
                     if (targetShares != currentShares)

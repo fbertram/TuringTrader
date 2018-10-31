@@ -22,7 +22,7 @@ using Newtonsoft.Json.Linq;
 
 namespace FUB_TradingSim
 {
-    class DataUpdaterYahoo : DataUpdater
+    public class DataUpdaterYahoo : DataUpdater
     {
         #region internal data & helpers
         // URL discovered with MultiCharts' QuoteManager
@@ -42,8 +42,8 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region public DataUpdaterYahoo(Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterYahoo(Dictionary<DataSourceValue, string> info) : base(info)
+        #region public DataUpdaterYahoo(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
+        public DataUpdaterYahoo(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
         {
         }
         #endregion
@@ -88,6 +88,10 @@ namespace FUB_TradingSim
                     .Select(x => Convert.ToInt64(x))
                     .GetEnumerator();
 
+                double priceMultiplier = Info.ContainsKey(DataSourceValue.dataUpdaterPriceMultiplier)
+                    ? Convert.ToDouble(Info[DataSourceValue.dataUpdaterPriceMultiplier])
+                    : 1.0;
+
                 while (timeStamp.MoveNext())
                 {
                     open.MoveNext();
@@ -97,12 +101,14 @@ namespace FUB_TradingSim
                     adjClose.MoveNext();
                     volume.MoveNext();
 
+                    DateTime time = FromUnixTime(timeStamp.Current).Date + TimeSpan.FromHours(16);
+
                     Bar newBar = new Bar(Info[DataSourceValue.symbol],
-                        FromUnixTime(timeStamp.Current),
-                        open.Current,
-                        high.Current,
-                        low.Current,
-                        close.Current,
+                        time,
+                        open.Current * priceMultiplier,
+                        high.Current * priceMultiplier,
+                        low.Current * priceMultiplier,
+                        close.Current * priceMultiplier,
                         volume.Current,
                         true,
                         0.0, 0.0, 0, 0, false,

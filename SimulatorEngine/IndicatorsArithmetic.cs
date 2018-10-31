@@ -25,10 +25,8 @@ namespace FUB_TradingSim
         #region public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
-
             var functor = Cache<FunctorAdd>.GetData(
-                    cacheKey,
+                    Tuple.Create(series1, series2).GetHashCode(),
                     () => new FunctorAdd(series1, series2));
 
             return functor;
@@ -57,10 +55,8 @@ namespace FUB_TradingSim
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
-
             var functor = Cache<FunctorSubtract>.GetData(
-                    cacheKey,
+                    Tuple.Create(series1, series2).GetHashCode(),
                     () => new FunctorSubtract(series1, series2));
 
             return functor;
@@ -90,10 +86,8 @@ namespace FUB_TradingSim
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            string cacheKey = string.Format("{0}-{1}", series1.GetHashCode(), series2.GetHashCode());
-
             var functor = Cache<FunctorMultiply>.GetData(
-                    cacheKey,
+                    Tuple.Create(series1, series2).GetHashCode(),
                     () => new FunctorMultiply(series1, series2));
 
             return functor;
@@ -118,6 +112,34 @@ namespace FUB_TradingSim
                 }
             }
 
+        }
+        #endregion
+        #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        {
+            var functor = Cache<FunctorAbsValue>.GetData(
+                    Tuple.Create(series).GetHashCode(),
+                    () => new FunctorAbsValue(series));
+
+            return functor;
+        }
+
+        private class FunctorAbsValue : ITimeSeries<double>
+        {
+            public ITimeSeries<double> Series;
+
+            public FunctorAbsValue(ITimeSeries<double> series)
+            {
+                Series = series;
+            }
+
+            public double this[int daysBack]
+            {
+                get
+                {
+                    return Math.Abs(Series[daysBack]);
+                }
+            }
         }
         #endregion
     }

@@ -1,0 +1,54 @@
+IB API Non-Commercial License
+This IB API Non-Commercial License ("License") is an agreement between Interactive Brokers LLC ("IB") and You, and governs Your use of the API Code. By clicking the "I AGREE" button below, you acknowledge that You consent to be legally bound by this Agreement.
+0. Introduction. IB has developed application program interface ("API") code to permit its customers to use their own internal proprietary software tools in managing their accounts with IB. This License is intended only for users who wish to use the API Code by itself as is, or in connection with or for the development of their own internal proprietary tools to manage their own IB accounts. This License is NOT for anybody who is developing software applications that they wish to: (a) sell to third party users for a fee, or (b) give to third party users to generate an indirect financial benefit (e.g., commissions). If You wish to make a software application for the purposes described in the preceding sentence then please contact Shail Mangla at opensource@interactivebrokers.com.
+
+1. Definitions. 
+
+1.1. "API Code" means the client code for IB's Trader Workstation API that is made available to You. 
+1.2. "Non-Commercial Purposes" means using API Code by itself as is, or in connection with or for the development of applications, programs, or other works that (a) interface with IB's trading platform, and (b) allow You to access Your account information, access market data, perform analytics, enter orders, or perform any other transactions or functions all in connection with Your account at IB. 
+1.3. "You" or "Your" means an individual or a legal entity exercising rights under this License. For legal entities, "You" or "Your" includes any entity which controls, is controlled by, or is under common control with, You, where "control" means (a) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (b) ownership of fifty percent (50%) or more of the outstanding shares or beneficial ownership of such entity.
+
+2. License Grant.
+
+2.1. Subject to the terms of this License, IB hereby grants You, effective on the date You accept this License and download the API Code, a personal, royalty-free, non-exclusive, non-sublicensable, non-transferable, restricted right and license to install, modify and use the API Code solely for Non-Commercial Purposes. 
+
+3. Restrictions.
+
+3.1. You acknowledge and agree that You shall only use the API Code for Non-Commercial Purposes. Any other uses of the API Code are expressly prohibited.
+3.2. You must retain and reproduce in all copies of API Code the copyright and other proprietary notices and disclaimers of IB as they appear in the API Code, and keep intact all notices in the API Code that refer to this License.
+3.3. You agree not to publish, disseminate, or redistribute the API Code to any third party. 
+3.4. You agree that You will maintain an account at IB for the duration of this License.
+3.5. You agree not to use the API for any purpose that violates any law or regulation, any right of any person, including but not limited to intellectual property rights, rights of privacy, or rights of personality, or in any manner inconsistent with IB's terms of use, privacy policy or this License.
+
+4. Ownership of API Code.
+
+4.1. Except as expressly set forth herein, IB or its licensors shall own all right, title and interest in and to the API Code. 
+
+5. DISCLAIMER OF WARRANTIES.
+
+5.1. You expressly acknowledge and agree that although IB grants the license to the API Code set forth herein, IB and its licensors provide no assurances that the API Code does not infringe the patent or other intellectual property rights of any other entity. IB and its licensors disclaim any liability to You for claims brought by any other person or entity based on infringement of intellectual property rights or otherwise.
+5.2. The API Code may contain in whole or in part pre-release, untested, or not fully tested works. The API Code may contain errors that could cause failures or loss of data, and may be incomplete or contain inaccuracies. You expressly acknowledge and agree that use of the API Code, or any portion thereof, is at Your sole and entire risk. YOU UNDERSTAND AND AGREE THAT THE API CODE IS PROVIDED "AS IS" AND ON AN "AS-AVAILABLE" BASIS, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE API CODE IS FREE OF DEFECTS, MERCHANTABLE, NON-INFRINGING OR FIT FOR A PARTICULAR PURPOSE. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE. NO USE OF ANY API CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+
+6. LIMITATION OF LIABILITY.
+
+6.1. YOU UNDERSTAND AND AGREE THAT IB, ITS AFFILIATES, AND ITS LICENSORS SHALL NOT BE LIABLE TO YOU UNDER ANY THEORY OF LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR EXEMPLARY DAMAGES IN CONNECTION WITH OR ARISING OUT OF OR RELATING TO THE API CODE OR THE USE OF THE API CODE, INCLUDING ANY TRADING LOSS, LOSS OF PROFIT, LOSS OF BUSINESS, OR LOSS OF DATA, WHETHER OR NOT IB OR ITS REPRESENTATIVES HAVE BEEN ADVISED OF OR SHOULD HAVE BEEN AWARE OF THE POSSIBILITY OF ANY SUCH LOSSES ARISING.
+
+
+7. Indemnification.
+
+7.1. To the maximum extent permitted by law, You agree to defend, indemnify and hold harmless IB, its affiliates and their respective directors, officers, employees and agents from and against any and all claims, actions, suits or proceedings, as well as any and all losses, liabilities, damages, costs and expenses (including reasonable attorneys fees) arising out of or accruing from (a) Your use of the API Code, (b) any application You develop with the API Code that infringes any copyright, trademark, trade secret, trade dress, patent or other intellectual property right of any person, and (c) any non-compliance by You with this License.
+
+8. Termination.
+
+8.1. This License and the rights granted hereunder will terminate automatically: (a) if You fail to comply with any term(s) of this License and fail to cure such breach within 30 days of becoming aware of such breach; (b) if You are no longer a customer of IB; or (c) if You, at any time during the term of this License, commence an action for patent infringement against IB (provided that IB did not first commence an action for patent infringement against You in that instance).
+8.2. You shall destroy all copies of the API Code upon termination of this License, and shall not retain the API Code in any form after such destruction.
+8.3. The following sections shall survive any termination: 3, 4, 5, 6, 7, 8, and 9.
+
+9. General.
+
+9.1. You agree that if IB does not exercise or enforce any legal right or remedy which is contained in this License or is available to IB under any applicable law), this will not be taken to be a formal waiver of IB's rights and that those rights or remedies will still be available to IB.
+9.2. If any court of law, having the jurisdiction to decide on this matter, rules that any provision of this License is invalid, then that provision will be removed from this License without affecting the rest of this License. The remaining provisions of this License will continue to be valid and enforceable.
+9.3. This License constitutes the whole legal agreement between You and IB and governs Your use of the API Code, and completely replaces any prior agreements between You and IB in relation to the API Code.
+9.4. If You are entering into this Agreement on behalf of your employer or other entity, You represent and warrant that You have full legal authority to bind your employer or such entity to this Agreement.
+9.5. You may not assign the rights granted in this License without IB's prior written approval.
+9.6. This License shall be governed by the laws of the State of Connecticut without regard to its conflicts of laws provisions. You agree to submit to the exclusive jurisdiction of the courts located within the county of Fairfield, Connecticut to resolve any legal matter arising from this License. Notwithstanding this, You agree that IB shall be allowed to apply for injunctive remedies in any jurisdiction.

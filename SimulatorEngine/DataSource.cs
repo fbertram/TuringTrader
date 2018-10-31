@@ -41,6 +41,7 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        public Algorithm Algorithm = null;
 
         //----- object factory
         #region static public DataSource New(string nickname)
@@ -131,6 +132,30 @@ namespace FUB_TradingSim
         {
             get;
             protected set;
+        }
+        #endregion
+
+        #region protected Bar ValidateBar(Bar bar)
+        protected Bar ValidateBar(Bar bar)
+        {
+            DateTime barTime = bar.Time;
+            if (barTime.DayOfWeek >= DayOfWeek.Monday
+            && barTime.DayOfWeek <= DayOfWeek.Friday)
+            {
+                if (barTime.TimeOfDay.TotalHours >= 9.5
+                && barTime.TimeOfDay.TotalHours <= 16.0)
+                {
+                    return bar;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
         #endregion
 

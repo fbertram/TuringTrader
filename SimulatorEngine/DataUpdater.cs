@@ -22,34 +22,48 @@ namespace FUB_TradingSim
     abstract public class DataUpdater
     {
         //----- object factory
-        #region static public DataUpdate New(Dictionary<DataSourceValue, string> info)
-        static public DataUpdater New(Dictionary<DataSourceValue, string> info)
+        #region static public DataUpdate New(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
+        static public DataUpdater New(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
         {
             if (!info.ContainsKey(DataSourceValue.dataUpdater))
                 return null;
 
             string dataUpdater = info[DataSourceValue.dataUpdater].ToLower();
 
-            if (dataUpdater.Contains("iqfeed") && info.ContainsKey(DataSourceValue.symbolIqfeed))
-                return new DataUpdaterIQFeed(info);
+            if (dataUpdater.Contains("iq") 
+            &&  info.ContainsKey(DataSourceValue.symbolIqfeed))
+                return new DataUpdaterIQFeed(algorithm, info);
 
-            if (dataUpdater.Contains("yahoo") && info.ContainsKey(DataSourceValue.symbolYahoo))
-                return new DataUpdaterYahoo(info);
+            if (dataUpdater.Contains("ib")
+            &&  info.ContainsKey(DataSourceValue.symbolInteractiveBrokers))
+                return new DataUpdaterIBOptions(algorithm, info);
 
-            if (dataUpdater.Contains("stooq") && info.ContainsKey(DataSourceValue.symbolStooq))
-                return new DataUpdaterStooq(info);
+            if (dataUpdater.Contains("yahoo") 
+            &&  dataUpdater.Contains("opt") 
+            &&  info.ContainsKey(DataSourceValue.symbolYahoo))
+                return new DataUpdaterYahooOptions(algorithm, info);
+
+            if (dataUpdater.Contains("yahoo") 
+            && info.ContainsKey(DataSourceValue.symbolYahoo))
+                    return new DataUpdaterYahoo(algorithm, info);
+
+            if (dataUpdater.Contains("stooq")
+            && info.ContainsKey(DataSourceValue.symbolStooq))
+                return new DataUpdaterStooq(algorithm, info);
 
             return null;
         }
         #endregion
-        #region protected DataUpdate(Dictionary<DataSourceValue, string> info)
-        protected DataUpdater(Dictionary<DataSourceValue, string> info)
+        #region protected DataUpdater(Dictionary<DataSourceValue, string> info)
+        protected DataUpdater(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
         {
+            Algorithm = algorithm;
             Info = info;
         }
         #endregion
 
         public readonly Dictionary<DataSourceValue, string> Info;
+        public readonly Algorithm Algorithm;
 
         abstract public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime);
         abstract public string Name {get;}

@@ -277,14 +277,17 @@ namespace FUB_TradingSim
         #region public void Trade(int quantity, OrderExecution tradeExecution, double price)
         public void Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
         {
-            Algorithm.PendingOrders.Add(
-                new Order()
-                {
-                    Instrument = this,
-                    Quantity = quantity,
-                    Type = tradeExecution,
-                    Price = price,
-                });
+            if (quantity != 0)
+            {
+                Algorithm.PendingOrders.Add(
+                    new Order()
+                    {
+                        Instrument = this,
+                        Quantity = quantity,
+                        Type = tradeExecution,
+                        Price = price,
+                    });
+            }
         }
         #endregion
         #region public int Position

@@ -35,7 +35,7 @@ namespace FUB_TradingSim
         /// <summary>
         /// Cumulative Distribution Function
         /// </summary>
-        private static double CDF(double zScore)
+        public static double CDF(double zScore)
         {
             double x = Math.Abs(zScore);
 

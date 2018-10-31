@@ -27,10 +27,8 @@ namespace FUB_TradingSim
         /// </summary>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
-            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
-
             var functor = Cache<FunctorVolatility>.GetData(
-                    cacheKey,
+                    Tuple.Create(series, n).GetHashCode(),
                     () => new FunctorVolatility(series, n));
 
             functor.Calc();
@@ -85,10 +83,8 @@ namespace FUB_TradingSim
         /// </summary>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
-            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
-
             var functor = Cache<FunctorVolatilityFromRange>.GetData(
-                    cacheKey,
+                    Tuple.Create(series, n).GetHashCode(),
                     () => new FunctorVolatilityFromRange(series, n));
 
             functor.Calc();
@@ -133,10 +129,8 @@ namespace FUB_TradingSim
         #region public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         {
-            string cacheKey = string.Format("{0}-{1}", series.GetHashCode(), n);
-
             var functor = Cache<FunctorFastVariance>.GetData(
-                    cacheKey,
+                    Tuple.Create(series, n).GetHashCode(),
                     () => new FunctorFastVariance(series, n));
 
             functor.Calc();
@@ -168,7 +162,7 @@ namespace FUB_TradingSim
                     double diff = Series[0] - _average;
                     double incr = _alpha * diff;
                     _average = _average + incr;
-                    Value = (1.0 - _alpha) * (this[1] + diff * incr);
+                    Value = (1.0 - _alpha) * (this[0] + diff * incr);
                 }
                 catch (Exception)
                 {
@@ -182,10 +176,8 @@ namespace FUB_TradingSim
         #region public static ITimeSeries<double> TrueRange(this Instrument series)
         public static ITimeSeries<double> TrueRange(this Instrument series)
         {
-            string cacheKey = string.Format("{0}", series.GetHashCode());
-
             var functor = Cache<FunctorTrueRange>.GetData(
-                    cacheKey,
+                    series.GetHashCode(),
                     () => new FunctorTrueRange(series));
 
             functor.Calc();

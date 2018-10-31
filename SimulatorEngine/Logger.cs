@@ -9,10 +9,10 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-//#define ENABLE_R
+#define ENABLE_R
 // for R, we need RDotNet installed. comment the line above to disable R
 // install with the following command: nuget install R.Net.Community
-// tested successfully w/ MSVC 2017 and RDotNet 1.7.0
+// tested successfully w/ MSVC 2017, R 3.4.3, and RDotNet 1.7.0
 // add assembly references to the following DLLs
 // - DynamicInterop.dll
 // - RDotNet.dll
@@ -181,7 +181,7 @@ namespace FUB_TradingSim
 
             using (StreamWriter file = new StreamWriter(filePath))
             {
-                Debug.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
+                Output.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
 
                 //--- header row
                 file.Write(AddQuotesAsRequired(XLabels[plotTitle]));
@@ -218,7 +218,7 @@ namespace FUB_TradingSim
 
             int rows = LogData.Keys
                 .Select(item => LogData[item].Count)
-                .Min();
+                .Max();
             if (rows <= 1)
             {
                 Clear();
@@ -288,22 +288,18 @@ namespace FUB_TradingSim
 
             if (RCommands == null)
                 RCommands = new List<string>()
-                    {
-                        "data<-read.csv(\"{2}\")",
-                        "x<-data[,1]",
-				#if true
-						"y<-data[,-1]",
-				#else
-						"y<-scale(data[,-1])",
-				#endif
-						"matplot(x, y, type=\"l\", lty=1)",
-                        "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
-						// BUGBUG: every attempt to create a legend crashes R.NET:
-						//"legend(\"bottom\",legend=colnames(data), col=seq_len(ncol(data)), cex=0.8, fill=seq_len(ncol(data)))",
-	                    //"legend(0, 0, legend=c(\"a\",\"b\"),col=c(\"red\",\"blue\"))",
-						// BUGBUG: even simple text output crashes:
-						//"text(0,0,c(\"anna\",\"berta\"))",
-					};
+            {
+                "data<-read.csv(\"{2}\")",
+                "x<-data[,1]",
+		#if true
+				"y<-data[,-1]",
+		#else
+				"y<-scale(data[,-1])",
+		#endif
+				"matplot(x, y, type=\"l\", lty=1)",
+                "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
+				"legend(\"bottom\",legend=colnames(y), col=seq_len(ncol(y)), cex=0.8, fill=seq_len(ncol(y)))",
+			};
 
             // we need R's bin folder in PATH
             REngine.SetEnvironmentVariables();
@@ -332,11 +328,9 @@ namespace FUB_TradingSim
                 }
             }
 
-            Clear();
-
             // if we dispose the REngine here, we can not plot again,
-            // until we have re-started the main-application
-            engine.Dispose();
+            // until we have re-started the main application
+            // engine.Dispose();
         }
 #else // ENABLE_R
         public void OpenWithR(List<string> RCommands = null)
