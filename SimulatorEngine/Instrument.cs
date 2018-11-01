@@ -57,9 +57,9 @@ namespace FUB_TradingSim
         #endregion
 
         #region public Instrument(...)
-        public Instrument(Algorithm algorithm, DataSource source)
+        public Instrument(SimulatorCore simulator, DataSource source)
         {
-            Algorithm = algorithm;
+            Simulator = simulator;
             DataSource = source;
 
             _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
@@ -77,7 +77,7 @@ namespace FUB_TradingSim
         #endregion
 
         //----- general info
-        public readonly Algorithm Algorithm;
+        public readonly SimulatorCore Simulator;
         public readonly DataSource DataSource;
         #region public string Nickname
         public string Nickname
@@ -279,7 +279,7 @@ namespace FUB_TradingSim
         {
             if (quantity != 0)
             {
-                Algorithm.PendingOrders.Add(
+                Simulator.PendingOrders.Add(
                     new Order()
                     {
                         Instrument = this,
@@ -296,7 +296,7 @@ namespace FUB_TradingSim
             get
             {
                 // TODO: does this crash, when there is no position?
-                return Algorithm.Positions
+                return Simulator.Positions
                         .Where(p => p.Key == this)
                         .Sum(x => x.Value);
             }

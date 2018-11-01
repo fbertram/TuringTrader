@@ -22,8 +22,8 @@ namespace FUB_TradingSim
     abstract public class DataUpdater
     {
         //----- object factory
-        #region static public DataUpdate New(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
-        static public DataUpdater New(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
+        #region static public DataUpdate New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         {
             if (!info.ContainsKey(DataSourceValue.dataUpdater))
                 return null;
@@ -32,38 +32,38 @@ namespace FUB_TradingSim
 
             if (dataUpdater.Contains("iq") 
             &&  info.ContainsKey(DataSourceValue.symbolIqfeed))
-                return new DataUpdaterIQFeed(algorithm, info);
+                return new DataUpdaterIQFeed(simulator, info);
 
             if (dataUpdater.Contains("ib")
             &&  info.ContainsKey(DataSourceValue.symbolInteractiveBrokers))
-                return new DataUpdaterIBOptions(algorithm, info);
+                return new DataUpdaterIBOptions(simulator, info);
 
             if (dataUpdater.Contains("yahoo") 
             &&  dataUpdater.Contains("opt") 
             &&  info.ContainsKey(DataSourceValue.symbolYahoo))
-                return new DataUpdaterYahooOptions(algorithm, info);
+                return new DataUpdaterYahooOptions(simulator, info);
 
             if (dataUpdater.Contains("yahoo") 
             && info.ContainsKey(DataSourceValue.symbolYahoo))
-                    return new DataUpdaterYahoo(algorithm, info);
+                    return new DataUpdaterYahoo(simulator, info);
 
             if (dataUpdater.Contains("stooq")
             && info.ContainsKey(DataSourceValue.symbolStooq))
-                return new DataUpdaterStooq(algorithm, info);
+                return new DataUpdaterStooq(simulator, info);
 
             return null;
         }
         #endregion
         #region protected DataUpdater(Dictionary<DataSourceValue, string> info)
-        protected DataUpdater(Algorithm algorithm, Dictionary<DataSourceValue, string> info)
+        protected DataUpdater(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         {
-            Algorithm = algorithm;
+            Simulator = simulator;
             Info = info;
         }
         #endregion
 
         public readonly Dictionary<DataSourceValue, string> Info;
-        public readonly Algorithm Algorithm;
+        public readonly SimulatorCore Simulator;
 
         abstract public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime);
         abstract public string Name {get;}

@@ -65,9 +65,9 @@ namespace FUB_TradingSim
 
             // see https://en.wikipedia.org/wiki/Black–Scholes_model
 
-            DateTime today = contract.Algorithm.SimTime[0];
+            DateTime today = contract.Simulator.SimTime[0];
             double T = (contract.OptionExpiry - today).Duration().Days / 365.25;
-            double S = contract.Algorithm.Instruments[contract.OptionUnderlying].Close[0];
+            double S = contract.Simulator.Instruments[contract.OptionUnderlying].Close[0];
             double K = contract.OptionStrike;
             double r = riskFreeRate;
             double v = volatility;

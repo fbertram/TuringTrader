@@ -69,7 +69,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterIQFeed(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
+        public DataUpdaterIQFeed(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
         {
         }
         #endregion

@@ -37,8 +37,8 @@ namespace FUB_TradingSim
         };
         #endregion
 
-        #region public DataUpdaterStooq(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterStooq(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
+        #region public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
         {
         }
         #endregion

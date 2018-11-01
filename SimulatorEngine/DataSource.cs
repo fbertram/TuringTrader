@@ -41,7 +41,7 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        public Algorithm Algorithm = null;
+        public SimulatorCore Simulator = null;
 
         //----- object factory
         #region static public DataSource New(string nickname)

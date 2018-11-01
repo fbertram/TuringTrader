@@ -30,8 +30,8 @@ namespace FUB_TradingSim
         #region internal helpers
         #endregion
 
-        #region public DataUpdaterIBOptions(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterIBOptions(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
+        #region public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
         {
         }
         #endregion
@@ -39,9 +39,9 @@ namespace FUB_TradingSim
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
-            string twsUser = (string)Algorithm.GetRegistryValue("TwsUser", "");
-            string twsPass = (string)Algorithm.GetRegistryValue("TwsPass", "");
-            int twsPort = (int)Algorithm.GetRegistryValue("TwsPort", 7497);
+            string twsUser = (string)Simulator.GetRegistryValue("TwsUser", "");
+            string twsPass = (string)Simulator.GetRegistryValue("TwsPass", "");
+            int twsPort = (int)Simulator.GetRegistryValue("TwsPort", 7497);
 
             BrokerClientIB ibClient = new BrokerClientIB();
             DateTime timestamp1 = DateTime.Now;

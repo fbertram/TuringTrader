@@ -87,8 +87,8 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region public static object GetRegistryValue(this Algorithm algo, string valueName)
-        public static object GetRegistryValue(this Algorithm algo, string valueName, object defaultValue = null)
+        #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
+        public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
         {
             object retValue = GetRegistryValue(algo.Name, valueName);
 
@@ -101,8 +101,8 @@ namespace FUB_TradingSim
             return retValue;
         }
         #endregion
-        #region public static void SetRegistryValue(this Algorithm algo, string valueName, object value)
-        public static void SetRegistryValue(this Algorithm algo, string valueName, object value)
+        #region public static void SetRegistryValue(this SimulatorCore algo, string valueName, object value)
+        public static void SetRegistryValue(this SimulatorCore algo, string valueName, object value)
         {
             SetRegistryValue(algo.Name, valueName, value);
         }
