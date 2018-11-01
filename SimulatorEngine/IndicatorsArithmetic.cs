@@ -26,7 +26,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorAdd>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
+                    Cache.UniqueId(series1.GetHashCode(), series2.GetHashCode()),
                     () => new FunctorAdd(series1, series2));
 
             return functor;
@@ -56,7 +56,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorSubtract>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
+                    Cache.UniqueId(series1.GetHashCode(), series2.GetHashCode()),
                     () => new FunctorSubtract(series1, series2));
 
             return functor;
@@ -87,7 +87,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorMultiply>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
+                    Cache.UniqueId(series1.GetHashCode(), series2.GetHashCode()),
                     () => new FunctorMultiply(series1, series2));
 
             return functor;
@@ -118,7 +118,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorAbsValue>.GetData(
-                    Tuple.Create(series).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode()),
                     () => new FunctorAbsValue(series));
 
             return functor;

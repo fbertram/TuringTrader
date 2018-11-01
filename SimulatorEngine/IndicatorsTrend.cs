@@ -28,7 +28,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorSMA>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorSMA(series, n));
 
             functor.Calc();
@@ -76,7 +76,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorEMA>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorEMA(series, n));
 
             functor.Calc();
@@ -121,7 +121,7 @@ namespace FUB_TradingSim
         {
 
             var functor = Cache<FunctorKAMA>.GetData(
-                    Tuple.Create(series, erPeriod, fastEma, slowEma).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), erPeriod, fastEma, slowEma),
                     () => new FunctorKAMA(series, erPeriod, fastEma, slowEma));
 
             functor.Calc();

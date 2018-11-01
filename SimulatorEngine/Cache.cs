@@ -15,12 +15,6 @@
 // please note that indicators require caching to
 // be enabled
 
-//#define DISABLE_STACK_ID
-// with DISABLE_STACK_ID defined, no stack id will be
-// calculated. Therefore, there might be a one to many
-// relationship between functor objects, and indicator
-// calls, leading to incorrect results
-
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -31,32 +25,37 @@ using System.Threading.Tasks;
 
 namespace FUB_TradingSim
 {
-    public class Cache<T>
+    public static class Cache
+    {
+        #region static public int UniqueId(params int[] parameterIds)
+        static public int UniqueId(params int[] parameterIds)
+        {
+            // on top of the parameter ids, we also need to uniquely identify the call stack
+            // currently, we use only the native offset for this
+            // do we need to use the method name as well?
+            IEnumerable<int> stackFrames = new System.Diagnostics.StackTrace().GetFrames()
+                .Select(f => f.GetNativeOffset().GetHashCode());
+
+            var subIds = parameterIds.AsEnumerable()
+                .Concat(stackFrames);
+
+            // see https://stackoverflow.com/questions/7278136/create-hash-value-on-a-list
+            const int seed = 487;
+            const int modifier = 31;
+            unchecked
+            {
+                return subIds
+                    .Aggregate(seed, (current, item) => (current * modifier) + item);
+            }
+        }
+        #endregion
+    }
+
+    public static class Cache<T>
     {
         #region internal data
         private static Dictionary<int, T> _cache = new Dictionary<int, T>();
         private static object _lockCache = new object();
-        #endregion
-
-        #region static public int GetStackId()
-        static public int GetStackId()
-        {
-#if DISABLE_STACK_ID
-            return 0;
-#else
-            string uniqueId = "";
-
-            System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-            foreach (System.Diagnostics.StackFrame stackFrame in stackTrace.GetFrames())
-            {
-                uniqueId += stackFrame.GetMethod() + ":";
-                uniqueId += stackFrame.GetNativeOffset().ToString() + "/";
-            }
-
-            // 2 identical strings will have the same hash code
-            return uniqueId.GetHashCode();
-#endif
-        }
         #endregion
         #region static public T GetData(int key, Func<T> initialRetrieval)
         static public T GetData(int key, Func<T> initialRetrieval)

@@ -28,7 +28,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         {
             var functor = Cache<FunctorCCI>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorCCI(series, n));
 
             functor.Calc();
@@ -72,7 +72,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
         {
             var functor = Cache<FunctorTSI>.GetData(
-                    Tuple.Create(series, r, s).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), r, s),
                     () => new FunctorTSI(series, r, s));
 
             functor.Calc();
@@ -115,7 +115,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
             var functor = Cache<FunctorRSI>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorRSI(series, n));
 
             functor.Calc();
@@ -175,7 +175,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLinRegression>.GetData(
-                    Tuple.Create(series, n, true).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n, 1),
                     () => new FunctorLinRegression(series, n, true));
 
             functor.Calc();
@@ -261,75 +261,13 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLinRegression>.GetData(
-                    Tuple.Create(series, n, false).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n, 2),
                     () => new FunctorLinRegression(series, n, false));
 
             functor.Calc();
 
             return functor;
         }
-
-        /*private class FunctorLogRegression : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorLogRegression(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-            }
-
-            public void Calc()
-            {
-                double sx = 0.0;
-                double sy = 0.0;
-                double sxx = 0.0;
-                double sxy = 0.0;
-                int n = 0;
-
-                try
-                {
-                    for (int t = 0; t < N; t++)
-                    {
-                        double x = -t;
-                        double y = Math.Log(Series[t]);
-                        sx += x;
-                        sy += y;
-                        sxx += x * x;
-                        sxy += x * y;
-                        n++;
-                    }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                // simple linear regression
-                // see https://en.wikipedia.org/wiki/Simple_linear_regression
-                // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
-                //   = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx)
-                // a = avg(y) - b * avg(x)
-                //   = 1 / n * Sy - b /n * Sx
-                if (n > 1)
-                {
-                    double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
-                    double a = sy / n - b * sx / n;
-                    Value = 252.0 * b;
-                }
-                else
-                {
-                    Value = 0.0;
-                }
-
-                // coefficient of determination
-                // see https://en.wikipedia.org/wiki/Coefficient_of_determination
-                // f = a + b * x
-                // SSreg = sum((f - avg(y))^2)
-                // SSres = sum((y - f)^2)
-            }
-        }*/
         #endregion
     }
 }

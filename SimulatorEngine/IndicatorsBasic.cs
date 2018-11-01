@@ -28,7 +28,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorHighest>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorHighest(series, n));
 
             functor.Calc();
@@ -72,7 +72,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLowest>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorLowest(series, n));
 
             functor.Calc();
@@ -117,7 +117,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorAbsReturn>.GetData(
-                    series.GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode()),
                     () => new FunctorAbsReturn(series));
 
             return functor;
@@ -148,7 +148,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorLogReturn>.GetData(
-                    series.GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode()),
                     () => new FunctorLogReturn(series));
 
             return functor;

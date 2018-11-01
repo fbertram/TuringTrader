@@ -25,7 +25,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> TypicalPrice(this Instrument series)
         {
             var functor = Cache<FunctorTypicalPrice>.GetData(
-                    Tuple.Create(series).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode()),
                     () => new FunctorTypicalPrice(series));
 
             return functor;

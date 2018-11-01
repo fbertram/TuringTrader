@@ -28,7 +28,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorVolatility>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorVolatility(series, n));
 
             functor.Calc();
@@ -84,7 +84,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorVolatilityFromRange>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorVolatilityFromRange(series, n));
 
             functor.Calc();
@@ -130,7 +130,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorFastVariance>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode(), n),
                     () => new FunctorFastVariance(series, n));
 
             functor.Calc();
@@ -177,7 +177,7 @@ namespace FUB_TradingSim
         public static ITimeSeries<double> TrueRange(this Instrument series)
         {
             var functor = Cache<FunctorTrueRange>.GetData(
-                    series.GetHashCode(),
+                    Cache.UniqueId(series.GetHashCode()),
                     () => new FunctorTrueRange(series));
 
             functor.Calc();
