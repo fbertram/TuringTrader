@@ -63,7 +63,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region private void RunIteration(bool firstRun = true)
-        private Algorithm RunIteration(bool firstRun = true)
+        private Algorithm RunIteration()
         {
             // create algorithm instance to run
             Type algoType = _masterInstance.GetType();
@@ -73,21 +73,19 @@ namespace FUB_TradingSim
             foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
                 instanceToRun.OptimizerParams[parameter.Name].Value = parameter.Value;
 
-            if (firstRun)
+            // mark this as an optimizer run
+            instanceToRun.IsOptimizing = true;
+
+            // create result entry
+            OptimizerResult result = new OptimizerResult();
+            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
+                result.Parameters[parameter.Name] = parameter.Value;
+            result.Fitness = null;
+            Results.Add(result);
+
+            // run algorithm with these values
+            _jobQueue.QueueJob(() =>
             {
-                // mark this as an optimizer run
-                instanceToRun.IsOptimizing = true;
-
-                // create result entry
-                OptimizerResult result = new OptimizerResult();
-                foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
-                    result.Parameters[parameter.Name] = parameter.Value;
-                result.Fitness = null;
-                Results.Add(result);
-
-                // run algorithm with these values
-                _jobQueue.QueueJob(() =>
-                {
                 instanceToRun.Run();
                 result.NetAssetValue = instanceToRun.NetAssetValue[0];
                 result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
@@ -106,14 +104,8 @@ namespace FUB_TradingSim
                     Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
                         _numIterationsCompleted, _numIterationsTotal, _maxFitness,
                         Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
-                    }
-                });
-            }
-            else
-            {
-                // this is for re-runs
-                instanceToRun.Run();
-            }
+                }
+            });
 
             return instanceToRun;
         }
@@ -173,7 +165,9 @@ namespace FUB_TradingSim
             _jobQueue.WaitForCompletion();
 
             TimeSpan t = DateTime.Now - _startTime;
-            Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s", Math.Floor(t.TotalHours), t.Minutes, t.Seconds);
+            Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s @ {3} iterations/hour",
+                Math.Floor(t.TotalHours), t.Minutes, t.Seconds,
+                Math.Round(_numIterationsTotal / t.TotalHours));
         }
         #endregion
         #region public double Progress
