@@ -22,6 +22,11 @@ namespace FUB_TradingSim
     public static class IndicatorsPrice
     {
         #region public static ITimeSeries<double> TypicalPrice(this Instrument series)
+        /// <summary>
+        /// typical price
+        /// </summary>
+        /// <param name="series"></param>
+        /// <returns></returns>
         public static ITimeSeries<double> TypicalPrice(this Instrument series)
         {
             var functor = Cache<FunctorTypicalPrice>.GetData(

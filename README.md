@@ -4,14 +4,15 @@ This project implements a trading simulator/ backtester for stocks and options w
 * simple Windows Desktop UI for interactive sessions
 * import data in various CSV formats and with configurable column-mapping
 * automatic download/ update of data files from IQFeed, Yahoo, and Stooq
+* query account summary and positions from Interactive Brokers
 * calculate indicators, with a growing library of standard indicators
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
 * create fully customized Excel reports with just a few lines of VBA
 * export results to R, for further research
 * strong focus on easy-to-use time-series APIs, to make coding a breeze
-* multi-threaded optimizer engine, able to load all your CPU cores
-* demo algorithms to shorten your learning curve
+* multi-threaded optimizer engine, able to utilize all CPU cores
+* demo algorithms to shorten learning curve
 * quick start guide
 
 The following features are planned for the near future:

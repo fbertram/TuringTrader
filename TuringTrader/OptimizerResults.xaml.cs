@@ -53,6 +53,7 @@ namespace TuringTrader
             DataGridRow row = sender as DataGridRow;
             _optimizer.SetParametersFromResult((OptimizerResult)row.Item);
 
+            DialogResult = true;
             Close();
         }
     }

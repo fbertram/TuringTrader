@@ -25,6 +25,12 @@ namespace FUB_TradingSim
         // - Stochastic Oscillator
 
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        /// <summary>
+        /// commodity channel index
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         {
             var functor = Cache<FunctorCCI>.GetData(
@@ -69,6 +75,13 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
+        /// <summary>
+        /// true strength index
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="r"></param>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
         {
             var functor = Cache<FunctorTSI>.GetData(
@@ -112,6 +125,12 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// relative strength index
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
             var functor = Cache<FunctorRSI>.GetData(

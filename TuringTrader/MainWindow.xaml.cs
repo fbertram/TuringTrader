@@ -305,7 +305,8 @@ namespace TuringTrader
             AlgoSelector.IsEnabled = false;
 
             var optimizerResults = new OptimizerResults(_optimizer);
-            optimizerResults.ShowDialog();
+
+            bool paramsChanged = optimizerResults.ShowDialog() == true;
 
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = false;
@@ -313,7 +314,12 @@ namespace TuringTrader
             ResultsButton.IsEnabled = true;
             AlgoSelector.IsEnabled = true;
 
-            UpdateParameterDisplay();
+            if (paramsChanged)
+            {
+                UpdateParameterDisplay();
+
+                RunButton_Click(null, null);
+            }
         }
         #endregion
     }
