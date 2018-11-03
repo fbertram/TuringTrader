@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<topic id="dd1e74a7-b7b1-4ef8-93fb-6e5475e0c4d8" revisionNumber="1">
+	<developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<introduction>
+			<para>
+			This help file contains the developer documentation for Turing Trader.
+			It describes the available APIs, to aid in developing proprietary trading algorithms.
+			This documentation is work in progress, and will often trail the simulator engine's
+			development progress.
+			</para>
+			<para>
+			Happy coding,
+			<externalLink>
+				<linkText>Felix Bertram</linkText>
+				<linkUri>mailto:info@bertram.solutions</linkUri>
+			</externalLink>
+			</para>
+		</introduction>
+
+		<section>
+			<title>Getting Started</title>
+			<content>
+				<para>
+				This project implements a trading simulator/ backtester for stocks and options with the following features:
+				</para>
+				<list class="bullet">
+				  <listItem><para>simple Windows Desktop UI for interactive sessions</para></listItem>
+				  <listItem><para>import data in various CSV formats and with configurable column-mapping</para></listItem>
+				  <listItem><para>automatic download/ update of data files from IQFeed, Yahoo, and Stooq</para></listItem>
+				  <listItem><para>query account summary and positions from Interactive Brokers</para></listItem>
+				  <listItem><para>calculate indicators, with a growing library of standard indicators</para></listItem>
+				  <listItem><para>simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported</para></listItem>
+				  <listItem><para>simulate option trades. Currently this is limited to cash-settled European-style options</para></listItem>
+				  <listItem><para>create fully customized Excel reports with just a few lines of VBA</para></listItem>
+				  <listItem><para>export results to R, for further research</para></listItem>
+				  <listItem><para>strong focus on easy-to-use time-series APIs, to make coding a breeze</para></listItem>
+				  <listItem><para>multi-threaded optimizer engine, able to utilize all CPU cores</para></listItem>
+				  <listItem><para>demo algorithms to shorten learning curve</para></listItem>
+				  <listItem><para>quick start guide</para></listItem>
+				</list>
+				<para>
+				The following features are planned for the near future:
+				</para>
+				<list class="bullet">
+				  <listItem><para>support for limit orders</para></listItem>
+				  <listItem><para>Data management tool</para></listItem>
+				  <listItem><para>API documentation</para></listItem>
+				  <listItem><para>Unit tests</para></listItem>
+				</list>
+				<para>
+				The following environment is required for building and running the simulator:
+				</para>
+				<list class="bullet">
+					<listItem><para>
+						Microsoft Visual Studio, Community 2017
+					</para></listItem>
+					<listItem><para>
+						Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these 
+						requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
+					</para></listItem>
+					<listItem><para>
+						R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not 
+						meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
+					</para></listItem>
+					<listItem><para>
+						data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured
+					</para></listItem>
+				</list>
+			</content>
+		</section>
+
+		<relatedTopics>
+			<link xlink:href="6101a8cf-7ec8-46d8-ad15-f3c30f1c1d2a" />
+		</relatedTopics>
+	</developerConceptualDocument>
+</topic>
