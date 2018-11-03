@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     public class DataUpdaterYahoo : DataUpdater
     {

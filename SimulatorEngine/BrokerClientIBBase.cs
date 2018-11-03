@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using IBApi;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     public class BrokerClientIBBase : EWrapper
     {

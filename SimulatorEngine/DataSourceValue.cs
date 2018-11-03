@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     public enum DataSourceValue
     {

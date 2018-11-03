@@ -17,17 +17,25 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// time series interface
+    /// Interface for time series data.
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface ITimeSeries<T>
     {
-        T this[int daysBack]
+        #region T this[int barsBack]
+        /// <summary>
+        /// Retrieve value from time series.
+        /// </summary>
+        /// <param name="barsBack">number of bars back, 0 for most recent bar</param>
+        /// <returns>data value, barsBack in the past</returns>
+        T this[int barsBack]
         {
             get;
         }
+        #endregion
     }
 }
 

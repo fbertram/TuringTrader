@@ -35,7 +35,7 @@ using IQFeed.CSharpApiClient.Streaming.Level1.Messages;
 using IQFeed.CSharpApiClient.Lookup.Chains;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     class DataUpdaterIQFeed : DataUpdater
     {

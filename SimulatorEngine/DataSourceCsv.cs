@@ -21,7 +21,7 @@ using System.IO.Compression; // requires reference to System.IO.Compression.dll
 using System.Text.RegularExpressions;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
     /// data source for CSV files

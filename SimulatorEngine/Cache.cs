@@ -23,7 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     public static class Cache
     {

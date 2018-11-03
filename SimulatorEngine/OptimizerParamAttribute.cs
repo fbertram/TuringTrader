@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
     /// attribute class to set optimzation range of field or property

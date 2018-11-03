@@ -10,7 +10,7 @@
 //==============================================================================
 
 #region Libraries
-using FUB_TradingSim;
+using TuringTrader.Simulator;
 using System;
 using System.Collections.Generic;
 using System.Linq;

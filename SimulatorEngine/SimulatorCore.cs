@@ -19,10 +19,12 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// base class for trading algorithms
+    /// Simulator engine core, managing data sources and instruments,
+    /// processing a sequence of bars, simulating trades, keeping
+    /// track of positions, and maintaining log information.
     /// </summary>
     public abstract class SimulatorCore
     {
@@ -166,6 +168,11 @@ namespace FUB_TradingSim
         #endregion
 
         #region public SimulatorCore()
+        /// <summary>
+        /// Initialize simulator engine. Only very little is happening here,
+        /// most of the engine initialization is performed in SimTimes, to
+        /// allow multiple runs of the same algorithm instance.
+        /// </summary>
         public SimulatorCore()
         {
             // this is not required, a new object will be assigned
@@ -178,6 +185,11 @@ namespace FUB_TradingSim
         #endregion
 
         #region public string Name
+        /// <summary>
+        /// Return class type name. This method will return the name of the
+        /// derived class, typically a proprietary algorithm derived from
+        /// Algorithm.
+        /// </summary>
         public string Name
         {
             get
@@ -186,15 +198,56 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        abstract public void Run();
-        abstract public void Report();
 
+        #region abstract public void Run()
+        /// <summary>
+        /// Hook for proprietary trading logic. This method must be
+        /// overriden and implemented by a derived class.
+        /// </summary>
+        abstract public void Run();
+        #endregion
+
+        #region protected DateTime StartTime
+        /// <summary>
+        /// Time stamp representing the first bar, on which
+        /// the simulator will perform trades. Most often, this is
+        /// also the earliest bar being processed by the simulator,
+        /// unless WarmupStartTime is set to an earlier time.
+        /// </summary>
         protected DateTime StartTime;
+        #endregion
+        # region protected DateTime? WarmupStartTime
+        /// <summary>
+        /// Optional value, specifying a time stamp earlier than StartTime,
+        /// representing the first bar processed by the simulator. Setting
+        /// this value allows to warm up indicators and internal calculations
+        /// prior to starting trading activity.
+        /// </summary>
         protected DateTime? WarmupStartTime = null;
+        #endregion
+        #region protected DateTime EndTime
+        /// <summary>
+        /// Time stamp, representing the last bar processed by the simulator.
+        /// For simulations reaching into live trading, this should be set
+        /// to a future time.
+        /// </summary>
         protected DateTime EndTime;
+        #endregion
+        #region public int TradingDays
+        /// <summary>
+        /// Number of trading days processed. The first trading day is
+        /// considered the bar, on which the very first trade is executed.
+        /// This may or may not be the first trade submitted.
+        /// </summary>
         public int TradingDays;
+        #endregion
 
         #region protected IEnumerable<DateTime> SimTimes
+        /// <summary>
+        /// Enumerable of available simulation time stamps. An algorithm
+        /// processes bars by iterating through these time stamps using
+        /// a foreach loop.
+        /// </summary>
         protected IEnumerable<DateTime> SimTimes
         {
             get
@@ -293,30 +346,48 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+        #region public TimeSeries<DateTime> SimTime
+        /// <summary>
+        /// Time series of simulation time stamps with the most recent/ current
+        /// time stamp at index 0.
+        /// </summary>
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        #endregion
+        #region protected bool IsLastBar
+        /// <summary>
+        /// Flag, indicating the last bar processed by the simulator. Algorithms
+        /// may use this to implement special handling of this last bar, e.g.
+        /// setting up live trades.
+        /// </summary>
         protected bool IsLastBar = false;
-        #region public double Progress
-        public double Progress
-        {
-            get
-            {
-                try
-                {
-                    double doneDays = (SimTime[0] - (DateTime)WarmupStartTime).TotalDays;
-                    double totalDays = (EndTime - (DateTime)WarmupStartTime).TotalDays;
-                    return 100.0 * doneDays / totalDays;
-                }
-                catch (Exception)
-                {
-                    return 0.0;
-                }
-            }
-        }
         #endregion
 
+        #region protected List<DataSource> DataSources
+        /// <summary>
+        /// List of data sources. Algorithms will add data sources to this list,
+        /// in order to have them processed by the simulator.
+        /// </summary>
         protected List<DataSource> DataSources = new List<DataSource>();
+        #endregion
+        #region public Dictionary<string, Instrument> Instruments
+        /// <summary>
+        /// Collection of instruments available to the simulator. It is
+        /// important to understand that instruments are created dynamically
+        /// during simulation such that in many cases the number of instruments
+        /// held in this collection increases over the course of the simulation.
+        /// Instruments in this collection can be referenced by their fully decorated
+        /// symbol.
+        /// </summary>
         public Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        #endregion
         #region public Instrument FindInstrument(string)
+        /// <summary>
+        /// Find an instrument in the Instruments collection by its nickname.
+        /// In case multiple instruments have the same nickname, the first
+        /// match will be returned.
+        /// </summary>
+        /// <param name="nickname">nickname of instrument to find</param>
+        /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
             return Instruments.Values
@@ -325,6 +396,13 @@ namespace FUB_TradingSim
         }
         #endregion
         #region protected List<Instrument> OptionChain(string)
+        /// <summary>
+        /// Retrieve option chain by its nickname. This will return a list of
+        /// all instruments with the given nickname, marked as options, and with 
+        /// bars available at the current simulation time.
+        /// </summary>
+        /// <param name="nickname">option nickname</param>
+        /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
             List<Instrument> optionChain = Instruments
@@ -340,16 +418,60 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region public List<Order> PendingOrders
+        /// <summary>
+        /// List of all currently pending orders.
+        /// </summary>
         public List<Order> PendingOrders = new List<Order>();
+        #endregion
+        #region public Dictionary<Instrument, int> Positions
+        /// <summary>
+        /// Collection of all instrument objects with currently open positions.
+        /// Typically, algorithms will use the Positions property of an instrument,
+        /// instead of checking this collection for a match.
+        /// </summary>
         public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();
+        #endregion
+        #region public List<LogEntry> Log
+        /// <summary>
+        /// List of trade log entries.
+        /// </summary>
         public List<LogEntry> Log = new List<LogEntry>();
+        #endregion
 
+        #region protected double Cash
+        /// <summary>
+        /// Currently available cash position. Algorithms will typically
+        /// initialize this value at the beginning of the simulation.
+        /// </summary>
         protected double Cash;
+        #endregion
+        #region public TimeSeries<double> NetAssetValue
+        /// <summary>
+        /// Total net value of all positions, and cash.
+        /// </summary>
         public TimeSeries<double> NetAssetValue;
+        #endregion
+        #region public double NetAssetValueHighestHigh
+        /// <summary>
+        /// Highest high of net asset value.
+        /// </summary>
         public double NetAssetValueHighestHigh;
+        #endregion
+        #region public double NetAssetValueMaxDrawdown
+        /// <summary>
+        /// Maximum drawdown of net asset value, expressed
+        /// as a fractional value between 0 and 1.
+        /// </summary>
         public double NetAssetValueMaxDrawdown;
+        #endregion
 
+        #region protected double CommissionPerShare
+        /// <summary>
+        /// Commision to be paid per share.
+        /// </summary>
         protected double CommissionPerShare = 0.00;
+        #endregion
     }
 }
 //==============================================================================

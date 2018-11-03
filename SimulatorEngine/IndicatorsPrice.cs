@@ -17,16 +17,20 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of price indicators.
+    /// </summary>
     public static class IndicatorsPrice
     {
         #region public static ITimeSeries<double> TypicalPrice(this Instrument series)
         /// <summary>
-        /// typical price
+        /// Calculate Typical Price as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Typical_price"/>
         /// </summary>
-        /// <param name="series"></param>
-        /// <returns></returns>
+        /// <param name="series">input instrument</param>
+        /// <returns>typical price as time series</returns>
         public static ITimeSeries<double> TypicalPrice(this Instrument series)
         {
             var functor = Cache<FunctorTypicalPrice>.GetData(

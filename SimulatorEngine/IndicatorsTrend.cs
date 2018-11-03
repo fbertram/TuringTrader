@@ -17,14 +17,21 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of trend-based indicators.
+    /// </summary>
     public static class IndicatorsTrend
     {
         #region public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// simple moving average over past number of bars
+        /// Calculate Simple Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Simple_moving_average"/>
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorSMA>.GetData(
@@ -71,8 +78,12 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// expnentially weighted moving average over past number of bars
+        /// Calculate Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average"/>
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorEMA>.GetData(
@@ -117,6 +128,15 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
+        /// <summary>
+        /// Calculate Kaufman's Adaptive Moving Average, as described here:
+        /// <see href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:kaufman_s_adaptive_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="erPeriod">period for efficiency ratio</param>
+        /// <param name="fastEma">period for fast EMA</param>
+        /// <param name="slowEma">period for slow EMA</param>
+        /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
 
@@ -172,6 +192,8 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+
+        // TODO: https://en.wikipedia.org/wiki/Zero_lag_exponential_moving_average
     }
 }
 

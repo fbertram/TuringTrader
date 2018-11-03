@@ -17,14 +17,20 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of volatility indicators.
+    /// </summary>
     public static class IndicatorsVolatility
     {
         #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Return volatility of time series
+        /// Calculate historical volatility.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length</param>
+        /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorVolatility>.GetData(
@@ -79,8 +85,11 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Return volatility of time series, based on recent trading range
+        /// Calculate volatility estimate from recent trading range.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length of calculation window</param>
+        /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorVolatilityFromRange>.GetData(
@@ -127,6 +136,13 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate variance, based on exponentially weighted filters. This is an
+        /// incremental calculation, based on Tony Finch, which is very fast and efficient.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">filtering length</param>
+        /// <returns>variance as time series</returns>
         public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorFastVariance>.GetData(
@@ -174,6 +190,14 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> TrueRange(this Instrument series)
+        /// <summary>
+        /// Calculate True Range, non averaged, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
+        /// Most often, the Average True Range is used, which can be created by calculating
+        /// SMA of True Range.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>True Range as time series</returns>
         public static ITimeSeries<double> TrueRange(this Instrument series)
         {
             var functor = Cache<FunctorTrueRange>.GetData(

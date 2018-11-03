@@ -44,7 +44,7 @@ using RDotNet.NativeLibrary;
 #endregion
 
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     public class Logger
     {

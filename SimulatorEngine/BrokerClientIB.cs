@@ -65,7 +65,8 @@ usage example
     client.Disconnect();
 
 */
-namespace FUB_TradingSim
+
+namespace TuringTrader.Simulator
 {
     public class BrokerClientIB : BrokerClientIBBase
     {

@@ -18,11 +18,20 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of indicators performing arithmetic on time series.
+    /// </summary>
     static public class IndicatorsArithmetic
     {
         #region public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate addition of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 + time series #2</returns>
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorAdd>.GetData(
@@ -53,6 +62,12 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate subtraction of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 - time series #2</returns>
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorSubtract>.GetData(
@@ -84,6 +99,12 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate multiplication of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 * time series #2</returns>
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             var functor = Cache<FunctorMultiply>.GetData(
@@ -115,6 +136,11 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate absolute value of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>absolue value of input time series</returns>
         public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorAbsValue>.GetData(

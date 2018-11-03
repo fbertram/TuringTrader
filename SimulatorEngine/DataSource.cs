@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
     /// data source, providing a bar enumerator for one or more instruments

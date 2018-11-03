@@ -17,8 +17,11 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of momentum-based indicators.
+    /// </summary>
     public static class IndicatorsMomentum
     {
         // TODO:
@@ -26,11 +29,12 @@ namespace FUB_TradingSim
 
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         /// <summary>
-        /// commodity channel index
+        /// Calculate Commodity Channel Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
         /// </summary>
-        /// <param name="series"></param>
-        /// <param name="n"></param>
-        /// <returns></returns>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>CCI time series</returns>
         public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         {
             var functor = Cache<FunctorCCI>.GetData(
@@ -76,12 +80,13 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
         /// <summary>
-        /// true strength index
+        /// Calculate True Strength Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/True_strength_index"/>
         /// </summary>
-        /// <param name="series"></param>
-        /// <param name="r"></param>
-        /// <param name="s"></param>
-        /// <returns></returns>
+        /// <param name="series">input time series</param>
+        /// <param name="r">smoothing period for momentum</param>
+        /// <param name="s">smoothing period for smoothed momentum</param>
+        /// <returns>TSI time series</returns>
         public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
         {
             var functor = Cache<FunctorTSI>.GetData(
@@ -126,11 +131,12 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// relative strength index
+        /// Calculate Relative Strength Index, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Relative_strength_index"/>
         /// </summary>
-        /// <param name="series"></param>
-        /// <param name="n"></param>
-        /// <returns></returns>
+        /// <param name="series">input time series</param>
+        /// <param name="n">smoothing period</param>
+        /// <returns>RSI time series</returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
             var functor = Cache<FunctorRSI>.GetData(
@@ -186,11 +192,11 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// calculate annualized linear regression
+        /// Calculate annualized linear regression of time series.
         /// </summary>
-        /// <param name="series">time series to operate on</param>
+        /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>result as time series</returns>
+        /// <returns>annualized return as time series</returns>
         public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLinRegression>.GetData(
@@ -272,11 +278,11 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// calculate annualized logarithmic regression
+        /// Calculate annualized logarithmic regression of time series.
         /// </summary>
-        /// <param name="series">time series to operate on</param>
+        /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>result as time series</returns>
+        /// <returns>annualized return as time series</returns>
         public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLinRegression>.GetData(

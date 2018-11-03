@@ -17,14 +17,20 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of basic indicators.
+    /// </summary>
     public static class IndicatorsBasic
     {
         #region public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// highest value of past number of bars
+        /// Calculate highest value of the specified number of past bars.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>highest value of past n bars</returns>
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorHighest>.GetData(
@@ -67,8 +73,11 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// lowest value of past number of bars
+        /// Calculate lowest value of the specified number of past bars.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>lowest value of past n bars</returns>
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<FunctorLowest>.GetData(
@@ -112,8 +121,11 @@ namespace FUB_TradingSim
 
         #region public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
         /// <summary>
-        /// absolute return
+        /// Calculate absolute return, from the previous to the current
+        /// value of the time series.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>absolute return</returns>
         public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorAbsReturn>.GetData(
@@ -143,8 +155,11 @@ namespace FUB_TradingSim
         #endregion
         #region public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         /// <summary>
-        /// logarithmic return
+        /// Calculate logarithmic return from the previous to the current value
+        /// of the time series.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>logarithm of relative return</returns>
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         {
             var functor = Cache<FunctorLogReturn>.GetData(

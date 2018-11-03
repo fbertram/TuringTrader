@@ -17,8 +17,11 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of option support functionality.
+    /// </summary>
     public static class OptionSupport
     {
         #region internal helpers
@@ -58,6 +61,15 @@ namespace FUB_TradingSim
         #endregion
 
         #region public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
+        /// <summary>
+        /// Calculate arbitrage-free price of European-style option,
+        /// according to Black-Scholes equation as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
+        /// </summary>
+        /// <param name="contract">input option contract</param>
+        /// <param name="volatility">annualized volatility of underlying asset</param>
+        /// <param name="riskFreeRate">annualized risk free rate</param>
+        /// <returns>option price</returns>
         public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
         {
             if (!contract.IsOption)
