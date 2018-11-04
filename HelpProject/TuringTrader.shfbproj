@@ -98,6 +98,10 @@
     <Content Include="icons\Help.png" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="media\Demo02-plot-small.png">
+      <ImageId>Demo02-plot-small</ImageId>
+      <AlternateText>Demo 02-plot-small</AlternateText>
+    </Image>
     <Image Include="media\Demo01-plot-small.png">
       <ImageId>Demo01-plot-small</ImageId>
       <AlternateText>Demo 01-plot-small</AlternateText>
@@ -108,6 +112,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <CodeSnippets Include="Content\QuickStartGuide\Demo 02 Trading stocks.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Setting up data.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 01 Code.snippets" />
   </ItemGroup>

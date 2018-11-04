@@ -26,7 +26,6 @@ namespace TuringTrader.Demos
         #region internal data
         private Logger _plotter = new Logger();
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
-        private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         private readonly double _offsetPrice = -1800.0;
         #endregion
@@ -38,9 +37,6 @@ namespace TuringTrader.Demos
             // set simulation time frame
             StartTime = DateTime.Parse("01/01/2015");
             EndTime = DateTime.Parse("12/31/2016");
-
-            // set account value
-            Cash = _initialCash;
 
             // add instruments
             DataSources.Add(DataSource.New(_instrumentNick));

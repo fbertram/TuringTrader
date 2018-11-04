@@ -28,23 +28,31 @@
         </para>
 		<codeReference>Demo01#DummyClass</codeReference>
 		<para>
-			First, we add the <codeInline>TuringTrader.Simulator</codeInline> namespace, so that we may
+			First, we add the 
+			<codeEntityReference qualifyHint="false">N:TuringTrader.Simulator</codeEntityReference>
+			namespace, so that we may
 			access the TuringTrader classes without having to qualify
 			the use of those types.
 		</para>
 		<para>
-			Next, we derive a public class from TuringTrader's <codeInline>Algorithm</codeInline> class.
+			Next, we derive a public class from TuringTrader's
+			<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Algorithm</codeEntityReference>
+			class.
 			This is required, so that the simulator can discover the available
 			algorithms using reflection.
 		</para>
 		<para>
-			We override the <codeInline>Run()</codeInline> method. This is where all of the algorithm's
+			We override the 
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Algorithm.Run</codeEntityReference>
+			method. This is where all of the algorithm's
 			initialization, data-processing, and cleanup will be performed.
 			It is up to you, to group functionality into separate private
 			methods as you see fit.
 		</para>
 		<para>
-			We override the <codeInline>Report()</codeInline> method. This is where a report is created,
+			We override the
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Algorithm.Report</codeEntityReference>
+			method. This is where a report is created,
 			to present the algorithm's outcome. TuringTrader's preferred way
 			of presentation is through Excel worksbooks, but you are free to
 			create any report format you see fit.
@@ -57,16 +65,29 @@
       <content>
       	<para>
       		Now that we have a dummy algorithm, it is time to add some useful
-      		functionality to the <codeInline>Run()</codeInline> method.
+      		functionality to the
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Algorithm.Run</codeEntityReference>
+      		method.
       		The first thing an algorithm needs to do, is to
       		load data. There are two aspects to this:
       		<list class="bullet">
       			<listItem>Specify the simulation range. We do so, by setting
-      				the <codeInline>StartTime</codeInline> and <codeInline>EndTime</codeInline> properties.</listItem>
+      				the 
+      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.StartTime</codeEntityReference>
+      				and 
+      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.EndTime</codeEntityReference>
+      				properties.</listItem>
       			<listItem>Add one or more data sources to our algorithm. We
-      				do so, by adding <codeInline>DataSource</codeInline> objects 
-      				to the <codeInline>DataSources</codeInline>
-      				property.</listItem>
+      				do so, by adding 
+      				<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.DataSource</codeEntityReference>
+      				objects
+      				to the 
+      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.DataSources</codeEntityReference>
+      				property. These objects should be created using the 
+      				<codeInline>New</codeInline> 
+      				method, which will determine the appropriate data source
+      				implementation to load the data.
+      				</listItem>
       		</list>
       	</para>
       	<para>
@@ -85,21 +106,27 @@
       		event for each bar with the same time stamp. This greatly simplifies
       		the development of algorithms working on instrument portfolios, or 
       		with options. Each bar is requested through the enumerable property 
-      		<codeInline>SimTimes</codeInline> with a simple loop:
+      		<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.SimTimes</codeEntityReference>
+      		with a simple loop:
       	</para>
       	<codeReference>Demo01#ProcessBars</codeReference>
       	<para>
-      		Inside this loop, we can access the <codeInline>Instruments</codeInline> dictionary, which 
+      		Inside this loop, we can access the
+      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Instruments</codeEntityReference>
+      		dictionary, which
       		holds all known instruments. There are a number of ways to find the
       		instrument object we are looking for. For a simple algorithm,
       		working on only a single instrument, e.g. a basic stock-trading
-      		algorithm, we can simply use the first element of the <codeInline>Instruments</codeInline>
+      		algorithm, we can simply use the first element of the 
+      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Instruments</codeEntityReference>
       		dictionary:
       	</para>
       	<codeReference>Demo01#FirstInstrument</codeReference>
 		<para>
 			For more complex algorithms referencing multiple instruments, we
-			can look up the instrument via its nickname. Please note that this
+			can look up the instrument via its nickname using
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.FindInstrument(System.String)</codeEntityReference>.
+			Please note that this
 			won’t work, if there is a one-to-many relationship between our
 			nickname and the resulting instruments:
 		</para>
@@ -110,7 +137,9 @@
 			talk about that when we walk through the options trading demo.
 		</para>
 		<para>
-			An instrument holds, among others, the following static fields:
+			An
+			<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Instrument</codeEntityReference>
+			holds, among others, the following static fields:
 			<list class="bullet">
 				<listItem>Nickname. The nickname we used to add the data source</listItem>
 				<listItem>Name. The descriptive name of the instrument. E.g. "Alphabet Inc Class A".</listItem>
@@ -129,7 +158,9 @@
       <title>Accessing time series data</title>
       <content>
       	<para>
-      		An instrument also holds, among others, the following time series:
+      		An 
+      		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Instrument</codeEntityReference>
+      		also holds, among others, the following time series:
       		<list class="bullet">
       			<listItem>Open, High, Low, Close, Volume: The market quote data.</listItem>
       			<listItem>Bid, Ask, BidVolume, AskVolume: The bid/ask quote data.</listItem>
@@ -137,7 +168,8 @@
       	</para>
       	<para>
       		We can access time series data much like array elements, via the 
-      		<codeInline>ITimeSeries</codeInline> interface.
+      		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.ITimeSeries`1</codeEntityReference>
+      		interface.
       		The index 0 points to
       		the most current data, index 1 points to the data from the previous
       		bar, and so forth. Typically, we can access up to 256 bars in the past:
@@ -164,7 +196,9 @@
       		Our algorithm now calculates MACD, but it won't share the
       		results with us. TuringTrader can easily save data to a CSV,
       		or plot in Excel and
-      		R. To do so, we first need to create a <codeInline>Logger</codeInline> object:
+      		R. To do so, we first need to create a 
+      		<codeInline>Logger</codeInline>       		
+      		object:
       	</para>
       	<codeReference>Demo01#NewLogger</codeReference>
       	<para>
@@ -194,7 +228,9 @@
       	<codeReference>Demo01#csv</codeReference>
       	<para>
       		It is worth noting, that all output functionality should generally
-      		be implemented in the <codeInline>Report()</codeInline> method. That way, no unnecessary
+      		be implemented in the 
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Algorithm.Report</codeEntityReference>
+      		method. That way, no unnecessary
       		output is getting into our way, especially while running the
       		optimizer.
       	</para>
@@ -204,7 +240,9 @@
       	</para>
       	<codeReference>Demo01#OpenWithExcel</codeReference>
       	<para>
-      		The parameter passed into the <codeInline>OpenWithExcel()</codeInline> function points to an
+      		The parameter passed into the 
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Logger.OpenWithExcel(System.String)</codeEntityReference>
+      		function points to an
       		Excel template. These templates include a VBA macro, that will
       		receive the CSV, and create the desired output. 
 			By modifying the templates, there are virtually no limits to
