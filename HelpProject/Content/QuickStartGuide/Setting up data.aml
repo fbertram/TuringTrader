@@ -12,71 +12,138 @@
            a specific number of sub-topics when creating the outline.  Specify
            zero (0) to limit it to top-level sections only.  -->
       <!-- <autoOutline /> -->
-      <para>Required introduction</para>
+      <para>
+      	To run simulations of stock and options algorithms, TuringTrader requires
+      	market data, most notably quotations and trade volumes.
+      	This section describes how to set up your data for use with TuringTrader.
+      </para>
     </introduction>
+
     <!-- Add one or more top-level section elements.  These are collapsible.
          If using <autoOutline />, add an address attribute to identify it
          and specify a title so that it can be jumped to with a hyperlink. -->
     <section address="Section1">
-      <title>Optional section title</title>
+      <title>Nomenclature</title>
       <content>
         <!-- Uncomment this to create a sub-section outline
         <autoOutline /> -->
-        <para>Add one or more sections with content</para>
+        <para>
+        When it comes to data, TuringTrader distinguishes between the following
+        entities:
+        <list class="bullet">
+        	<listItem>
+        		<legacyItalic>Database.</legacyItalic> The database is the
+        		collection of all data available to TuringTrader. In the default
+        		installation, it resides in a folder named 'Data' and contains
+        		a number of .inf files, describing the available data sources.
+        		The .inf files are named by the data sources nickname.
+        	</listItem>
+        	<listItem>
+				<legacyItalic>Nickname.</legacyItalic> This is the name, by which we 
+				will refer to a data source.
+				The nickname must be unique for the full database we are using. 
+				Therefore, the nickname should be more than just the instrument’s 
+				ticker, and include the category and timeframe as well. Examples for 
+				nicknames are 'AAPL.Stock' and '^XSP.Index', but could also be 
+				'My Favorite Stock'.
+			</listItem>
+			<listItem>
+				<legacyItalic>Data Source.</legacyItalic> With the nickname in 
+				hand, we can create a data source for this instrument. The 
+				simulator engine will look up the nickname in the database, gather the specific 
+				information about this data source, and instantiate an appropriate 
+				object for it. Typically, we have little reason to directly 
+				interact with data sources while developing our algorithms.
+			</listItem>
+			<listItem>
+				<legacyItalic>Instrument.</legacyItalic> As a data source 
+				processes its data, it instantiates one or more instruments 
+				on the fly. An instrument encapsulates everything we know about 
+				a tradeable share or contract. Part of the data, e.g. the symbol, 
+				or an option’s expiry date are static. Other information, 
+				e.g. the open/ high/ low/ close quotes are time series data.        	
+			</listItem>
+				<legacyItalic>Ticker.</legacyItalic> This is the sequence of 
+				typically 3 to 5 characters used to identify an instrument within a 
+				given exchange. The ticker needs to be unique within each algorithm, 
+				for us to distinguish the instruments. It is possible for multiple 
+				nicknames to point to the same ticker, e.g. when they use different 
+				time frames. Examples for tickers are 'AAPL', or 'XSP'.        	
+			<listItem>
+				<legacyItalic>Symbol.</legacyItalic> Most of the time, the symbol 
+				is identical to the ticker. When it comes to options though, the 
+				symbol also includes the expiry date, the option right, and the 
+				strike price. Examples for symbols are 'XSP180919C00289000', 
+				or 'XSP180919P00284000'.         	
+			</listItem>
+        </list>
+        </para>
       </content>
-      <!-- If a section contains a sections element, its content creates
-           sub-sections.  These are not collapsible.
-      <sections>
-          <section address="SubSection1">
-              <title>Sub-section 1</title>
-              <content>
-                  <para>Sub-section content.</para>
-              </content>
-          </section>
-          <section address="SubSection2">
-              <title>Sub-section 2</title>
-              <content>
-                  <para>Sub-section content.</para>
-              </content>
-          </section>
-      </sections> -->
     </section>
+    
+	<section address="Section1"><title>Data Source descriptor format</title><content>
+	<para>
+		Data Sources are described with an .inf file. This file contains general
+		information about the tradeable instrument, or family therof, associated
+		with this data source, e.g. the full name, the ticker, and symbol. It
+		also contains information about the location of the quote data, and
+		their data format. Further, it contains information about how to
+		update quote data, and how to map symbols to data providers and brokers.
+	</para>
+	<para>
+		Here is an example of a simple .inf file:
+	</para>
+	<codeReference>SettingUpData#Inf</codeReference>
+	<para>
+	Each line holds a tag, and the value assigned to that tag. This particular 
+	data source descriptor does the following:
+	<list class="bullet">
+		<listItem><legacyItalic>name: </legacyItalic>The full descriptive name of this instrument.</listItem>
+		<listItem><legacyItalic>dataPath: </legacyItalic>The relative path to the actual data files.</listItem>
+		<listItem><legacyItalic>ticker: </legacyItalic>The instrument's ticker symbol</listItem>
+		<listItem>date: The column and format of the timestamp. Here we set it
+			to the 1st column in a CSV file. This is a descriptor
+			for an instrument with daily bars, so this column has only the date 
+			but no time.</listItem>
+		<listItem><legacyItalic>time: </legacyItalic>As the timestamp does not provide a time, we set it
+			manually to the end of the regular US session.</listItem>
+		<listItem><legacyItalic>open: </legacyItalic>The opening price is found in the 2nd column of the
+			CSV file. The format is float, with 2 fractional digits.</listItem>
+		<listItem><legacyItalic>high: </legacyItalic>The high price is found in the 3rd column of the 
+			CSV file.</listItem>
+		<listItem><legacyItalic>low: </legacyItalic>The low price is found in the 4th colum.</listItem>
+		<listItem><legacyItalic>close: </legacyItalic>The closing price is found in the 5th column.</listItem>
+		<listItem><legacyItalic>volume: </legacyItalic>The trading volume is found in the 6th column. The
+			format is integer.</listItem>
+		<listItem><legacyItalic>symbolStooq: </legacyItalic>Stooq.com lists this instrument as amzn.us.</listItem>
+		<listItem><legacyItalic>symbolYahoo: </legacyItalic>Yahoo.com lists this instrument as amzn.</listItem>
+		<listItem><legacyItalic>dataUpdater: </legacyItalic>We use Yahoo.com to update this instrument's data.</listItem>
+	</list>
+	</para>
+	<para>
+		With these definitions in place, we can now read CSV files of the
+		following format:
+	</para>
+	<codeReference>SettingUpData#Csv</codeReference>
+	<para>
+		The CSV reader is quite flexible. It can read files in the following
+		formats:
+		<list class="bullet">
+			<listItem><legacyItalic>single file.</legacyItalic> This is how most 
+				quote data are delivered.</listItem>
+			<listItem><legacyItalic>folder with files.</legacyItalic> This is
+				TuringTrader's preferred format. The data loader assumes that
+				the files are in chronological order, when sorted alphabetically.</listItem>
+			<listItem><legacyItalic>compressed files.</legacyItalic> This is often
+				used for options quotations. A folder holding a collection of
+				compressed files, typically each containing quotes for a single
+				day.</listItem>
+		</list>
+	</para>
+	</content></section>
+
+    
     <relatedTopics>
-      <!-- One or more of the following:
-           - A local link
-           - An external link
-           - A code entity reference
-
-      <link xlink:href="Other Topic's ID"/>
-      <link xlink:href="Other Topic's ID">Link inner text</link>
-
-      <externalLink>
-          <linkText>Link text</linkText>
-          <linkAlternateText>Optional alternate link text</linkAlternateText>
-          <linkUri>URI</linkUri>
-      </externalLink>
-
-      <codeEntityReference>API member ID</codeEntityReference>
-
-      Examples:
-
-      <link xlink:href="00e97994-e9e6-46e0-b420-5be86b2f8270" />
-      <link xlink:href="00e97994-e9e6-46e0-b420-5be86b2f8278">Some other topic</link>
-
-      <externalLink>
-          <linkText>SHFB on GitHub</linkText>
-          <linkAlternateText>Go to GitHub</linkAlternateText>
-          <linkUri>https://GitHub.com/EWSoftware/SHFB</linkUri>
-      </externalLink>
-
-      <codeEntityReference>T:TestDoc.TestClass</codeEntityReference>
-      <codeEntityReference>P:TestDoc.TestClass.SomeProperty</codeEntityReference>
-      <codeEntityReference>M:TestDoc.TestClass.#ctor</codeEntityReference>
-      <codeEntityReference>M:TestDoc.TestClass.#ctor(System.String,System.Int32)</codeEntityReference>
-      <codeEntityReference>M:TestDoc.TestClass.ToString</codeEntityReference>
-      <codeEntityReference>M:TestDoc.TestClass.FirstMethod</codeEntityReference>
-      <codeEntityReference>M:TestDoc.TestClass.SecondMethod(System.Int32,System.String)</codeEntityReference>
-      -->
     </relatedTopics>
   </developerConceptualDocument>
 </topic>

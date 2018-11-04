@@ -22,15 +22,15 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Interface for time series data.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">type of time series</typeparam>
     public interface ITimeSeries<T>
     {
         #region T this[int barsBack]
         /// <summary>
-        /// Retrieve value from time series.
+        /// Retrieve historical value from time series.
         /// </summary>
-        /// <param name="barsBack">number of bars back, 0 for most recent bar</param>
-        /// <returns>data value, barsBack in the past</returns>
+        /// <param name="barsBack">number of bars back, 0 for current bar</param>
+        /// <returns>historical value</returns>
         T this[int barsBack]
         {
             get;

@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<examples>
+
+<item id="Demo01#DummyClass"><sampleCode language="CSharp">
+using TuringTrader.Simulator;
+
+public class HelloWorld : Algorithm
+{
+	override public void Run()
+	{
+		Output.WriteLine("Hello, we're running.");
+	}
+	
+	override public void Report()
+	{
+		Output.WriteLine("Hello, here is a report.");
+	}
+}
+</sampleCode></item>
+
+<item id="Demo01#LoadData"><sampleCode language="CSharp">
+StartTime = DateTime.Parse("01/01/2015");
+EndTime = DateTime.Parse("12/31/2016");
+DataSources.Add(DataSource.New("^SPX.Index"));
+</sampleCode></item>
+
+<item id="Demo01#ProcessBars"><sampleCode language="CSharp">
+foreach (DateTime simTime in SimTimes)
+{
+	// process bars here
+}
+</sampleCode></item>
+
+<item id="Demo01#FirstInstrument"><sampleCode language="CSharp">
+Instrument instrument = Instruments.Values.First();
+</sampleCode></item>
+
+<item id="Demo01#FindInstrument"><sampleCode language="CSharp">
+Instrument instrument = FindInstrument("^SPX.Index");
+</sampleCode></item>
+
+<item id="Demo01#TimeSeries"><sampleCode language="CSharp">
+double currentClose = instrument.Close[0];
+double previousClose = instrument.Close[1];
+</sampleCode></item>
+
+<item id="Demo01#Indicators"><sampleCode language="CSharp">
+ITimeSeries&lt;double&gt; ema26Series = instrument.Close.EMA(26);
+double ema26Value = ema26Series[0];
+</sampleCode></item>
+
+<item id="Demo01#MACD"><sampleCode language="CSharp">
+ITimeSeries&lt;double&gt; ema26  = instrument.Close.EMA(26);
+ITimeSeries&lt;double&gt; ema12  = instrument.Close.EMA(12);
+ITimeSeries&lt;double&gt; macd   = ema12.Subtract(ema26);
+ITimeSeries&lt;double&gt; signal = macd.EMA(9);
+</sampleCode></item>
+
+<item id="Demo01#NewLogger"><sampleCode language="CSharp">
+Logger _plotter = new Logger();
+</sampleCode></item>
+
+<item id="Demo01#SelectPlot"><sampleCode language="CSharp">
+_plotter.SelectPlot("indicators vs time", "date");
+</sampleCode></item>
+
+<item id="Demo01#SetX"><sampleCode language="CSharp">
+_plotter.SetX(SimTime[0]);
+</sampleCode></item>
+
+<item id="Demo01#Log"><sampleCode language="CSharp">
+_plotter.Log(instrument.Symbol, instrument.Close[0]);
+_plotter.Log("ema26", ema26[0]);
+_plotter.Log("ema12", ema12[0]);
+_plotter.Log("macd", macd[0]);
+_plotter.Log("signal", signal[0]);
+</sampleCode></item>
+
+<item id="Demo01#SaveAsCsv"><sampleCode language="CSharp">
+_plotter.SaveAsCsv(filePath);
+</sampleCode></item>
+
+<item id="Demo01#csv"><sampleCode language=".csv">
+date,^SPX,ema26,ema12,macd,signal
+01/02/2015,258.2,258.2,258.2,0,0
+01/05/2015,220.58,255.4133,252.4123,-3.0010,-0.6002
+</sampleCode></item>
+
+<item id="Demo01#OpenWithExcel"><sampleCode language="CSharp">
+_plotter.OpenWithExcel(_excelPath);
+</sampleCode></item>
+
+<item id="Demo01#xxx"><sampleCode language="">
+hello
+world
+</sampleCode></item>
+</examples>
