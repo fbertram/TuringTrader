@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 #endregion
 
+/// <summary>
+/// Namespace for TuringTrader's simulator engine.
+/// </summary>
 namespace TuringTrader.Simulator
 {
     /// <summary>

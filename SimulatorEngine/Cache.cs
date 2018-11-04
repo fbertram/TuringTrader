@@ -25,9 +25,18 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Cache support class.
+    /// </summary>
     public static class Cache
     {
         #region static public int UniqueId(params int[] parameterIds)
+        /// <summary>
+        /// Create unique ID from list of integer parameters, and current stack trace.
+        /// This ID is used to uniquely identify auto-magically created indicator functors.
+        /// </summary>
+        /// <param name="parameterIds">list of integer parameters</param>
+        /// <returns>unique id</returns>
         static public int UniqueId(params int[] parameterIds)
         {
             // on top of the parameter ids, we also need to uniquely identify the call stack
@@ -51,6 +60,10 @@ namespace TuringTrader.Simulator
         #endregion
     }
 
+    /// <summary>
+    /// Cache template class.
+    /// </summary>
+    /// <typeparam name="T">type of cache</typeparam>
     public static class Cache<T>
     {
         #region internal data
@@ -58,6 +71,12 @@ namespace TuringTrader.Simulator
         private static object _lockCache = new object();
         #endregion
         #region static public T GetData(int key, Func<T> initialRetrieval)
+        /// <summary>
+        /// Retrieve data from cache.
+        /// </summary>
+        /// <param name="key">unique ID of data</param>
+        /// <param name="initialRetrieval">lambda to retrieve data not found in cache</param>
+        /// <returns>cached data</returns>
         static public T GetData(int key, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE

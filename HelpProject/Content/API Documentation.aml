@@ -18,6 +18,7 @@
 		<list class="bullet">
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Algorithm</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Bar</codeEntityReference></listItem>
+			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Instrument</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.ITimeSeries`1</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.IndicatorsArithmetic</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.IndicatorsBasic</codeEntityReference></listItem>

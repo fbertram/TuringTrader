@@ -21,6 +21,10 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Class providing read/ write access to global settings, stored in the
+    /// Windows registry.
+    /// </summary>
     public static class GlobalSettings
     {
         #region static private RegistryKey OpenSubKey(string sub, bool writable = false)
@@ -57,6 +61,9 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region static public string DataPath
+        /// <summary>
+        /// Property to store the path to the simulator's database.
+        /// </summary>
         static public string DataPath
         {
             get
@@ -72,6 +79,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region static public string MostRecentAlgorithm
+        /// <summary>
+        /// Property returing the name of the most-recently run algorithm.
+        /// </summary>
         static public string MostRecentAlgorithm
         {
             get
@@ -88,6 +98,13 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
+        /// <summary>
+        /// Retrieve algorithm-specific registry value.
+        /// </summary>
+        /// <param name="algo">algorithm with which the value is associated</param>
+        /// <param name="valueName">name of the value</param>
+        /// <param name="defaultValue">default value, in case it has not been assigned</param>
+        /// <returns></returns>
         public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
         {
             object retValue = GetRegistryValue(algo.Name, valueName);
@@ -102,6 +119,12 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public static void SetRegistryValue(this SimulatorCore algo, string valueName, object value)
+        /// <summary>
+        /// Set algorithm-specific registry value.
+        /// </summary>
+        /// <param name="algo">algorithm with which the value is associated</param>
+        /// <param name="valueName">name of the value</param>
+        /// <param name="value">new value to be assigned</param>
         public static void SetRegistryValue(this SimulatorCore algo, string valueName, object value)
         {
             SetRegistryValue(algo.Name, valueName, value);

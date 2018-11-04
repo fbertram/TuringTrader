@@ -20,11 +20,18 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// container to store parameters and fitness of optimiation iteration
+    /// Container to store parameters and fitness of optimiation iteration.
     /// </summary>
     public class OptimizerResult
     {
+        /// <summary>
+        /// Parameter values for this iteration.
+        /// </summary>
         public Dictionary<string, int> Parameters = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Parameter values for this iteration, as string.
+        /// </summary>
         public string ParametersAsString
         {
             get
@@ -35,8 +42,20 @@ namespace TuringTrader.Simulator
                 return retval;
             }
         }
+
+        /// <summary>
+        /// Net asset value at end of this iteration.
+        /// </summary>
         public double? NetAssetValue { get; set; }
+
+        /// <summary>
+        /// Maximum drawdown over the course of this iteration.
+        /// </summary>
         public double? MaxDrawdown { get; set; }
+
+        /// <summary>
+        /// Fitness value at end of this iteration.
+        /// </summary>
         public double? Fitness { get; set; }
     }
 }
