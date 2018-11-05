@@ -34,46 +34,29 @@ namespace TuringTrader.Simulator
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorSMA>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorSMA(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorSMA : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorSMA(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-            }
-
-            public void Calc()
-            {
-                double sum = Series[0];
-                int num = 1;
-
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    for (int t = 1; t < N; t++)
+                    double sum = series[0];
+                    int num = 1;
+
+                    try
                     {
-                        sum += Series[t];
-                        num++;
+                        for (int t = 1; t < n; t++)
+                        {
+                            sum += series[t];
+                            num++;
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                    }
 
-                Value = sum / num;
-            }
+                    return sum / num;
+                },
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
@@ -86,45 +69,14 @@ namespace TuringTrader.Simulator
         /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorEMA>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorEMA(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorEMA : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            private double _alpha;
-
-            public FunctorEMA(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-                _alpha = 2.0 / (N + 1.0);
-            }
-
-            public void Calc()
-            {
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    // prevent output from becoming
-                    // noisy with N == 1
-                    Value = N > 1
-                        ? _alpha * (Series[0] - this[0]) + this[0]
-                        : Series[0];
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = Series[0];
-                }
-            }
+                    double alpha = 2.0 / (n + 1);
+                    return alpha * (series[0] - v) + v;
+                },
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
@@ -139,57 +91,31 @@ namespace TuringTrader.Simulator
         /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
-
-            var functor = Cache<FunctorKAMA>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), erPeriod, fastEma, slowEma),
-                    () => new FunctorKAMA(series, erPeriod, fastEma, slowEma));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorKAMA : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int ErPeriod;
-            public int FastEma;
-            public int SlowEma;
-
-            private double _scFast;
-            private double _scSlow;
-
-            public FunctorKAMA(ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
-            {
-                Series = series;
-                ErPeriod = erPeriod;
-                FastEma = fastEma;
-                SlowEma = slowEma;
-
-                _scFast = 2.0 / (FastEma + 1.0);
-                _scSlow = 2.0 / (SlowEma + 1.0);
-            }
-
-            public void Calc()
-            {
-
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    double change = Math.Abs(Series[0] - Series[ErPeriod]);
-                    double volatility = Enumerable.Range(0, ErPeriod)
-                        .Sum(t => Math.Abs(Series[t] - Series[t + 1]));
+                    try
+                    {
+                        double scFast = 2.0 / (1.0 + fastEma);
+                        double scSlow = 2.0 / (1.0 + slowEma);
 
-                    double efficiencyRatio = change / Math.Max(1e-10, volatility);
-                    double smoothingConstant = Math.Pow(efficiencyRatio * (_scFast - _scSlow) + _scSlow, 2);
+                        double change = Math.Abs(series[0] - series[erPeriod]);
+                        double volatility = Enumerable.Range(0, erPeriod)
+                            .Sum(t => Math.Abs(series[t] - series[t + 1]));
 
-                    Value = this[0] + smoothingConstant * (Series[0] - this[0]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = Series[0];
-                }
-            }
+                        double efficiencyRatio = change / Math.Max(1e-10, volatility);
+                        double smoothingConstant = Math.Pow(efficiencyRatio * (scFast - scSlow) + scSlow, 2);
+
+                        return smoothingConstant * (series[0] - v) + v;
+                    }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                        return series[0];
+                    }
+                },
+                series[0],
+                series.GetHashCode(), erPeriod, fastEma, slowEma);
         }
         #endregion
 

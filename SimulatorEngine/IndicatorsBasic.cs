@@ -24,6 +24,92 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsBasic
     {
+        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda)
+        /// <summary>
+        /// Create time series based on lambda, with lambda being executed once for
+        /// every call to the indexer method. Use this for leight-weight lambdas.
+        /// </summary>
+        /// <param name="lambda">lambda, taking bars back as parameter and returning time series value</param>
+        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <returns>lambda time series</returns>
+        public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
+        {
+            var functor = Cache<FunctorLambda>.GetData(
+                    // TODO: try to eliminate nested calls to Cache.UniqueId
+                    Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                    () => new FunctorLambda(lambda));
+
+            return functor;
+        }
+
+        private class FunctorLambda : ITimeSeries<double>
+        {
+            public readonly Func<int, double> Lambda;
+
+            public FunctorLambda(Func<int, double> lambda)
+            {
+                Lambda = lambda;
+            }
+
+            public double this[int barsBack]
+            {
+                get
+                {
+                    return Lambda(barsBack);
+                }
+            }
+        }
+        #endregion
+        #region public static ITimeSeries<double> LambdaBuffered(Func<int, double> lambda)
+        /// <summary>
+        /// Create time series based on lambda, with lambda being executed once for
+        /// every new bar.
+        /// </summary>
+        /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
+        /// <param name="first">first value to return</param>
+        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <returns>lambda time series</returns>
+        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, params int[] identifier)
+        {
+            var functor = Cache<FunctorLambdaBuffered>.GetData(
+                    // TODO: try to eliminate nested calls to Cache.UniqueId
+                    // NOTE: first is intentionally _not_ part of the unique id
+                    Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                    () => new FunctorLambdaBuffered(lambda, first));
+
+            functor.Calc();
+
+            return functor;
+        }
+
+        private class FunctorLambdaBuffered : TimeSeries<double>
+        {
+            public readonly Func<double, double> Lambda;
+            public readonly double First;
+
+            public FunctorLambdaBuffered(Func<double, double> lambda, double first)
+            {
+                Lambda = lambda;
+                First = first;
+            }
+
+            public void Calc()
+            {
+                double previousValue;
+                try
+                {
+                    previousValue = this[0];
+                }
+                catch (Exception)
+                {
+                    // we get here, when there is no previous value
+                    previousValue = First;
+                }
+                Value = Lambda(previousValue);
+            }
+        }
+        #endregion
+
         #region public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate highest value of the specified number of past bars.
@@ -33,42 +119,10 @@ namespace TuringTrader.Simulator
         /// <returns>highest value of past n bars</returns>
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorHighest>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorHighest(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorHighest : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorHighest(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-            }
-
-            public void Calc()
-            {
-                double value = Series[0];
-
-                try
-                {
-                    for (int t = 1; t < N; t++)
-                        value = Math.Max(value, Series[t]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                Value = value;
-            }
+            return BufferedLambda(
+                (v) => Enumerable.Range(1, n).Max(t => series[t]),
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
@@ -80,77 +134,25 @@ namespace TuringTrader.Simulator
         /// <returns>lowest value of past n bars</returns>
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorLowest>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorLowest(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorLowest : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorLowest(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-            }
-
-            public void Calc()
-            {
-                double value = Series[0];
-
-                try
-                {
-                    for (int t = 1; t < N; t++)
-                        value = Math.Min(value, Series[t]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                Value = value;
-            }
+            return BufferedLambda(
+                (v) => Enumerable.Range(1, n).Min(t => series[t]),
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
 
-        #region public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
+        #region public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         /// <summary>
         /// Calculate absolute return, from the previous to the current
         /// value of the time series.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>absolute return</returns>
-        public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
+        public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         {
-            var functor = Cache<FunctorAbsReturn>.GetData(
-                    Cache.UniqueId(series.GetHashCode()),
-                    () => new FunctorAbsReturn(series));
-
-            return functor;
-        }
-
-        private class FunctorAbsReturn : ITimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-
-            public FunctorAbsReturn(ITimeSeries<double> series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Series[daysBack] - Series[daysBack + 1];
-                }
-            }
+            return Lambda(
+                (t) => series[t] - series[t + 1], 
+                series.GetHashCode());
         }
         #endregion
         #region public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
@@ -162,29 +164,23 @@ namespace TuringTrader.Simulator
         /// <returns>logarithm of relative return</returns>
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         {
-            var functor = Cache<FunctorLogReturn>.GetData(
-                    Cache.UniqueId(series.GetHashCode()),
-                    () => new FunctorLogReturn(series));
-
-            return functor;
+            return Lambda(
+                (t) => Math.Log(series[t] / series[t + 1]),
+                series.GetHashCode());
         }
+        #endregion
 
-        private class FunctorLogReturn : ITimeSeries<double>
+        #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate absolute value of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>absolue value of input time series</returns>
+        public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
         {
-            public ITimeSeries<double> Series;
-
-            public FunctorLogReturn(ITimeSeries<double> series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Math.Log(Series[daysBack] / Series[daysBack + 1]);
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Abs(series[t]),
+                series.GetHashCode());
         }
         #endregion
     }

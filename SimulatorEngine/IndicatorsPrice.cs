@@ -33,29 +33,9 @@ namespace TuringTrader.Simulator
         /// <returns>typical price as time series</returns>
         public static ITimeSeries<double> TypicalPrice(this Instrument series)
         {
-            var functor = Cache<FunctorTypicalPrice>.GetData(
-                    Cache.UniqueId(series.GetHashCode()),
-                    () => new FunctorTypicalPrice(series));
-
-            return functor;
-        }
-
-        private class FunctorTypicalPrice : ITimeSeries<double>
-        {
-            public Instrument Series;
-
-            public FunctorTypicalPrice(Instrument series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return (Series.High[daysBack] + Series.Low[daysBack] + Series.Close[daysBack]) / 3.0;
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => (series.High[t] + series.Low[t] + series.Close[t]) / 3.0,
+                series.GetHashCode());
         }
         #endregion
     }

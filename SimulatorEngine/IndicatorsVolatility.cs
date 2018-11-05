@@ -24,6 +24,48 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsVolatility
     {
+        #region public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate historical standard deviation.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length</param>
+        /// <returns>standard deviation as time series</returns>
+        public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n)
+        {
+            // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double sum = 0.0;
+                    double sum2 = 0.0;
+                    int num = 0;
+
+                    try
+                    {
+                        for (int t = 0; t < n; t++)
+                        {
+                            sum += series[t];
+                            sum2 += series[t] * series[t];
+                            num++;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                    }
+
+                    double variance = num > 1
+                        ? (sum2 - sum * sum / num) / (num - 1)
+                        : 0.0;
+
+                    return Math.Sqrt(252.0 * variance);
+                },
+                0.0,
+                series.GetHashCode(), n);
+        }
+        #endregion
         #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate historical volatility.
@@ -33,54 +75,7 @@ namespace TuringTrader.Simulator
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorVolatility>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorVolatility(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorVolatility : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorVolatility(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-            }
-
-            public void Calc()
-            {
-                double sum = 0.0;
-                double sum2 = 0.0;
-                int num = 0;
-
-                try
-                {
-                    for (int t = 0; t < N; t++)
-                    {
-                        double logReturn = Math.Log(Series[t] / Series[t + 1]);
-                        sum += logReturn;
-                        sum2 += logReturn * logReturn;
-                        num++;
-                    }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-                double variance = num > 1
-                    ? (sum2 - sum * sum / num) / (num - 1)
-                    : 0.0;
-
-                Value = Math.Sqrt(252.0 * variance);
-            }
+            return series.LogReturn().StandardDeviation(n);
         }
         #endregion
         #region public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
@@ -92,47 +87,16 @@ namespace TuringTrader.Simulator
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorVolatilityFromRange>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorVolatilityFromRange(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorVolatilityFromRange : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorVolatilityFromRange(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-            }
-
-            public void Calc()
-            {
-                double hi = Series[0];
-                double lo = Series[0];
-
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    for (int t = 1; t < N; t++)
-                    {
-                        hi = Math.Max(hi, Series[t]);
-                        lo = Math.Min(lo, Series[t]);
-                    }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
+                    double hi = series.Highest(n)[0];
+                    double lo = series.Lowest(n)[0];
 
-                double volatility = 0.63 * Math.Sqrt(252.0 / N) * Math.Log(hi / lo);
-                Value = volatility;
-            }
+                    return 0.63 * Math.Sqrt(252.0 / n) * Math.Log(hi / lo);
+                },
+                0.0,
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> FastVariance(this ITimeSeries<double> series, int n)
@@ -193,38 +157,32 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Calculate True Range, non averaged, as described here:
         /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
-        /// Most often, the Average True Range is used, which can be created by calculating
-        /// SMA of True Range.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>True Range as time series</returns>
         public static ITimeSeries<double> TrueRange(this Instrument series)
         {
-            var functor = Cache<FunctorTrueRange>.GetData(
-                    Cache.UniqueId(series.GetHashCode()),
-                    () => new FunctorTrueRange(series));
-
-            functor.Calc();
-
-            return functor;
+            return IndicatorsBasic.Lambda(
+                (t) =>
+                {
+                    double high = Math.Max(series[0].High, series[1].Close);
+                    double low = Math.Min(series[0].Low, series[1].Close);
+                    return high - low;
+                },
+                series.GetHashCode());
         }
-
-        private class FunctorTrueRange : TimeSeries<double>
+        #endregion
+        #region public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
+        /// <summary>
+        /// Calculate Averaged True Range, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>ATR time series</returns>
+        public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
         {
-            public Instrument Series;
-
-            public FunctorTrueRange(Instrument series)
-            {
-                Series = series;
-            }
-
-            public void Calc()
-            {
-                double high = Math.Max(Series[0].High, Series[1].Close);
-                double low = Math.Min(Series[0].Low, Series[1].Close);
-
-                Value = high - low;
-            }
+            return series.TrueRange().SMA(n);
         }
         #endregion
 
