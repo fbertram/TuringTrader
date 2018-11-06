@@ -20,11 +20,14 @@ using IBApi;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Base class for IB broker client.
+    /// </summary>
     public class BrokerClientIBBase : EWrapper
     {
-        public readonly EReaderSignal Signal;
-        public readonly EClientSocket ClientSocket;
-        public int NextOrderId;
+        protected readonly EReaderSignal Signal;
+        protected readonly EClientSocket ClientSocket;
+        protected int NextOrderId;
 
         public BrokerClientIBBase()
         {

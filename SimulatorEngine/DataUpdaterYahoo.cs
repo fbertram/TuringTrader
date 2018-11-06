@@ -22,6 +22,9 @@ using Newtonsoft.Json.Linq;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Data updater for yahoo.com
+    /// </summary>
     public class DataUpdaterYahoo : DataUpdater
     {
         #region internal data & helpers

@@ -26,6 +26,9 @@ namespace TuringTrader.Simulator
     public abstract class DataSource
     {
         #region public static string DataPath
+        /// <summary>
+        /// Path to data base.
+        /// </summary>
         public static string DataPath
         {
             get
@@ -41,10 +44,20 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region public SimulatorCore Simulator
+        /// <summary>
+        /// Reference to simulator this instance is associated with.
+        /// </summary>
         public SimulatorCore Simulator = null;
+        #endregion
 
         //----- object factory
         #region static public DataSource New(string nickname)
+        /// <summary>
+        /// Factory function to instantiate new data source.
+        /// </summary>
+        /// <param name="nickname">nickname</param>
+        /// <returns>data source object</returns>
         static public DataSource New(string nickname)
         {
             // check for info file
@@ -86,6 +99,10 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region protected DataSource(Dictionary<DataSourceValue, string> info)
+        /// <summary>
+        /// Create and initialize data source object.
+        /// </summary>
+        /// <param name="info">data source info</param>
         protected DataSource(Dictionary<DataSourceValue, string> info)
         {
             Info = info;
@@ -96,6 +113,9 @@ namespace TuringTrader.Simulator
 
         //----- data source info
         #region public Dictionary<DataSourceValue, string> Info
+        /// <summary>
+        /// Data source info container.
+        /// </summary>
         public Dictionary<DataSourceValue, string> Info
         {
             get;
@@ -103,6 +123,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public bool IsOption
+        /// <summary>
+        /// True, if this data source describes option contracts.
+        /// </summary>
         public bool IsOption
         {
             get
@@ -112,6 +135,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public string OptionUnderlying
+        /// <summary>
+        /// Options only: Underlying symbol.
+        /// </summary>
         public string OptionUnderlying
         {
             get
@@ -121,6 +147,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public DateTime? FirstTime
+        /// <summary>
+        /// First time stamp available in database.
+        /// </summary>
         public DateTime? FirstTime
         {
             get;
@@ -128,6 +157,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public DateTime? LastTime
+        /// <summary>
+        /// Last time stamp available in database.
+        /// </summary>
         public DateTime? LastTime
         {
             get;
@@ -136,6 +168,12 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region protected Bar ValidateBar(Bar bar)
+        /// <summary>
+        /// Validate bar. This function will either return a, possibly adjusted
+        /// bar, or null if this bar should be dropped.
+        /// </summary>
+        /// <param name="bar">input bar</param>
+        /// <returns>adjusted bar, or null</returns>
         protected Bar ValidateBar(Bar bar)
         {
             DateTime barTime = bar.Time;
@@ -161,12 +199,22 @@ namespace TuringTrader.Simulator
 
         //----- abstract methods to be implemented by derived classes
         #region abstract public IEnumerator<Bar> BarEnumerator
+        /// <summary>
+        /// Enumerator for bars.
+        /// </summary>
         abstract public IEnumerator<Bar> BarEnumerator
         {
             get;
         }
         #endregion
+        #region abstract public void LoadData(DateTime startTime, DateTime endTime)
+        /// <summary>
+        /// Load data between time stamps into memory.
+        /// </summary>
+        /// <param name="startTime">beginning time stamp</param>
+        /// <param name="endTime">end time stamp</param>
         abstract public void LoadData(DateTime startTime, DateTime endTime);
+        #endregion
     }
 }
 //==============================================================================

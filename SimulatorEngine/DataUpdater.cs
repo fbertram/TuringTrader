@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Abstract base class for data updater.
+    /// </summary>
     abstract public class DataUpdater
     {
         //----- object factory

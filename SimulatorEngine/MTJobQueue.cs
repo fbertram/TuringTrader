@@ -27,6 +27,9 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Multi-threaded job queue.
+    /// </summary>
     public class MTJobQueue
     {
         #region internal data

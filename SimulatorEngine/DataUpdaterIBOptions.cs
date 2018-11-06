@@ -23,6 +23,9 @@ using Newtonsoft.Json.Linq;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Data updater for Interactive Brokers option prices
+    /// </summary>
     public class DataUpdaterIBOptions : DataUpdater
     {
         #region internal data

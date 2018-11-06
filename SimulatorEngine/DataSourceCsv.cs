@@ -150,6 +150,13 @@ namespace TuringTrader.Simulator
                 }
             }
         }
+        /// <summary>
+        /// Load CSV into data structure.
+        /// </summary>
+        /// <param name="data">destination data container</param>
+        /// <param name="reader">stream reader source</param>
+        /// <param name="loadStartTime">minimum time stamp</param>
+        /// <param name="loadEndTime">maximum time stamp</param>
         public void LoadCsv(List<Bar> data, StreamReader reader, DateTime loadStartTime, DateTime loadEndTime)
         {
             string header = reader.ReadLine(); // skip header line

@@ -20,6 +20,10 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Container holding optimizer parameter information, collected from
+    /// the field/ property and the [OptimizerParam] attribute.
+    /// </summary>
     public class OptimizerParam
     {
         #region internal data

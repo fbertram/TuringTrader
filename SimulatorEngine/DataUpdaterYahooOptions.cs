@@ -136,6 +136,9 @@ using Newtonsoft.Json.Linq;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Data updater for yahoo.com option prices.
+    /// </summary>
     public class DataUpdaterYahooOptions : DataUpdater
     {
         #region internal data

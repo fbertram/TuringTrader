@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of volume-based indicators.
+    /// </summary>
     public static class IndicatorsVolume
     {
         // - Chaikin Oscillator

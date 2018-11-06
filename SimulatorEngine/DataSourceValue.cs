@@ -13,40 +13,124 @@ namespace TuringTrader.Simulator
 {
     public enum DataSourceValue
     {
-        error,    // to make sure default(DataSourceValue) is none of the defined values
+        /// <summary>
+        /// error, none of the defined values
+        /// </summary>
+        error,
 
+        /// <summary>
+        /// path to .inf data source descriptor
+        /// </summary>
         infoPath,
+        /// <summary>
+        /// path to data
+        /// </summary>
         dataPath,
 
+        /// <summary>
+        /// nickname
+        /// </summary>
         nickName,
+        /// <summary>
+        /// full descriptive name
+        /// </summary>
         name,
+        /// <summary>
+        /// stock ticker
+        /// </summary>
         ticker,
+        /// <summary>
+        /// fully qualified stock symbol
+        /// </summary>
         symbol,
 
+        /// <summary>
+        /// timestamp, data part
+        /// </summary>
         date,
+        /// <summary>
+        /// timestamp, time part
+        /// </summary>
         time,
 
+        /// <summary>
+        /// opening price
+        /// </summary>
         open,
+        /// <summary>
+        /// high price
+        /// </summary>
         high,
+        /// <summary>
+        /// low price
+        /// </summary>
         low,
+        /// <summary>
+        /// closing price
+        /// </summary>
         close,
+        /// <summary>
+        /// trading volume
+        /// </summary>
         volume,
 
+        /// <summary>
+        /// bid price
+        /// </summary>
         bid,
+        /// <summary>
+        /// ask price
+        /// </summary>
         ask,
+        /// <summary>
+        /// bid volume
+        /// </summary>
         bidSize,
+        /// <summary>
+        /// ask volume
+        /// </summary>
         askSize,
 
+        /// <summary>
+        /// option expiration date
+        /// </summary>
         optionExpiration,
+        /// <summary>
+        /// option strike price
+        /// </summary>
         optionStrike,
+        /// <summary>
+        /// option right
+        /// </summary>
         optionRight,
+        /// <summary>
+        /// option underlying symbol
+        /// </summary>
         optionUnderlying,
 
+        /// <summary>
+        /// symbol for IQFeed/ DTN
+        /// </summary>
         symbolIqfeed,
+        /// <summary>
+        /// symbol for Stooq.com
+        /// </summary>
         symbolStooq,
+        /// <summary>
+        /// symbol for yahoo.com
+        /// </summary>
         symbolYahoo,
+        /// <summary>
+        /// symbol for Interactive Brokers
+        /// </summary>
         symbolInteractiveBrokers,
+        /// <summary>
+        /// data updater to use
+        /// </summary>
         dataUpdater,
+        /// <summary>
+        /// price multiplier for data updater
+        /// </summary>
         dataUpdaterPriceMultiplier,
     };
 }

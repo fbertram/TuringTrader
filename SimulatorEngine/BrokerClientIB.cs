@@ -68,8 +68,14 @@ usage example
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Broker client class for Interactive Brokers.
+    /// </summary>
     public class BrokerClientIB : BrokerClientIBBase
     {
+        /// <summary>
+        /// Container holding instrument info and quotes.
+        /// </summary>
         public class InstrumentInfo
         {
             #region internal data
@@ -77,10 +83,10 @@ namespace TuringTrader.Simulator
             private double? _bid = null;
             private double? _ask = null;
             private double? _last = null;
-            public double? _open = null;
-            public double? _high = null;
-            public double? _low = null;
-            public double? _close = null;
+            private double? _open = null;
+            private double? _high = null;
+            private double? _low = null;
+            private double? _close = null;
             private int? _bidSize = null;
             private int? _askSize = null;
             private int? _lastSize = null;

@@ -38,6 +38,11 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public static int NumIterations(Algorithm algo)
+        /// <summary>
+        /// Number of optimizer iterations
+        /// </summary>
+        /// <param name="algo">algorithm to optimize</param>
+        /// <returns># of iterations</returns>
         public static int NumIterations(Algorithm algo)
         {
             // figure out total number of iterations
