@@ -66,7 +66,7 @@ namespace TuringTrader.Demos
                 // adds a new instrument whenever needed. we need to determine 
                 // which of these instruments have received new bars.
                 // also, we want to ignore our benchmark instrument.
-                var activeInstruments = Instruments.Values
+                var activeInstruments = Instruments
                         .Where(i => i.Time[0] == simTime
                             && _tradingInstruments.Contains(i.Nickname));
 

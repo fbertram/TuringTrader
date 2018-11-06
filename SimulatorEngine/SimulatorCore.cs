@@ -19,9 +19,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 #endregion
 
-/// <summary>
-/// Namespace for TuringTrader's simulator engine.
-/// </summary>
 namespace TuringTrader.Simulator
 {
     /// <summary>
@@ -31,6 +28,9 @@ namespace TuringTrader.Simulator
     /// </summary>
     public abstract class SimulatorCore
     {
+        #region internal data
+        private Dictionary<string, Instrument> _instruments = new Dictionary<string, Instrument>();
+        #endregion
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
@@ -61,7 +61,7 @@ namespace TuringTrader.Simulator
 
                 case OrderType.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
-                    execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
                     netAssetValue = NetAssetValue[0];
                     price = ticket.Price;
                     break;
@@ -123,7 +123,7 @@ namespace TuringTrader.Simulator
         }
         private void ExpireOption(Instrument instr)
         {
-            Instrument underlying = Instruments[instr.OptionUnderlying];
+            Instrument underlying = _instruments[instr.OptionUnderlying];
             double price = underlying.Close[1];
 
             // create order ticket
@@ -300,9 +300,9 @@ namespace TuringTrader.Simulator
                         // options have multiple bars with identical timestamps!
                         while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
                         {
-                            if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
-                                Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            Instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
+                            if (!_instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
+                                _instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
+                            _instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
                             hasData[source] = source.BarEnumerator.MoveNext();
                         }
                     }
@@ -340,7 +340,7 @@ namespace TuringTrader.Simulator
                 }
 
                 //----- attempt to free up resources
-                Instruments.Clear();
+                _instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
                 DataSources.Clear();
@@ -372,16 +372,20 @@ namespace TuringTrader.Simulator
         /// </summary>
         protected List<DataSource> DataSources = new List<DataSource>();
         #endregion
-        #region public Dictionary<string, Instrument> Instruments
+        #region public IEnumerable<Instrument> Instruments
         /// <summary>
-        /// Collection of instruments available to the simulator. It is
+        /// Enumeration of instruments available to the simulator. It is
         /// important to understand that instruments are created dynamically
-        /// during simulation such that in many cases the number of instruments
+        /// during simulation such, that in many cases the number of instruments
         /// held in this collection increases over the course of the simulation.
-        /// Instruments in this collection can be referenced by their fully decorated
-        /// symbol.
         /// </summary>
-        public Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
+        public IEnumerable<Instrument> Instruments
+        {
+            get
+            {
+                return _instruments.Values;
+            }
+        }
         #endregion
         #region public Instrument FindInstrument(string)
         /// <summary>
@@ -393,7 +397,7 @@ namespace TuringTrader.Simulator
         /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
-            return Instruments.Values
+            return _instruments.Values
                 .Where(i => i.Nickname == nickname)
                 .First();
         }
@@ -408,7 +412,7 @@ namespace TuringTrader.Simulator
         /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
-            List<Instrument> optionChain = Instruments
+            List<Instrument> optionChain = _instruments
                     .Select(kv => kv.Value)
                     .Where(i => i.Nickname == nickname  // check nickname
                         && i[0].Time == SimTime[0]      // current bar

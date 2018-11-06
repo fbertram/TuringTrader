@@ -78,8 +78,9 @@ namespace TuringTrader.Simulator
             // see https://en.wikipedia.org/wiki/Black–Scholes_model
 
             DateTime today = contract.Simulator.SimTime[0];
+            Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
             double T = (contract.OptionExpiry - today).Duration().Days / 365.25;
-            double S = contract.Simulator.Instruments[contract.OptionUnderlying].Close[0];
+            double S = underlying.Close[0];
             double K = contract.OptionStrike;
             double r = riskFreeRate;
             double v = volatility;
