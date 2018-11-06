@@ -82,6 +82,7 @@
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IndicatorsArithmetic.cs" />
     <Compile Include="IndicatorsBasic.cs" />
+    <Compile Include="IndicatorsCAPM.cs" />
     <Compile Include="IndicatorsMarket.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsPrice.cs" />
