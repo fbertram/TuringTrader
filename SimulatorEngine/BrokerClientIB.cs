@@ -352,7 +352,7 @@ namespace TuringTrader.Simulator
         #region public void Connect(string username, string password, int port = 7497, string ip = "127.0.0.1")
         public void Connect(string username, string password, int port = 7497, string ip = "127.0.0.1")
         {
-            Console.WriteLine("Connecting...");
+            Output.WriteLine("Connecting to TWS...");
 
             try
             {
@@ -369,14 +369,14 @@ namespace TuringTrader.Simulator
             reader.Start();
 
             new Thread(() =>
-            {
-                while (ClientSocket.IsConnected())
                 {
-                    readerSignal.waitForSignal();
-                    reader.processMsgs();
-                }
-            })
-            { IsBackground = true }.Start();
+                    while (ClientSocket.IsConnected())
+                    {
+                        readerSignal.waitForSignal();
+                        reader.processMsgs();
+                    }
+                })
+                { IsBackground = true }.Start();
 
             while (NextOrderId <= 0)
             {
