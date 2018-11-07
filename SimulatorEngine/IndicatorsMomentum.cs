@@ -106,7 +106,7 @@ namespace TuringTrader.Simulator
 
         #region public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Calculate annualized linear regression of time series.
+        /// Calculate linear regression of time series.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
@@ -157,7 +157,7 @@ namespace TuringTrader.Simulator
                     {
                         double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
                         double a = sy / n - b * sx / n;
-                        return 252.0 * b;
+                        return b;
                     }
                     else
                     {
@@ -170,7 +170,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Calculate annualized logarithmic regression of time series.
+        /// Calculate logarithmic regression of time series.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
