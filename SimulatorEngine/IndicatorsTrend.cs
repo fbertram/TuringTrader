@@ -79,6 +79,72 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), n);
         }
         #endregion
+
+        #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Double Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Double_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>DEMA time series</returns>
+        public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n)
+        {
+            return series
+                .Multiply(2.0)
+                .EMA(n)
+                .Subtract(
+                    series.EMA(n).EMA(n));
+        }
+        #endregion
+        #region public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Triple Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Triple_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>TEMA time series</returns>
+        public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
+        {
+            return series
+                .Multiply(3.0)
+                .EMA(n)
+                .Subtract(
+                    series
+                    .Multiply(3.0)
+                    .EMA(n)
+                    .EMA(n))
+                .Add(
+                    series
+                    .EMA(n)
+                    .EMA(n)
+                    .EMA(n));
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period)
+        /// <summary>
+        /// Calculate Ehlers' Zero Lag Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Zero_lag_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="period">averaging length</param>
+        /// <returns>ZLEMA as time series</returns>
+        public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                    (v) =>
+                    {
+                        int lag = (int)Math.Round((period - 1.0) / 2.0);
+                        return series[0] + (series[0] - series[lag]);
+                    },
+                    0.0,
+                    series.GetHashCode(), period)
+                .EMA(period);
+        }
+        #endregion
+
         #region public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
         /// <summary>
         /// Calculate Kaufman's Adaptive Moving Average, as described here:
@@ -118,8 +184,6 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), erPeriod, fastEma, slowEma);
         }
         #endregion
-
-        // TODO: https://en.wikipedia.org/wiki/Zero_lag_exponential_moving_average
     }
 }
 
