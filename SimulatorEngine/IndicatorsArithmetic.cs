@@ -41,6 +41,21 @@ namespace TuringTrader.Simulator
                 series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate addition of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series + constant value</returns>
+        public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] + constValue,
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+        
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         /// <summary>
         /// Calculate subtraction of two time series.
@@ -55,6 +70,21 @@ namespace TuringTrader.Simulator
                 series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate subtraction of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series - constant value</returns>
+        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] - constValue,
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         /// <summary>
         /// Calculate multiplication of two time series.
@@ -67,6 +97,49 @@ namespace TuringTrader.Simulator
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] * series2[t],
                 series1.GetHashCode(), series2.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate multiplication of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series * constant value</returns>
+        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] * constValue,
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate division of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 / time series #2</returns>
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series1[t] / series2[t],
+                series1.GetHashCode(), series2.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate division of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series / constant value</returns>
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] / constValue,
+                series.GetHashCode(), constValue.GetHashCode());
         }
         #endregion
     }
