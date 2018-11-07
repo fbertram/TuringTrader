@@ -24,7 +24,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsBasic
     {
-        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda)
+        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
         /// <summary>
         /// Create time series based on lambda, with lambda being executed once for
         /// every call to the indexer method. Use this for leight-weight lambdas.
@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region public static ITimeSeries<double> LambdaBuffered(Func<int, double> lambda)
+        #region public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, params int[] identifier)
         /// <summary>
         /// Create time series based on lambda, with lambda being executed once for
         /// every new bar.
@@ -107,6 +107,20 @@ namespace TuringTrader.Simulator
                 }
                 Value = Lambda(previousValue);
             }
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> Const(double constantValue)
+        /// <summary>
+        /// Return constant value time series.
+        /// </summary>
+        /// <param name="constantValue">value of time series</param>
+        /// <returns>value as time series</returns>
+        public static ITimeSeries<double> Const(double constantValue)
+        {
+            return Lambda(
+                (t) => constantValue,
+                constantValue.GetHashCode());
         }
         #endregion
 
