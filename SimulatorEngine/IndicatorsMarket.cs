@@ -36,10 +36,13 @@ namespace TuringTrader.Simulator
         {
             var functor = Cache<CAPMParams>.GetData(
                     // TODO: does the market need to be included in the unique id?
-                    Cache.UniqueId(market.GetHashCode(), benchmark.GetHashCode(), n),
+                    //       for now, we have decided to _not_ include the market,
+                    //       but pass it on to Calc() as a parameter.
+                    //Cache.UniqueId(market.GetHashCode(), benchmark.GetHashCode(), n),
+                    Cache.UniqueId(benchmark.GetHashCode(), n),
                     () => new CAPMParams(market, benchmark, n));
 
-            functor.Calc();
+            functor.Calc(market);
 
             return functor;
         }
@@ -56,7 +59,7 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// Enumerable defining market.
             /// </summary>
-            public readonly IEnumerable<Instrument> Market;
+            public /*readonly*/ IEnumerable<Instrument> Market;
 
             /// <summary>
             /// Benchmark instrument
@@ -107,8 +110,13 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// Calculate new values for CAPM model.
             /// </summary>
-            public void Calc()
+            public void Calc(IEnumerable<Instrument> market)
             {
+                // TODO: need to revisit how to handle market. It seems we can't save
+                //       an enumerable from a Linq expression, which is why we pass it
+                //       in as a parameter here.
+                Market = market;
+
                 // see Tony Finch, Incrmental calculation of weighted mean and variance, February 2009
 
                 //--- calculate benchmark's average and variance
@@ -117,8 +125,6 @@ namespace TuringTrader.Simulator
                 double benchmarkIncr = _alpha * benchmarkDiff;
                 _avg[Benchmark] = _avg[Benchmark] + benchmarkIncr;
                 _var[Benchmark] = (1.0 - _alpha) * (_var[Benchmark] + benchmarkDiff * benchmarkIncr);
-
-                var check = Market.ToList();
 
                 foreach (Instrument instrument in Market)
                 {
