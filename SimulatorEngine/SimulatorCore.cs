@@ -256,9 +256,8 @@ namespace TuringTrader.Simulator
             get
             {
                 //----- initialization
-                DateTime warmupStartTime = WarmupStartTime != null
-                    ? (DateTime)WarmupStartTime
-                    : StartTime;
+                if (WarmupStartTime == null || WarmupStartTime > StartTime)
+                    WarmupStartTime = StartTime;
 
                 // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
@@ -267,7 +266,7 @@ namespace TuringTrader.Simulator
                 foreach (DataSource source in DataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
-                    source.LoadData(warmupStartTime, EndTime);
+                    source.LoadData((DateTime)WarmupStartTime, EndTime);
                     source.BarEnumerator.Reset();
                     hasData[source] = source.BarEnumerator.MoveNext();
                 }
@@ -335,7 +334,7 @@ namespace TuringTrader.Simulator
                         TradingDays++;
 
                     // run our algorithm here
-                    if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
+                    if (SimTime[0] >= (DateTime)WarmupStartTime && SimTime[0] <= EndTime)
                         yield return SimTime[0];
                 }
 
