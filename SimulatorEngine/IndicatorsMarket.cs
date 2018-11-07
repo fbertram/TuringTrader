@@ -102,8 +102,8 @@ namespace TuringTrader.Simulator
                     _var[Benchmark] = 0.0;
                     _cov[Benchmark] = 0.0;
 
-                    Alpha[Benchmark] = new TimeSeries<double>();
-                    Beta[Benchmark] = new TimeSeries<double>();
+                    //Alpha[Benchmark] = new TimeSeries<double>();
+                    //Beta[Benchmark] = new TimeSeries<double>();
                 }
             }
 
@@ -130,8 +130,8 @@ namespace TuringTrader.Simulator
                 {
                     if (instrument == Benchmark)
                     {
-                        Alpha[Benchmark].Value = 0.0;
-                        Beta[Benchmark].Value = 1.0;
+                        //Alpha[Benchmark].Value = 0.0;
+                        //Beta[Benchmark].Value = 1.0;
                         continue;
                     }
 
