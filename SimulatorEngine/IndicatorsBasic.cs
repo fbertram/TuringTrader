@@ -69,44 +69,19 @@ namespace TuringTrader.Simulator
         /// <param name="first">first value to return</param>
         /// <param name="identifier">array of integers used to identify functor</param>
         /// <returns>lambda time series</returns>
-        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, params int[] identifier)
+        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first = 0.0, params int[] identifier)
         {
-            var functor = Cache<FunctorLambdaBuffered>.GetData(
-                    // TODO: try to eliminate nested calls to Cache.UniqueId
-                    // NOTE: first is intentionally _not_ part of the unique id
-                    Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
-                    () => new FunctorLambdaBuffered(lambda, first));
+            var timeSeries = Cache<TimeSeries<double>>.GetData(
+                Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                () => new TimeSeries<double>());
 
-            functor.Calc();
+            double prevValue = timeSeries.BarsAvailable >= 1
+                ? timeSeries[0]
+                : first;
 
-            return functor;
-        }
+            timeSeries.Value = lambda(prevValue);
 
-        private class FunctorLambdaBuffered : TimeSeries<double>
-        {
-            public readonly Func<double, double> Lambda;
-            public readonly double First;
-
-            public FunctorLambdaBuffered(Func<double, double> lambda, double first)
-            {
-                Lambda = lambda;
-                First = first;
-            }
-
-            public void Calc()
-            {
-                double previousValue;
-                try
-                {
-                    previousValue = this[0];
-                }
-                catch (Exception)
-                {
-                    // we get here, when there is no previous value
-                    previousValue = First;
-                }
-                Value = Lambda(previousValue);
-            }
+            return timeSeries;
         }
         #endregion
 
@@ -121,6 +96,20 @@ namespace TuringTrader.Simulator
             return Lambda(
                 (t) => constantValue,
                 constantValue.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay)
+        /// <summary>
+        /// Delay time series by number of bars.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="delay">delay length</param>
+        /// <returns>delayed time series</returns>
+        public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay)
+        {
+            return Lambda(
+                (t) => series[t + delay],
+                series.GetHashCode(), delay);
         }
         #endregion
 
