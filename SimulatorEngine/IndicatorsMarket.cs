@@ -26,7 +26,8 @@ namespace TuringTrader.Simulator
     {
         #region public static CAPMParams CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
         /// <summary>
-        /// Calculate Fama/ French Capital Asset Pricing Model parameters.
+        /// Calculate Capital Asset Pricing Model parameters.
+        /// <see cref="https://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
         /// </summary>
         /// <param name="market">collection of instruments forming market</param>
         /// <param name="benchmark">instrument serving as benchmark</param>
@@ -72,14 +73,19 @@ namespace TuringTrader.Simulator
             public readonly int N;
 
             /// <summary>
-            /// Alpha time series.
+            /// Alpha time series, indexed by instrument.
             /// </summary>
             public Dictionary<Instrument, TimeSeries<double>> Alpha = new Dictionary<Instrument, TimeSeries<double>>();
 
             /// <summary>
-            /// Beta time series.
+            /// Beta time series, indexed by instrument.
             /// </summary>
             public Dictionary<Instrument, TimeSeries<double>> Beta = new Dictionary<Instrument, TimeSeries<double>>();
+
+            /// <summary>
+            /// Volatility time series, indexed by instrument.
+            /// </summary>
+            public Dictionary<Instrument, TimeSeries<double>> Volatility = new Dictionary<Instrument, TimeSeries<double>>();
 
             /// <summary>
             /// Create and initialize CAPM functor.
@@ -146,6 +152,7 @@ namespace TuringTrader.Simulator
 
                         Alpha[instrument] = new TimeSeries<double>();
                         Beta[instrument] = new TimeSeries<double>();
+                        Volatility[instrument] = new TimeSeries<double>();
                     }
 
                     //--- calculate instrument's average and variance
@@ -154,6 +161,8 @@ namespace TuringTrader.Simulator
                     double instrumentIncr = _alpha * instrumentDiff;
                     _avg[instrument] = _avg[instrument] + instrumentIncr;
                     _var[instrument] = (1.0 - _alpha) * (_var[instrument] + instrumentDiff * instrumentIncr);
+
+                    Volatility[instrument].Value = Math.Sqrt(_var[instrument]);
 
                     //--- calculate instrument's covariance and CAPM
                     // FUB's own abstraction of Tony Finch for covariance
