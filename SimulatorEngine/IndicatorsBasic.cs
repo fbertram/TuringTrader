@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
 // Name:        IndicatorsBasic
-// Description: collection of basic indicators
+// Description: Collection of basic indicators
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -143,6 +143,21 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), n);
         }
         #endregion
+        #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate range over the specified number of past bars.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>range between highest and lowest value of past n bars</returns>
+        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
+        {
+            return series
+                .Highest(n)
+                .Subtract(series
+                    .Lowest(n));
+        }
+        #endregion
 
         #region public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         /// <summary>
@@ -183,6 +198,19 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Abs(series[t]),
+                series.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Square(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate square of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>squared input time series</returns>
+        public static ITimeSeries<double> Square(this ITimeSeries<double> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] * series[t],
                 series.GetHashCode());
         }
         #endregion
