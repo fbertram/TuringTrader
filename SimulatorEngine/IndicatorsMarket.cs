@@ -27,7 +27,7 @@ namespace TuringTrader.Simulator
         #region public static CAPMParams CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
         /// <summary>
         /// Calculate Capital Asset Pricing Model parameters.
-        /// <see cref="https://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
+        /// <see href="http://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
         /// </summary>
         /// <param name="market">collection of instruments forming market</param>
         /// <param name="benchmark">instrument serving as benchmark</param>
