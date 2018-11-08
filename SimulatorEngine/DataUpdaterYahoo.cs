@@ -34,24 +34,35 @@ namespace TuringTrader.Simulator
         #region internal helpers
         private static readonly DateTime _epochOrigin = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public static DateTime FromUnixTime(long unixTime)
+        private static DateTime FromUnixTime(long unixTime)
         {
             return _epochOrigin.AddSeconds(unixTime);
         }
 
-        public static long ToUnixTime(DateTime date)
+        private static long ToUnixTime(DateTime date)
         {
             return Convert.ToInt64((date - _epochOrigin).TotalSeconds);
         }
         #endregion
 
         #region public DataUpdaterYahoo(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        /// <summary>
+        /// Create and initialize data updater object.
+        /// </summary>
+        /// <param name="simulator">parent simulator</param>
+        /// <param name="info">info dictionary</param>
         public DataUpdaterYahoo(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
         {
         }
         #endregion
 
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        /// <summary>
+        /// Run data update.
+        /// </summary>
+        /// <param name="startTime">start of update range</param>
+        /// <param name="endTime">end of update range</param>
+        /// <returns>enumerable of updated bars</returns>
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
             string url = string.Format(_urlTemplate,
@@ -128,6 +139,9 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public override string Name
+        /// <summary>
+        /// Name of updater.
+        /// </summary>
         public override string Name
         {
             get

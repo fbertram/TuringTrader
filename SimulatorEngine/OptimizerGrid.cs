@@ -145,12 +145,19 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public OptimizerExhaustive(Algorithm algorithm)
+        /// <summary>
+        /// Crearte and initialize new grid optimizer instance.
+        /// </summary>
+        /// <param name="algorithm">algorithm to optimize</param>
         public OptimizerGrid(Algorithm algorithm)
         {
             _masterInstance = algorithm;
         }
         #endregion
         #region public void Run()
+        /// <summary>
+        /// Run optimization.
+        /// </summary>
         public void Run()
         {
             _startTime = DateTime.Now;
@@ -188,8 +195,17 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region List<OptimizerResult> Results
+        /// <summary>
+        /// Return list of optimization results.
+        /// </summary>
         public List<OptimizerResult> Results;
+        #endregion
         #region public void ResultsToExcel(string excelPath)
+        /// <summary>
+        /// Export optimizer results to Excel.
+        /// </summary>
+        /// <param name="excelPath"></param>
         public void ResultsToExcel(string excelPath)
         {
             Logger logger = new Logger();
@@ -212,6 +228,10 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public void SetParametersFromResult(OptimizerResult result)
+        /// <summary>
+        /// Set algorithm parameters from optimzation result.
+        /// </summary>
+        /// <param name="result">optimization result</param>
         public void SetParametersFromResult(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)

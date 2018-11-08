@@ -32,6 +32,11 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public static IEnumerable<OptimizerParam> GetParams(Algorithm algo)
+        /// <summary>
+        /// Retrieve all optimizable parameters for algorithm.
+        /// </summary>
+        /// <param name="algo">input algorithm</param>
+        /// <returns>optimizable parameters</returns>
         public static IEnumerable<OptimizerParam> GetParams(Algorithm algo)
         {
             Type algoType = algo.GetType();
@@ -53,6 +58,12 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public OptimizerParam(Algorithm algorithm, string name)
+        /// <summary>
+        /// Construct and initialize new optimizer param for algorithm. This is for internal
+        /// use by the optimizer and should not be called by user applications.
+        /// </summary>
+        /// <param name="algorithm">parent algorithm</param>
+        /// <param name="name">name of parameter</param>
         public OptimizerParam(Algorithm algorithm, string name)
         {
             _algorithm = algorithm;
@@ -85,6 +96,9 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public string Name
+        /// <summary>
+        /// Name of optimizer parameter.
+        /// </summary>
         public string Name
         {
             get;
@@ -92,6 +106,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public bool IsEnabled
+        /// <summary>
+        /// Flag indicating enabled status of optimizer parameter.
+        /// </summary>
         public bool IsEnabled
         {
             get;
@@ -99,6 +116,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public int Value
+        /// <summary>
+        /// Current value of optimizer parameter.
+        /// </summary>
         public int Value
         {
             get
@@ -146,6 +166,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public int Start
+        /// <summary>
+        /// Starting value of optimizer parameter.
+        /// </summary>
         public int Start
         {
             get;
@@ -153,6 +176,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public int End
+        /// <summary>
+        /// Ending value of optimizer parameter.
+        /// </summary>
         public int End
         {
             get;
@@ -160,6 +186,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public int Step
+        /// <summary>
+        /// Step size of optimizer parameter.
+        /// </summary>
         public int Step
         {
             get;

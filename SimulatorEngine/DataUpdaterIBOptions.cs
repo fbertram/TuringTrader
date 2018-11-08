@@ -34,12 +34,23 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        /// <summary>
+        /// Create and initialize data updater.
+        /// </summary>
+        /// <param name="simulator">parent simulator</param>
+        /// <param name="info">info dictionary</param>
         public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
         {
         }
         #endregion
 
         #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        /// <summary>
+        /// Run data update.
+        /// </summary>
+        /// <param name="startTime">start of update range</param>
+        /// <param name="endTime">end of update range</param>
+        /// <returns>enumerable with updated bars</returns>
         override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
         {
             string twsUser = (string)Simulator.GetRegistryValue("TwsUser", "");
@@ -134,6 +145,9 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public override string Name
+        /// <summary>
+        /// Name of updater.
+        /// </summary>
         public override string Name
         {
             get

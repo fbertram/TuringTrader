@@ -11,6 +11,9 @@
 
 namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Enum for tags in data source descriptor .inf file.
+    /// </summary>
     public enum DataSourceValue
     {
         /// <summary>

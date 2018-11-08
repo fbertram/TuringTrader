@@ -373,6 +373,10 @@ namespace TuringTrader.Simulator
 
         //---------- API
         #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
+        /// <summary>
+        /// Create and initialize new data source for CSV files.
+        /// </summary>
+        /// <param name="info">info dictionary</param>
         public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
         {
             // expand relative paths, if required
@@ -391,6 +395,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region override public IEnumerator<Bar> BarEnumerator
+        /// <summary>
+        /// Retrieve enumerator for this data source's bars.
+        /// </summary>
         override public IEnumerator<Bar> BarEnumerator
         {
             get
@@ -402,6 +409,11 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region override public void LoadData(DateTime startTime, DateTime endTime)
+        /// <summary>
+        /// Load data into memory.
+        /// </summary>
+        /// <param name="startTime">start of load range</param>
+        /// <param name="endTime">end of load range</param>
         override public void LoadData(DateTime startTime, DateTime endTime)
         {
             int cacheKey = Tuple.Create(Info[DataSourceValue.nickName], startTime, endTime).GetHashCode();

@@ -69,6 +69,11 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public MTJobQueue(int maxNumberOfThreads = 0)
+        /// <summary>
+        /// Create and initialize new job queue.
+        /// </summary>
+        /// <param name="maxNumberOfThreads">maximum number of threads.
+        /// If zero, the number of logical cpu cores is used.</param>
         public MTJobQueue(int maxNumberOfThreads = 0)
         {
 #if SINGLE_THREAD
@@ -87,6 +92,10 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public void QueueJob(Action job)
+        /// <summary>
+        /// Add job to queue.
+        /// </summary>
+        /// <param name="job">job action</param>
         public void QueueJob(Action job)
         {
 #if NO_THREADS
@@ -103,6 +112,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public void WaitForCompletion()
+        /// <summary>
+        /// Wait for completion of all currently queued jobs.
+        /// </summary>
         public void WaitForCompletion()
         {
 #if NO_THREADS

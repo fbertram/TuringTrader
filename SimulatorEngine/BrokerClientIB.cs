@@ -112,6 +112,11 @@ namespace TuringTrader.Simulator
             #endregion
 
             #region public InstrumentInfo(BrokerClientIB client, ContractDetails details)
+            /// <summary>
+            /// Create and initialize instrument info.
+            /// </summary>
+            /// <param name="client">parent broker client</param>
+            /// <param name="details">contract details</param>
             public InstrumentInfo(BrokerClientIB client, ContractDetails details)
             {
                 _client = client;
@@ -119,9 +124,17 @@ namespace TuringTrader.Simulator
             }
             #endregion
 
+            #region public readonly ContractDetails Details
+            /// <summary>
+            /// Contract details for this instrument.
+            /// </summary>
             public readonly ContractDetails Details;
+            #endregion
 
             #region public double Bid
+            /// <summary>
+            /// Bid price. Will be retrieved from IB, as required.
+            /// </summary>
             public double Bid
             {
                 get
@@ -136,6 +149,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double Ask
+            /// <summary>
+            /// Ask price. Will be retrieved from IB as required.
+            /// </summary>
             public double Ask
             {
                 get
@@ -150,6 +166,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double Last
+            /// <summary>
+            /// Last price. Will be retrieved from IB as required.
+            /// </summary>
             public double Last
             {
                 get
@@ -164,6 +183,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double Open
+            /// <summary>
+            /// Open price. Will be retrieved from IB as required.
+            /// </summary>
             public double Open
             {
                 get
@@ -178,6 +200,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double High
+            /// <summary>
+            /// High price. Will be retrieved from IB as required.
+            /// </summary>
             public double High
             {
                 get
@@ -192,6 +217,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double Low
+            /// <summary>
+            /// Low price. Will be retrieved from IB as required.
+            /// </summary>
             public double Low
             {
                 get
@@ -206,6 +234,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public double Close
+            /// <summary>
+            /// Close price. Will be retrieved from IB as required.
+            /// </summary>
             public double Close
             {
                 get
@@ -221,6 +252,9 @@ namespace TuringTrader.Simulator
             #endregion
 
             #region public int BidSize
+            /// <summary>
+            /// Bid size. Will be retrieved from IB as required.
+            /// </summary>
             public int BidSize
             {
                 get
@@ -235,6 +269,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public int AskSize
+            /// <summary>
+            /// Ask size. Will be retrieved from IB as required.
+            /// </summary>
             public int AskSize
             {
                 get
@@ -249,6 +286,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public int LastSize
+            /// <summary>
+            /// Last size. Will be retrieved from IB as required.
+            /// </summary>
             public int LastSize
             {
                 get
@@ -263,6 +303,9 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region public int Volume
+            /// <summary>
+            /// Trade volume. Will be retrieved from IB as required.
+            /// </summary>
             public int Volume
             {
                 get
@@ -278,12 +321,18 @@ namespace TuringTrader.Simulator
             #endregion
 
             #region public void RequestMarketData()
+            /// <summary>
+            /// Subscribe to market data for this instrument.
+            /// </summary>
             public void RequestMarketData()
             {
                 _client.RequestMarketData(this);
             }
             #endregion
             #region public void CancelMarketData()
+            /// <summary>
+            /// Cancel market data subscription for this instrument.
+            /// </summary>
             public void CancelMarketData()
             {
                 _client.CancelMarketData(this);
@@ -297,7 +346,13 @@ namespace TuringTrader.Simulator
         private string _accountFilter;
         #endregion
         #region internal helpers
-        static public void LaunchTWS(string user, string password, int port = 7497)
+        /// <summary>
+        /// Launch and log into TWS.
+        /// </summary>
+        /// <param name="user">user name</param>
+        /// <param name="password">password</param>
+        /// <param name="port">API port</param>
+        static private void LaunchTWS(string user, string password, int port = 7497)
         {
             // HKEY_CLASSES_ROOT\tws\shell\open\command\(Default) = "C:\Jts\tws.exe" "%1"
             // HKEY_CURRENT_USER\Software\Classes\tws\shell\open\command\(Default) = "C:\Jts\tws.exe" "%1"
@@ -350,6 +405,10 @@ namespace TuringTrader.Simulator
             Output.WriteLine("BrokerClientInteractiveBrokers: failed to connect to TWS on port {0}", port);
 #endif
         }
+        /// <summary>
+        /// IB callback: Set next valid order id.
+        /// </summary>
+        /// <param name="orderId"></param>
         override public void nextValidId(int orderId)
         {
             NextOrderId = orderId;
@@ -391,6 +450,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public void Disconnect()
+        /// <summary>
+        /// Disconnect from IB.
+        /// </summary>
         public void Disconnect()
         {
             Console.WriteLine("Disconnecting...");

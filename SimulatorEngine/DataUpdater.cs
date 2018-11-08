@@ -26,6 +26,12 @@ namespace TuringTrader.Simulator
     {
         //----- object factory
         #region static public DataUpdate New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        /// <summary>
+        /// Factory method to create new data updater object, based on info dictionary.
+        /// </summary>
+        /// <param name="simulator">parent simulator</param>
+        /// <param name="info">info dictionary</param>
+        /// <returns>new data updater object</returns>
         static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         {
             if (!info.ContainsKey(DataSourceValue.dataUpdater))
@@ -58,6 +64,11 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region protected DataUpdater(Dictionary<DataSourceValue, string> info)
+        /// <summary>
+        /// Create and initialize generic data updater object.
+        /// </summary>
+        /// <param name="simulator">parent simulator</param>
+        /// <param name="info">info dictionary</param>
         protected DataUpdater(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         {
             Simulator = simulator;
@@ -65,11 +76,34 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region public readonly Dictionary<DataSourceValue, string> Info;
+        /// <summary>
+        /// Info dictionary, holding data source description.
+        /// </summary>
         public readonly Dictionary<DataSourceValue, string> Info;
+        #endregion
+        #region public readonly SimulatorCore Simulator
+        /// <summary>
+        /// Parent simulator object.
+        /// </summary>
         public readonly SimulatorCore Simulator;
+        #endregion
 
+        #region abstract public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime);
+        /// <summary>
+        /// Run data update.
+        /// </summary>
+        /// <param name="startTime">start of update range</param>
+        /// <param name="endTime">end of update range</param>
+        /// <returns>enumerable with updated bars</returns>
         abstract public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime);
-        abstract public string Name {get;}
+        #endregion
+        #region abstract public string Name { get; }
+        /// <summary>
+        /// Name of data updater.
+        /// </summary>
+        abstract public string Name { get; }
+        #endregion
     }
 }
 
