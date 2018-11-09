@@ -10,7 +10,7 @@
 //==============================================================================
 
 #region Libraries
-using FUB_TradingSim;
+using TuringTrader.Simulator;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -98,7 +98,7 @@ namespace TuringTrader
             }
 
             //--- redirect log output
-            Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
+            Output.WriteEvent += WriteEventHandler;
         }
         #endregion
 
@@ -166,8 +166,10 @@ namespace TuringTrader
         #region private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
         private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
         {
-            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
-            folderDialog.Title = "Select Data Location";
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog()
+            {
+                Title = "Select Data Location"
+            };
 
             bool? result = folderDialog.ShowDialog();
             if (result == true)
@@ -305,7 +307,8 @@ namespace TuringTrader
             AlgoSelector.IsEnabled = false;
 
             var optimizerResults = new OptimizerResults(_optimizer);
-            optimizerResults.ShowDialog();
+
+            bool paramsChanged = optimizerResults.ShowDialog() == true;
 
             RunButton.IsEnabled = true;
             ReportButton.IsEnabled = false;
@@ -313,7 +316,12 @@ namespace TuringTrader
             ResultsButton.IsEnabled = true;
             AlgoSelector.IsEnabled = true;
 
-            UpdateParameterDisplay();
+            if (paramsChanged)
+            {
+                UpdateParameterDisplay();
+
+                RunButton_Click(null, null);
+            }
         }
         #endregion
     }

@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
 // Name:        IndicatorsBasic
-// Description: collection of basic indicators
+// Description: Collection of basic indicators
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -17,159 +17,201 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of basic indicators.
+    /// </summary>
     public static class IndicatorsBasic
     {
-        #region public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
+        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
         /// <summary>
-        /// highest value of past number of bars
+        /// Create time series based on lambda, with lambda being executed once for
+        /// every call to the indexer method. Use this for leight-weight lambdas.
         /// </summary>
-        public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
+        /// <param name="lambda">lambda, taking bars back as parameter and returning time series value</param>
+        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <returns>lambda time series</returns>
+        public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
         {
-            var functor = Cache<FunctorHighest>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorHighest(series, n));
-
-            functor.Calc();
+            var functor = Cache<FunctorLambda>.GetData(
+                    // TODO: try to eliminate nested calls to Cache.UniqueId
+                    Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                    () => new FunctorLambda(lambda));
 
             return functor;
         }
 
-        private class FunctorHighest : TimeSeries<double>
+        private class FunctorLambda : ITimeSeries<double>
         {
-            public ITimeSeries<double> Series;
-            public int N;
+            public readonly Func<int, double> Lambda;
 
-            public FunctorHighest(ITimeSeries<double> series, int n)
+            public FunctorLambda(Func<int, double> lambda)
             {
-                Series = series;
-                N = Math.Max(1, n);
+                Lambda = lambda;
             }
 
-            public void Calc()
+            public double this[int barsBack]
             {
-                double value = Series[0];
-
-                try
+                get
                 {
-                    for (int t = 1; t < N; t++)
-                        value = Math.Max(value, Series[t]);
+                    return Lambda(barsBack);
                 }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                Value = value;
             }
+        }
+        #endregion
+        #region public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, params int[] identifier)
+        /// <summary>
+        /// Create time series based on lambda, with lambda being executed once for
+        /// every new bar.
+        /// </summary>
+        /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
+        /// <param name="first">first value to return</param>
+        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <returns>lambda time series</returns>
+        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first = 0.0, params int[] identifier)
+        {
+            var timeSeries = Cache<TimeSeries<double>>.GetData(
+                Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                () => new TimeSeries<double>());
+
+            double prevValue = timeSeries.BarsAvailable >= 1
+                ? timeSeries[0]
+                : first;
+
+            timeSeries.Value = lambda(prevValue);
+
+            return timeSeries;
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> Const(double constantValue)
+        /// <summary>
+        /// Return constant value time series.
+        /// </summary>
+        /// <param name="constantValue">value of time series</param>
+        /// <returns>value as time series</returns>
+        public static ITimeSeries<double> Const(double constantValue)
+        {
+            return Lambda(
+                (t) => constantValue,
+                constantValue.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay)
+        /// <summary>
+        /// Delay time series by number of bars.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="delay">delay length</param>
+        /// <returns>delayed time series</returns>
+        public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay)
+        {
+            return Lambda(
+                (t) => series[t + delay],
+                series.GetHashCode(), delay);
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate highest value of the specified number of past bars.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>highest value of past n bars</returns>
+        public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
+        {
+            return BufferedLambda(
+                (v) => Enumerable.Range(1, n).Max(t => series[t]),
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// lowest value of past number of bars
+        /// Calculate lowest value of the specified number of past bars.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>lowest value of past n bars</returns>
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorLowest>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorLowest(series, n));
-
-            functor.Calc();
-
-            return functor;
+            return BufferedLambda(
+                (v) => Enumerable.Range(1, n).Min(t => series[t]),
+                series[0],
+                series.GetHashCode(), n);
         }
-
-        private class FunctorLowest : TimeSeries<double>
+        #endregion
+        #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate range over the specified number of past bars.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>range between highest and lowest value of past n bars</returns>
+        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
         {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorLowest(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-            }
-
-            public void Calc()
-            {
-                double value = Series[0];
-
-                try
-                {
-                    for (int t = 1; t < N; t++)
-                        value = Math.Min(value, Series[t]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                Value = value;
-            }
+            return series
+                .Highest(n)
+                .Subtract(series
+                    .Lowest(n));
         }
         #endregion
 
-        #region public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
+        #region public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         /// <summary>
-        /// absolute return
+        /// Calculate absolute return, from the previous to the current
+        /// value of the time series.
         /// </summary>
-        public static ITimeSeries<double> AbsReturn(this ITimeSeries<double> series)
+        /// <param name="series">input time series</param>
+        /// <returns>absolute return</returns>
+        public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         {
-            var functor = Cache<FunctorAbsReturn>.GetData(
-                    series.GetHashCode(),
-                    () => new FunctorAbsReturn(series));
-
-            return functor;
-        }
-
-        private class FunctorAbsReturn : ITimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-
-            public FunctorAbsReturn(ITimeSeries<double> series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Series[daysBack] - Series[daysBack + 1];
-                }
-            }
+            return Lambda(
+                (t) => series[t] - series[t + 1], 
+                series.GetHashCode());
         }
         #endregion
         #region public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         /// <summary>
-        /// logarithmic return
+        /// Calculate logarithmic return from the previous to the current value
+        /// of the time series.
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>logarithm of relative return</returns>
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
         {
-            var functor = Cache<FunctorLogReturn>.GetData(
-                    series.GetHashCode(),
-                    () => new FunctorLogReturn(series));
-
-            return functor;
+            return Lambda(
+                (t) => Math.Log(series[t] / series[t + 1]),
+                series.GetHashCode());
         }
+        #endregion
 
-        private class FunctorLogReturn : ITimeSeries<double>
+        #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate absolute value of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>absolue value of input time series</returns>
+        public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
         {
-            public ITimeSeries<double> Series;
-
-            public FunctorLogReturn(ITimeSeries<double> series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Math.Log(Series[daysBack] / Series[daysBack + 1]);
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Abs(series[t]),
+                series.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Square(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate square of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>squared input time series</returns>
+        public static ITimeSeries<double> Square(this ITimeSeries<double> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] * series[t],
+                series.GetHashCode());
         }
         #endregion
     }

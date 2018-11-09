@@ -17,17 +17,32 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
     /// attribute class to set optimzation range of field or property
     /// </summary>
     public class OptimizerParamAttribute : Attribute
     {
+        /// <summary>
+        /// Start value of optimizer parameter.
+        /// </summary>
         public readonly int Start;
+        /// <summary>
+        /// End value of optimizer parameter.
+        /// </summary>
         public readonly int End;
+        /// <summary>
+        /// Step size of optimizer parameter.
+        /// </summary>
         public readonly int Step;
 
+        /// <summary>
+        /// Create and initialize optimizer parameter attribute.
+        /// </summary>
+        /// <param name="start">start value</param>
+        /// <param name="end">end value</param>
+        /// <param name="increment">step size</param>
         public OptimizerParamAttribute(int start, int end, int increment)
         {
             Start = start;

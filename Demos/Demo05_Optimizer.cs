@@ -18,9 +18,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Demos
 {
     public class Demo05_Optimizer : Algorithm
     {

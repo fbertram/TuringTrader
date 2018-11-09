@@ -10,7 +10,7 @@
 //==============================================================================
 
 #region Libraries
-using FUB_TradingSim;
+using TuringTrader.Simulator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,6 +53,7 @@ namespace TuringTrader
             DataGridRow row = sender as DataGridRow;
             _optimizer.SetParametersFromResult((OptimizerResult)row.Item);
 
+            DialogResult = true;
             Close();
         }
     }

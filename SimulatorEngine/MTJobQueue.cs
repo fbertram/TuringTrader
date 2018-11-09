@@ -25,8 +25,15 @@ using System.Threading;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Multi-threaded job queue. A job queue allows a fixed number of jobs
+    /// to be executed in parallel, typically one per CPU core. If the number
+    /// of jobs exceeds the maximum parallelism, the jobs are queued until
+    /// a slot becomes available. This class is at the core of TuringTrader's
+    /// optimizer, but also used for parallel data updating.
+    /// </summary>
     public class MTJobQueue
     {
         #region internal data
@@ -66,6 +73,11 @@ namespace FUB_TradingSim
         #endregion
 
         #region public MTJobQueue(int maxNumberOfThreads = 0)
+        /// <summary>
+        /// Create and initialize new job queue.
+        /// </summary>
+        /// <param name="maxNumberOfThreads">maximum number of threads.
+        /// If zero, the number of logical cpu cores is used.</param>
         public MTJobQueue(int maxNumberOfThreads = 0)
         {
 #if SINGLE_THREAD
@@ -84,6 +96,10 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void QueueJob(Action job)
+        /// <summary>
+        /// Add job to queue.
+        /// </summary>
+        /// <param name="job">job action</param>
         public void QueueJob(Action job)
         {
 #if NO_THREADS
@@ -100,6 +116,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void WaitForCompletion()
+        /// <summary>
+        /// Wait for completion of all currently queued jobs.
+        /// </summary>
         public void WaitForCompletion()
         {
 #if NO_THREADS

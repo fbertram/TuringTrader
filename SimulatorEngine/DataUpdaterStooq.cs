@@ -19,13 +19,15 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
-    class DataUpdaterStooq : DataUpdater
+    public partial class DataUpdaterCollection
     {
-        #region internal data
-        private static readonly string _urlTemplate = @"https://stooq.com/q/d/l/?s={0}&d1={1:yyyy}{1:MM}{1:dd}&d2={2:yyyy}{2:MM}{2:dd}&i=d";
-        private static readonly Dictionary<DataSourceValue, string> _parseInfo = new Dictionary<DataSourceValue, string>()
+        private class DataUpdaterStooq : DataUpdater
+        {
+            #region internal data
+            private static readonly string _urlTemplate = @"https://stooq.com/q/d/l/?s={0}&d1={1:yyyy}{1:MM}{1:dd}&d2={2:yyyy}{2:MM}{2:dd}&i=d";
+            private static readonly Dictionary<DataSourceValue, string> _parseInfo = new Dictionary<DataSourceValue, string>()
         {
             { DataSourceValue.dataPath, "{1}" },
             { DataSourceValue.time,     "16:00" },
@@ -35,69 +37,70 @@ namespace FUB_TradingSim
             { DataSourceValue.close,    "{5}" },
             { DataSourceValue.volume,   "{6}" }
         };
-        #endregion
+            #endregion
 
-        #region public DataUpdaterStooq(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterStooq(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
-        {
-        }
-        #endregion
-
-        #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
-        override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
-        {
-            string url = string.Format(_urlTemplate,
-                Info[DataSourceValue.symbolStooq], startTime, endTime);
-
-            using (var client = new WebClient())
+            #region public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {
-                string rawData = client.DownloadString(url);
+            }
+            #endregion
 
-                using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(rawData)))
-                using (StreamReader reader = new StreamReader(ms))
+            #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+            override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
+            {
+                string url = string.Format(_urlTemplate,
+                    Info[DataSourceValue.symbolStooq], startTime, endTime);
+
+                using (var client = new WebClient())
                 {
-                    string header = reader.ReadLine(); // skip header line
+                    string rawData = client.DownloadString(url);
 
-                    for (string line; (line = reader.ReadLine()) != null;)
+                    using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(rawData)))
+                    using (StreamReader reader = new StreamReader(ms))
                     {
-                        if (line.Length == 0)
-                            continue; // to handle end of file
+                        string header = reader.ReadLine(); // skip header line
 
-                        string[] items = line.Split(',');
+                        for (string line; (line = reader.ReadLine()) != null;)
+                        {
+                            if (line.Length == 0)
+                                continue; // to handle end of file
 
-                        DateTime time = DateTime.Parse(items[0]).Date + DateTime.Parse("16:00").TimeOfDay;
-                        double open = double.Parse(items[1]);
-                        double high = double.Parse(items[2]);
-                        double low = double.Parse(items[3]);
-                        double close = double.Parse(items[4]);
-                        long volume = long.Parse(items[5]);
+                            string[] items = line.Split(',');
 
-                        Bar bar = new Bar(
-                            Info[DataSourceValue.symbol], time,
-                            open, high, low, close, volume, true,
-                            default(double), default(double), default(long), default(long), false,
-                            default(DateTime), default(double), false);
+                            DateTime time = DateTime.Parse(items[0]).Date + DateTime.Parse("16:00").TimeOfDay;
+                            double open = double.Parse(items[1]);
+                            double high = double.Parse(items[2]);
+                            double low = double.Parse(items[3]);
+                            double close = double.Parse(items[4]);
+                            long volume = long.Parse(items[5]);
 
-                        if (bar.Time >= startTime
-                        &&  bar.Time <= endTime)
-                            yield return bar;
+                            Bar bar = new Bar(
+                                Info[DataSourceValue.symbol], time,
+                                open, high, low, close, volume, true,
+                                default(double), default(double), default(long), default(long), false,
+                                default(DateTime), default(double), false);
+
+                            if (bar.Time >= startTime
+                            && bar.Time <= endTime)
+                                yield return bar;
+                        }
+
+                        yield break;
                     }
-
-                    yield break;
                 }
             }
-        }
-        #endregion
+            #endregion
 
-        #region public override string Name
-        public override string Name
-        {
-            get
+            #region public override string Name
+            public override string Name
             {
-                return "Stooq";
+                get
+                {
+                    return "Stooq";
+                }
             }
+            #endregion
         }
-        #endregion
     }
 }
 

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Topics>
+  <Topic id="dd1e74a7-b7b1-4ef8-93fb-6e5475e0c4d8" visible="True" isDefault="true" isSelected="true" title="Welcome to the TuringTrader API Documentation">
+    <HelpKeywords>
+      <HelpKeyword index="K" term="Welcome" />
+    </HelpKeywords>
+  </Topic>
+  <Topic id="8b0d4ea3-a119-4855-8244-3b78ceb6570f" visible="True" title="Quick Start Guide">
+    <Topic id="702de1f5-680e-4624-9040-1276a217d25f" visible="True" />
+    <Topic id="17b6a987-0f98-4b8a-9c0c-50491eb1cdbd" visible="True" title="Setting up data" />
+    <Topic id="6d517cb6-206e-418e-9b62-956faed83f09" visible="True" title="Demo 01: Calculating indicators" />
+    <Topic id="b9bbdb5b-4028-43da-aa9f-be1b08aa7708" visible="True" title="Demo 02: Trading equities" />
+    <Topic id="c3e8aad4-8d03-4daa-b1f6-4a72d47b6b84" visible="True" title="Demo 03: Trading portfolios" />
+    <Topic id="ed60a42c-a25b-4d46-a88d-611acc5b3869" visible="True" title="Demo 04: Trading options" />
+    <Topic id="2989153c-bf3b-43c6-a576-bdf8995b7734" visible="True" title="Demo 05: Running the optimizer" />
+    <Topic id="592e6778-1013-4767-b1e0-82a9b9dd2c06" visible="True" title="Demo 06: Order types" />
+    <Topic id="de18d612-dfda-43dd-9b3e-534c8356eab8" visible="True" title="Demo 07: Working with R" />
+  </Topic>
+  <Topic id="cd782abf-f123-4c05-b214-41b35a8f794e" visible="True" apiParentMode="InsertAsChild" title="API Documentation" />
+  <Topic id="6101a8cf-7ec8-46d8-ad15-f3c30f1c1d2a" visible="True" title="Version History">
+    <HelpKeywords>
+      <HelpKeyword index="K" term="version, history" />
+    </HelpKeywords>
+    <Topic id="59cf755c-0584-452b-91bf-9c180287d348" visible="True" title="Version 1.0.0.0">
+      <HelpKeywords>
+        <HelpKeyword index="K" term="version, 1.0.0.0" />
+      </HelpKeywords>
+    </Topic>
+  </Topic>
+</Topics>

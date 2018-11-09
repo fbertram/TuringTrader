@@ -9,6 +9,8 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#pragma warning disable 1591 // CS1591: missing XML comment
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -65,10 +67,17 @@ usage example
     client.Disconnect();
 
 */
-namespace FUB_TradingSim
+
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Broker client class for Interactive Brokers.
+    /// </summary>
     public class BrokerClientIB : BrokerClientIBBase
     {
+        /// <summary>
+        /// Container holding instrument info and quotes.
+        /// </summary>
         public class InstrumentInfo
         {
             #region internal data
@@ -76,10 +85,10 @@ namespace FUB_TradingSim
             private double? _bid = null;
             private double? _ask = null;
             private double? _last = null;
-            public double? _open = null;
-            public double? _high = null;
-            public double? _low = null;
-            public double? _close = null;
+            private double? _open = null;
+            private double? _high = null;
+            private double? _low = null;
+            private double? _close = null;
             private int? _bidSize = null;
             private int? _askSize = null;
             private int? _lastSize = null;
@@ -105,6 +114,11 @@ namespace FUB_TradingSim
             #endregion
 
             #region public InstrumentInfo(BrokerClientIB client, ContractDetails details)
+            /// <summary>
+            /// Create and initialize instrument info.
+            /// </summary>
+            /// <param name="client">parent broker client</param>
+            /// <param name="details">contract details</param>
             public InstrumentInfo(BrokerClientIB client, ContractDetails details)
             {
                 _client = client;
@@ -112,9 +126,17 @@ namespace FUB_TradingSim
             }
             #endregion
 
+            #region public readonly ContractDetails Details
+            /// <summary>
+            /// Contract details for this instrument.
+            /// </summary>
             public readonly ContractDetails Details;
+            #endregion
 
             #region public double Bid
+            /// <summary>
+            /// Bid price. Will be retrieved from IB, as required.
+            /// </summary>
             public double Bid
             {
                 get
@@ -129,6 +151,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double Ask
+            /// <summary>
+            /// Ask price. Will be retrieved from IB as required.
+            /// </summary>
             public double Ask
             {
                 get
@@ -143,6 +168,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double Last
+            /// <summary>
+            /// Last price. Will be retrieved from IB as required.
+            /// </summary>
             public double Last
             {
                 get
@@ -157,6 +185,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double Open
+            /// <summary>
+            /// Open price. Will be retrieved from IB as required.
+            /// </summary>
             public double Open
             {
                 get
@@ -171,6 +202,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double High
+            /// <summary>
+            /// High price. Will be retrieved from IB as required.
+            /// </summary>
             public double High
             {
                 get
@@ -185,6 +219,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double Low
+            /// <summary>
+            /// Low price. Will be retrieved from IB as required.
+            /// </summary>
             public double Low
             {
                 get
@@ -199,6 +236,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public double Close
+            /// <summary>
+            /// Close price. Will be retrieved from IB as required.
+            /// </summary>
             public double Close
             {
                 get
@@ -214,6 +254,9 @@ namespace FUB_TradingSim
             #endregion
 
             #region public int BidSize
+            /// <summary>
+            /// Bid size. Will be retrieved from IB as required.
+            /// </summary>
             public int BidSize
             {
                 get
@@ -228,6 +271,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public int AskSize
+            /// <summary>
+            /// Ask size. Will be retrieved from IB as required.
+            /// </summary>
             public int AskSize
             {
                 get
@@ -242,6 +288,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public int LastSize
+            /// <summary>
+            /// Last size. Will be retrieved from IB as required.
+            /// </summary>
             public int LastSize
             {
                 get
@@ -256,6 +305,9 @@ namespace FUB_TradingSim
             }
             #endregion
             #region public int Volume
+            /// <summary>
+            /// Trade volume. Will be retrieved from IB as required.
+            /// </summary>
             public int Volume
             {
                 get
@@ -271,12 +323,18 @@ namespace FUB_TradingSim
             #endregion
 
             #region public void RequestMarketData()
+            /// <summary>
+            /// Subscribe to market data for this instrument.
+            /// </summary>
             public void RequestMarketData()
             {
                 _client.RequestMarketData(this);
             }
             #endregion
             #region public void CancelMarketData()
+            /// <summary>
+            /// Cancel market data subscription for this instrument.
+            /// </summary>
             public void CancelMarketData()
             {
                 _client.CancelMarketData(this);
@@ -290,7 +348,13 @@ namespace FUB_TradingSim
         private string _accountFilter;
         #endregion
         #region internal helpers
-        static public void LaunchTWS(string user, string password, int port = 7497)
+        /// <summary>
+        /// Launch and log into TWS.
+        /// </summary>
+        /// <param name="user">user name</param>
+        /// <param name="password">password</param>
+        /// <param name="port">API port</param>
+        static private void LaunchTWS(string user, string password, int port = 7497)
         {
             // HKEY_CLASSES_ROOT\tws\shell\open\command\(Default) = "C:\Jts\tws.exe" "%1"
             // HKEY_CURRENT_USER\Software\Classes\tws\shell\open\command\(Default) = "C:\Jts\tws.exe" "%1"
@@ -343,6 +407,10 @@ namespace FUB_TradingSim
             Output.WriteLine("BrokerClientInteractiveBrokers: failed to connect to TWS on port {0}", port);
 #endif
         }
+        /// <summary>
+        /// IB callback: Set next valid order id.
+        /// </summary>
+        /// <param name="orderId"></param>
         override public void nextValidId(int orderId)
         {
             NextOrderId = orderId;
@@ -351,7 +419,7 @@ namespace FUB_TradingSim
         #region public void Connect(string username, string password, int port = 7497, string ip = "127.0.0.1")
         public void Connect(string username, string password, int port = 7497, string ip = "127.0.0.1")
         {
-            Console.WriteLine("Connecting...");
+            Output.WriteLine("Connecting to TWS...");
 
             try
             {
@@ -368,14 +436,14 @@ namespace FUB_TradingSim
             reader.Start();
 
             new Thread(() =>
-            {
-                while (ClientSocket.IsConnected())
                 {
-                    readerSignal.waitForSignal();
-                    reader.processMsgs();
-                }
-            })
-            { IsBackground = true }.Start();
+                    while (ClientSocket.IsConnected())
+                    {
+                        readerSignal.waitForSignal();
+                        reader.processMsgs();
+                    }
+                })
+                { IsBackground = true }.Start();
 
             while (NextOrderId <= 0)
             {
@@ -384,6 +452,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void Disconnect()
+        /// <summary>
+        /// Disconnect from IB.
+        /// </summary>
         public void Disconnect()
         {
             Console.WriteLine("Disconnecting...");
@@ -676,6 +747,8 @@ namespace FUB_TradingSim
         #endregion
     }
 }
+
+#pragma warning restore 1591 // CS1591: missing XML comment
 
 //==============================================================================
 // end of file

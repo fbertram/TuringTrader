@@ -7,7 +7,7 @@
     <ProjectGuid>{5D08F12A-F6BE-4D9F-ADBE-014E261A6D51}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FUB_TradingSim</RootNamespace>
+    <RootNamespace>TuringTrader.Simulator</RootNamespace>
     <AssemblyName>SimulatorEngine</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\SimulatorEngine.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,8 +35,8 @@
     <Reference Include="DynamicInterop">
       <HintPath>..\ExternalProjects\DynamicInterop\DynamicInterop.dll</HintPath>
     </Reference>
-    <Reference Include="IBApi">
-      <HintPath>..\ExternalProjects\IBApi\IBApi.dll</HintPath>
+    <Reference Include="IB.CSharpAPI">
+      <HintPath>..\ExternalProjects\IB.CSharpAPI\IB.CSharpAPI.dll</HintPath>
     </Reference>
     <Reference Include="IQFeed.CSharpApiClient">
       <HintPath>..\ExternalProjects\IQFeed.CSharpApiClient\IQFeed.CSharpApiClient.dll</HintPath>
@@ -100,6 +101,7 @@
     <Compile Include="Order.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimulatorCore.cs" />
     <Compile Include="TimeSeries.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

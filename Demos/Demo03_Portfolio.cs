@@ -17,9 +17,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Demos
 {
     public class Demo03_Portfolio: Algorithm
     {
@@ -65,7 +66,7 @@ namespace FUB_TradingSim
                 // adds a new instrument whenever needed. we need to determine 
                 // which of these instruments have received new bars.
                 // also, we want to ignore our benchmark instrument.
-                var activeInstruments = Instruments.Values
+                var activeInstruments = Instruments
                         .Where(i => i.Time[0] == simTime
                             && _tradingInstruments.Contains(i.Nickname));
 

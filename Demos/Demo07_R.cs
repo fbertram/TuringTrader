@@ -15,9 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Demos
 {
     class Demo07_R : Algorithm
     {

@@ -17,36 +17,40 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of price indicators.
+    /// </summary>
     public static class IndicatorsPrice
     {
         #region public static ITimeSeries<double> TypicalPrice(this Instrument series)
+        /// <summary>
+        /// Calculate Typical Price as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Typical_price"/>
+        /// </summary>
+        /// <param name="series">input instrument</param>
+        /// <returns>typical price as time series</returns>
         public static ITimeSeries<double> TypicalPrice(this Instrument series)
         {
-            var functor = Cache<FunctorTypicalPrice>.GetData(
-                    Tuple.Create(series).GetHashCode(),
-                    () => new FunctorTypicalPrice(series));
-
-            return functor;
+            return IndicatorsBasic.Lambda(
+                (t) => (series.High[t] + series.Low[t] + series.Close[t]) / 3.0,
+                series.GetHashCode());
         }
-
-        private class FunctorTypicalPrice : ITimeSeries<double>
+        #endregion
+        #region public static ITimeSeries<double> CLV(this Instrument series)
+        /// <summary>
+        /// CLV factor as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>CLV as time series</returns>
+        public static ITimeSeries<double> CLV(this Instrument series)
         {
-            public Instrument Series;
-
-            public FunctorTypicalPrice(Instrument series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return (Series.High[daysBack] + Series.Low[daysBack] + Series.Close[daysBack]) / 3.0;
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => ((series.Close[t] - series.Low[t]) - (series.High[t] - series.Close[t])) 
+                    / (series.High[t] - series.Low[t]),
+                series.GetHashCode());
         }
         #endregion
     }

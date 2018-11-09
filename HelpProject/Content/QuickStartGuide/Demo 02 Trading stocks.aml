@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="b9bbdb5b-4028-43da-aa9f-be1b08aa7708" revisionNumber="1">
+  <developerWalkthroughDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+    <introduction>
+      <para>
+		This demo loads a range of quote data for a common stock, calculates 
+		indicators on the quote data, and places trades based on the indicator 
+		values. The following key concepts are demonstrated:
+		<list class="bullet">
+			<listItem>Setting initial capital</listItem>
+			<listItem>Determining net asset value</listItem>
+			<listItem>Placing orders</listItem>
+			<listItem>Keeping track of positions</listItem>
+		</list>
+	  </para>
+	  <para>
+		The method implemented here is a simple moving-average crossover, as 
+		this is easy to understand and widely referenced. Please don’t use 
+		this for actual trading.
+	  </para>
+    </introduction>
+    
+    <section address="Section1">
+      <title>Setting initial capital</title>
+      <content>
+      	<para>
+			Before we start trading, we need to set simulator’s initial capital. 
+			As simulations start with all flat positions, this capital will be 
+			all in cash, which is why we set the simulator’s cash property to do so.
+		</para>
+		<codeReference>Demo02#SetCash</codeReference>
+		<para>
+			We can use the Cash property at any point in the simulation, to 
+			determine the amount of cash at hand. We can also modify the Cash 
+			property, in order to simulate deposits or withdrawals at any 
+			point during the simulation.
+		</para>
+      </content>
+	</section>
+
+    <section address="Section2">
+      <title>Determining net asset value</title>
+      <content>
+      	<para>
+      		When we are ready to place orders, we need to determine the net 
+      		asset value of our portfolio, which is the sum of our cash at hand, 
+      		plus the liquidation value of all positions we hold. The simulator 
+      		calculates the net asset value on every bar, and provides it as a 
+      		time series.
+      	</para>
+      	<para>
+			The net asset value, divided by the current price of the instrument, 
+			should give us the number of shares we can afford:
+		</para>
+		<codeReference>Demo02#TargetPosition</codeReference>
+		<para>
+			Note that typically we can’t place an order to be filled on the 
+			close of the current bar. Therefore, and in case the instrument’s 
+			price moves significantly before the next bar’s open, this calculation 
+			might not be fully correct.
+		</para>
+		<para>
+			With the net asset value being a time series, we have easy access to 
+			the recent performance of our trading system. For example, we could 
+			determine the highest high of the last month like this:
+		</para>
+		<codeReference>Demo02#HighestHigh</codeReference>
+		<para>
+			This is very convenient for implementing money-management schemes.
+      	</para>
+      </content>
+	</section>
+
+    <section address="Section3">
+      <title>Placing orders</title>
+      <content>
+      	<para>
+      		To place an order, we use the Trade() method. It takes at least one 
+      		parameter: the quantity of shares/ contracts to trade. A positive 
+      		value will buy the instrument, while a negative value will sell the 
+      		instrument. The second parameter specifies the order type and is 
+      		optional. Typically, our orders will be submitted on the next bar. 
+      		Here, we place a market order to be (implicitly)executed on the 
+      		next bar’s open:
+      	</para>
+      	<codeReference>Demo02#TradeSimple</codeReference>
+      	<para>
+			There are other order types available, most importantly stop orders, 
+			which allow us to place orders contingent on the price touching the 
+			specified value. We will talk about these in a later demo.
+      	</para>
+      </content>
+	</section>
+
+    <section address="Section4">
+      <title>Keeping track of positions</title>
+      <content>
+      	<para>
+      		We can conveniently check an instrument directly for its current 
+      		position:
+      	</para>
+      	<codeReference>Demo02#CurrentPositionRecommended</codeReference>
+      	<para>
+			The integer returned for the position size will be positive for long 
+			positions, negative for short positions, and zero if we are flat.
+		</para>
+		<para>      	
+      		The simulator also tracks all open positions via its Positions 
+      		property. Flat instruments are removed from this property. Using
+      		this property, we can check if we are holding any positions at all:
+      	</para>
+      	<codeReference>Demo02#CurrentPositionSimulator</codeReference>
+      	<para>
+      		This property is very useful when handling portfolios, and we will
+      		revisit it in a future demo.
+      	</para>
+		<para>
+			When placing trades, is good practice to calculate target positions 
+			and current positions separately, and then trade the difference 
+			between the two. That way, we will not get confused with long and 
+			short positions, and the sign of the quantity to trade. It is worth
+			mentioning that trade sizes of zero are ignored, so there is
+			no need to check for that:
+		</para>
+		<codeReference>Demo02#TradeRecommended</codeReference>
+		<para>
+			Once the demo completes, we can see how the algorithm attempts to 
+			follow bullish trends, and exit positions in bearish times:
+      	</para>
+      	
+      	<mediaLink>
+		<!-- <caption>Demo 02-plot-small</caption> -->
+		<image xlink:href="Demo02-plot-small"/>
+		</mediaLink>
+
+      </content>
+	</section>
+
+    <relatedTopics>
+    </relatedTopics>
+  </developerWalkthroughDocument>
+</topic>

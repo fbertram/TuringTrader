@@ -17,8 +17,11 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of option support functionality.
+    /// </summary>
     public static class OptionSupport
     {
         #region internal helpers
@@ -58,6 +61,15 @@ namespace FUB_TradingSim
         #endregion
 
         #region public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
+        /// <summary>
+        /// Calculate arbitrage-free price of European-style option,
+        /// according to Black-Scholes equation as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
+        /// </summary>
+        /// <param name="contract">input option contract</param>
+        /// <param name="volatility">annualized volatility of underlying asset</param>
+        /// <param name="riskFreeRate">annualized risk free rate</param>
+        /// <returns>option price</returns>
         public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
         {
             if (!contract.IsOption)
@@ -65,9 +77,10 @@ namespace FUB_TradingSim
 
             // see https://en.wikipedia.org/wiki/Black–Scholes_model
 
-            DateTime today = contract.Algorithm.SimTime[0];
+            DateTime today = contract.Simulator.SimTime[0];
+            Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
             double T = (contract.OptionExpiry - today).Duration().Days / 365.25;
-            double S = contract.Algorithm.Instruments[contract.OptionUnderlying].Close[0];
+            double S = underlying.Close[0];
             double K = contract.OptionStrike;
             double r = riskFreeRate;
             double v = volatility;

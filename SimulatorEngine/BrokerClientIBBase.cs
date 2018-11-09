@@ -9,6 +9,8 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#pragma warning disable 1591 // CS1591: missing XML comment
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -18,13 +20,16 @@ using System.Threading.Tasks;
 using IBApi;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Base class for IB broker client.
+    /// </summary>
     public class BrokerClientIBBase : EWrapper
     {
-        public readonly EReaderSignal Signal;
-        public readonly EClientSocket ClientSocket;
-        public int NextOrderId;
+        protected readonly EReaderSignal Signal;
+        protected readonly EClientSocket ClientSocket;
+        protected int NextOrderId;
 
         public BrokerClientIBBase()
         {
@@ -428,6 +433,8 @@ namespace FUB_TradingSim
         #endregion
     }
 }
+
+#pragma warning restore 1591 // CS1591: missing XML comment
 
 //==============================================================================
 // end of file

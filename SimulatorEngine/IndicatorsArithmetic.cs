@@ -18,128 +18,128 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of indicators performing arithmetic on time series.
+    /// </summary>
     static public class IndicatorsArithmetic
     {
+        // NOTE: as of .Net Framework 4.6.1, extension methods can not overload operators
+
         #region public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate addition of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 + time series #2</returns>
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            var functor = Cache<FunctorAdd>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
-                    () => new FunctorAdd(series1, series2));
-
-            return functor;
-        }
-
-        private class FunctorAdd : ITimeSeries<double>
-        {
-            public ITimeSeries<double> Series1;
-            public ITimeSeries<double> Series2;
-
-            public FunctorAdd(ITimeSeries<double> series1, ITimeSeries<double> series2)
-            {
-                Series1 = series1;
-                Series2 = series2;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Series1[daysBack] + Series2[daysBack];
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => series1[t] + series2[t],
+                series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate addition of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series + constant value</returns>
+        public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] + constValue,
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+        
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate subtraction of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 - time series #2</returns>
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            var functor = Cache<FunctorSubtract>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
-                    () => new FunctorSubtract(series1, series2));
-
-            return functor;
-        }
-
-        private class FunctorSubtract : ITimeSeries<double>
-        {
-            public ITimeSeries<double> Series1;
-            public ITimeSeries<double> Series2;
-
-            public FunctorSubtract(ITimeSeries<double> series1, ITimeSeries<double> series2)
-            {
-                Series1 = series1;
-                Series2 = series2;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Series1[daysBack] - Series2[daysBack];
-                }
-            }
-
+            return IndicatorsBasic.Lambda(
+                (t) => series1[t] - series2[t],
+                series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate subtraction of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series - constant value</returns>
+        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] - constValue,
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate multiplication of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 * time series #2</returns>
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            var functor = Cache<FunctorMultiply>.GetData(
-                    Tuple.Create(series1, series2).GetHashCode(),
-                    () => new FunctorMultiply(series1, series2));
-
-            return functor;
-        }
-
-        private class FunctorMultiply : ITimeSeries<double>
-        {
-            public ITimeSeries<double> Series1;
-            public ITimeSeries<double> Series2;
-
-            public FunctorMultiply(ITimeSeries<double> series1, ITimeSeries<double> series2)
-            {
-                Series1 = series1;
-                Series2 = series2;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Series1[daysBack] * Series2[daysBack];
-                }
-            }
-
+            return IndicatorsBasic.Lambda(
+                (t) => series1[t] * series2[t],
+                series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion
-        #region public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
-        public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series)
+        #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate multiplication of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series * constant value</returns>
+        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
         {
-            var functor = Cache<FunctorAbsValue>.GetData(
-                    Tuple.Create(series).GetHashCode(),
-                    () => new FunctorAbsValue(series));
-
-            return functor;
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] * constValue,
+                series.GetHashCode(), constValue.GetHashCode());
         }
+        #endregion
 
-        private class FunctorAbsValue : ITimeSeries<double>
+        #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate division of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 / time series #2</returns>
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
-            public ITimeSeries<double> Series;
-
-            public FunctorAbsValue(ITimeSeries<double> series)
-            {
-                Series = series;
-            }
-
-            public double this[int daysBack]
-            {
-                get
-                {
-                    return Math.Abs(Series[daysBack]);
-                }
-            }
+            return IndicatorsBasic.Lambda(
+                (t) => series1[t] / series2[t],
+                series1.GetHashCode(), series2.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate division of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series / constant value</returns>
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => series[t] / constValue,
+                series.GetHashCode(), constValue.GetHashCode());
         }
         #endregion
     }

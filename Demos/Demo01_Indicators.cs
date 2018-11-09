@@ -16,16 +16,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Demos
 {
     public class Demo01_Indicators : Algorithm
     {
         #region internal data
         private Logger _plotter = new Logger();
         private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
-        private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         private readonly double _offsetPrice = -1800.0;
         #endregion
@@ -37,9 +37,6 @@ namespace FUB_TradingSim
             // set simulation time frame
             StartTime = DateTime.Parse("01/01/2015");
             EndTime = DateTime.Parse("12/31/2016");
-
-            // set account value
-            Cash = _initialCash;
 
             // add instruments
             DataSources.Add(DataSource.New(_instrumentNick));

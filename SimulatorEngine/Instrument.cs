@@ -18,10 +18,16 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// class representing a tradeable instrument, holding time series data
+    /// Class representing a tradeable instrument. In essence, an instrument
+    /// is a time series of bars, enriched by general information about
+    /// the data source which feeds this instrument. Instruments are created
+    /// automatically by the simulator engine as required, in many cases
+    /// leading to instruments being added over the course of a simulation.
+    /// As indicators typically run on time series of double, instruments
+    /// break down the time series of bars into multiple series of doubles.
     /// </summary>
     public class Instrument : TimeSeries<Bar>
     {
@@ -57,9 +63,17 @@ namespace FUB_TradingSim
         #endregion
 
         #region public Instrument(...)
-        public Instrument(Algorithm algorithm, DataSource source)
+        /// <summary>
+        /// Create and initialize instrument. Algorithms should not create
+        /// instrument objects directly. Instead, the simulator engine will
+        /// create these objects as required, and while processing bars from
+        /// DataSource objects.
+        /// </summary>
+        /// <param name="simulator">parent simulator object</param>
+        /// <param name="source">associated data source</param>
+        public Instrument(SimulatorCore simulator, DataSource source)
         {
-            Algorithm = algorithm;
+            Simulator = simulator;
             DataSource = source;
 
             _timeSeries = new BarSeriesAccessor<DateTime>(t => this[t].Time);
@@ -77,9 +91,22 @@ namespace FUB_TradingSim
         #endregion
 
         //----- general info
-        public readonly Algorithm Algorithm;
+        #region public readonly SimulatorCore Simulator
+        /// <summary>
+        /// Parent Simulator object.
+        /// </summary>
+        public readonly SimulatorCore Simulator;
+        #endregion
+        #region public readonly DataSource DataSource
+        /// <summary>
+        /// Associated DataSource object.
+        /// </summary>
         public readonly DataSource DataSource;
+        #endregion
         #region public string Nickname
+        /// <summary>
+        /// DataSource's nickname.
+        /// </summary>
         public string Nickname
         {
             get
@@ -89,6 +116,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public string Name
+        /// <summary>
+        /// Instrument's full name, e.g. Microsoft Corporation.
+        /// </summary>
         public string Name
         {
             get
@@ -98,6 +128,11 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public string Symbol
+        /// <summary>
+        /// Instrument's fully qualified symbol. For stocks, this is identical
+        /// to the ticker. For options, this will include the expiry date,
+        /// direction, and strike price.
+        /// </summary>
         public string Symbol
         {
             get
@@ -109,6 +144,9 @@ namespace FUB_TradingSim
 
         //----- option-specific info
         #region public bool IsOption
+        /// <summary>
+        /// Flag indicating if this is an option contract.
+        /// </summary>
         public bool IsOption
         {
             get
@@ -118,6 +156,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public string OptionUnderlying
+        /// <summary>
+        /// Options only: Underlying symbol.
+        /// </summary>
         public string OptionUnderlying
         {
             get
@@ -127,6 +168,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public DateTime OptionExpiry
+        /// <summary>
+        /// Options only: expiry date.
+        /// </summary>
         public DateTime OptionExpiry
         {
             get
@@ -136,6 +180,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public bool OptionIsPut
+        /// <summary>
+        /// Options only: flag indicating put (true), or call (false).
+        /// </summary>
         public bool OptionIsPut
         {
             get
@@ -145,6 +192,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public double OptionStrike
+        /// <summary>
+        /// Options only: strike price.
+        /// </summary>
         public double OptionStrike
         {
             get
@@ -153,7 +203,11 @@ namespace FUB_TradingSim
             }
         }
         #endregion
+
         #region public bool HasOHLC
+        /// <summary>
+        /// Flag indicating if this instrument has open/ high/ low/ close prices.
+        /// </summary>
         public bool HasOHLC
         {
             get
@@ -163,6 +217,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public bool HasBidAsk
+        /// <summary>
+        /// Flag indicating if this instrument has bid/ ask prices.
+        /// </summary>
         public bool HasBidAsk
         {
             get
@@ -174,6 +231,9 @@ namespace FUB_TradingSim
 
         //----- time series
         #region public ITimeSeries<DateTime> Time
+        /// <summary>
+        /// Time series with bar time stamps.
+        /// </summary>
         public ITimeSeries<DateTime> Time
         {
             get
@@ -183,6 +243,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> Open
+        /// <summary>
+        /// Time series of opening prices.
+        /// </summary>
         public ITimeSeries<double> Open
         {
             get
@@ -192,6 +255,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> High
+        /// <summary>
+        /// Time series of high prices.
+        /// </summary>
         public ITimeSeries<double> High
         {
             get
@@ -201,6 +267,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> Low
+        /// <summary>
+        /// Time series of low prices.
+        /// </summary>
         public ITimeSeries<double> Low
         {
             get
@@ -210,6 +279,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> Close
+        /// <summary>
+        /// Time series of closing prices.
+        /// </summary>
         public ITimeSeries<double> Close
         {
             get
@@ -219,6 +291,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<long> Volume
+        /// <summary>
+        /// Time series of trading volumes.
+        /// </summary>
         public ITimeSeries<long> Volume
         {
             get
@@ -228,6 +303,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> Bid
+        /// <summary>
+        /// Time series of bid prices.
+        /// </summary>
         public ITimeSeries<double> Bid
         {
             get
@@ -237,6 +315,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<double> Ask
+        /// <summary>
+        /// Time series of ask prices.
+        /// </summary>
         public ITimeSeries<double> Ask
         {
             get
@@ -246,6 +327,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<long> BidVolume
+        /// <summary>
+        /// Time series of bid volumes.
+        /// </summary>
         public ITimeSeries<long> BidVolume
         {
             get
@@ -255,6 +339,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<long> AskVolume
+        /// <summary>
+        /// Time series of ask volumes.
+        /// </summary>
         public ITimeSeries<long> AskVolume
         {
             get
@@ -264,6 +351,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public ITimeSeries<bool> IsBidAskValid
+        /// <summary>
+        /// Time series of flags indicating bid/ ask price validity.
+        /// </summary>
         public ITimeSeries<bool> IsBidAskValid
         {
             get
@@ -275,28 +365,41 @@ namespace FUB_TradingSim
 
         //----- trading
         #region public void Trade(int quantity, OrderExecution tradeExecution, double price)
-        public void Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
+        /// <summary>
+        /// Submit trade for this instrument.
+        /// </summary>
+        /// <param name="quantity">number of contracts to trade</param>
+        /// <param name="tradeExecution">type of trade execution</param>
+        /// <param name="price">optional price specifier</param>
+        /// <returns>Order object</returns>
+        public Order Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
         {
             if (quantity != 0)
             {
-                Algorithm.PendingOrders.Add(
-                    new Order()
-                    {
-                        Instrument = this,
-                        Quantity = quantity,
-                        Type = tradeExecution,
-                        Price = price,
-                    });
+                Order order = new Order()
+                {
+                    Instrument = this,
+                    Quantity = quantity,
+                    Type = tradeExecution,
+                    Price = price,
+                };
+
+                Simulator.PendingOrders.Add(order);
+                return order;
             }
+            return null;
         }
         #endregion
         #region public int Position
+        /// <summary>
+        /// Return current open position size.
+        /// </summary>
         public int Position
         {
             get
             {
                 // TODO: does this crash, when there is no position?
-                return Algorithm.Positions
+                return Simulator.Positions
                         .Where(p => p.Key == this)
                         .Sum(x => x.Value);
             }

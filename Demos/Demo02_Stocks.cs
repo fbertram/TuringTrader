@@ -16,9 +16,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Demos
 {
     public class Demo02_Stocks : Algorithm
     {
@@ -38,11 +39,11 @@ namespace FUB_TradingSim
             StartTime = DateTime.Parse("01/01/2007");
             EndTime = DateTime.Parse("08/01/2018");
 
-            // set account value
-            Cash = _initialCash;
-
             // add instruments
             DataSources.Add(DataSource.New(_instrumentNick));
+
+            // set account value
+            Cash = _initialCash;
 
             // clear plotters
             _plotter.Clear();
@@ -51,8 +52,7 @@ namespace FUB_TradingSim
 
             foreach (DateTime simTime in SimTimes)
             {
-                // find our instrument. if we have only one instrument, 
-                // we can also just use Instrument[0]
+                // find our instrument. 
                 Instrument instrument = FindInstrument(_instrumentNick);
 
                 // calculate moving averages
@@ -64,11 +64,10 @@ namespace FUB_TradingSim
                 int currentPosition = instrument.Position;
                 int targetPosition = fast[0] > slow[0]
                     ? (int)Math.Floor(NetAssetValue[0] / instrument.Close[0]) // go long
-                    : 0;                                                   // short... disabled for this demo
+                    : 0;                                                      // short... disabled for this demo
 
                 // place trades
-                if (targetPosition != currentPosition)
-                    instrument.Trade(targetPosition - currentPosition, OrderType.openNextBar);
+                instrument.Trade(targetPosition - currentPosition, OrderType.openNextBar);
 
                 // plot net asset value versus benchmark
                 if (_initialPrice == null) _initialPrice = instrument.Close[0];

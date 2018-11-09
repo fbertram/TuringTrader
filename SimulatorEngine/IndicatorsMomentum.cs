@@ -17,319 +17,173 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of momentum-based indicators.
+    /// </summary>
     public static class IndicatorsMomentum
     {
         // TODO:
         // - Stochastic Oscillator
 
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        /// <summary>
+        /// Calculate Commodity Channel Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>CCI time series</returns>
         public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         {
-            var functor = Cache<FunctorCCI>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorCCI(series, n));
+            // see https://www.tradingview.com/wiki/Commodity_Channel_Index_(CCI)
 
-            functor.Calc();
-
-            return functor;
-        }
-        private class FunctorCCI : TimeSeries<double>
-        {
-            public Instrument Series;
-            public int N;
-
-            public FunctorCCI(Instrument series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-            }
-
-            public void Calc()
-            {
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    // see https://www.tradingview.com/wiki/Commodity_Channel_Index_(CCI)
-                    // and https://en.wikipedia.org/wiki/Commodity_channel_index
+                    ITimeSeries<double> typicalPrices = series.TypicalPrice();
+                    ITimeSeries<double> delta = typicalPrices.Subtract(typicalPrices.SMA(n));
+                    ITimeSeries<double> meanDeviation = delta.AbsValue().SMA(n);
 
-                    ITimeSeries<double> typicalPrices = Series.TypicalPrice();
-                    //ITimeSeries<double> typicalPriceSMA = typicalPrices.SMA(N);
-                    ITimeSeries<double> delta = typicalPrices.Subtract(typicalPrices.SMA(N));
-                    ITimeSeries<double> meanDeviation = delta.AbsValue().SMA(N);
-
-                    Value = delta[0] / (0.15 * meanDeviation[0]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = 0.5;
-                }
-            }
+                    return delta[0] / (0.15 * meanDeviation[0]);
+                },
+                0.5,
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
+        /// <summary>
+        /// Calculate True Strength Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/True_strength_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="r">smoothing period for momentum</param>
+        /// <param name="s">smoothing period for smoothed momentum</param>
+        /// <returns>TSI time series</returns>
         public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
         {
-            var functor = Cache<FunctorTSI>.GetData(
-                    Tuple.Create(series, r, s).GetHashCode(),
-                    () => new FunctorTSI(series, r, s));
-
-            functor.Calc();
-
-            return functor;
-        }
-        private class FunctorTSI : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public readonly int R;
-            public readonly int S;
-
-            public FunctorTSI(ITimeSeries<double> series, int r, int s)
-            {
-                Series = series;
-                R = Math.Max(2, r);
-                S = Math.Max(2, s);
-            }
-
-            public void Calc()
-            {
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    // see https://en.wikipedia.org/wiki/True_strength_index
-
-                    ITimeSeries<double> momentum = Series.AbsReturn();
-                    double numerator = momentum.EMA(R).EMA(S)[0];
-                    double denominator = momentum.AbsValue().EMA(R).EMA(S)[0];
-                    Value = 100.0 * numerator / denominator;
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = 0.0;
-                }
-            }
+                    ITimeSeries<double> momentum = series.Return();
+                    double numerator = momentum.EMA(r).EMA(s)[0];
+                    double denominator = momentum.AbsValue().EMA(r).EMA(s)[0];
+                    return 100.0 * numerator / denominator;
+                },
+                0.5,
+                series.GetHashCode(), r, s);
         }
         #endregion
         #region public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Relative Strength Index, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Relative_strength_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">smoothing period</param>
+        /// <returns>RSI time series</returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
-            var functor = Cache<FunctorRSI>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorRSI(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-        private class FunctorRSI : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            private readonly double _alpha;
-            private double _avgUp;
-            private double _avgDown;
-
-            public FunctorRSI(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-
-                _alpha = 2.0 / (N + 1);
-            }
-
-            public void Calc()
-            {
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    // see https://en.wikipedia.org/wiki/Relative_strength_index
-                    // Wilder originally formulated the calculation of the moving average as:
-                    // newval = (prevval * (period - 1) + newdata) / period.
+                    double avgUp = IndicatorsBasic.Lambda(
+                        (t) => Math.Max(0.0, series.Return()[t]),
+                        series.GetHashCode(), n).EMA(n)[0];
 
-                    double up = Math.Max(0.0, Series[0] - Series[1]);
-                    double down = Math.Max(0.0, Series[1] - Series[0]);
+                    double avgDown = IndicatorsBasic.Lambda(
+                        (t) => Math.Max(0.0, -series.Return()[t]),
+                        series.GetHashCode(), n).EMA(n)[0];
 
-                    _avgUp = _alpha * (up - _avgUp) + _avgUp;
-                    _avgDown = _alpha * (down - _avgDown) + _avgDown;
-
-                    double rs = _avgUp / Math.Max(1e-10, _avgDown);
-                    Value = 100.0 - 100.0 / (1 + rs);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    // we get here when we access bars too far in the past
-                    Value = 0.5;
-                }
-            }
+                    double rs = avgUp / Math.Max(1e-10, avgDown);
+                    return 100.0 - 100.0 / (1 + rs);
+                },
+                50.0,
+                series.GetHashCode(), n);
         }
         #endregion
+
         #region public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// calculate annualized linear regression
+        /// Calculate linear regression of time series.
         /// </summary>
-        /// <param name="series">time series to operate on</param>
+        /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>result as time series</returns>
+        /// <returns>annualized return as time series</returns>
         public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorLinRegression>.GetData(
-                    Tuple.Create(series, n, true).GetHashCode(),
-                    () => new FunctorLinRegression(series, n, true));
+            // simple linear regression
+            // see https://en.wikipedia.org/wiki/Simple_linear_regression
+            // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
+            //   = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx)
+            // a = avg(y) - b * avg(x)
+            //   = 1 / n * Sy - b /n * Sx
 
-            functor.Calc();
+            // coefficient of determination
+            // see https://en.wikipedia.org/wiki/Coefficient_of_determination
+            // f = a + b * x
+            // SSreg = sum((f - avg(y))^2)
+            // SSres = sum((y - f)^2)
 
-            return functor;
-        }
-        private class FunctorLinRegression : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            private readonly Func<double, double> _yFunc;
-
-            public FunctorLinRegression(ITimeSeries<double> series, int n, bool linear)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-
-                if (linear)
-                    _yFunc = (y) => y;
-                else
-                    _yFunc = (y) => Math.Log(y);
-            }
-
-            public void Calc()
-            {
-                double sx = 0.0;
-                double sy = 0.0;
-                double sxx = 0.0;
-                double sxy = 0.0;
-                int n = 0;
-
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    for (int t = 0; t < N; t++)
+                    double sx = 0.0;
+                    double sy = 0.0;
+                    double sxx = 0.0;
+                    double sxy = 0.0;
+                    int N = 0;
+
+                    try
                     {
-                        double x = -t;
-                        double y = _yFunc(Series[t]);
-                        sx += x;
-                        sy += y;
-                        sxx += x * x;
-                        sxy += x * y;
-                        n++;
+                        for (int t = 0; t < n; t++)
+                        {
+                            double x = -t;
+                            double y = series[t];
+                            sx += x;
+                            sy += y;
+                            sxx += x * x;
+                            sxy += x * y;
+                            N++;
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                    }
 
-                // simple linear regression
-                // see https://en.wikipedia.org/wiki/Simple_linear_regression
-                // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
-                //   = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx)
-                // a = avg(y) - b * avg(x)
-                //   = 1 / n * Sy - b /n * Sx
-                if (n > 1)
-                {
-                    double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
-                    double a = sy / n - b * sx / n;
-                    Value = 252.0 * b;
-                }
-                else
-                {
-                    Value = 0.0;
-                }
-
-                // coefficient of determination
-                // see https://en.wikipedia.org/wiki/Coefficient_of_determination
-                // f = a + b * x
-                // SSreg = sum((f - avg(y))^2)
-                // SSres = sum((y - f)^2)
-            }
+                    if (N > 1)
+                    {
+                        double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+                        double a = sy / n - b * sx / n;
+                        return b;
+                    }
+                    else
+                    {
+                        return 0.0;
+                    }
+                },
+                0.0,
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// calculate annualized logarithmic regression
+        /// Calculate logarithmic regression of time series.
         /// </summary>
-        /// <param name="series">time series to operate on</param>
+        /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>result as time series</returns>
+        /// <returns>annualized return as time series</returns>
         public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorLinRegression>.GetData(
-                    Tuple.Create(series, n, false).GetHashCode(),
-                    () => new FunctorLinRegression(series, n, false));
+            ITimeSeries<double> logPrice = IndicatorsBasic.BufferedLambda(
+                (v) => Math.Log(series[0]),
+                0.0,
+                series.GetHashCode(), n);
 
-            functor.Calc();
-
-            return functor;
+            return logPrice.LinRegression(n);
         }
-
-        /*private class FunctorLogRegression : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorLogRegression(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-            }
-
-            public void Calc()
-            {
-                double sx = 0.0;
-                double sy = 0.0;
-                double sxx = 0.0;
-                double sxy = 0.0;
-                int n = 0;
-
-                try
-                {
-                    for (int t = 0; t < N; t++)
-                    {
-                        double x = -t;
-                        double y = Math.Log(Series[t]);
-                        sx += x;
-                        sy += y;
-                        sxx += x * x;
-                        sxy += x * y;
-                        n++;
-                    }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
-
-                // simple linear regression
-                // see https://en.wikipedia.org/wiki/Simple_linear_regression
-                // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
-                //   = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx)
-                // a = avg(y) - b * avg(x)
-                //   = 1 / n * Sy - b /n * Sx
-                if (n > 1)
-                {
-                    double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
-                    double a = sy / n - b * sx / n;
-                    Value = 252.0 * b;
-                }
-                else
-                {
-                    Value = 0.0;
-                }
-
-                // coefficient of determination
-                // see https://en.wikipedia.org/wiki/Coefficient_of_determination
-                // f = a + b * x
-                // SSreg = sum((f - avg(y))^2)
-                // SSres = sum((y - f)^2)
-            }
-        }*/
         #endregion
     }
 }

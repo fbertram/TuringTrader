@@ -17,18 +17,58 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
-    public enum OrderType { closeThisBar, openNextBar, optionExpiryClose, stopNextBar };
+    /// <summary>
+    /// Enumeration of order types.
+    /// </summary>
+    public enum OrderType
+    {
+        /// <summary>
+        /// execute order at close of current bar
+        /// </summary>
+        closeThisBar,
+
+        /// <summary>
+        /// execute order at open of next bar
+        /// </summary>
+        openNextBar,
+
+        /// <summary>
+        /// expire option at close of current bar. this order type is
+        /// reserved for internal use by the simulator engine.
+        /// </summary>
+        optionExpiryClose,
+
+        /// <summary>
+        /// execute stop order during next bar
+        /// </summary>
+        stopNextBar
+    };
 
     /// <summary>
-    /// order ticket
+    /// Order ticket
     /// </summary>
     public class Order
     {
+        /// <summary>
+        /// instrument this order is for
+        /// </summary>
         public Instrument Instrument;
+
+        /// <summary>
+        /// type of order
+        /// </summary>
         public OrderType Type;
+
+        /// <summary>
+        /// quantity of order
+        /// </summary>
         public int Quantity;
+
+        /// <summary>
+        /// price of order, only required for stop orders
+        /// </summary>
         public double Price;
     }
 }

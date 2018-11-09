@@ -19,11 +19,13 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
 
     /// <summary>
-    /// class to run exhaustive optimization
+    /// Exhaustive grid optimizer. This optimizer iterate through all possible 
+    /// parameter combinations in a brute-force fashion. Individual iterations
+    /// are executed in parallel, as far as possible.
     /// </summary>
     public class OptimizerGrid
     {
@@ -38,6 +40,11 @@ namespace FUB_TradingSim
         #endregion
 
         #region public static int NumIterations(Algorithm algo)
+        /// <summary>
+        /// Number of optimizer iterations
+        /// </summary>
+        /// <param name="algo">algorithm to optimize</param>
+        /// <returns># of iterations</returns>
         public static int NumIterations(Algorithm algo)
         {
             // figure out total number of iterations
@@ -63,7 +70,7 @@ namespace FUB_TradingSim
         #endregion
 
         #region private void RunIteration(bool firstRun = true)
-        private Algorithm RunIteration(bool firstRun = true)
+        private Algorithm RunIteration()
         {
             // create algorithm instance to run
             Type algoType = _masterInstance.GetType();
@@ -73,21 +80,19 @@ namespace FUB_TradingSim
             foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
                 instanceToRun.OptimizerParams[parameter.Name].Value = parameter.Value;
 
-            if (firstRun)
+            // mark this as an optimizer run
+            instanceToRun.IsOptimizing = true;
+
+            // create result entry
+            OptimizerResult result = new OptimizerResult();
+            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
+                result.Parameters[parameter.Name] = parameter.Value;
+            result.Fitness = null;
+            Results.Add(result);
+
+            // run algorithm with these values
+            _jobQueue.QueueJob(() =>
             {
-                // mark this as an optimizer run
-                instanceToRun.IsOptimizing = true;
-
-                // create result entry
-                OptimizerResult result = new OptimizerResult();
-                foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
-                    result.Parameters[parameter.Name] = parameter.Value;
-                result.Fitness = null;
-                Results.Add(result);
-
-                // run algorithm with these values
-                _jobQueue.QueueJob(() =>
-                {
                 instanceToRun.Run();
                 result.NetAssetValue = instanceToRun.NetAssetValue[0];
                 result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
@@ -106,14 +111,8 @@ namespace FUB_TradingSim
                     Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
                         _numIterationsCompleted, _numIterationsTotal, _maxFitness,
                         Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
-                    }
-                });
-            }
-            else
-            {
-                // this is for re-runs
-                instanceToRun.Run();
-            }
+                }
+            });
 
             return instanceToRun;
         }
@@ -148,12 +147,19 @@ namespace FUB_TradingSim
         #endregion
 
         #region public OptimizerExhaustive(Algorithm algorithm)
+        /// <summary>
+        /// Crearte and initialize new grid optimizer instance.
+        /// </summary>
+        /// <param name="algorithm">algorithm to optimize</param>
         public OptimizerGrid(Algorithm algorithm)
         {
             _masterInstance = algorithm;
         }
         #endregion
         #region public void Run()
+        /// <summary>
+        /// Run optimization.
+        /// </summary>
         public void Run()
         {
             _startTime = DateTime.Now;
@@ -173,10 +179,15 @@ namespace FUB_TradingSim
             _jobQueue.WaitForCompletion();
 
             TimeSpan t = DateTime.Now - _startTime;
-            Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s", Math.Floor(t.TotalHours), t.Minutes, t.Seconds);
+            Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s @ {3} iterations/hour",
+                Math.Floor(t.TotalHours), t.Minutes, t.Seconds,
+                Math.Round(_numIterationsTotal / t.TotalHours));
         }
         #endregion
         #region public double Progress
+        /// <summary>
+        /// Progress of optimization as a double between 0 and 100.
+        /// </summary>
         public double Progress
         {
             get
@@ -189,8 +200,17 @@ namespace FUB_TradingSim
         }
         #endregion
 
+        #region List<OptimizerResult> Results
+        /// <summary>
+        /// Return list of optimization results.
+        /// </summary>
         public List<OptimizerResult> Results;
+        #endregion
         #region public void ResultsToExcel(string excelPath)
+        /// <summary>
+        /// Export optimizer results to Excel.
+        /// </summary>
+        /// <param name="excelPath"></param>
         public void ResultsToExcel(string excelPath)
         {
             Logger logger = new Logger();
@@ -213,6 +233,10 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void SetParametersFromResult(OptimizerResult result)
+        /// <summary>
+        /// Set algorithm parameters from optimzation result.
+        /// </summary>
+        /// <param name="result">optimization result</param>
         public void SetParametersFromResult(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)

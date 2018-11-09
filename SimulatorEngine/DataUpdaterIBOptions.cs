@@ -21,124 +21,144 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
-    public class DataUpdaterIBOptions : DataUpdater
+    public partial class DataUpdaterCollection
     {
-        #region internal data
-        #endregion
-        #region internal helpers
-        #endregion
-
-        #region public DataUpdaterIBOptions(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(info)
-        public DataUpdaterIBOptions(Algorithm algorithm, Dictionary<DataSourceValue, string> info) : base(algorithm, info)
+        /// <summary>
+        /// Data updater for Interactive Brokers option prices
+        /// </summary>
+        private class DataUpdaterIBOptions : DataUpdater
         {
-        }
-        #endregion
+            #region internal data
+            #endregion
+            #region internal helpers
+            #endregion
 
-        #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
-        override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
-        {
-            string twsUser = (string)Algorithm.GetRegistryValue("TwsUser", "");
-            string twsPass = (string)Algorithm.GetRegistryValue("TwsPass", "");
-            int twsPort = (int)Algorithm.GetRegistryValue("TwsPort", 7497);
-
-            BrokerClientIB ibClient = new BrokerClientIB();
-            DateTime timestamp1 = DateTime.Now;
-
-            try
+            #region public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            /// <summary>
+            /// Create and initialize data updater.
+            /// </summary>
+            /// <param name="simulator">parent simulator</param>
+            /// <param name="info">info dictionary</param>
+            public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {
-                ibClient.Connect(twsUser, twsPass, twsPort);
+            }
+            #endregion
 
-                string[] mapping = Info[DataSourceValue.symbolInteractiveBrokers].Split(',');
-                string symbol = mapping[0];
-                string type = mapping.Count() >= 2 ? mapping[1] : "STK";
-                string exchange = mapping.Count() >= 3 ? mapping[2] : "SMART";
-                string currency = mapping.Count() >= 4 ? mapping[3] : "USD";
+            #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+            /// <summary>
+            /// Run data update.
+            /// </summary>
+            /// <param name="startTime">start of update range</param>
+            /// <param name="endTime">end of update range</param>
+            /// <returns>enumerable with updated bars</returns>
+            override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
+            {
+                string twsUser = (string)Simulator.GetRegistryValue("TwsUser", "");
+                string twsPass = (string)Simulator.GetRegistryValue("TwsPass", "");
+                int twsPort = (int)Simulator.GetRegistryValue("TwsPort", 7497);
 
-                //----- get option chain
-                var optionChain = ibClient.ContractDetails(symbol, type, exchange, currency);
-                Output.Write("found {0} contracts...", optionChain.Count());
+                BrokerClientIB ibClient = new BrokerClientIB();
+                DateTime timestamp1 = DateTime.Now;
 
-                //----- multi-threaded bid/ask price query
-                MTJobQueue mtJobQueue = new MTJobQueue(10);
-                int num = 0;
-                foreach (var option in optionChain)
+                try
                 {
-                    mtJobQueue.QueueJob(() =>
+                    ibClient.Connect(twsUser, twsPass, twsPort);
+
+                    string[] mapping = Info[DataSourceValue.symbolInteractiveBrokers].Split(',');
+                    string symbol = mapping[0];
+                    string type = mapping.Count() >= 2 ? mapping[1] : "STK";
+                    string exchange = mapping.Count() >= 3 ? mapping[2] : "SMART";
+                    string currency = mapping.Count() >= 4 ? mapping[3] : "USD";
+
+                    //----- get option chain
+                    var optionChain = ibClient.ContractDetails(symbol, type, exchange, currency);
+                    Output.Write("found {0} contracts...", optionChain.Count());
+
+                    //----- multi-threaded bid/ask price query
+                    MTJobQueue mtJobQueue = new MTJobQueue(10);
+                    int num = 0;
+                    foreach (var option in optionChain)
                     {
-                        try
+                        mtJobQueue.QueueJob(() =>
                         {
-                            double bid = option.Bid;
-                            double ask = option.Ask;
-                            lock ((object)num)
+                            try
                             {
-                                if (++num % 1000 == 0) Output.Write("|");
-                                else if (num % 100 == 0) Output.Write(".");
+                                double bid = option.Bid;
+                                double ask = option.Ask;
+                                lock ((object)num)
+                                {
+                                    if (++num % 1000 == 0) Output.Write("|");
+                                    else if (num % 100 == 0) Output.Write(".");
+                                }
                             }
-                        }
-                        catch
-                        {
-                            option.Bid = 0.0;
-                            option.Ask = 0.0;
-                        }
-                    });
-                }
-                mtJobQueue.WaitForCompletion();
-
-                //----- return bars
-                foreach (var option in optionChain)
-                {
-                    if (option.Bid == 0.0 || option.Ask == 0.0)
-                        continue;
-
-                    // FIXME: this is far from pretty: need better timezone conversion
-                    DateTime time = DateTime.Now + TimeSpan.FromHours(3);
-                    DateTime expiration = new DateTime(
-                        Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(0, 4)),
-                        Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(4, 2)),
-                        Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(6, 2)))
-                        + TimeSpan.FromHours(16);
-                    if (expiration - time > TimeSpan.FromDays(180))
-                        continue;
-
-                    string right = option.Details.Summary.Right;
-                    double strike = option.Details.Summary.Strike;
-                    double bid = option.Bid;
-                    double ask = option.Ask;
-
-                    if (bid > 0 && ask > 0)
-                    {
-                        Bar newBar = new Bar(
-                            symbol, time,
-                            default(double), default(double), default(double), default(double), default(long), false,
-                            bid, ask, default(long), default(long), true,
-                            expiration, strike, right == "P");
-
-                        yield return newBar;
+                            catch
+                            {
+                                option.Bid = 0.0;
+                                option.Ask = 0.0;
+                            }
+                        });
                     }
+                    mtJobQueue.WaitForCompletion();
+
+                    //----- return bars
+                    foreach (var option in optionChain)
+                    {
+                        if (option.Bid == 0.0 || option.Ask == 0.0)
+                            continue;
+
+                        // FIXME: this is far from pretty: need better timezone conversion
+                        DateTime time = DateTime.Now + TimeSpan.FromHours(3);
+                        DateTime expiration = new DateTime(
+                            Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(0, 4)),
+                            Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(4, 2)),
+                            Convert.ToInt32(option.Details.Summary.LastTradeDateOrContractMonth.Substring(6, 2)))
+                            + TimeSpan.FromHours(16);
+                        if (expiration - time > TimeSpan.FromDays(180))
+                            continue;
+
+                        string right = option.Details.Summary.Right;
+                        double strike = option.Details.Summary.Strike;
+                        double bid = option.Bid;
+                        double ask = option.Ask;
+
+                        if (bid > 0 && ask > 0)
+                        {
+                            Bar newBar = new Bar(
+                                symbol, time,
+                                default(double), default(double), default(double), default(double), default(long), false,
+                                bid, ask, default(long), default(long), true,
+                                expiration, strike, right == "P");
+
+                            yield return newBar;
+                        }
+                    }
+
+                    yield break;
                 }
+                finally
+                {
+                    ibClient.Disconnect();
+                    DateTime timestamp2 = DateTime.Now;
+                    Output.WriteLine("finished option loading after {0:F1} seconds", (timestamp2 - timestamp1).TotalSeconds);
+                }
+            }
+            #endregion
 
-                yield break;
-            }
-            finally
+            #region public override string Name
+            /// <summary>
+            /// Name of updater.
+            /// </summary>
+            public override string Name
             {
-                ibClient.Disconnect();
-                DateTime timestamp2 = DateTime.Now;
-                Output.WriteLine("finished option loading after {0:F1} seconds", (timestamp2 - timestamp1).TotalSeconds);
+                get
+                {
+                    return "InteractiveBrokers";
+                }
             }
+            #endregion
         }
-        #endregion
-
-        #region public override string Name
-        public override string Name
-        {
-            get
-            {
-                return "InteractiveBrokers";
-            }
-        }
-        #endregion
     }
 }
 

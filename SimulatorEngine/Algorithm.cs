@@ -19,153 +19,22 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// base class for trading algorithms
+    /// Abstract base class for trading algorithms. All Turing Trader algorithms
+    /// must be derived from this class, and override the Run() and Report()
+    /// methods.
     /// </summary>
-    public abstract partial class Algorithm
+    public abstract class Algorithm : SimulatorCore
     {
-        #region internal helpers
-        private void ExecOrder(Order ticket)
-        {
-            // no trades during warmup phase
-            if (SimTime[0] < StartTime)
-                return;
-
-            Instrument instrument = ticket.Instrument;
-            Bar execBar = null;
-            double netAssetValue = 0.0;
-            double price = 0.00;
-            switch(ticket.Type)
-            {
-                case OrderType.closeThisBar:
-                    execBar = instrument[1];
-                    netAssetValue = NetAssetValue[1];
-                    if (execBar.HasBidAsk)
-                        price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
-                    else
-                        price = execBar.Close;
-                    break;
-
-                case OrderType.openNextBar:
-                    execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
-                    price = execBar.Open;
-                    break;
-
-                case OrderType.optionExpiryClose:
-                    // execBar = instrument[1]; // option bar
-                    execBar = Instruments[instrument.OptionUnderlying][1]; // underlying bar
-                    netAssetValue = NetAssetValue[0];
-                    price = ticket.Price;
-                    break;
-
-                case OrderType.stopNextBar:
-                    execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
-                    if (ticket.Quantity > 0)
-                    {
-                        if (ticket.Price > execBar.High)
-                            return;
-
-                        price = Math.Max(ticket.Price, execBar.Open);
-                    }
-                    else
-                    {
-                        if (ticket.Price < execBar.Low)
-                            return;
-
-                        price = Math.Min(ticket.Price, execBar.Open);
-                    }
-                    break;
-            }
-
-            // add position
-            if (!Positions.ContainsKey(instrument))
-                Positions[instrument] = 0;
-            Positions[instrument] += ticket.Quantity;
-            if (Positions[instrument] == 0)
-                Positions.Remove(instrument);
-
-            // determine # of shares
-            int numberOfShares = instrument.IsOption
-                ? 100 * ticket.Quantity 
-                : ticket.Quantity;
-
-            // determine commission (no commission on expiry)
-            double commission = ticket.Type != OrderType.optionExpiryClose
-                ? Math.Abs(numberOfShares) * CommissionPerShare
-                : 0.00;
-
-            // pay for it
-            Cash = Cash
-                - numberOfShares * price
-                - commission;
-
-            // add log entry
-            LogEntry log = new LogEntry()
-            {
-                Symbol = ticket.Instrument.Symbol,
-                OrderTicket = ticket,
-                BarOfExecution = execBar,
-                NetAssetValue = netAssetValue,
-                FillPrice = price,
-                Commission = commission,
-            };
-            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
-            Log.Add(log);
-        }
-        private void ExpireOption(Instrument instr)
-        {
-            Instrument underlying = Instruments[instr.OptionUnderlying];
-            double price = underlying.Close[1];
-
-            // create order ticket
-            Order ticket = new Order()
-            {
-                Instrument = instr,
-                Quantity = -Positions[instr],
-                Type = OrderType.optionExpiryClose,
-                Price = instr.OptionIsPut
-                    ? Math.Max(0.00, instr.OptionStrike - price) 
-                    : Math.Max(0.00, price - instr.OptionStrike),
-            };
-
-            // force execution
-            ExecOrder(ticket);
-        }
-        private double CalcNetAssetValue()
-        {
-            double nav = Cash;
-
-            foreach (var instrument in Positions.Keys)
-            {
-                double price = 0.00;
-
-                if (instrument.HasBidAsk && instrument.IsBidAskValid[0])
-                {
-                    price = Positions[instrument] > 0
-                        ? instrument.Bid[0]
-                        : instrument.Ask[0];
-                }
-                else if (instrument.HasOHLC)
-                {
-                    price = instrument.Close[0];
-                }
-
-                double quantity = instrument.IsOption
-                    ? 100.0 * Positions[instrument]
-                    : Positions[instrument];
-
-                nav += quantity * price;
-            }
-
-            return nav;
-        }
-        #endregion
-
         #region public Algorithm()
+        /// <summary>
+        /// Initialize trading algorithm. Most trading algorithms will
+        /// only do very little here; the majority of the initialization
+        /// should be performed in Run(), to allow multiple runs of
+        /// the same instance.
+        /// </summary>
         public Algorithm()
         {
             // create a dictionary of optimizer parameters
@@ -174,69 +43,36 @@ namespace FUB_TradingSim
                 OptimizerParams[param.Name] = param;
 
             GlobalSettings.MostRecentAlgorithm = Name;
-
-            // this is not required, a new object will be assigned
-            // during SimTime's initialization. we assign an object
-            // here, to avoid a crash in Demo05_Optimizer, which does
-            // not have any bars, and does not call SimTime
-            NetAssetValue = new TimeSeries<double>();
-            NetAssetValue.Value = 0.0;
-        }
-        #endregion
-        #region public string Name
-        public string Name
-        {
-            get
-            {
-                return this.GetType().Name;
-            }
-        }
-        #endregion
-        #region virtual public void Run()
-        virtual public void Run()
-        {
-        }
-        #endregion
-        #region virtual public object Report()
-        virtual public void Report()
-        {
-        }
-        #endregion
-        #region public double FitnessValue
-        public double FitnessValue
-        {
-            get;
-            protected set;
         }
         #endregion
 
-        public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
-        #region public string OptimizerParamsAsString
-        public string OptimizerParamsAsString
-        {
-            get
-            {
-                string retval = "";
-                foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
-                {
-                    retval += retval.Length > 0 ? ", " : "";
-                    retval += string.Format("{0}={1}", parameter.Name, parameter.Value);
-                }
-                return retval;
-            }
-        }
+        #region override public void Run()
+        /// <summary>
+        /// Main entry point for trading algorithms, containing all proprietary
+        /// trading logic. All trading algorithms override this method with their
+        /// own implementation. Trading algorithms are not required to call the
+        /// base class implementation of this method. This method may be called
+        /// multiple times for the same instance. Care should be taken, that the
+        /// implementation of this method initializes all parameters, to allow
+        /// multiple runs.
+        /// </summary>
+        override public void Run() { }
         #endregion
-
-        protected List<DataSource> DataSources = new List<DataSource>();
-
-        protected DateTime StartTime;
-        protected DateTime? WarmupStartTime = null;
-        protected DateTime EndTime;
-        public int TradingDays;
-
-        public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
-        protected bool IsLastBar = false;
+        #region override public void Report()
+        /// <summary>
+        /// Create report. This method can be called after calling Run(), to
+        /// create and display a custom report. Typically, trading algorithms
+        /// override this method with their own implementation. Algorithms are
+        /// not required to call the base class implementation of this method.
+        /// </summary>
+        virtual public void Report() { }
+        #endregion
         #region public double Progress
+        /// <summary>
+        /// Progress indicator, ranging from 0 to 100. This progress indicator
+        /// is based on the time stamp of the current bar being processed, which
+        /// may or may not be a good indicator of CPU time.
+        /// </summary>
         public double Progress
         {
             get
@@ -255,143 +91,53 @@ namespace FUB_TradingSim
         }
         #endregion
 
-        #region protected IEnumerable<DateTime> SimTimes
-        protected IEnumerable<DateTime> SimTimes
+        #region public Dictionary<string, OptimizerParam> OptimizerParams
+        /// <summary>
+        /// Container holding all optimizable parameters, along with
+        /// their settings.
+        /// </summary>
+        public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
+        #endregion
+        #region public string OptimizerParamsAsString
+        /// <summary>
+        /// String representation of the current settings of all
+        /// optimizable parameters.
+        /// </summary>
+        public string OptimizerParamsAsString
         {
             get
             {
-                //----- initialization
-                DateTime warmupStartTime = WarmupStartTime != null
-                    ? (DateTime)WarmupStartTime
-                    : StartTime;
-
-                // save the status of our enumerators here
-                Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
-
-                // reset all enumerators
-                foreach (DataSource source in DataSources)
+                string retval = "";
+                foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
                 {
-                    source.Algorithm = this; // we'd love to do this during construction
-                    source.LoadData(warmupStartTime, EndTime);
-                    source.BarEnumerator.Reset();
-                    hasData[source] = source.BarEnumerator.MoveNext();
+                    retval += retval.Length > 0 ? ", " : "";
+                    retval += string.Format("{0}={1}", parameter.Name, parameter.Value);
                 }
-
-                // reset trade log
-                Log.Clear();
-
-                // reset fitness
-                FitnessValue = 0.0;
-                TradingDays = 0;
-
-                // reset net asset value
-                // we create a new time-series here, to make sure that
-                // any indicators depending on it, are also re-created
-                NetAssetValue = new TimeSeries<double>();
-                NetAssetValue.Value = Cash;
-                NetAssetValueHighestHigh = 0.0;
-                NetAssetValueMaxDrawdown = 1e-10;
-
-                //----- loop, until we've consumed all data
-                while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
-                {
-                    SimTime.Value = DataSources
-                        .Where(i => hasData[i])
-                        .Min(i => i.BarEnumerator.Current.Time);
-
-                    // go through all data sources
-                    foreach (DataSource source in DataSources)
-                    {
-                        // while timestamp is current, keep adding bars
-                        // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
-                        {
-                            if (!Instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
-                                Instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            Instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
-                            hasData[source] = source.BarEnumerator.MoveNext();
-                        }
-                    }
-
-                    // execute orders
-                    foreach (Order order in PendingOrders)
-                        ExecOrder(order);
-                    PendingOrders.Clear();
-
-                    // handle option expiry on bar following expiry
-                    List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime[0].Date)
-                            .ToList();
-
-                    foreach (Instrument instr in optionsToExpire)
-                        ExpireOption(instr);
-
-                    // update net asset value
-                    NetAssetValue.Value = CalcNetAssetValue();
-                    ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
-                    NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, filteredNAV[0]);
-                    NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - filteredNAV[0] / NetAssetValueHighestHigh);
-
-                    // update IsLastBar
-                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
-
-                    // update TradingDays
-                    if (TradingDays == 0 && Positions.Count > 0 // start counter w/ 1st position
-                    || TradingDays > 0)
-                        TradingDays++;
-
-                    // run our algorithm here
-                    if (SimTime[0] >= warmupStartTime && SimTime[0] <= EndTime)
-                        yield return SimTime[0];
-                }
-
-                //----- attempt to free up resources
-                Instruments.Clear();
-                Positions.Clear();
-                PendingOrders.Clear();
-                DataSources.Clear();
-
-                yield break;
+                return retval;
             }
         }
         #endregion
-        public Dictionary<string, Instrument> Instruments = new Dictionary<string, Instrument>();
-        #region public Instrument FindInstrument(string)
-        public Instrument FindInstrument(string nickname)
-        {
-            return Instruments.Values
-                .Where(i => i.Nickname == nickname)
-                .First();
-        }
-        #endregion
-        #region protected List<Instrument> OptionChain(string)
-        protected List<Instrument> OptionChain(string nickname)
-        {
-            List<Instrument> optionChain = Instruments
-                    .Select(kv => kv.Value)
-                    .Where(i => i.Nickname == nickname  // check nickname
-                        && i[0].Time == SimTime[0]      // current bar
-                        && i.IsOption                   // is option
-                        && i.OptionExpiry > SimTime[0]  // future expiry
-                        && i.IsBidAskValid[0])          // bid/ask seems legit
-                    .ToList();
-
-            return optionChain;
-        }
-        #endregion
-
-        public List<Order> PendingOrders = new List<Order>();
-        public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();
-        public List<LogEntry> Log = new List<LogEntry>();
-
-        protected double Cash;
-        public TimeSeries<double> NetAssetValue;
-        public double NetAssetValueHighestHigh;
-        public double NetAssetValueMaxDrawdown;
-
-        protected double CommissionPerShare = 0.00;
-
+        #region public bool IsOptimizing
+        /// <summary>
+        /// Field indicating if this algorithm instance is
+        /// being optimized. Algorithms should use this to reduce
+        /// unnecessary calculations and output, to speed up optimization
+        /// and conserve memory.
+        /// </summary>
         public bool IsOptimizing = false;
+        #endregion
+        #region public double FitnessValue
+        /// <summary>
+        /// Custom fitness value. Algorithms should use this, to report
+        /// the fitness of the current algorithm settings to the optimizer.
+        /// Outside of optimization, this field has no relevance.
+        /// </summary>
+        public double FitnessValue
+        {
+            get;
+            protected set;
+        }
+        #endregion
     }
 }
 //==============================================================================

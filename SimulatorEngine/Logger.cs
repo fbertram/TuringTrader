@@ -44,8 +44,11 @@ using RDotNet.NativeLibrary;
 #endregion
 
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Class to log data, and save as CSV, or present with Excel or R.
+    /// </summary>
     public class Logger
     {
         #region internal data
@@ -71,8 +74,16 @@ namespace FUB_TradingSim
         #endregion
 
         //----- initialization & cleanup
+        #region public Logger()
+        /// <summary>
+        /// Create and initialize logger object.
+        /// </summary>
         public Logger() { }
+        #endregion
         #region public void Clear()
+        /// <summary>
+        /// Clear all current data.
+        /// </summary>
         public void Clear()
         {
             XLabels = null;
@@ -83,7 +94,7 @@ namespace FUB_TradingSim
         //----- logging values
         #region public void SelectPlot(string plotTitle, string xLabel)
         /// <summary>
-        /// select current plot
+        /// Select current plot.
         /// </summary>
         /// <param name="plotTitle">title of plot</param>
         /// <param name="xLabel">label on x-axis</param>
@@ -100,9 +111,8 @@ namespace FUB_TradingSim
 
         #region public void SetX(double xValue)
         /// <summary>
-        /// set value along x-asis
+        /// Set value along x-asis.
         /// </summary>
-        /// <param name="xLabel">x-axis label</param>
         /// <param name="xValue">x-axis value</param>
         public void SetX(double xValue)
         {
@@ -112,9 +122,8 @@ namespace FUB_TradingSim
         #endregion
         #region public void SetX(DateTime xValue)
         /// <summary>
-        /// set x-axis, select plot
+        /// Set value along x-asis.
         /// </summary>
-        /// <param name="xLabel">x-axis label</param>
         /// <param name="xValue">x-axis value</param>
         public void SetX(DateTime xValue)
         {
@@ -124,9 +133,8 @@ namespace FUB_TradingSim
         #endregion
         #region public void SetX(string xValue)
         /// <summary>
-        /// set x-axis, select plot
+        /// Set value along x-asis.
         /// </summary>
-        /// <param name="xLabel">x-axis label</param>
         /// <param name="xValue">x-axis value</param>
         public void SetX(string xValue)
         {
@@ -151,7 +159,7 @@ namespace FUB_TradingSim
 
         #region public void Log(string yLabel, double yValue)
         /// <summary>
-        /// add log to current x-axis/ plot
+        /// Log new value to current plot, at current x-axis value.
         /// </summary>
         /// <param name="yLabel">y-axis label</param>
         /// <param name="yValue">y-axis value</param>
@@ -162,6 +170,11 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public void Log(string yLabel, string yValue)
+        /// <summary>
+        /// Log new value to current plot, at current x-axis value.
+        /// </summary>
+        /// <param name="yLabel">y-axis label</param>
+        /// <param name="yValue">y-axis value</param>
         public void Log(string yLabel, string yValue)
         {
             _Log(yLabel, yValue);
@@ -171,9 +184,10 @@ namespace FUB_TradingSim
         //----- output
         #region public int SaveAsCsv(string filePath, string plotTitle = null)
         /// <summary>
-        /// save log as CSV file
+        /// Save log as CSV file.
         /// </summary>
         /// <param name="filePath">path to destination file</param>
+        /// <param name="plotTitle">plot to save, null for current plot</param>
         public int SaveAsCsv(string filePath, string plotTitle = null)
         {
             if (plotTitle == null)
@@ -208,7 +222,7 @@ namespace FUB_TradingSim
         #region public void OpenWithExcel(string pathToExcelTemplate)
 #if ENABLE_EXCEL
         /// <summary>
-        /// open log with existing Excel sheet, containing UPDATE_ALL macro
+        /// Open log with existing Excel template, containing UPDATE_ALL macro.
         /// </summary>
         /// <param name="pathToExcelTemplate">path to existing excel file</param>
         public void OpenWithExcel(string pathToExcelTemplate)
@@ -269,7 +283,7 @@ namespace FUB_TradingSim
         #region public void OpenWithR(List<string> RCommands = null)
 #if ENABLE_R
         /// <summary>
-        /// open and plot log with R
+        /// Open and plot log with R.
         /// </summary>
         /// <param name="RCommands">R commands to load and plot</param>
         public void OpenWithR(List<string> RCommands = null)

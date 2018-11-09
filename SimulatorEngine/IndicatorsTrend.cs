@@ -17,159 +17,225 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
+    /// <summary>
+    /// Collection of trend-based indicators.
+    /// </summary>
     public static class IndicatorsTrend
     {
         #region public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// simple moving average over past number of bars
+        /// Calculate Simple Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Simple_moving_average"/>
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorSMA>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorSMA(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorSMA : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            public FunctorSMA(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-            }
-
-            public void Calc()
-            {
-                double sum = Series[0];
-                int num = 1;
-
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    for (int t = 1; t < N; t++)
+                    double sum = series[0];
+                    int num = 1;
+
+                    try
                     {
-                        sum += Series[t];
-                        num++;
+                        for (int t = 1; t < n; t++)
+                        {
+                            sum += series[t];
+                            num++;
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                    }
 
-                Value = sum / num;
-            }
+                    return sum / num;
+                },
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// expnentially weighted moving average over past number of bars
+        /// Calculate Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average"/>
         /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
-            var functor = Cache<FunctorEMA>.GetData(
-                    Tuple.Create(series, n).GetHashCode(),
-                    () => new FunctorEMA(series, n));
-
-            functor.Calc();
-
-            return functor;
-        }
-
-        private class FunctorEMA : TimeSeries<double>
-        {
-            public ITimeSeries<double> Series;
-            public int N;
-
-            private double _alpha;
-
-            public FunctorEMA(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(1, n);
-                _alpha = 2.0 / (N + 1.0);
-            }
-
-            public void Calc()
-            {
-                try
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
                 {
-                    // prevent output from becoming
-                    // noisy with N == 1
-                    Value = N > 1
-                        ? _alpha * (Series[0] - this[0]) + this[0]
-                        : Series[0];
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = Series[0];
-                }
-            }
+                    double alpha = 2.0 / (n + 1);
+                    return alpha * (series[0] - v) + v;
+                },
+                series[0],
+                series.GetHashCode(), n);
         }
         #endregion
+
+        #region public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Double Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Double_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>DEMA time series</returns>
+        public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n)
+        {
+            return series
+                .Multiply(2.0)
+                .EMA(n)
+                .Subtract(series
+                    .EMA(n)
+                    .EMA(n));
+        }
+        #endregion
+        #region public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Triple Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Triple_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>TEMA time series</returns>
+        public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
+        {
+            return series
+                .Multiply(3.0)
+                .EMA(n)
+                .Subtract(series
+                    .Multiply(3.0)
+                    .EMA(n)
+                    .EMA(n))
+                .Add(series
+                    .EMA(n)
+                    .EMA(n)
+                    .EMA(n));
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period)
+        /// <summary>
+        /// Calculate Ehlers' Zero Lag Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Zero_lag_exponential_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="period">averaging length</param>
+        /// <returns>ZLEMA as time series</returns>
+        public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period)
+        {
+            int lag = (int)Math.Round((period - 1.0) / 2.0);
+
+            return series
+                .Add(series
+                    .Subtract(series
+                        .Delay(lag)))
+                .EMA(period);
+        }
+        #endregion
+
         #region public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
+        /// <summary>
+        /// Calculate Kaufman's Adaptive Moving Average, as described here:
+        /// <see href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:kaufman_s_adaptive_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="erPeriod">period for efficiency ratio</param>
+        /// <param name="fastEma">period for fast EMA</param>
+        /// <param name="slowEma">period for slow EMA</param>
+        /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    try
+                    {
+                        double scFast = 2.0 / (1.0 + fastEma);
+                        double scSlow = 2.0 / (1.0 + slowEma);
 
-            var functor = Cache<FunctorKAMA>.GetData(
-                    Tuple.Create(series, erPeriod, fastEma, slowEma).GetHashCode(),
-                    () => new FunctorKAMA(series, erPeriod, fastEma, slowEma));
+                        double change = Math.Abs(series[0] - series[erPeriod]);
+                        double volatility = Enumerable.Range(0, erPeriod)
+                            .Sum(t => Math.Abs(series[t] - series[t + 1]));
 
-            functor.Calc();
+                        double efficiencyRatio = change / Math.Max(1e-10, volatility);
+                        double smoothingConstant = Math.Pow(efficiencyRatio * (scFast - scSlow) + scSlow, 2);
+
+                        return smoothingConstant * (series[0] - v) + v;
+                    }
+                    catch (Exception)
+                    {
+                        // we get here when we access bars too far in the past
+                        return series[0];
+                    }
+                },
+                series[0],
+                series.GetHashCode(), erPeriod, fastEma, slowEma);
+        }
+        #endregion
+
+        #region public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        /// <summary>
+        /// Calculate MACD, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/MACD"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="fast">fast EMA period</param>
+        /// <param name="slow">slow EMA period</param>
+        /// <param name="signal">signal line period</param>
+        /// <returns></returns>
+        public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        {
+            var functor = Cache<MACDResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), fast, slow, signal),
+                    () => new MACDResult());
+
+            functor.Fast = series.EMA(fast);
+            functor.Slow = series.EMA(slow);
+            functor.MACD = functor.Fast.Subtract(functor.Slow);
+            functor.Signal = functor.MACD.EMA(signal);
+            functor.Divergence = functor.MACD.Subtract(functor.Signal);
 
             return functor;
         }
 
-        private class FunctorKAMA : TimeSeries<double>
+        /// <summary>
+        /// Container for MACD result.
+        /// </summary>
+        public class MACDResult
         {
-            public ITimeSeries<double> Series;
-            public int ErPeriod;
-            public int FastEma;
-            public int SlowEma;
+            /// <summary>
+            /// Fast EMA.
+            /// </summary>
+            public ITimeSeries<double> Fast;
 
-            private double _scFast;
-            private double _scSlow;
+            /// <summary>
+            /// Slow EMA.
+            /// </summary>
+            public ITimeSeries<double> Slow;
 
-            public FunctorKAMA(ITimeSeries<double> series, int erPeriod, int fastEma, int slowEma)
-            {
-                Series = series;
-                ErPeriod = erPeriod;
-                FastEma = fastEma;
-                SlowEma = slowEma;
+            /// <summary>
+            /// MACD, as the difference between fast and slow EMA.
+            /// </summary>
+            public ITimeSeries<double> MACD;
 
-                _scFast = 2.0 / (FastEma + 1.0);
-                _scSlow = 2.0 / (SlowEma + 1.0);
-            }
+            /// <summary>
+            /// Signal line, as the EMA of the MACD.
+            /// </summary>
+            public ITimeSeries<double> Signal;
 
-            public void Calc()
-            {
-
-                try
-                {
-                    double change = Math.Abs(Series[0] - Series[ErPeriod]);
-                    double volatility = Enumerable.Range(0, ErPeriod)
-                        .Sum(t => Math.Abs(Series[t] - Series[t + 1]));
-
-                    double efficiencyRatio = change / Math.Max(1e-10, volatility);
-                    double smoothingConstant = Math.Pow(efficiencyRatio * (_scFast - _scSlow) + _scSlow, 2);
-
-                    Value = this[0] + smoothingConstant * (Series[0] - this[0]);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    Value = Series[0];
-                }
-            }
+            /// <summary>
+            /// Divergence, the difference between MACD and signal line.
+            /// </summary>
+            public ITimeSeries<double> Divergence;
         }
         #endregion
     }

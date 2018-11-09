@@ -17,11 +17,15 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// time series implementation
+    /// Template class for time series data. A TimeSeries object will allow
+    /// limited access to the historical values of the series, by default
+    /// 256 values back. TuringTrader makes extensive use of time series
+    /// objects for the implementation of data sources and indicators.
     /// </summary>
+    /// <typeparam name="T">value type</typeparam>
     public class TimeSeries<T> : ITimeSeries<T>
     {
 #if false
@@ -88,6 +92,10 @@ namespace FUB_TradingSim
         #endregion
 
         #region public TimeSeries(int maxBarsBack)
+        /// <summary>
+        /// Create and initialize time series.
+        /// </summary>
+        /// <param name="maxBarsBack">number of bars to hold</param>
         public TimeSeries(int maxBarsBack = 256)
         {
             _maxBarsBack = maxBarsBack;
@@ -98,6 +106,9 @@ namespace FUB_TradingSim
         #endregion
 
         #region public T Value
+        /// <summary>
+        /// Write-only property to set current value, and shift the time series.
+        /// </summary>
         public T Value
         {
             set
@@ -108,8 +119,13 @@ namespace FUB_TradingSim
             }
         }
         #endregion
-        #region public T this[int daysBack]
-        public T this[int daysBack]
+        #region public T this[int barsBack]
+        /// <summary>
+        /// Read only access to historical bars
+        /// </summary>
+        /// <param name="barsBack">number of bars back, 0 for most recent</param>
+        /// <returns>historical value</returns>
+        public T this[int barsBack]
         {
             get
             {
@@ -117,9 +133,9 @@ namespace FUB_TradingSim
                     throw new Exception("time series lookup past available bars");
 
                 // adjust daysBack, if exceeding # of available bars
-                daysBack = Math.Max(Math.Min(daysBack, _numBars - 1), 0);
+                barsBack = Math.Max(Math.Min(barsBack, _numBars - 1), 0);
 
-                int idx = (_newestBar + _maxBarsBack - daysBack) % _maxBarsBack;
+                int idx = (_newestBar + _maxBarsBack - barsBack) % _maxBarsBack;
                 T value = _barData[idx];
 
                 return value;
@@ -127,6 +143,9 @@ namespace FUB_TradingSim
         }
         #endregion
         #region public int BarsAvailable
+        /// <summary>
+        /// Number of valid bars available.
+        /// </summary>
         public int BarsAvailable
         {
             get

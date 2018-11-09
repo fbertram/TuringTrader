@@ -17,18 +17,43 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace FUB_TradingSim
+namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// trading log entry
+    /// Entry to trading log.
     /// </summary>
     public class LogEntry
     {
-        public string Symbol; // we need this, as we clear the instrument from the OrderTicket
+        /// <summary>
+        /// Symbol traded. This is required, as the Instrument is cleared from
+        /// the OrderTicket field to preserve memory.
+        /// </summary>
+        public string Symbol;
+
+        /// <summary>
+        /// Original order ticket. Please note that the Instrument is set to
+        /// null, to preserve memory. Use the Symbol field instead.
+        /// </summary>
         public Order OrderTicket;
+
+        /// <summary>
+        /// Bar of trade execution.
+        /// </summary>
         public Bar BarOfExecution;
+
+        /// <summary>
+        /// Net asset value at trade execution.
+        /// </summary>
         public double NetAssetValue;
+
+        /// <summary>
+        /// Fill price of trade.
+        /// </summary>
         public double FillPrice;
+
+        /// <summary>
+        /// Commission paid for trade.
+        /// </summary>
         public double Commission;
     }
 }
