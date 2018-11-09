@@ -38,6 +38,21 @@ namespace TuringTrader.Simulator
                 series.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> CLV(this Instrument series)
+        /// <summary>
+        /// CLV factor as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>CLV as time series</returns>
+        public static ITimeSeries<double> CLV(this Instrument series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => ((series.Close[t] - series.Low[t]) - (series.High[t] - series.Close[t])) 
+                    / (series.High[t] - series.Low[t]),
+                series.GetHashCode());
+        }
+        #endregion
     }
 }
 

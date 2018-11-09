@@ -21,8 +21,13 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Class representing a tradeable instrument, providing
-    /// general information as well as time series data.
+    /// Class representing a tradeable instrument. In essence, an instrument
+    /// is a time series of bars, enriched by general information about
+    /// the data source which feeds this instrument. Instruments are created
+    /// automatically by the simulator engine as required, in many cases
+    /// leading to instruments being added over the course of a simulation.
+    /// As indicators typically run on time series of double, instruments
+    /// break down the time series of bars into multiple series of doubles.
     /// </summary>
     public class Instrument : TimeSeries<Bar>
     {

@@ -21,7 +21,10 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// data source, providing a bar enumerator for one or more instruments
+    /// Base class for data sources, providing a bar enumerator for one or more
+    /// instruments. Other than instantiating data sources through the factory
+    /// method New(), and adding them to the Algorithm's DataSources property,
+    /// application developers do not need to interact with data sources directly.
     /// </summary>
     public abstract class DataSource
     {
@@ -60,42 +63,7 @@ namespace TuringTrader.Simulator
         /// <returns>data source object</returns>
         static public DataSource New(string nickname)
         {
-            // check for info file
-            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
-
-            if (!File.Exists(infoPathName))
-                throw new Exception("failed to locate data source info for " + nickname);
-
-            // create info structure
-            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
-            infos[DataSourceValue.nickName] = nickname;
-            infos[DataSourceValue.ticker] = nickname;
-            infos[DataSourceValue.symbol] = nickname;
-            infos[DataSourceValue.infoPath] = DataPath;
-
-            // load info file
-            string[] lines = File.ReadAllLines(infoPathName);
-            foreach (string line in lines)
-            {
-                int idx = line.IndexOf('=');
-
-                try
-                {
-                    DataSourceValue key = (DataSourceValue)
-                        Enum.Parse(typeof(DataSourceValue), line.Substring(0, idx), true);
-
-                    string value = line.Substring(idx + 1);
-
-                    infos[key] = value;
-                }
-                catch (Exception)
-                {
-                    throw new Exception(string.Format("error parsing data source info for {0}: line '{1}", nickname, line));
-                }
-            }
-
-            // instantiate data source
-            return new DataSourceCsv(infos);
+            return DataSourceCollection.New(nickname);
         }
         #endregion
         #region protected DataSource(Dictionary<DataSourceValue, string> info)
@@ -214,6 +182,81 @@ namespace TuringTrader.Simulator
         /// <param name="startTime">beginning time stamp</param>
         /// <param name="endTime">end time stamp</param>
         abstract public void LoadData(DateTime startTime, DateTime endTime);
+        #endregion
+    }
+
+    /// <summary>
+    /// Collection of data source implementations. There is no need for
+    /// application developers to interact with this class directly.
+    /// </summary>
+    public partial class DataSourceCollection
+    {
+        #region private static string DataPath
+        /// <summary>
+        /// Path to data base.
+        /// </summary>
+        private static string DataPath
+        {
+            get
+            {
+                return GlobalSettings.DataPath;
+            }
+            set
+            {
+                if (!Directory.Exists(value))
+                    throw new Exception(string.Format("DataSource: invalid data path {0}", value));
+
+                GlobalSettings.DataPath = value;
+            }
+        }
+        #endregion
+        #region static public DataSource New(string nickname)
+        /// <summary>
+        /// Factory function to instantiate new data source.
+        /// </summary>
+        /// <param name="nickname">nickname</param>
+        /// <returns>data source object</returns>
+        static public DataSource New(string nickname)
+        {
+            // check for info file
+            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
+
+            if (!File.Exists(infoPathName))
+                throw new Exception("failed to locate data source info for " + nickname);
+
+            // create info structure
+            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>
+            {
+                { DataSourceValue.nickName, nickname },
+                { DataSourceValue.ticker, nickname },
+                { DataSourceValue.symbol, nickname },
+                { DataSourceValue.infoPath, DataPath }
+            };
+
+            // load info file
+            string[] lines = File.ReadAllLines(infoPathName);
+            foreach (string line in lines)
+            {
+                int idx = line.IndexOf('=');
+
+                try
+                {
+                    DataSourceValue key = (DataSourceValue)
+                        Enum.Parse(typeof(DataSourceValue), line.Substring(0, idx), true);
+
+                    string value = line.Substring(idx + 1);
+
+                    infos[key] = value;
+                }
+                catch (Exception)
+                {
+                    throw new Exception(string.Format("error parsing data source info for {0}: line '{1}", nickname, line));
+                }
+            }
+
+            // instantiate data source
+            return new DataSourceCsv(infos);
+        }
         #endregion
     }
 }

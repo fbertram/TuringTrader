@@ -28,7 +28,11 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Multi-threaded job queue.
+    /// Multi-threaded job queue. A job queue allows a fixed number of jobs
+    /// to be executed in parallel, typically one per CPU core. If the number
+    /// of jobs exceeds the maximum parallelism, the jobs are queued until
+    /// a slot becomes available. This class is at the core of TuringTrader's
+    /// optimizer, but also used for parallel data updating.
     /// </summary>
     public class MTJobQueue
     {

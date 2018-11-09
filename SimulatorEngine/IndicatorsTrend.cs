@@ -181,6 +181,63 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), erPeriod, fastEma, slowEma);
         }
         #endregion
+
+        #region public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        /// <summary>
+        /// Calculate MACD, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/MACD"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="fast">fast EMA period</param>
+        /// <param name="slow">slow EMA period</param>
+        /// <param name="signal">signal line period</param>
+        /// <returns></returns>
+        public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        {
+            var functor = Cache<MACDResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), fast, slow, signal),
+                    () => new MACDResult());
+
+            functor.Fast = series.EMA(fast);
+            functor.Slow = series.EMA(slow);
+            functor.MACD = functor.Fast.Subtract(functor.Slow);
+            functor.Signal = functor.MACD.EMA(signal);
+            functor.Divergence = functor.MACD.Subtract(functor.Signal);
+
+            return functor;
+        }
+
+        /// <summary>
+        /// Container for MACD result.
+        /// </summary>
+        public class MACDResult
+        {
+            /// <summary>
+            /// Fast EMA.
+            /// </summary>
+            public ITimeSeries<double> Fast;
+
+            /// <summary>
+            /// Slow EMA.
+            /// </summary>
+            public ITimeSeries<double> Slow;
+
+            /// <summary>
+            /// MACD, as the difference between fast and slow EMA.
+            /// </summary>
+            public ITimeSeries<double> MACD;
+
+            /// <summary>
+            /// Signal line, as the EMA of the MACD.
+            /// </summary>
+            public ITimeSeries<double> Signal;
+
+            /// <summary>
+            /// Divergence, the difference between MACD and signal line.
+            /// </summary>
+            public ITimeSeries<double> Divergence;
+        }
+        #endregion
     }
 }
 

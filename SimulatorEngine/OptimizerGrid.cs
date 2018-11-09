@@ -23,7 +23,9 @@ namespace TuringTrader.Simulator
 {
 
     /// <summary>
-    /// class to run exhaustive optimization
+    /// Exhaustive grid optimizer. This optimizer iterate through all possible 
+    /// parameter combinations in a brute-force fashion. Individual iterations
+    /// are executed in parallel, as far as possible.
     /// </summary>
     public class OptimizerGrid
     {
@@ -183,6 +185,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public double Progress
+        /// <summary>
+        /// Progress of optimization as a double between 0 and 100.
+        /// </summary>
         public double Progress
         {
             get

@@ -32,8 +32,9 @@ namespace TuringTrader.Simulator
     {
         #region static public int UniqueId(params int[] parameterIds)
         /// <summary>
-        /// Create unique ID from list of integer parameters, and current stack trace.
-        /// This ID is used to uniquely identify auto-magically created indicator functors.
+        /// Create unique cryptographic key from a list of integer parameters, as
+        /// well as the current stack trace. This ID is used to uniquely identify 
+        /// auto-magically created indicator functors.
         /// </summary>
         /// <param name="parameterIds">list of integer parameters</param>
         /// <returns>unique id</returns>
@@ -61,7 +62,11 @@ namespace TuringTrader.Simulator
     }
 
     /// <summary>
-    /// Cache template class.
+    /// Cache template class. The cache is at the core of TuringTrader's
+    /// auto-magic indicator objects, as well as the the data sources. Cache
+    /// objects are accessed via a cryptographic key, which is typically
+    /// created with either the object.GetHashCode() method, or the
+    /// Cache.UniqueId() method.
     /// </summary>
     /// <typeparam name="T">type of cache</typeparam>
     public static class Cache<T>

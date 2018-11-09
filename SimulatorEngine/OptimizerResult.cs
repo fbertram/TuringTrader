@@ -20,7 +20,8 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Container to store parameters and fitness of optimiation iteration.
+    /// Container to store parameters and fitness of a single optimiation
+    /// iteration.
     /// </summary>
     public class OptimizerResult
     {

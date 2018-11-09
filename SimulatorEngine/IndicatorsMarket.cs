@@ -24,7 +24,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsMarket
     {
-        #region public static CAPMParams CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
+        #region public static CAPMResult CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
         /// <summary>
         /// Calculate Capital Asset Pricing Model parameters.
         /// <see href="http://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
@@ -33,15 +33,15 @@ namespace TuringTrader.Simulator
         /// <param name="benchmark">instrument serving as benchmark</param>
         /// <param name="n">length of rolling window</param>
         /// <returns>CAPM info</returns>
-        public static CAPMParams CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
+        public static CAPMResult CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
         {
-            var functor = Cache<CAPMParams>.GetData(
+            var functor = Cache<CAPMResult>.GetData(
                     // TODO: does the market need to be included in the unique id?
                     //       for now, we have decided to _not_ include the market,
                     //       but pass it on to Calc() as a parameter.
                     //Cache.UniqueId(market.GetHashCode(), benchmark.GetHashCode(), n),
                     Cache.UniqueId(benchmark.GetHashCode(), n),
-                    () => new CAPMParams(market, benchmark, n));
+                    () => new CAPMResult(market, benchmark, n));
 
             functor.Calc(market);
 
@@ -50,7 +50,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Container holding CAPM parameters.
         /// </summary>
-        public class CAPMParams
+        public class CAPMResult
         {
             private readonly double _alpha;
             private Dictionary<Instrument, double> _avg = new Dictionary<Instrument, double>();
@@ -93,7 +93,7 @@ namespace TuringTrader.Simulator
             /// <param name="market">Enumerable of instruments defining market</param>
             /// <param name="benchmark">Benchmark instrument</param>
             /// <param name="n">Length of rolling window</param>
-            public CAPMParams(IEnumerable<Instrument> market, Instrument benchmark, int n)
+            public CAPMResult(IEnumerable<Instrument> market, Instrument benchmark, int n)
             {
                 Market = market;
                 Benchmark = benchmark;

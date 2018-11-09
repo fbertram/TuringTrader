@@ -13,13 +13,12 @@ This project implements a trading simulator/ backtester for stocks and options w
 * strong focus on easy-to-use time-series APIs, to make coding a breeze
 * multi-threaded optimizer engine, able to utilize all CPU cores
 * demo algorithms to shorten learning curve
-* quick start guide
+* API documentation, and quick start guide, as Windows help file
 
 The following features are planned for the near future:
 
 * support for limit orders
 * Data management tool
-* API documentation
 * Unit tests
 
 The following environment is required for building and running the simulator:

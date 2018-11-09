@@ -26,15 +26,9 @@ namespace TuringTrader.Simulator
     public class Output
     {
         /// <summary>
-        /// Delegate type to write debug message.
-        /// </summary>
-        /// <param name="message">debug message</param>
-        public delegate void WriteEventDelegate(string message);
-
-        /// <summary>
         /// Debug output event.
         /// </summary>
-        public static WriteEventDelegate WriteEvent;
+        public static Action<string> WriteEvent;
 
         /// <summary>
         /// Write formatted debug output.

@@ -24,7 +24,37 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsVolume
     {
-        // - Chaikin Oscillator
+        #region public static ITimeSeries<double> AccumulationDistributionIndex(this Instrument series)
+        /// <summary>
+        /// Accumulation/ distribution index as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>accumulation/ distribution index as time series</returns>
+        public static ITimeSeries<double> AccumulationDistributionIndex(this Instrument series)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                (v) => v + series.Volume[0] * series.CLV()[0],
+                series.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> ChaikinOscillator(this Instrument series)
+        /// <summary>
+        /// Chaikin oscillator as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>accumulation/ distribution index as time series</returns>
+        public static ITimeSeries<double> ChaikinOscillator(this Instrument series)
+        {
+            var adl = series.AccumulationDistributionIndex();
+            return adl
+                .EMA(3)
+                .Subtract(adl
+                    .EMA(10));
+        }
+        #endregion
+
         // - On-Balance Volume
         // - Volume Rate of Change
     }

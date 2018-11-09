@@ -20,7 +20,10 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Template class for time series data.
+    /// Template class for time series data. A TimeSeries object will allow
+    /// limited access to the historical values of the series, by default
+    /// 256 values back. TuringTrader makes extensive use of time series
+    /// objects for the implementation of data sources and indicators.
     /// </summary>
     /// <typeparam name="T">value type</typeparam>
     public class TimeSeries<T> : ITimeSeries<T>

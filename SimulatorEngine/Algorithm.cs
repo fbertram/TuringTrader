@@ -22,8 +22,9 @@ using System.Diagnostics;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Base class for trading algorithms. All Turing Trader algorithms
-    /// must be derived from this class.
+    /// Abstract base class for trading algorithms. All Turing Trader algorithms
+    /// must be derived from this class, and override the Run() and Report()
+    /// methods.
     /// </summary>
     public abstract class Algorithm : SimulatorCore
     {
@@ -57,6 +58,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         override public void Run() { }
         #endregion
+        #region override public void Report()
+        /// <summary>
+        /// Create report. This method can be called after calling Run(), to
+        /// create and display a custom report. Typically, trading algorithms
+        /// override this method with their own implementation. Algorithms are
+        /// not required to call the base class implementation of this method.
+        /// </summary>
+        virtual public void Report() { }
+        #endregion
         #region public double Progress
         /// <summary>
         /// Progress indicator, ranging from 0 to 100. This progress indicator
@@ -79,15 +89,6 @@ namespace TuringTrader.Simulator
                 }
             }
         }
-        #endregion
-        #region override public void Report()
-        /// <summary>
-        /// Create report. This method can be called after calling Run(), to
-        /// create and display a custom report. Typically, trading algorithms
-        /// override this method with their own implementation. Algorithms are
-        /// not required to call the base class implementation of this method.
-        /// </summary>
-        virtual public void Report() { }
         #endregion
 
         #region public Dictionary<string, OptimizerParam> OptimizerParams

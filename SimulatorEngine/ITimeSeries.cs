@@ -20,7 +20,8 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Interface for time series data.
+    /// Interface for time series data. This interface provides access to
+    /// a limited number of historical values.
     /// </summary>
     /// <typeparam name="T">type of time series</typeparam>
     public interface ITimeSeries<T>

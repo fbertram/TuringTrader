@@ -98,7 +98,7 @@ namespace TuringTrader
             }
 
             //--- redirect log output
-            Output.WriteEvent += new Output.WriteEventDelegate(WriteEventHandler);
+            Output.WriteEvent += WriteEventHandler;
         }
         #endregion
 
@@ -166,8 +166,10 @@ namespace TuringTrader
         #region private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
         private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
         {
-            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
-            folderDialog.Title = "Select Data Location";
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog()
+            {
+                Title = "Select Data Location"
+            };
 
             bool? result = folderDialog.ShowDialog();
             if (result == true)
