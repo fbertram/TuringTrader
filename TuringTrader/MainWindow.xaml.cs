@@ -84,17 +84,17 @@ namespace TuringTrader
             _dispatcherTimer.Start();
 
             //--- initialize algorithm selector
-            var allAlgoTypes = AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name);
-            foreach (Type algorithmType in allAlgoTypes)
-                AlgoSelector.Items.Add(algorithmType.Name);
+            var allAlgorithms = AlgorithmLoader.GetAllAlgorithms();
+
+            foreach (Type algorithm in allAlgorithms)
+                AlgoSelector.Items.Add(algorithm.Name);
 
             // attempt to recover most-recent algo
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
             if (mostRecentAlgorithm != default(string))
             {
-                AlgoSelector.SelectedIndex = allAlgoTypes
-                        .ToList()
-                        .FindIndex(t => t.Name == mostRecentAlgorithm);
+                AlgoSelector.SelectedIndex = allAlgorithms
+                    .FindIndex(t => t.Name == mostRecentAlgorithm);
             }
 
             //--- redirect log output
@@ -247,9 +247,12 @@ namespace TuringTrader
         }
         #endregion
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
-        private void ReportButton_Click(object sender, RoutedEventArgs e)
+        private async void ReportButton_Click(object sender, RoutedEventArgs e)
         {
-            _currentAlgorithm.Report();
+            await Task.Run(() =>
+            {
+                _currentAlgorithm.Report();
+            });
         }
         #endregion
         #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
