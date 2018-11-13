@@ -9,7 +9,7 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
-#define ENABLE_R
+//#define R_DOT_NET
 // for R, we need RDotNet installed. comment the line above to disable R
 // install with the following command: nuget install R.Net.Community
 // tested successfully w/ MSVC 2017, R 3.4.3, and RDotNet 1.7.0
@@ -17,6 +17,10 @@
 // - DynamicInterop.dll
 // - RDotNet.dll
 // - RDotNet.NativeLibrary.dll
+
+#define ENABLE_R
+// for R, we need R Tools for Visual Studio (RTVS) installed.
+// - Microsoft.R.Host.Client
 
 #define ENABLE_EXCEL
 // for Excel, we need Microsoft office installed. comment the line above to disable Excel
@@ -31,18 +35,23 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 #if ENABLE_EXCEL
 using Excel = Microsoft.Office.Interop.Excel;
 #endif
 
-#if ENABLE_R
+#if R_DOT_NET
 using RDotNet;
 using RDotNet.NativeLibrary;
+using System.Drawing.Imaging;
+#endif
+
+#if ENABLE_R
+using Microsoft.R.Host.Client;
 #endif
 #endregion
-
 
 namespace TuringTrader.Simulator
 {
@@ -52,16 +61,27 @@ namespace TuringTrader.Simulator
     public class Logger
     {
         #region internal data
-        //private CStudyControl Host;
+        /// <summary>
+        /// title of current plot
+        /// </summary>
         private string CurrentPlot;
-        private Dictionary<string, string> XLabels;
-        private Dictionary<string, List<Dictionary<string, string>>> LogData;
+
+        /// <summary>
+        /// x-axis label for given plot title
+        /// </summary>
+        private Dictionary<string, List<string>> AllLabels = new Dictionary<string, List<string>>();
+        private List<string> CurrentLabels = null;
+
+        /// <summary>
+        /// log data for given plot title. log data is list of dictionaries,
+        /// one entry per row, with key being the name of the field.
+        /// </summary>
+        private Dictionary<string, List<Dictionary<string, object>>> AllData = new Dictionary<string, List<Dictionary<string, object>>>();
+        private List<Dictionary<string, object>> CurrentData = null;
+
+        IRHostSession _rSession = null;
         #endregion
         #region internal helpers
-        private void _Log(string yLabel, string yValue)
-        {
-            LogData[CurrentPlot].Last()[yLabel] = yValue;
-        }
         private string AddQuotesAsRequired(string value)
         {
             char[] needsQuotes = " ,".ToCharArray();
@@ -86,8 +106,8 @@ namespace TuringTrader.Simulator
         /// </summary>
         public void Clear()
         {
-            XLabels = null;
-            LogData = null;
+            AllLabels.Clear();
+            AllData.Clear();
         }
         #endregion
 
@@ -100,84 +120,52 @@ namespace TuringTrader.Simulator
         /// <param name="xLabel">label on x-axis</param>
         public void SelectPlot(string plotTitle, string xLabel)
         {
+            if (!AllLabels.ContainsKey(plotTitle))
+                AllLabels[plotTitle] = new List<string>();
+
+            if (!AllData.ContainsKey(plotTitle))
+                AllData[plotTitle] = new List<Dictionary<string, object>>();
+
             CurrentPlot = plotTitle;
+            CurrentData = AllData[plotTitle];
+            CurrentLabels = AllLabels[plotTitle];
 
-            if (XLabels == null)
-                XLabels = new Dictionary<string, string>();
+            if (CurrentLabels.Count == 0)
+                CurrentLabels.Add(xLabel);
 
-            XLabels[plotTitle] = xLabel;
+            if (CurrentLabels.First() != xLabel)
+                throw new Exception("Logger: x-label mismatch");
         }
         #endregion
-
-        #region public void SetX(double xValue)
+        #region public void SetX(object xValue)
         /// <summary>
         /// Set value along x-asis.
         /// </summary>
         /// <param name="xValue">x-axis value</param>
-        public void SetX(double xValue)
+        public void SetX(object xValue)
         {
-            string xValueStr = string.Format("{0}", xValue);
-            SetX(xValueStr);
-        }
-        #endregion
-        #region public void SetX(DateTime xValue)
-        /// <summary>
-        /// Set value along x-asis.
-        /// </summary>
-        /// <param name="xValue">x-axis value</param>
-        public void SetX(DateTime xValue)
-        {
-            string xValueStr = string.Format("{0:MM/dd/yyyy}", xValue);
-            SetX(xValueStr);
-        }
-        #endregion
-        #region public void SetX(string xValue)
-        /// <summary>
-        /// Set value along x-asis.
-        /// </summary>
-        /// <param name="xValue">x-axis value</param>
-        public void SetX(string xValue)
-        {
-            // create log data structure
-            if (LogData == null)
-                LogData = new Dictionary<string, List<Dictionary<string, string>>>();
-
             if (CurrentPlot == null)
                 SelectPlot("Untitled Plot", "x");
 
-            // create structure for current plot
-            if (!LogData.ContainsKey(CurrentPlot))
-                LogData[CurrentPlot] = new List<Dictionary<string, string>>();
-
             // create row for xValue (multiple rows w/ identical xValues are possible)
-            LogData[CurrentPlot].Add(new Dictionary<string, string>());
+            CurrentData.Add(new Dictionary<string, object>());
 
             // save xValue
-            LogData[CurrentPlot].Last()[XLabels[CurrentPlot]] = xValue;
+            CurrentData.Last()[CurrentLabels.First()] = xValue;
         }
         #endregion
+        #region public void Log(string yLabel, object yValue)
+        /// <summary>
+        /// Log new value to current plot, at current x-axis value.
+        /// </summary>
+        /// <param name="yLabel">y-axis label</param>
+        /// <param name="yValue">y-axis value</param>
+        public void Log(string yLabel, object yValue)
+        {
+            if (!CurrentLabels.Contains(yLabel))
+                CurrentLabels.Add(yLabel);
 
-        #region public void Log(string yLabel, double yValue)
-        /// <summary>
-        /// Log new value to current plot, at current x-axis value.
-        /// </summary>
-        /// <param name="yLabel">y-axis label</param>
-        /// <param name="yValue">y-axis value</param>
-        public void Log(string yLabel, double yValue)
-        {
-            string yValueStr = string.Format("{0}", yValue);
-            _Log(yLabel, yValueStr);
-        }
-        #endregion
-        #region public void Log(string yLabel, string yValue)
-        /// <summary>
-        /// Log new value to current plot, at current x-axis value.
-        /// </summary>
-        /// <param name="yLabel">y-axis label</param>
-        /// <param name="yValue">y-axis value</param>
-        public void Log(string yLabel, string yValue)
-        {
-            _Log(yLabel, yValue);
+            CurrentData.Last()[yLabel] = yValue;
         }
         #endregion
 
@@ -188,27 +176,38 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="filePath">path to destination file</param>
         /// <param name="plotTitle">plot to save, null for current plot</param>
-        public int SaveAsCsv(string filePath, string plotTitle = null)
+        /// <param name="toString">function to convert object to string, default null</param>
+        public int SaveAsCsv(string filePath, string plotTitle = null, Func<object, string> toString = null)
         {
             if (plotTitle == null)
                 plotTitle = CurrentPlot;
 
+            if (toString == null)
+                toString = (o) => o.ToString();
+
             using (StreamWriter file = new StreamWriter(filePath))
             {
-                Output.WriteLine("{0}: saving {1} data points to {2}", plotTitle, LogData[plotTitle].Count, filePath);
+                Output.WriteLine("{0}: saving {1} data points to {2}", plotTitle, AllData[plotTitle].Count, filePath);
 
                 //--- header row
-                file.Write(AddQuotesAsRequired(XLabels[plotTitle]));
-                foreach (string label in LogData[plotTitle][0].Keys)
-                    if (label != XLabels[plotTitle]) file.Write("," + AddQuotesAsRequired(label));
+                var currentData = AllData[plotTitle];
+                var currentLabels = AllLabels[plotTitle];
+
+                foreach (string label in currentLabels)
+                    file.Write(AddQuotesAsRequired(label) + ",");
                 file.WriteLine("");
 
                 //--- data rows
-                foreach (var row in LogData[plotTitle])
+                foreach (var row in currentData)
                 {
-                    file.Write(AddQuotesAsRequired(row[XLabels[plotTitle]]));
-                    foreach (string label in row.Keys)
-                        if (label != XLabels[plotTitle]) file.Write("," + AddQuotesAsRequired(row[label]));
+                    foreach (string label in currentLabels)
+                    {
+                        object valueObject = row[label];
+                        string valueString = toString(valueObject);
+
+                        file.Write(AddQuotesAsRequired(valueString) + ",");
+                    }
+
                     file.WriteLine("");
                 }
 
@@ -216,7 +215,7 @@ namespace TuringTrader.Simulator
                 file.WriteLine("");
             }
 
-            return LogData[plotTitle].Count;
+            return AllData[plotTitle].Count;
         }
         #endregion
         #region public void OpenWithExcel(string pathToExcelTemplate)
@@ -227,11 +226,11 @@ namespace TuringTrader.Simulator
         /// <param name="pathToExcelTemplate">path to existing excel file</param>
         public void OpenWithExcel(string pathToExcelTemplate)
         {
-            if (LogData == null || LogData.Keys.Count == 0)
+            if (AllData == null || AllData.Keys.Count == 0)
                 return;
 
-            int rows = LogData.Keys
-                .Select(item => LogData[item].Count)
+            int rows = AllData.Keys
+                .Select(item => AllData[item].Count)
                 .Max();
             if (rows <= 1)
             {
@@ -247,15 +246,16 @@ namespace TuringTrader.Simulator
             // https://social.msdn.microsoft.com/Forums/lync/en-US/2e33b8e5-c9fd-42a1-8d67-3d61d2cedc1c/how-to-call-excel-macros-programmatically-in-c?forum=exceldev
 
             //var excel = new Excel.ApplicationClass();
-            var excel = new Excel.Application();
-
-            excel.Visible = true;
+            var excel = new Excel.Application()
+            {
+                Visible = true,
+            };
             var wbooks = excel.Workbooks;
             //var wbook = wbooks.Open(pathToExcelFile);
             var wbook = wbooks.Add(pathToExcelTemplate); // create new w/ file as template
             Thread.Sleep(500); // this is ugly but prevents Excel from crashing
 
-            List<string> plots = LogData.Keys.ToList();
+            List<string> plots = AllData.Keys.ToList();
             for (int i = 0; i < plots.Count; i++)
             {
                 string plot = plots[i];
@@ -280,8 +280,9 @@ namespace TuringTrader.Simulator
 			}
 #endif // ENABLE_EXCEL
         #endregion
+
+#if R_DOT_NET
         #region public void OpenWithR(List<string> RCommands = null)
-#if ENABLE_R
         /// <summary>
         /// Open and plot log with R.
         /// </summary>
@@ -305,11 +306,11 @@ namespace TuringTrader.Simulator
             {
                 "data<-read.csv(\"{2}\")",
                 "x<-data[,1]",
-		#if true
+#if true
 				"y<-data[,-1]",
-		#else
+#else
 				"y<-scale(data[,-1])",
-		#endif
+#endif
 				"matplot(x, y, type=\"l\", lty=1)",
                 "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
 				"legend(\"bottom\",legend=colnames(y), col=seq_len(ncol(y)), cex=0.8, fill=seq_len(ncol(y)))",
@@ -346,10 +347,103 @@ namespace TuringTrader.Simulator
             // until we have re-started the main application
             // engine.Dispose();
         }
-#else // ENABLE_R
-        public void OpenWithR(List<string> RCommands = null)
+        #endregion
+#endif // R_DOT_NET
+
+        #region public byte[] PlotWithR(int width, int height, int dpi)
+#if ENABLE_R
+        /// <summary>
+        /// Render with R.
+        /// </summary>
+        /// <param name="width">canvas width</param>
+        /// <param name="height">canvas height</param>
+        /// <param name="dpi">canvas resolution</param>
+        /// <param name="rscript">list of R commands, default null</param>
+        /// <returns>rendered bitmap</returns>
+        public byte[] RenderWithR(int width = 640, int height = 480, int dpi = 96, List<string> rscript = null)
         {
-            Output.WriteLine("Logger: OpenWithR bypassed w/ ENABLE_R switch");
+            if (AllData == null || AllData.Keys.Count == 0)
+                throw new Exception("Logger: no data to render");
+
+            int rows = AllData.Keys
+                .Select(item => AllData[item].Count)
+                .Min();
+            if (rows <= 1)
+            {
+                Clear();
+                throw new Exception("Logger: no data to render");
+            }
+
+            if (rscript == null)
+                rscript = new List<string>()
+            {
+                "data<-read.csv(\"{2}\")",
+                // https://stackoverflow.com/questions/18178451/is-there-a-way-to-check-if-a-column-is-a-date-in-r
+                //"sapply(data, function(x) !all(is.na(as.Date(as.character(x),format=\"%m/%d/%Y\"))))",
+                "x<-data[,1]",
+                "y<-data[,-1]",
+				"matplot(x, y, type=\"l\", lty=1)",
+                "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
+				//"legend(\"bottom\",legend=colnames(y), col=seq_len(ncol(y)), cex=0.8, fill=seq_len(ncol(y)))",
+			};
+
+            // Init R session
+            if (_rSession == null)
+            {
+                _rSession = RHostSession.Create("Test");
+                Task sessionStartTask = _rSession.StartHostAsync(new RHostSessionCallback());
+                sessionStartTask.Wait();
+            }
+
+            // prepare R commands
+            string rcommand = string.Format("par(mfrow=c({0}, 1))", AllData.Keys.Count) + Environment.NewLine;
+            foreach (string plotTitle in AllData.Keys)
+            {
+#if true
+                string _convertToString(object o)
+                {
+                    // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
+
+                    if (o.GetType() == typeof(DateTime))
+                    {
+                        DateTime d = (DateTime)o;
+                        return (d.Year + d.DayOfYear / 365.25).ToString();
+                        //return string.Format("as.Date(\"{0}, format=\"%m/%d/%Y\")", d);
+                        //return string.Format("{0:MM/dd/yyyy})", d);
+                    }
+
+                    return o.ToString();
+                }
+
+                string tmpFile = Path.GetTempFileName();
+                string tmpFile2 = tmpFile.Replace("\\", "/");
+                SaveAsCsv(tmpFile, plotTitle, _convertToString);
+#else
+                // push C# data directly into R dataframe
+#endif
+
+                foreach (string command in rscript)
+                    rcommand += string.Format(command, plotTitle, AllLabels[plotTitle].First(), tmpFile2) + Environment.NewLine;
+                    //rcommand += string.Format(command, plotTitle, AllLabels[plotTitle], tmpFile2) + Environment.NewLine;
+            }
+
+            // execute text command
+            var textResult = _rSession.ExecuteAndOutputAsync(rcommand);
+            textResult.Wait();
+            Output.WriteLine(rcommand);
+            Output.WriteLine(textResult.Result.Output);
+
+            // get plot output
+            var plotResult = _rSession.PlotAsync(rcommand, width, height, dpi);
+            plotResult.Wait();
+
+            return plotResult.Result;
+        }
+#else // ENABLE_R
+        public byte[] RenderWithR(int width = 640, int height = 480, int dpi = 96, List<string> rscript = null)
+        {
+            Output.WriteLine("Logger: ENABLE_R is disabled");
+            return null;
         }
 #endif // ENABLE_R
         #endregion

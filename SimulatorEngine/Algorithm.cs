@@ -58,14 +58,18 @@ namespace TuringTrader.Simulator
         /// </summary>
         override public void Run() { }
         #endregion
-        #region override public void Report()
+        #region virtual public bool Report(Image image
         /// <summary>
         /// Create report. This method can be called after calling Run(), to
         /// create and display a custom report. Typically, trading algorithms
         /// override this method with their own implementation. Algorithms are
         /// not required to call the base class implementation of this method.
         /// </summary>
-        virtual public void Report() { }
+        /// <param name="width">width of rendering canvas</param>
+        /// <param name="height">height of rendering canvas</param>
+        /// <param name="dpi">resolution of rendering canvas</param>
+        /// <returns>rendered bitmap, or null</returns>
+        virtual public byte[] Report(int width, int height, int dpi) { return null; }
         #endregion
         #region public double Progress
         /// <summary>

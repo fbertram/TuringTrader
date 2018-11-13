@@ -64,6 +64,7 @@ namespace TuringTrader.Demos
                 // plot our data
                 _plotter.SelectPlot("indicators vs time", "date");
                 _plotter.SetX(simTime);
+
                 _plotter.Log(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Log("ema26", ema26[0] + _offsetPrice);
                 _plotter.Log("ema12", ema12[0] + _offsetPrice);
@@ -72,9 +73,10 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        override public byte[] Report(int width, int height, int dpi)
         {
-            _plotter.OpenWithExcel(_excelPath);
+            //_plotter.OpenWithExcel(_excelPath);
+            return _plotter.RenderWithR(width, height, dpi);
         }
     }
 }

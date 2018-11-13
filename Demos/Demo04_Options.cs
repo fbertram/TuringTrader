@@ -76,10 +76,12 @@ namespace TuringTrader.Demos
                     _initialUnderlyingPrice = underlyingPrice;
 
                 // calculate volatility
-                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(10);
-                double averageVolatility = volatilitySeries.EMA(21)[0];
-                //double volatility = volatilitySeries.Highest(1)[0];
-                double volatility = Math.Max(averageVolatility, volatilitySeries.Highest(5)[0]);
+                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close
+                    .Volatility(10)
+                    .Multiply(Math.Sqrt(252.0));
+                double volatility = Math.Max(
+                    volatilitySeries.EMA(21)[0], 
+                    volatilitySeries.Highest(5)[0]);
 
                 // find all expiry dates on the 3rd Friday of the month
                 List<DateTime> expiryDates = OptionChain(_optionsNickname)
@@ -164,14 +166,14 @@ namespace TuringTrader.Demos
         #endregion
 
         #region override public void Report()
-        override public void Report()
+        override public byte[] Report(int width, int height, int dpi)
         {
-            _plotter.OpenWithExcel(_excelChartTemplate);
+            //_plotter.OpenWithExcel(_excelChartTemplate);
+            return _plotter.RenderWithR(width, height, dpi);
         }
         #endregion
     }
 }
-
 
 //==============================================================================
 // end of file

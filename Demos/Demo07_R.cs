@@ -72,9 +72,9 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        override public byte[] Report(int width, int height, int dpi)
         {
-            _plotter.OpenWithR();
+            return _plotter.RenderWithR(width, height, dpi);
         }
     }
 }

@@ -249,10 +249,13 @@ namespace TuringTrader
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
         private async void ReportButton_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                _currentAlgorithm.Report();
-            });
+            // create output window, and retrieve image control
+            var plotOutput = new PlotOutput(_currentAlgorithm);
+
+            bool hasRendered = await plotOutput.RenderReport();
+
+            if (hasRendered)
+                plotOutput.ShowDialog();
         }
         #endregion
         #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
