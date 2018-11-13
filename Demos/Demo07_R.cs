@@ -26,6 +26,7 @@ namespace TuringTrader.Demos
         private Logger _plotter = new Logger();
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
+        private readonly string _template = "SimpleChart";
         #endregion
 
         public double FractionalYears(DateTime time)
@@ -72,9 +73,9 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public byte[] Report(int width, int height, int dpi)
+        public override void Report()
         {
-            return _plotter.RenderWithR(width, height, dpi);
+            _plotter.OpenWith(_template);
         }
     }
 }

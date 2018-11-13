@@ -18,8 +18,12 @@
         <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
         <Menu Height="23" VerticalAlignment="Top" Grid.ColumnSpan="2">
             <MenuItem Header="_File">
-                <MenuItem Header="Data Location..." Click="MenuDataLocation_Click"/>
+                <MenuItem Header="Home Location..." Click="MenuDataLocation_Click"/>
                 <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Output">
+                <MenuItem Header="Default to .xlsm" Click="MenuDefaultExtensionXlsm_Click"/>
+                <MenuItem Header="Default to .r" Click="MenuDefaultExtensionR_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>

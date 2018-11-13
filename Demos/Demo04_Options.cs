@@ -26,7 +26,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -166,10 +166,9 @@ namespace TuringTrader.Demos
         #endregion
 
         #region override public void Report()
-        override public byte[] Report(int width, int height, int dpi)
+        public override void Report()
         {
-            //_plotter.OpenWithExcel(_excelChartTemplate);
-            return _plotter.RenderWithR(width, height, dpi);
+            _plotter.OpenWith(_template);
         }
         #endregion
     }

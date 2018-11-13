@@ -37,7 +37,9 @@ namespace TuringTrader.Simulator
         /// <param name="args">list or arguments</param>
         public static void Write(string format, params object[] args)
         {
-            string message = string.Format(format, args);
+            string message = args.Count() > 0
+                ? string.Format(format, args)
+                : format;
 
             if (WriteEvent == null)
                 Debug.Write(message);

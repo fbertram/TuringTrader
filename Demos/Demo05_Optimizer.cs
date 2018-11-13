@@ -46,10 +46,9 @@ namespace TuringTrader.Demos
         }
 
         // create a report. typically, we would create a pretty plot here
-        override public byte[] Report(int width, int height, int dpi)
+        public override void Report()
         {
             Output.WriteLine("Report: Fitness={0}", FitnessValue);
-            return null;
         }
 
         // we should make sure that the constructor sets

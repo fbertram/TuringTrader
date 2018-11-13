@@ -229,7 +229,7 @@ namespace TuringTrader.Simulator
                     logger.Log(parameter.Key, parameter.Value);
             }
 
-            logger.OpenWithExcel(excelPath);
+            logger.OpenWith(excelPath);
         }
         #endregion
         #region public void SetParametersFromResult(OptimizerResult result)

@@ -13,6 +13,7 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -60,6 +61,24 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region static public string HomePath
+        /// <summary>
+        /// Property to store the path to the TuringTrader's home location.
+        /// </summary>
+        static public string HomePath
+        {
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "HomePath");
+                if (value == null) return null;
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("SimulatorEngine", "HomePath", value);
+            }
+        }
+        #endregion
         #region static public string DataPath
         /// <summary>
         /// Property to store the path to the simulator's database.
@@ -68,13 +87,19 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                object value = GetRegistryValue("SimulatorEngine", "DataPath");
-                if (value == null) return null;
-                return value.ToString();
+                return Path.Combine(HomePath, "Data");
             }
-            set
+        }
+        #endregion
+        #region static public string TemplatePath
+        /// <summary>
+        /// Property to store the path to the simulator's templates.
+        /// </summary>
+        static public string TemplatePath
+        {
+            get
             {
-                SetRegistryValue("SimulatorEngine", "DataPath", value);
+                return Path.Combine(HomePath, "Templates");
             }
         }
         #endregion
@@ -93,6 +118,38 @@ namespace TuringTrader.Simulator
             set
             {
                 SetRegistryValue("SimulatorEngine", "MostRecentAlgorithm", value);
+            }
+        }
+        #endregion
+        #region static public string DefaultRCore
+        /// <summary>
+        /// Default R-core, as found in HKLM/SOFTWARE/R-core/R
+        /// </summary>
+        static public string DefaultRCore
+        {
+            get
+            {
+                string subKey = "SOFTWARE\\R-core\\R";
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(subKey);
+                return (string)key.GetValue("InstallPath");
+            }
+        }
+        #endregion
+        #region static public string DefaultTemplateExtension
+        /// <summary>
+        /// Default file-extension for template files.
+        /// </summary>
+        static public string DefaultTemplateExtension
+        {
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "DefaultTemplateExtension");
+                if (value == null) return ".r";
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("SimulatorEngine", "DefaultTemplateExtension", value);
             }
         }
         #endregion

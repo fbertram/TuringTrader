@@ -26,7 +26,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly List<string> _tradingInstruments = new List<string>()
         {
@@ -104,12 +104,10 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public byte[] Report(int width, int height, int dpi)
+        public override void Report()
         {
-            //_plotter.OpenWithExcel(_excelPath);
-            return _plotter.RenderWithR(width, height, dpi);
+            _plotter.OpenWith(_template);
         }
-
     }
 }
 

@@ -101,10 +101,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PlotOutput.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OptimizerResults.xaml.cs">
@@ -112,9 +108,6 @@
     </Compile>
     <Compile Include="OptimizerSettings.xaml.cs">
       <DependentUpon>OptimizerSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PlotOutput.xaml.cs">
-      <DependentUpon>PlotOutput.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
