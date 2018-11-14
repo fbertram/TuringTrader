@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _template = "SimpleTable";
+        private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         #endregion

@@ -1,13 +1,24 @@
-#===============================================================================
-# Project:     TuringTrader
-# Name:        SimpleChart.r
-# Description: Template to create simple TuringTrader charts.
-# History:     2018xi13, FUB, created
-#===============================================================================
+---
+title: "`r format(Sys.time(), '%b %d, %Y, %H:%M:%S')`"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
 
-#-------------------------------------------------------------------------------
-# define helper functions ------------------------------------------------------
-#-------------------------------------------------------------------------------
+<!--
+title: "test"
+author: "felix"
+date: "`r format(Sys.time(), '%b %d, %Y, %H:%M:%S')`"
+params:
+  test: false
+-->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# command-line arguments come in pairs: the plot name, and the csv with the data
+args <- split(commandArgs(trailingOnly = TRUE), 1:2)
 
 # colors to use for the plots. as the first plot uses column 2, 
 # the first value is used for the grid
@@ -51,11 +62,8 @@ create.plot <- function(title, df) {
 
 # function to create a pretty table
 create.table <- function(title, df) {
-	# this doesn't work yet. maybe with ggplot...
-
-	# this is what we use for rmarkdown:
-	#library(knitr)
-	#kable(df, caption = title)
+	library(knitr)
+	kable(df, caption = title)
 }
 
 # function to handle a single plot/ table
@@ -78,31 +86,19 @@ create.plot.or.table <- function(title, csv) {
 	}
 }
 
-#-------------------------------------------------------------------------------
-#----- main logic --------------------------------------------------------------
-#-------------------------------------------------------------------------------
+```
 
-#----- receive command line argumens 
-# command-line arguments come in pairs: the plot name, and the csv with the data
-args <- split(commandArgs(trailingOnly = TRUE), 1:2)
+```{r echo=FALSE, warning=FALSE}
+# somehow, creating tables fails if we use a for-loop here
+if (length(args[[1]]) >= 1) create.plot.or.table(args[[1]][1], args[[2]][1])
+if (length(args[[1]]) >= 2) create.plot.or.table(args[[1]][2], args[[2]][2])
+if (length(args[[1]]) >= 3) create.plot.or.table(args[[1]][3], args[[2]][3])
+if (length(args[[1]]) >= 4) create.plot.or.table(args[[1]][4], args[[2]][4])
+if (length(args[[1]]) >= 5) create.plot.or.table(args[[1]][5], args[[2]][5])
+if (length(args[[1]]) >= 6) create.plot.or.table(args[[1]][6], args[[2]][6])
+if (length(args[[1]]) >= 7) create.plot.or.table(args[[1]][7], args[[2]][7])
+if (length(args[[1]]) >= 8) create.plot.or.table(args[[1]][8], args[[2]][8])
+if (length(args[[1]]) >= 9) create.plot.or.table(args[[1]][9], args[[2]][9])
+```
 
-#----- set up chart output
-chartfile = tempfile("plot", fileext = ".png")
-print(sprintf("creating plot '%s'", chartfile))
-png(chartfile, width = 1920, height = 1080, unit = "px")
-
-#----- set up page
-par(mfrow=c(length(args[[1]]), 1))
-
-#----- create individual plots
-for (i in 1:length(args[[1]])) {
-	create.plot.or.table(args[[1]][i], args[[2]][i])
-}
-
-#----- open chart output
-dev.off()
-browseURL(chartfile)
-Sys.sleep(5) # make sure chart file is open, before R cleans it up
-
-#===============================================================================
-# end of file
+Created with TuringTrader.

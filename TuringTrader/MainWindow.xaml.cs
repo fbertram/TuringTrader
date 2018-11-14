@@ -348,6 +348,11 @@ namespace TuringTrader
         {
             GlobalSettings.DefaultTemplateExtension = ".r";
         }
+
+        private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".rmd";
+        }
     }
 }
 

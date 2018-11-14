@@ -29,16 +29,6 @@ namespace TuringTrader.Demos
         private readonly string _template = "SimpleChart";
         #endregion
 
-        public double FractionalYears(DateTime time)
-        {
-            int year = time.Date.Year;
-            DateTime jan1 = new DateTime(year, 1, 1);
-            DateTime dec31 = new DateTime(year, 12, 31);
-            double fraction = (time - jan1).TotalDays / (dec31 - jan1).TotalDays;
-
-            return year + fraction;
-        }
-
         override public void Run()
         {
             //---------- initialization
@@ -63,12 +53,12 @@ namespace TuringTrader.Demos
                 Instrument instr = FindInstrument(_instrumentNick);
 
                 _plotter.SelectPlot("Price", "date");
-                _plotter.SetX(FractionalYears(SimTime[0]));
+                _plotter.SetX(SimTime[0]);
                 _plotter.Log("price", instr.Close[0]);
                 _plotter.Log("ema", instr.Close.EMA(200)[0]);
 
                 _plotter.SelectPlot("Drawdown", "date");
-                _plotter.SetX(FractionalYears(SimTime[0]));
+                _plotter.SetX(SimTime[0]);
                 _plotter.Log("dd", instr.Close[0] / instr.Close.Highest(252)[0] - 1.0);
             }
         }

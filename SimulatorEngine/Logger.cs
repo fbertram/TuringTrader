@@ -338,9 +338,8 @@ namespace TuringTrader.Simulator
                     if (o.GetType() == typeof(DateTime))
                     {
                         DateTime d = (DateTime)o;
-                        return (d.Year + d.DayOfYear / 365.25).ToString();
-                        //return string.Format("as.Date(\"{0}, format=\"%m/%d/%Y\")", d);
-                        //return string.Format("{0:MM/dd/yyyy})", d);
+                        //return (d.Year + d.DayOfYear / 365.25).ToString();
+                        return string.Format("{0:MM/dd/yyyy}", d);
                     }
 
                     return o.ToString();
@@ -348,7 +347,8 @@ namespace TuringTrader.Simulator
 
                 SaveAsCsv(tmpFile, plotTitle, _convertToString);
 
-                csvFileArgs += "\"" + tmpFile.Replace("\\", "/") + "\" ";                
+                csvFileArgs += "\"" + plotTitle + "\" "
+                    + "\"" + tmpFile.Replace("\\", "/") + "\" ";                
             }
 
             try
@@ -550,18 +550,26 @@ namespace TuringTrader.Simulator
 
                 using (var sw = new StreamWriter(launcherScript))
                 {
+#if false
                     sw.WriteLine("rmarkdown::render(\"{0}\", output_file=\"{1}\")",
                         fullPath.Replace("\\", "/"),
                         renderOutput.Replace("\\", "/"));
                     sw.WriteLine("browseURL(\"{0}\")",
                         renderOutput.Replace("\\", "/"));
+#else
+                    sw.WriteLine("library(rmarkdown)");
+                    sw.WriteLine("render(\"{0}\", output_file=\"{1}\")",
+                        fullPath.Replace("\\", "/"),
+                        renderOutput.Replace("\\", "/"));
+                    sw.WriteLine("browseURL(\"{0}\")",
+                        renderOutput.Replace("\\", "/"));
+#endif
                     sw.Flush();
-
                     OpenWithRscript(launcherScript);
                 }
             }
         }
-        #endregion
+#endregion
     }
 }
 

@@ -24,6 +24,7 @@
             <MenuItem Header="_Output">
                 <MenuItem Header="Default to .xlsm" Click="MenuDefaultExtensionXlsm_Click"/>
                 <MenuItem Header="Default to .r" Click="MenuDefaultExtensionR_Click"/>
+                <MenuItem Header="Default to .rmd" Click="MenuDefaultExtensionRmd_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
