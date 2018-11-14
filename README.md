@@ -9,7 +9,7 @@ This project implements a trading simulator/ backtester for stocks and options w
 * simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported
 * simulate option trades. Currently this is limited to cash-settled European-style options
 * create fully customized Excel reports with just a few lines of VBA
-* export results to R, for further research
+* create fully customized R reports, either in straight R, or with RMarkdown
 * strong focus on easy-to-use time-series APIs, to make coding a breeze
 * multi-threaded optimizer engine, able to utilize all CPU cores
 * demo algorithms to shorten learning curve
@@ -25,7 +25,7 @@ The following environment is required for building and running the simulator:
 
 * Microsoft Visual Studio, Community 2017
 * Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
-* R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
+* R, and preferably RMarkdown, for exporting results to R. If your environment does not meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
 * data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured
 
 

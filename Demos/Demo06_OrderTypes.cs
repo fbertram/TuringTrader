@@ -38,7 +38,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
             CommissionPerShare = 0.015;
 
             // add instruments

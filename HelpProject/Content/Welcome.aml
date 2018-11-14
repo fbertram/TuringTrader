@@ -20,7 +20,7 @@
 			  <listItem>simulate stock trades, and portfolios of stocks. Currently market and stop orders are supported</listItem>
 			  <listItem>simulate option trades. Currently this is limited to cash-settled European-style options</listItem>
 			  <listItem>create fully customized Excel reports with just a few lines of VBA</listItem>
-			  <listItem>export results to R, for further research</listItem>
+			  <listItem>create fully customized R reports, either in straight R, or with RMarkdown</listItem>
 			  <listItem>strong focus on easy-to-use time-series APIs, to make coding a breeze</listItem>
 			  <listItem>multi-threaded optimizer engine, utilizing all available CPU cores</listItem>
 			  <listItem>demo algorithms to shorten learning curve</listItem>

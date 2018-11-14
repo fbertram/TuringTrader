@@ -47,7 +47,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
 
             // add instruments
             foreach (string nickname in _tradingInstruments)

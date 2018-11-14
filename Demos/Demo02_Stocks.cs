@@ -43,7 +43,7 @@ namespace TuringTrader.Demos
             DataSources.Add(DataSource.New(_instrumentNick));
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
 
             // clear plotters
             _plotter.Clear();
