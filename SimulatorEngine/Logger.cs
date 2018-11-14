@@ -329,8 +329,7 @@ namespace TuringTrader.Simulator
             string csvFileArgs = "";
             foreach (string plotTitle in AllData.Keys)
             {
-                string tmpFile = Path.GetTempFileName();
-                string tmpFile2 = tmpFile.Replace("\\", "/");
+                string tmpFile = Path.ChangeExtension(Path.GetTempFileName(), ".csv");
 
                 string _convertToString(object o)
                 {
@@ -349,7 +348,7 @@ namespace TuringTrader.Simulator
 
                 SaveAsCsv(tmpFile, plotTitle, _convertToString);
 
-                csvFileArgs += "\"" + tmpFile2 + "\" ";                
+                csvFileArgs += "\"" + tmpFile.Replace("\\", "/") + "\" ";                
             }
 
             try
@@ -363,7 +362,7 @@ namespace TuringTrader.Simulator
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
                 };
 
                 using (var proc = new Process())
@@ -546,7 +545,20 @@ namespace TuringTrader.Simulator
             }
             else if (extension.Equals(".rmd"))
             {
-                Output.WriteLine("Logger: can't open .rmd just yet. Open .r instead.");
+                string launcherScript = Path.ChangeExtension(Path.GetTempFileName(), ".r");
+                string renderOutput = Path.ChangeExtension(Path.GetTempFileName(), ".htm");
+
+                using (var sw = new StreamWriter(launcherScript))
+                {
+                    sw.WriteLine("rmarkdown::render(\"{0}\", output_file=\"{1}\")",
+                        fullPath.Replace("\\", "/"),
+                        renderOutput.Replace("\\", "/"));
+                    sw.WriteLine("browseURL(\"{0}\")",
+                        renderOutput.Replace("\\", "/"));
+                    sw.Flush();
+
+                    OpenWithRscript(launcherScript);
+                }
             }
         }
         #endregion
