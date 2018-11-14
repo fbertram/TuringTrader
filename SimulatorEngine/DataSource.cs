@@ -38,13 +38,6 @@ namespace TuringTrader.Simulator
             {
                 return GlobalSettings.DataPath;
             }
-            set
-            {
-                if (!Directory.Exists(value))
-                    throw new Exception(string.Format("DataSource: invalid data path {0}", value));
-
-                GlobalSettings.DataPath = value;
-            }
         }
         #endregion
         #region public SimulatorCore Simulator
@@ -200,13 +193,6 @@ namespace TuringTrader.Simulator
             get
             {
                 return GlobalSettings.DataPath;
-            }
-            set
-            {
-                if (!Directory.Exists(value))
-                    throw new Exception(string.Format("DataSource: invalid data path {0}", value));
-
-                GlobalSettings.DataPath = value;
             }
         }
         #endregion

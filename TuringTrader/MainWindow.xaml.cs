@@ -72,7 +72,7 @@ namespace TuringTrader
             InitializeComponent();
 
             //--- set data location
-            string path = GlobalSettings.DataPath;
+            string path = GlobalSettings.HomePath;
             if (path == null)
             {
                 MenuDataLocation_Click(null, null);
@@ -84,17 +84,17 @@ namespace TuringTrader
             _dispatcherTimer.Start();
 
             //--- initialize algorithm selector
-            var allAlgoTypes = AlgorithmLoader.GetAllAlgorithms().OrderBy(t => t.Name);
-            foreach (Type algorithmType in allAlgoTypes)
-                AlgoSelector.Items.Add(algorithmType.Name);
+            var allAlgorithms = AlgorithmLoader.GetAllAlgorithms();
+
+            foreach (Type algorithm in allAlgorithms)
+                AlgoSelector.Items.Add(algorithm.Name);
 
             // attempt to recover most-recent algo
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
             if (mostRecentAlgorithm != default(string))
             {
-                AlgoSelector.SelectedIndex = allAlgoTypes
-                        .ToList()
-                        .FindIndex(t => t.Name == mostRecentAlgorithm);
+                AlgoSelector.SelectedIndex = allAlgorithms
+                    .FindIndex(t => t.Name == mostRecentAlgorithm);
             }
 
             //--- redirect log output
@@ -168,13 +168,13 @@ namespace TuringTrader
         {
             FolderBrowserDialog folderDialog = new FolderBrowserDialog()
             {
-                Title = "Select Data Location"
+                Title = "Select TuringTrader Home Location"
             };
 
             bool? result = folderDialog.ShowDialog();
             if (result == true)
             {
-                GlobalSettings.DataPath = folderDialog.SelectedPath;
+                GlobalSettings.HomePath = folderDialog.SelectedPath;
             }
         }
         #endregion
@@ -247,9 +247,23 @@ namespace TuringTrader
         }
         #endregion
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
-        private void ReportButton_Click(object sender, RoutedEventArgs e)
+        private async void ReportButton_Click(object sender, RoutedEventArgs e)
         {
-            _currentAlgorithm.Report();
+            if (_currentAlgorithm != null)
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        _currentAlgorithm.Report();
+                    }
+                    catch (Exception exception)
+                    {
+                        WriteEventHandler(
+                            string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                            + Environment.NewLine);
+                    }
+
+                });
         }
         #endregion
         #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
@@ -324,6 +338,21 @@ namespace TuringTrader
             }
         }
         #endregion
+
+        private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".xlsm";
+        }
+
+        private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".r";
+        }
+
+        private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".rmd";
+        }
     }
 }
 

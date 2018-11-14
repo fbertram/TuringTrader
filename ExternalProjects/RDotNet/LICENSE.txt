@@ -1,4 +1,0 @@
-Unfortunately, RDotNet does not seem to include a license file.
-The same author, jmp75, has also published a project rdotnet-onboarding,
-which is published under GPL v2.0. We therefore assume, that RDotNet
-itself is published under the same license terms.

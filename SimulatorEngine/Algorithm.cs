@@ -58,7 +58,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         override public void Run() { }
         #endregion
-        #region override public void Report()
+        #region virtual public void Report()
         /// <summary>
         /// Create report. This method can be called after calling Run(), to
         /// create and display a custom report. Typically, trading algorithms

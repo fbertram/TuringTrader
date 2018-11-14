@@ -46,7 +46,7 @@ namespace TuringTrader.Demos
         }
 
         // create a report. typically, we would create a pretty plot here
-        override public void Report()
+        public override void Report()
         {
             Output.WriteLine("Report: Fitness={0}", FitnessValue);
         }

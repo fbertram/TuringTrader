@@ -26,7 +26,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelChartTemplate = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
         private readonly double _regTMarginToUse = 0.8;
@@ -46,7 +46,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
             CommissionPerShare = 0.01;
 
             // add instruments
@@ -76,10 +76,12 @@ namespace TuringTrader.Demos
                     _initialUnderlyingPrice = underlyingPrice;
 
                 // calculate volatility
-                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close.Volatility(10);
-                double averageVolatility = volatilitySeries.EMA(21)[0];
-                //double volatility = volatilitySeries.Highest(1)[0];
-                double volatility = Math.Max(averageVolatility, volatilitySeries.Highest(5)[0]);
+                ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close
+                    .Volatility(10)
+                    .Multiply(Math.Sqrt(252.0));
+                double volatility = Math.Max(
+                    volatilitySeries.EMA(21)[0], 
+                    volatilitySeries.Highest(5)[0]);
 
                 // find all expiry dates on the 3rd Friday of the month
                 List<DateTime> expiryDates = OptionChain(_optionsNickname)
@@ -164,14 +166,13 @@ namespace TuringTrader.Demos
         #endregion
 
         #region override public void Report()
-        override public void Report()
+        public override void Report()
         {
-            _plotter.OpenWithExcel(_excelChartTemplate);
+            _plotter.OpenWith(_template);
         }
         #endregion
     }
 }
-
 
 //==============================================================================
 // end of file

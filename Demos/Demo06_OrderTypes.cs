@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleTable.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         #endregion
@@ -38,7 +38,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
             CommissionPerShare = 0.015;
 
             // add instruments
@@ -96,9 +96,9 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        public override void Report()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWith(_template);
         }
     }
 }

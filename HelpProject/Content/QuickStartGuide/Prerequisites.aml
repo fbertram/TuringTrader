@@ -23,7 +23,7 @@
 				requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
 			</para></listItem>
 			<listItem><para>
-				R, RDotNet, RDotNet.NativeLibrary, and DynamicInterop for exporting results to R. If your environment does not 
+				R, and preferably RMarkdown, for exporting results to R. If your environment does not
 				meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
 			</para></listItem>
 			<listItem><para>

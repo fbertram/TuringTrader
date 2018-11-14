@@ -25,35 +25,45 @@ namespace TuringTrader
     class AlgorithmLoader
     {
         #region public static IEnumerable<Type> GetAllAlgorithms()
-        public static IEnumerable<Type> GetAllAlgorithms()
+        private static List<Type> _allAlgorithms = null;
+        public static IEnumerable<Type> _getAllAlgorithms()
         {
             Assembly turingTrader = Assembly.GetExecutingAssembly();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
-            FileInfo[] Files = dirInfo.GetFiles("*.dll");
+            FileInfo[] files = dirInfo.GetFiles("*.dll");
 
-            foreach (FileInfo file in Files)
-                Assembly.LoadFrom(file.FullName);
+            // see https://msdn.microsoft.com/en-us/library/ms972968.aspx
 
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (FileInfo file in files)
             {
-                Type[] Types;
+                Type[] types;
                 try
                 {
-                    // under certain circumstances, this might throw
-                    Types = assembly.GetTypes();
+                    Assembly assembly = Assembly.LoadFrom(file.FullName);
+                    types = assembly.GetTypes();
                 }
-                catch (Exception)
+                catch
                 {
-                    // just ignore
                     continue;
                 }
 
-                foreach (Type type in Types)
+                foreach (Type type in types)
+                {
                     if (!type.IsAbstract && type.IsSubclassOf(typeof(Algorithm)))
                         yield return type;
+                }
             }
 
             yield break;
+        }
+        public static List<Type> GetAllAlgorithms()
+        {
+            if (_allAlgorithms == null || _allAlgorithms.Count == 0)
+                _allAlgorithms = _getAllAlgorithms()
+                    .OrderBy(t => t.Name)
+                    .ToList();
+
+            return _allAlgorithms;
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)

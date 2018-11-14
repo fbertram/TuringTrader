@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly string _instrumentNick = "^SPX.Index";
         private readonly double _offsetPrice = -1800.0;
         #endregion
@@ -64,6 +64,7 @@ namespace TuringTrader.Demos
                 // plot our data
                 _plotter.SelectPlot("indicators vs time", "date");
                 _plotter.SetX(simTime);
+
                 _plotter.Log(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Log("ema26", ema26[0] + _offsetPrice);
                 _plotter.Log("ema12", ema12[0] + _offsetPrice);
@@ -72,9 +73,9 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        public override void Report()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWith(_template);
         }
     }
 }

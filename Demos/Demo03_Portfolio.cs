@@ -26,7 +26,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly List<string> _tradingInstruments = new List<string>()
         {
@@ -47,7 +47,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
 
             // add instruments
             foreach (string nickname in _tradingInstruments)
@@ -104,14 +104,12 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        public override void Report()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWith(_template);
         }
-
     }
 }
-
 
 //==============================================================================
 // end of file

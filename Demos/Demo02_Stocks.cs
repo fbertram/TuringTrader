@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     {
         #region internal data
         private Logger _plotter = new Logger();
-        private readonly string _excelPath = Directory.GetCurrentDirectory() + @"\..\..\..\Excel\SimpleChart.xlsm";
+        private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private double? _initialPrice = null;
         private readonly string _instrumentNick = "AAPL.Stock";
@@ -43,7 +43,7 @@ namespace TuringTrader.Demos
             DataSources.Add(DataSource.New(_instrumentNick));
 
             // set account value
-            Cash = _initialCash;
+            Deposit(_initialCash);
 
             // clear plotters
             _plotter.Clear();
@@ -79,9 +79,9 @@ namespace TuringTrader.Demos
             }
         }
 
-        override public void Report()
+        public override void Report()
         {
-            _plotter.OpenWithExcel(_excelPath);
+            _plotter.OpenWith(_template);
         }
     }
 }

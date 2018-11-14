@@ -445,12 +445,36 @@ namespace TuringTrader.Simulator
         public List<LogEntry> Log = new List<LogEntry>();
         #endregion
 
+        #region protected void Deposit(double amount)
+        /// <summary>
+        /// Deposit cash into account.
+        /// </summary>
+        /// <param name="amount">amount to deposit</param>
+        protected void Deposit(double amount)
+        {
+            Cash += amount;
+        }
+        #endregion
+        #region protected void Withdraw(double amount)
+        /// <summary>
+        /// Withdraw cash from account.
+        /// </summary>
+        /// <param name="amount">amount to withdraw</param>
+        protected void Withdraw(double amount)
+        {
+            Cash -= amount;
+        }
+        #endregion
         #region protected double Cash
         /// <summary>
         /// Currently available cash position. Algorithms will typically
         /// initialize this value at the beginning of the simulation.
         /// </summary>
-        protected double Cash;
+        public double Cash
+        {
+            get;
+            private set;
+        }
         #endregion
         #region public TimeSeries<double> NetAssetValue
         /// <summary>
