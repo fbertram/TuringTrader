@@ -69,14 +69,16 @@ namespace TuringTrader.Simulator
         /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
+            int N = Math.Max(1, n);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    double alpha = 2.0 / (n + 1);
+                    double alpha = 2.0 / (N + 1);
                     return alpha * (series[0] - v) + v;
                 },
                 series[0],
-                series.GetHashCode(), n);
+                series.GetHashCode(), N);
         }
         #endregion
 
