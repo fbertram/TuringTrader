@@ -122,10 +122,12 @@ namespace TuringTrader.Simulator
         /// <returns>highest value of past n bars</returns>
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n)
         {
+            int N = Math.Max(1, n);
+
             return BufferedLambda(
-                (v) => Enumerable.Range(1, n).Max(t => series[t]),
+                (v) => Enumerable.Range(0, N).Max(t => series[t]),
                 series[0],
-                series.GetHashCode(), n);
+                series.GetHashCode(), N);
         }
         #endregion
         #region public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
@@ -137,10 +139,12 @@ namespace TuringTrader.Simulator
         /// <returns>lowest value of past n bars</returns>
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
         {
+            int N = Math.Max(1, n);
+
             return BufferedLambda(
-                (v) => Enumerable.Range(1, n).Min(t => series[t]),
+                (v) => Enumerable.Range(0, N).Min(t => series[t]),
                 series[0],
-                series.GetHashCode(), n);
+                series.GetHashCode(), N);
         }
         #endregion
         #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)

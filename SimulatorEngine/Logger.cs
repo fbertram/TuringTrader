@@ -29,6 +29,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 #if ENABLE_EXCEL
 using Excel = Microsoft.Office.Interop.Excel;
@@ -325,6 +326,8 @@ namespace TuringTrader.Simulator
                 throw new Exception("Logger: no default R installation found");
 
             string rscriptExe = Path.Combine(defaultR, "bin", "Rscript.exe");
+            if (!File.Exists(rscriptExe))
+                throw new Exception("Logger: Rscript.exe not found");
 
             string csvFileArgs = "";
             foreach (string plotTitle in AllData.Keys)
@@ -347,8 +350,33 @@ namespace TuringTrader.Simulator
 
                 SaveAsCsv(tmpFile, plotTitle, _convertToString);
 
-                csvFileArgs += "\"" + plotTitle + "\" "
-                    + "\"" + tmpFile.Replace("\\", "/") + "\" ";                
+                // see https://stackoverflow.com/questions/5510343/escape-command-line-arguments-in-c-sharp/6040946#6040946
+                string _encodeParameterArgument(string original)
+                {
+                    if (string.IsNullOrEmpty(original))
+                        return original;
+                    string value = Regex.Replace(original, @"(\\*)" + "\"", @"$1\$0");
+                    value = Regex.Replace(value, @"^(.*\s.*?)(\\*)$", "\"$1$2$2\"");
+                    return value;
+                }
+
+                // Note that this version does the same but handles new lines in the arugments
+                string _enncodeParameterArgumentMultiLine(string original)
+                {
+                    if (string.IsNullOrEmpty(original))
+                        return original;
+                    string value = Regex.Replace(original, @"(\\*)" + "\"", @"$1\$0");
+                    value = Regex.Replace(value, @"^(.*\s.*?)(\\*)$", "\"$1$2$2\"", RegexOptions.Singleline);
+
+                    return value;
+                }
+                
+                // R needs:
+                // - path seperators to be forward slashes
+                // - blanks removed from arguments
+                csvFileArgs += _encodeParameterArgument(plotTitle.Replace(" ", "_")) + " "
+                    + _encodeParameterArgument(tmpFile.Replace("\\", "/")) + " ";
+                Output.WriteLine("csvFileArgs=>>{0}<<", csvFileArgs);
             }
 
             try
