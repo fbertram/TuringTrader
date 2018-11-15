@@ -33,7 +33,7 @@ foreach (DateTime simTime in SimTimes)
 </sampleCode></item>
 
 <item id="Demo01#FirstInstrument"><sampleCode language="CSharp">
-Instrument instrument = Instruments.Values.First();
+Instrument instrument = Instruments.First();
 </sampleCode></item>
 
 <item id="Demo01#FindInstrument"><sampleCode language="CSharp">
@@ -58,7 +58,7 @@ ITimeSeries&lt;double&gt; signal = macd.EMA(9);
 </sampleCode></item>
 
 <item id="Demo01#NewLogger"><sampleCode language="CSharp">
-Logger _plotter = new Logger();
+Plotter _plotter = new Plotter();
 </sampleCode></item>
 
 <item id="Demo01#SelectPlot"><sampleCode language="CSharp">
@@ -70,11 +70,11 @@ _plotter.SetX(SimTime[0]);
 </sampleCode></item>
 
 <item id="Demo01#Log"><sampleCode language="CSharp">
-_plotter.Log(instrument.Symbol, instrument.Close[0]);
-_plotter.Log("ema26", ema26[0]);
-_plotter.Log("ema12", ema12[0]);
-_plotter.Log("macd", macd[0]);
-_plotter.Log("signal", signal[0]);
+_plotter.Plot(instrument.Symbol, instrument.Close[0]);
+_plotter.Plot("ema26", ema26[0]);
+_plotter.Plot("ema12", ema12[0]);
+_plotter.Plot("macd", macd[0]);
+_plotter.Plot("signal", signal[0]);
 </sampleCode></item>
 
 <item id="Demo01#SaveAsCsv"><sampleCode language="CSharp">
@@ -88,7 +88,7 @@ date,^SPX,ema26,ema12,macd,signal
 </sampleCode></item>
 
 <item id="Demo01#OpenWithExcel"><sampleCode language="CSharp">
-_plotter.OpenWithExcel(_excelPath);
+_plotter.OpenWith(_templatePath);
 </sampleCode></item>
 
 <item id="Demo01#xxx"><sampleCode language="">

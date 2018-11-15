@@ -25,16 +25,23 @@
       <title>Setting initial capital</title>
       <content>
       	<para>
-			Before we start trading, we need to set simulator’s initial capital. 
-			As simulations start with all flat positions, this capital will be 
-			all in cash, which is why we set the simulator’s cash property to do so.
+			Before we start trading, we first need to set simulator’s initial capital. 
+			Just like in the real world, this is done by making a
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
+			.
 		</para>
 		<codeReference>Demo02#SetCash</codeReference>
 		<para>
-			We can use the Cash property at any point in the simulation, to 
-			determine the amount of cash at hand. We can also modify the Cash 
-			property, in order to simulate deposits or withdrawals at any 
-			point during the simulation.
+			We can use the 
+			<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.Cash</codeEntityReference>
+			property at any point in the simulation, to
+			determine the amount of cash at hand. However, this property is
+			readonly. In order to simulate deposits and withdrawals, we have
+			to use the 
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
+			and the 
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Withdraw(System.Double)</codeEntityReference>
+			methods.
 		</para>
       </content>
 	</section>
@@ -47,7 +54,9 @@
       		asset value of our portfolio, which is the sum of our cash at hand, 
       		plus the liquidation value of all positions we hold. The simulator 
       		calculates the net asset value on every bar, and provides it as a 
-      		time series.
+      		time series, 
+      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.NetAssetValue</codeEntityReference>
+      		.
       	</para>
       	<para>
 			The net asset value, divided by the current price of the instrument, 
@@ -76,12 +85,14 @@
       <title>Placing orders</title>
       <content>
       	<para>
-      		To place an order, we use the Trade() method. It takes at least one 
+      		To place an order, we use the
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Instrument.Trade(System.Int32,TuringTrader.Simulator.OrderType,System.Double)</codeEntityReference>
+      		method. It takes at least one
       		parameter: the quantity of shares/ contracts to trade. A positive 
       		value will buy the instrument, while a negative value will sell the 
       		instrument. The second parameter specifies the order type and is 
       		optional. Typically, our orders will be submitted on the next bar. 
-      		Here, we place a market order to be (implicitly)executed on the 
+      		Here, we place a market order to be (implicitly) executed on the 
       		next bar’s open:
       	</para>
       	<codeReference>Demo02#TradeSimple</codeReference>
@@ -98,7 +109,9 @@
       <content>
       	<para>
       		We can conveniently check an instrument directly for its current 
-      		position:
+      		position with the 
+      		<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.Instrument.Position</codeEntityReference>
+      		property.
       	</para>
       	<codeReference>Demo02#CurrentPositionRecommended</codeReference>
       	<para>
@@ -106,7 +119,8 @@
 			positions, negative for short positions, and zero if we are flat.
 		</para>
 		<para>      	
-      		The simulator also tracks all open positions via its Positions 
+      		The simulator also tracks all open positions via its
+      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Positions</codeEntityReference>
       		property. Flat instruments are removed from this property. Using
       		this property, we can check if we are holding any positions at all:
       	</para>
@@ -116,7 +130,9 @@
       		revisit it in a future demo.
       	</para>
 		<para>
-			When placing trades, is good practice to calculate target positions 
+			We are now ready place a trade with the 
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Instrument.Trade(System.Int32,TuringTrader.Simulator.OrderType,System.Double)</codeEntityReference>
+			method. When placing trades, is good practice to calculate target positions 
 			and current positions separately, and then trade the difference 
 			between the two. That way, we will not get confused with long and 
 			short positions, and the sign of the quantity to trade. It is worth

@@ -20,11 +20,11 @@
 			</para></listItem>
 			<listItem><para>
 				Excel, and Microsoft.Office.Interop.Excel for exporting results to Excel. If your environment does not meet these 
-				requirements, comment the line #define ENABLE_EXCEL at the top of Logger.cs
+				requirements, comment the line #define ENABLE_EXCEL at the top of Plotter.cs
 			</para></listItem>
 			<listItem><para>
 				R, and preferably RMarkdown, for exporting results to R. If your environment does not
-				meet these requirements, comment the line #define ENABLE_R at the top of Logger.cs
+				meet these requirements, comment the line #define ENABLE_R at the top of Plotter.cs
 			</para></listItem>
 			<listItem><para>
 				data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured

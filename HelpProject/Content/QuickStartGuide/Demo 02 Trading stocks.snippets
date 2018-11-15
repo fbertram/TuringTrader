@@ -3,7 +3,7 @@
 <examples>
 
 <item id="Demo02#SetCash"><sampleCode language="CSharp">
-Cash = _initialCash;
+Deposit(_initialCash);
 </sampleCode></item>
 
 <item id="Demo02#TargetPosition"><sampleCode language="CSharp">
@@ -23,7 +23,7 @@ bool allFlat = Positions.Count == 0;
 </sampleCode></item>
 
 <item id="Demo02#CurrentPositionRecommended"><sampleCode language="CSharp">
-int currentPosition = instrument.Positions;
+int currentPosition = instrument.Position;
 </sampleCode></item>
 
 <item id="Demo02#TradeRecommended"><sampleCode language="CSharp">

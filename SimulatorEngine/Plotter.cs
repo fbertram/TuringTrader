@@ -194,7 +194,7 @@ namespace TuringTrader.Simulator
                 }
 
                 // Note that this version does the same but handles new lines in the arugments
-                string _enncodeParameterArgumentMultiLine(string original)
+                /*string _enncodeParameterArgumentMultiLine(string original)
                 {
                     if (string.IsNullOrEmpty(original))
                         return original;
@@ -202,7 +202,7 @@ namespace TuringTrader.Simulator
                     value = Regex.Replace(value, @"^(.*\s.*?)(\\*)$", "\"$1$2$2\"", RegexOptions.Singleline);
 
                     return value;
-                }
+                }*/
                 
                 // R needs:
                 // - path seperators to be forward slashes
