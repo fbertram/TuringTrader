@@ -144,7 +144,7 @@ namespace TuringTrader.Simulator
                     if (rInstallLocation != null) return rInstallLocation;
                 }
 
-                throw new Exception("GlobalSettings: no R install found");
+                throw new KeyNotFoundException("GlobalSettings: no R install found");
             }
         }
         #endregion
