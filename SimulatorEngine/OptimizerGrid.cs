@@ -213,7 +213,7 @@ namespace TuringTrader.Simulator
         /// <param name="excelPath"></param>
         public void ResultsToExcel(string excelPath)
         {
-            Logger logger = new Logger();
+            Plotter logger = new Plotter();
 
             logger.SelectPlot("Optimizer Results", "iteration");
 
@@ -222,11 +222,11 @@ namespace TuringTrader.Simulator
                 OptimizerResult result = Results[i];
 
                 logger.SetX(i);
-                logger.Log("NetAssetValue", (result.NetAssetValue != null) ? string.Format("{0}", result.NetAssetValue) : "");
-                logger.Log("Fitness", (result.Fitness != null) ? string.Format("{0}", result.Fitness) : "");
+                logger.Plot("NetAssetValue", (result.NetAssetValue != null) ? string.Format("{0}", result.NetAssetValue) : "");
+                logger.Plot("Fitness", (result.Fitness != null) ? string.Format("{0}", result.Fitness) : "");
 
                 foreach (var parameter in result.Parameters)
-                    logger.Log(parameter.Key, parameter.Value);
+                    logger.Plot(parameter.Key, parameter.Value);
             }
 
             logger.OpenWith(excelPath);

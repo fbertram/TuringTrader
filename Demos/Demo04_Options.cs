@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     public class Demo04_Options : Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly string _underlyingNickname = "^XSP.Index";
         private readonly string _optionsNickname = "^XSP.Options";
@@ -154,9 +154,9 @@ namespace TuringTrader.Demos
                 // plot the underlying against our strategy results, plus volatility
                 _plotter.SelectPlot("nav vs time", "time"); // this will go to Sheet1
                 _plotter.SetX(simTime);
-                _plotter.Log(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
-                _plotter.Log("volatility", volatilitySeries[0]);
-                _plotter.Log("net asset value", NetAssetValue[0] / _initialCash);
+                _plotter.Plot(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
+                _plotter.Plot("volatility", volatilitySeries[0]);
+                _plotter.Plot("net asset value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing

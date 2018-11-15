@@ -51,7 +51,7 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Class to log data, and save as CSV, or present with Excel or R.
     /// </summary>
-    public class Logger
+    public class Plotter
     {
         #region internal data
         /// <summary>
@@ -145,173 +145,6 @@ namespace TuringTrader.Simulator
 			}
 #endif // ENABLE_EXCEL
         #endregion
-#if false
-        // for R, we need RDotNet installed. comment the line above to disable R
-        // install with the following command: nuget install R.Net.Community
-        // tested successfully w/ MSVC 2017, R 3.4.3, and RDotNet 1.7.0
-        // add assembly references to the following DLLs
-        // - DynamicInterop.dll
-        // - RDotNet.dll
-        // - RDotNet.NativeLibrary.dll
-        #region public void OpenWithR(List<string> RCommands = null)
-        /// <summary>
-        /// Open and plot log with R.
-        /// </summary>
-        /// <param name="RCommands">R commands to load and plot</param>
-        private void OpenWithR(List<string> RCommands = null)
-        {
-            if (LogData == null || LogData.Keys.Count == 0)
-                return;
-
-            int rows = LogData.Keys
-                .Select(item => LogData[item].Count)
-                .Min();
-            if (rows <= 1)
-            {
-                Clear();
-                return;
-            }
-
-            if (RCommands == null)
-                RCommands = new List<string>()
-            {
-                "data<-read.csv(\"{2}\")",
-                "x<-data[,1]",
-#if true
-				"y<-data[,-1]",
-#else
-				"y<-scale(data[,-1])",
-#endif
-				"matplot(x, y, type=\"l\", lty=1)",
-                "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
-				"legend(\"bottom\",legend=colnames(y), col=seq_len(ncol(y)), cex=0.8, fill=seq_len(ncol(y)))",
-			};
-
-            // we need R's bin folder in PATH
-            REngine.SetEnvironmentVariables();
-            REngine engine = REngine.GetInstance();
-
-            engine.Evaluate(string.Format("par(mfrow=c({0}, 1))", LogData.Keys.Count));
-
-            foreach (string plot in LogData.Keys)
-            {
-                string tmpFile = Path.GetTempFileName();
-                string tmpFile2 = tmpFile.Replace("\\", "/");
-                SaveAsCsv(tmpFile, plot);
-
-                Debug.WriteLine(string.Format("opening {0} with R", tmpFile));
-                foreach (string command in RCommands)
-                {
-                    string commandExpanded = string.Format(command, plot, XLabels[plot], tmpFile2);
-                    try
-                    {
-                        engine.Evaluate(commandExpanded);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(string.Format("Plotter caused R exception {0}", e.Message));
-                    }
-                }
-            }
-
-            // if we dispose the REngine here, we can not plot again,
-            // until we have re-started the main application
-            // engine.Dispose();
-        }
-        #endregion
-#endif // R_DOT_NET
-
-#if false
-        // for R, we need R Tools for Visual Studio (RTVS) installed.
-        // - Microsoft.R.Host.Client
-        #region public byte[] PlotWithR(int width, int height, int dpi)
-        /// <summary>
-        /// Render with R.
-        /// </summary>
-        /// <param name="width">canvas width</param>
-        /// <param name="height">canvas height</param>
-        /// <param name="dpi">canvas resolution</param>
-        /// <param name="rscript">list of R commands, default null</param>
-        /// <returns>rendered bitmap</returns>
-        private byte[] RenderWithR(int width = 640, int height = 480, int dpi = 96, List<string> rscript = null)
-        {
-            if (AllData == null || AllData.Keys.Count == 0)
-                throw new Exception("Logger: no data to render");
-
-            int rows = AllData.Keys
-                .Select(item => AllData[item].Count)
-                .Min();
-            if (rows <= 1)
-            {
-                Clear();
-                throw new Exception("Logger: no data to render");
-            }
-
-            if (rscript == null)
-                rscript = new List<string>()
-            {
-                "data<-read.csv(\"{2}\")",
-                // https://stackoverflow.com/questions/18178451/is-there-a-way-to-check-if-a-column-is-a-date-in-r
-                //"sapply(data, function(x) !all(is.na(as.Date(as.character(x),format=\"%m/%d/%Y\"))))",
-                "x<-data[,1]",
-                "y<-data[,-1]",
-				"matplot(x, y, type=\"l\", lty=1)",
-                "title(main=\"{0}\",xlab=\"{1}\",ylab=\"\")",
-				//"legend(\"bottom\",legend=colnames(y), col=seq_len(ncol(y)), cex=0.8, fill=seq_len(ncol(y)))",
-			};
-
-            // Init R session
-            IRHostSession _rSession = RHostSession.Create("Test");
-            Task sessionStartTask = _rSession.StartHostAsync(new RHostSessionCallback());
-            sessionStartTask.Wait();
-
-            // prepare R commands
-            string rcommand = string.Format("par(mfrow=c({0}, 1))", AllData.Keys.Count) + Environment.NewLine;
-            foreach (string plotTitle in AllData.Keys)
-            {
-#if true
-                string _convertToString(object o)
-                {
-                    // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
-
-                    if (o.GetType() == typeof(DateTime))
-                    {
-                        DateTime d = (DateTime)o;
-                        return (d.Year + d.DayOfYear / 365.25).ToString();
-                        //return string.Format("as.Date(\"{0}, format=\"%m/%d/%Y\")", d);
-                        //return string.Format("{0:MM/dd/yyyy})", d);
-                    }
-
-                    return o.ToString();
-                }
-
-                string tmpFile = Path.GetTempFileName();
-                string tmpFile2 = tmpFile.Replace("\\", "/");
-                SaveAsCsv(tmpFile, plotTitle, _convertToString);
-#else
-                // push C# data directly into R dataframe
-#endif
-
-                foreach (string command in rscript)
-                    rcommand += string.Format(command, plotTitle, AllLabels[plotTitle].First(), tmpFile2) + Environment.NewLine;
-                    //rcommand += string.Format(command, plotTitle, AllLabels[plotTitle], tmpFile2) + Environment.NewLine;
-            }
-
-            // execute text command
-            var textResult = _rSession.ExecuteAndOutputAsync(rcommand);
-            textResult.Wait();
-            Output.WriteLine(rcommand);
-            Output.WriteLine(textResult.Result.Output);
-
-            // get plot output
-            var plotResult = _rSession.PlotAsync(rcommand, width, height, dpi);
-            plotResult.Wait();
-
-            return plotResult.Result;
-        }
-        #endregion
-#endif // R_HOST_CLIENT
-
         #region private void OpenWithRscript(string pathToRscriptTemplate)
 #if ENABLE_R
         /// <summary>
@@ -421,11 +254,11 @@ namespace TuringTrader.Simulator
         #endregion
 
         //----- initialization & cleanup
-        #region public Logger()
+        #region public Plotter()
         /// <summary>
         /// Create and initialize logger object.
         /// </summary>
-        public Logger() { }
+        public Plotter() { }
         #endregion
         #region public void Clear()
         /// <summary>
@@ -481,13 +314,13 @@ namespace TuringTrader.Simulator
             CurrentData.Last()[CurrentLabels.First()] = xValue;
         }
         #endregion
-        #region public void Log(string yLabel, object yValue)
+        #region public void Plot(string yLabel, object yValue)
         /// <summary>
         /// Log new value to current plot, at current x-axis value.
         /// </summary>
         /// <param name="yLabel">y-axis label</param>
         /// <param name="yValue">y-axis value</param>
-        public void Log(string yLabel, object yValue)
+        public void Plot(string yLabel, object yValue)
         {
             if (!CurrentLabels.Contains(yLabel))
                 CurrentLabels.Add(yLabel);

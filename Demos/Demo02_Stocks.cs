@@ -24,7 +24,7 @@ namespace TuringTrader.Demos
     public class Demo02_Stocks : Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private double? _initialPrice = null;
@@ -74,8 +74,8 @@ namespace TuringTrader.Demos
 
                 _plotter.SelectPlot("nav & benchmark vs time", "date");
                 _plotter.SetX(simTime);
-                _plotter.Log(instrument.Symbol, instrument.Close[0] / (double)_initialPrice);
-                _plotter.Log("MA Crossover", NetAssetValue[0] / _initialCash);
+                _plotter.Plot(instrument.Symbol, instrument.Close[0] / (double)_initialPrice);
+                _plotter.Plot("MA Crossover", NetAssetValue[0] / _initialCash);
             }
         }
 

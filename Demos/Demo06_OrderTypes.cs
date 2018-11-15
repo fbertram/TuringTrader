@@ -24,7 +24,7 @@ namespace TuringTrader.Demos
     public class Demo06_OrderTypes : Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
@@ -86,13 +86,13 @@ namespace TuringTrader.Demos
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Log("instr", entry.Symbol);
-                _plotter.Log("order", entry.OrderTicket.Type.ToString());
-                _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("price", entry.OrderTicket.Price);
-                _plotter.Log("fill", entry.FillPrice);
-                _plotter.Log("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Log("commission", -entry.Commission);
+                _plotter.Plot("instr", entry.Symbol);
+                _plotter.Plot("order", entry.OrderTicket.Type.ToString());
+                _plotter.Plot("qty", entry.OrderTicket.Quantity);
+                _plotter.Plot("price", entry.OrderTicket.Price);
+                _plotter.Plot("fill", entry.FillPrice);
+                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
+                _plotter.Plot("commission", -entry.Commission);
             }
         }
 
