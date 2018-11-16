@@ -329,7 +329,20 @@ namespace TuringTrader.Simulator
                         {
                             if (!_instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 _instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            _instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
+                            Instrument instrument = _instruments[source.BarEnumerator.Current.Symbol];
+
+                            // we shouldn't need to check for duplicate bars here. unfortunately, this
+                            // happens with options having multiple roots. it is unclear what the best
+                            // course of action is here, for now we just skip the duplicates.
+                            // it seems that the duplicate issue stops 11/5/2013???
+                            if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
+                                instrument.Value = source.BarEnumerator.Current;
+                            else
+                            {
+                                //Output.WriteLine(string.Format("{0}: {1} has duplicate bar on {2}",
+                                //        Name, source.BarEnumerator.Current.Symbol, SimTime[0]));
+                            }
+
                             hasData[source] = source.BarEnumerator.MoveNext();
                         }
                     }
@@ -446,8 +459,7 @@ namespace TuringTrader.Simulator
         /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
-            List<Instrument> optionChain = _instruments
-                    .Select(kv => kv.Value)
+            List<Instrument> optionChain = _instruments.Values
                     .Where(i => i.Nickname == nickname  // check nickname
                         && i[0].Time == SimTime[0]      // current bar
                         && i.IsOption                   // is option
