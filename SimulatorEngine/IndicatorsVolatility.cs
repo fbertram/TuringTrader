@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
                         ? (sum2 - sum * sum / num) / (num - 1)
                         : 0.0;
 
-                    return Math.Sqrt(variance);
+                    return Math.Sqrt(Math.Max(0.0, variance));
                 },
                 0.0,
                 series.GetHashCode(), n);
