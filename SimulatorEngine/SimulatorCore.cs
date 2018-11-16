@@ -34,6 +34,30 @@ namespace TuringTrader.Simulator
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
+            if (ticket.Type == OrderType.deposit
+            || ticket.Type == OrderType.withdrawal)
+            {
+                Cash = ticket.Type == OrderType.deposit
+                    ? Cash + ticket.Price
+                    : Cash - ticket.Price;
+
+                LogEntry l = new LogEntry()
+                {
+                    Symbol = "N/A",
+                    InstrumentType = LogEntryInstrument.ExternalAccount,
+                    OrderTicket = ticket,
+                    BarOfExecution = Instruments
+                        .Where(i => i.Time[0] == SimTime[0])
+                        .First()[0],
+                    NetAssetValue = NetAssetValue[0],
+                    FillPrice = ticket.Price,
+                    Commission = 0.0,
+                };
+                Log.Add(l);
+
+                return;
+            }
+
             // no trades during warmup phase
             if (SimTime[0] < StartTime)
                 return;
@@ -112,6 +136,9 @@ namespace TuringTrader.Simulator
             LogEntry log = new LogEntry()
             {
                 Symbol = ticket.Instrument.Symbol,
+                InstrumentType = ticket.Instrument.IsOption
+                    ? (ticket.Instrument.OptionIsPut ? LogEntryInstrument.OptionPut : LogEntryInstrument.OptionCall)
+                    : LogEntryInstrument.Equity,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
@@ -277,9 +304,10 @@ namespace TuringTrader.Simulator
                 // reset fitness
                 TradingDays = 0;
 
-                // reset net asset value
+                // reset cash and net asset value
                 // we create a new time-series here, to make sure that
                 // any indicators depending on it, are also re-created
+                Cash = 0.0;
                 NetAssetValue = new TimeSeries<double>();
                 NetAssetValue.Value = Cash;
                 NetAssetValueHighestHigh = 0.0;
@@ -452,7 +480,21 @@ namespace TuringTrader.Simulator
         /// <param name="amount">amount to deposit</param>
         protected void Deposit(double amount)
         {
-            Cash += amount;
+            if (amount < 0.0)
+                throw new Exception("SimulatorCore: Deposit w/ negative amount");
+
+            if (amount > 0.0)
+            {
+                Order order = new Order()
+                {
+                    Instrument = null,
+                    Quantity = 1,
+                    Type = OrderType.deposit,
+                    Price = amount,
+                };
+
+                PendingOrders.Add(order);
+            }
         }
         #endregion
         #region protected void Withdraw(double amount)
@@ -462,7 +504,21 @@ namespace TuringTrader.Simulator
         /// <param name="amount">amount to withdraw</param>
         protected void Withdraw(double amount)
         {
-            Cash -= amount;
+            if (amount < 0.0)
+                throw new Exception("SimulatorCore: Withdraw w/ negative amount");
+
+            if (amount > 0.0)
+            {
+                Order order = new Order()
+                {
+                    Instrument = null,
+                    Quantity = 1,
+                    Type = OrderType.withdrawal,
+                    Price = amount,
+                };
+
+                PendingOrders.Add(order);
+            }
         }
         #endregion
         #region protected double Cash

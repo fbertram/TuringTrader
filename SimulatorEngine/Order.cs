@@ -43,7 +43,12 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// execute stop order during next bar
         /// </summary>
-        stopNextBar
+        stopNextBar,
+
+        /// <summary>
+        /// deposit/ withdraw cash
+        /// </summary>
+        cash,
     };
 
     /// <summary>
@@ -70,6 +75,11 @@ namespace TuringTrader.Simulator
         /// price of order, only required for stop orders
         /// </summary>
         public double Price;
+
+        /// <summary>
+        /// user-defined comment
+        /// </summary>
+        public string Comment;
     }
 }
 
