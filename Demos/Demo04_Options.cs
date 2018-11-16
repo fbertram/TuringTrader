@@ -52,8 +52,8 @@ namespace TuringTrader.Demos
             // add instruments
             // the underlying must be added explicitly,
             // as the simulation engine requires it
-            DataSources.Add(DataSource.New(_underlyingNickname));
-            DataSources.Add(DataSource.New(_optionsNickname));
+            AddDataSource(_underlyingNickname);
+            AddDataSource(_optionsNickname);
 
             // clear plotters & possible relicts from previous run
             _plotter.Clear();

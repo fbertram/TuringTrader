@@ -42,7 +42,7 @@ namespace TuringTrader.Demos
             CommissionPerShare = 0.015;
 
             // add instruments
-            DataSources.Add(DataSource.New(_instrumentNick));
+            AddDataSource(_instrumentNick);
 
             // clear plotters
             _plotter.Clear();

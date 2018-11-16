@@ -39,7 +39,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("12/31/2016");
 
             // add instruments
-            DataSources.Add(DataSource.New(_instrumentNick));
+            AddDataSource(_instrumentNick);
 
             // reset plotters
             _plotter.Clear();

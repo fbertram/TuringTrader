@@ -51,7 +51,7 @@ namespace TuringTrader.Demos
 
             // add instruments
             foreach (string nickname in _tradingInstruments)
-                DataSources.Add(DataSource.New(nickname));
+                AddDataSource(nickname);
 
             // clear plotters
             _plotter.Clear();
@@ -98,8 +98,9 @@ namespace TuringTrader.Demos
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
+                _plotter.Plot("action", entry.Action);
                 _plotter.Plot("instr", entry.Symbol);
+                _plotter.Plot("qty", entry.OrderTicket.Quantity);
                 _plotter.Plot("price", entry.FillPrice);
             }
         }

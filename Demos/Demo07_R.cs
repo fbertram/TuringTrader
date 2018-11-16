@@ -41,7 +41,7 @@ namespace TuringTrader.Demos
             Deposit(_initialCash);
 
             // add instruments
-            DataSources.Add(DataSource.New(_instrumentNick));
+            AddDataSource(_instrumentNick);
 
             // reset plotters
             _plotter.Clear();

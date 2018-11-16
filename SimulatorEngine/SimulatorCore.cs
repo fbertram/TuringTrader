@@ -30,21 +30,21 @@ namespace TuringTrader.Simulator
     {
         #region internal data
         private Dictionary<string, Instrument> _instruments = new Dictionary<string, Instrument>();
+        private List<DataSource> _dataSources = new List<DataSource>();
         #endregion
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
-            if (ticket.Type == OrderType.deposit
-            || ticket.Type == OrderType.withdrawal)
+            if (ticket.Type == OrderType.cash)
             {
-                Cash = ticket.Type == OrderType.deposit
-                    ? Cash + ticket.Price
-                    : Cash - ticket.Price;
+                // to make things similar to stocks, a positive quantity
+                // results in a debit, a negative quantity in a credit
+                Cash -= ticket.Quantity * ticket.Price;
 
                 LogEntry l = new LogEntry()
                 {
                     Symbol = "N/A",
-                    InstrumentType = LogEntryInstrument.ExternalAccount,
+                    InstrumentType = LogEntryInstrument.Cash,
                     OrderTicket = ticket,
                     BarOfExecution = Instruments
                         .Where(i => i.Time[0] == SimTime[0])
@@ -290,7 +290,7 @@ namespace TuringTrader.Simulator
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
-                foreach (DataSource source in DataSources)
+                foreach (DataSource source in _dataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
                     source.LoadData((DateTime)WarmupStartTime, EndTime);
@@ -316,12 +316,12 @@ namespace TuringTrader.Simulator
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    SimTime.Value = DataSources
+                    SimTime.Value = _dataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
                     // go through all data sources
-                    foreach (DataSource source in DataSources)
+                    foreach (DataSource source in _dataSources)
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
@@ -370,7 +370,7 @@ namespace TuringTrader.Simulator
                 _instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
-                DataSources.Clear();
+                //DataSources.Clear();
 
                 yield break;
             }
@@ -392,12 +392,19 @@ namespace TuringTrader.Simulator
         protected bool IsLastBar = false;
         #endregion
 
-        #region protected List<DataSource> DataSources
+        #region protected void AddDataSource(string nickname)
         /// <summary>
-        /// List of data sources. Algorithms will add data sources to this list,
-        /// in order to have them processed by the simulator.
+        /// Add data source. If the data source already exists, the call is ignored.
         /// </summary>
-        protected List<DataSource> DataSources = new List<DataSource>();
+        /// <param name="nickname">nickname of data source</param>
+        protected void AddDataSource(string nickname)
+        {
+            foreach (DataSource source in _dataSources)
+                if (source.Info[DataSourceValue.nickName] == nickname)
+                    return;
+
+            _dataSources.Add(DataSource.New(nickname));
+        }
         #endregion
         #region public IEnumerable<Instrument> Instruments
         /// <summary>
@@ -488,8 +495,8 @@ namespace TuringTrader.Simulator
                 Order order = new Order()
                 {
                     Instrument = null,
-                    Quantity = 1,
-                    Type = OrderType.deposit,
+                    Quantity = -1,
+                    Type = OrderType.cash,
                     Price = amount,
                 };
 
@@ -513,7 +520,7 @@ namespace TuringTrader.Simulator
                 {
                     Instrument = null,
                     Quantity = 1,
-                    Type = OrderType.withdrawal,
+                    Type = OrderType.cash,
                     Price = amount,
                 };
 
