@@ -75,7 +75,8 @@ namespace TuringTrader.Simulator
                 (v) =>
                 {
                     double alpha = 2.0 / (N + 1);
-                    return alpha * (series[0] - v) + v;
+                    double r = alpha * (series[0] - v) + v;
+                    return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
                 series.GetHashCode(), N);

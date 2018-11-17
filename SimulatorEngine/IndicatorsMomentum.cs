@@ -131,7 +131,7 @@ namespace TuringTrader.Simulator
 
                     return -100.0 * (hh - series.Close[0]) / (hh - ll);
                 },
-                50.0,
+                -50.0,
                 series.GetHashCode(), n);
         }
         #endregion
@@ -153,8 +153,84 @@ namespace TuringTrader.Simulator
 
                     return -100.0 * (hh - series[0]) / (hh - ll);
                 },
+                -50.0,
+                series.GetHashCode(), n);
+        }
+        #endregion
+        #region public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
+        {
+            var container = Cache<StochasticOscillatorResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new StochasticOscillatorResult());
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.High.Highest(n)[0];
+                    double ll = series.Low.Lowest(n)[0];
+
+                    return 100.0 * (hh - series[0].Close) / (hh - ll);
+                },
                 50.0,
                 series.GetHashCode(), n);
+
+            container.PercentD = container.PercentK.SMA(3);
+
+            return container;
+        }
+        #endregion
+        #region public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
+        {
+            var container = Cache<StochasticOscillatorResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new StochasticOscillatorResult());
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.Highest(n)[0];
+                    double ll = series.Lowest(n)[0];
+
+                    return 100.0 * (hh - series[0]) / (hh - ll);
+                },
+                50.0,
+                series.GetHashCode(), n);
+
+            container.PercentD = container.PercentK.SMA(3);
+
+            return container;
+        }
+
+        /// <summary>
+        /// Container for Stochastic Oscillator result.
+        /// </summary>
+        public class StochasticOscillatorResult
+        {
+            /// <summary>
+            /// %K
+            /// </summary>
+            public ITimeSeries<double> PercentK;
+
+            /// <summary>
+            /// %D
+            /// </summary>
+            public ITimeSeries<double> PercentD;
         }
         #endregion
 
