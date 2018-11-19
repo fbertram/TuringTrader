@@ -101,9 +101,10 @@ namespace TuringTrader.Simulator
                 (v) =>
                 {
                     double alpha = 2.0 / (N + 1);
-                    return series[0] >= v
+                    double r = series[0] >= v
                         ? series[0]
                         : alpha * (series[0] - v) + v;
+                    return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
                 series.GetHashCode(), N);
@@ -199,7 +200,8 @@ namespace TuringTrader.Simulator
                         double efficiencyRatio = change / Math.Max(1e-10, volatility);
                         double smoothingConstant = Math.Pow(efficiencyRatio * (scFast - scSlow) + scSlow, 2);
 
-                        return smoothingConstant * (series[0] - v) + v;
+                        double r = smoothingConstant * (series[0] - v) + v;
+                        return double.IsNaN(r) ? 0.0 : r;
                     }
                     catch (Exception)
                     {

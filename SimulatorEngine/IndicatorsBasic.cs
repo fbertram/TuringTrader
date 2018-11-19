@@ -258,6 +258,19 @@ namespace TuringTrader.Simulator
                 series.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Log(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate natural logarithm of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>logarithmic time series</returns>
+        public static ITimeSeries<double> Log(this ITimeSeries<double> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Log(series[t]),
+                series.GetHashCode());
+        }
+        #endregion
 
     }
 }
