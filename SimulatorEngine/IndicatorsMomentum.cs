@@ -24,9 +24,6 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsMomentum
     {
-        // TODO:
-        // - Stochastic Oscillator
-
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         /// <summary>
         /// Calculate Commodity Channel Index of input time series, as described here:
@@ -129,7 +126,11 @@ namespace TuringTrader.Simulator
                     double hh = series.High.Highest(n)[0];
                     double ll = series.Low.Lowest(n)[0];
 
-                    return -100.0 * (hh - series.Close[0]) / (hh - ll);
+                    //return -100.0 * (hh - series.Close[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? -100.0 * (hh - series.Close[0]) / denom
+                        : -50.0;
                 },
                 -50.0,
                 series.GetHashCode(), n);
@@ -151,7 +152,11 @@ namespace TuringTrader.Simulator
                     double hh = series.Highest(n)[0];
                     double ll = series.Lowest(n)[0];
 
-                    return -100.0 * (hh - series[0]) / (hh - ll);
+                    //return -100.0 * (hh - series[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? -100.0 * (hh - series[0]) / denom
+                        : -50.0;
                 },
                 -50.0,
                 series.GetHashCode(), n);
@@ -177,7 +182,11 @@ namespace TuringTrader.Simulator
                     double hh = series.High.Highest(n)[0];
                     double ll = series.Low.Lowest(n)[0];
 
-                    return 100.0 * (hh - series[0].Close) / (hh - ll);
+                    //return 100.0 * (hh - series[0].Close) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? 100.0 * (hh - series[0].Close) / denom
+                        : 50.0;
                 },
                 50.0,
                 series.GetHashCode(), n);
@@ -207,7 +216,11 @@ namespace TuringTrader.Simulator
                     double hh = series.Highest(n)[0];
                     double ll = series.Lowest(n)[0];
 
-                    return 100.0 * (hh - series[0]) / (hh - ll);
+                    //return 100.0 * (hh - series[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? 100.0 * (hh - series[0]) / denom
+                        : 50.0;
                 },
                 50.0,
                 series.GetHashCode(), n);
