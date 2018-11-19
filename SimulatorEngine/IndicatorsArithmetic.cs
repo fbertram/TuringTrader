@@ -142,6 +142,64 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), constValue.GetHashCode());
         }
         #endregion
+
+        #region public static ITimeSeries<double> Max(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate maximum of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 + time series #2</returns>
+        public static ITimeSeries<double> Max(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Max(series1[t], series2[t]),
+                series1.GetHashCode(), series2.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate maximum of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series + constant value</returns>
+        public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Max(series[t], constValue),
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> Min(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        /// <summary>
+        /// Calculate minimum of two time series.
+        /// </summary>
+        /// <param name="series1">time series #1</param>
+        /// <param name="series2">time series #2</param>
+        /// <returns>time series #1 + time series #2</returns>
+        public static ITimeSeries<double> Min(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Min(series1[t], series2[t]),
+                series1.GetHashCode(), series2.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue)
+        /// <summary>
+        /// Calculate minimum of time series and constant value.
+        /// </summary>
+        /// <param name="series">time series</param>
+        /// <param name="constValue">constant value</param>
+        /// <returns>time series + constant value</returns>
+        public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Min(series[t], constValue),
+                series.GetHashCode(), constValue.GetHashCode());
+        }
+        #endregion
     }
 }
 
