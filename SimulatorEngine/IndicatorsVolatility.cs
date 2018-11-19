@@ -124,6 +124,76 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region public static ITimeSeries<double> SemiDeviation(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate standard deviation, based on exponentially weighted filters. This is an
+        /// incremental calculation, based on Tony Finch, which is very fast and efficient.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">filtering length</param>
+        /// <returns>variance as time series</returns>
+        public static FunctorSemiDeviation SemiDeviation(this ITimeSeries<double> series, int n = 10)
+        {
+            var functor = Cache<FunctorSemiDeviation>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new FunctorSemiDeviation(series, n));
+
+            functor.Calc();
+
+            return functor;
+        }
+
+        public class FunctorSemiDeviation
+        {
+            public readonly ITimeSeries<double> Series;
+            public readonly int N;
+
+            private readonly double _alpha;
+            private double _average;
+            private double _varianceUpside;
+            private double _varianceDownside;
+
+            public TimeSeries<double> Average = new TimeSeries<double>();
+            public TimeSeries<double> Upside = new TimeSeries<double>();
+            public TimeSeries<double> Downside = new TimeSeries<double>();
+
+            public FunctorSemiDeviation(ITimeSeries<double> series, int n)
+            {
+                Series = series;
+                N = Math.Max(2, n);
+                _alpha = 2.0 / (N + 1.0);
+            }
+
+            public void Calc()
+            {
+                try
+                {
+                    // calculate exponentially-weighted mean and variance
+                    // see Tony Finch, Incremental calculation of mean and variance
+                    double diff = Series[0] - _average;
+                    double incr = _alpha * diff;
+                    _average = _average + incr;
+
+                    // semi-variance is calculcated only across the samples above (below)
+                    // the average. the other samples are ignored, not zero-padded.
+                    if (diff > 0.0) _varianceUpside = (1.0 - _alpha) * (_varianceUpside + diff * incr);
+                    else _varianceDownside = (1.0 - _alpha) * (_varianceDownside + diff * incr);
+
+                    Average.Value = _average;
+                    Upside.Value = Math.Sqrt(_varianceUpside);
+                    Downside.Value = Math.Sqrt(_varianceDownside);
+                }
+                catch (Exception)
+                {
+                    // we get here when we access bars too far in the past
+                    _average = Series[0];
+                    _varianceUpside = 0.0;
+                    _varianceDownside = 0.0;
+                }
+            }
+        }
+        #endregion
+
         #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate historical volatility.
