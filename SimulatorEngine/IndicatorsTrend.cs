@@ -82,6 +82,33 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), N);
         }
         #endregion
+        #region public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate envelope of time series. For input values higher than the current
+        /// output value, the output follows the input immediately. For input values lower,
+        /// the output is an EMA of the input. The overall function is much like an
+        /// envelope detector in electronics.
+        /// <see href="https://en.wikipedia.org/wiki/Envelope_detector"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>envelope time series</returns>
+        public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
+        {
+            int N = Math.Max(1, n);
+
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double alpha = 2.0 / (N + 1);
+                    return series[0] >= v
+                        ? series[0]
+                        : alpha * (series[0] - v) + v;
+                },
+                series[0],
+                series.GetHashCode(), N);
+        }
+        #endregion
 
         #region public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n)
         /// <summary>
@@ -197,17 +224,17 @@ namespace TuringTrader.Simulator
         /// <returns></returns>
         public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         {
-            var functor = Cache<MACDResult>.GetData(
+            var container = Cache<MACDResult>.GetData(
                     Cache.UniqueId(series.GetHashCode(), fast, slow, signal),
                     () => new MACDResult());
 
-            functor.Fast = series.EMA(fast);
-            functor.Slow = series.EMA(slow);
-            functor.MACD = functor.Fast.Subtract(functor.Slow);
-            functor.Signal = functor.MACD.EMA(signal);
-            functor.Divergence = functor.MACD.Subtract(functor.Signal);
+            container.Fast = series.EMA(fast);
+            container.Slow = series.EMA(slow);
+            container.MACD = container.Fast.Subtract(container.Slow);
+            container.Signal = container.MACD.EMA(signal);
+            container.Divergence = container.MACD.Subtract(container.Signal);
 
-            return functor;
+            return container;
         }
 
         /// <summary>
