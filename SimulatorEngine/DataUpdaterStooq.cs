@@ -75,7 +75,7 @@ namespace TuringTrader.Simulator
                             long volume; try { volume = long.Parse(items[5]); } catch { volume = 0; }
 
                             Bar bar = new Bar(
-                                Info[DataSourceValue.symbol], time,
+                                Info[DataSourceValue.ticker], time,
                                 open, high, low, close, volume, true,
                                 default(double), default(double), default(long), default(long), false,
                                 default(DateTime), default(double), false);

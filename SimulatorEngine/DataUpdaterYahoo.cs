@@ -119,7 +119,7 @@ namespace TuringTrader.Simulator
 
                         DateTime time = FromUnixTime(timeStamp.Current).Date + TimeSpan.FromHours(16);
 
-                        Bar newBar = new Bar(Info[DataSourceValue.symbol],
+                        Bar newBar = new Bar(Info[DataSourceValue.ticker],
                             time,
                             open.Current * priceMultiplier,
                             high.Current * priceMultiplier,

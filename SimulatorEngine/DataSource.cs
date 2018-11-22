@@ -214,9 +214,8 @@ namespace TuringTrader.Simulator
             Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>
             {
                 { DataSourceValue.nickName, nickname },
-                { DataSourceValue.ticker, nickname },
-                { DataSourceValue.symbol, nickname },
-                { DataSourceValue.infoPath, DataPath }
+                { DataSourceValue.infoPath, DataPath },
+                { DataSourceValue.ticker, nickname },   // default value, expected to be overwritten
             };
 
             // load info file
