@@ -359,7 +359,9 @@ namespace TuringTrader.Simulator
                 foreach (var row in currentData)
                 {
                     var items = currentLabels
-                        .Select(l => AddQuotesAsRequired(toString(row[l])));
+                        .Select(l => row.ContainsKey(l)
+                            ? AddQuotesAsRequired(toString(row[l]))
+                            : "");
 
                     file.WriteLine(string.Join(",", items));
                 }

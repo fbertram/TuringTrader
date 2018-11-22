@@ -28,15 +28,15 @@ namespace TuringTrader.Simulator
             #region internal data
             private static readonly string _urlTemplate = @"https://stooq.com/q/d/l/?s={0}&d1={1:yyyy}{1:MM}{1:dd}&d2={2:yyyy}{2:MM}{2:dd}&i=d";
             private static readonly Dictionary<DataSourceValue, string> _parseInfo = new Dictionary<DataSourceValue, string>()
-        {
-            { DataSourceValue.dataPath, "{1}" },
-            { DataSourceValue.time,     "16:00" },
-            { DataSourceValue.open,     "{2}" },
-            { DataSourceValue.high,     "{3}" },
-            { DataSourceValue.low,      "{4}" },
-            { DataSourceValue.close,    "{5}" },
-            { DataSourceValue.volume,   "{6}" }
-        };
+            {
+                { DataSourceValue.dataPath, "{1}" },
+                { DataSourceValue.time,     "16:00" },
+                { DataSourceValue.open,     "{2}" },
+                { DataSourceValue.high,     "{3}" },
+                { DataSourceValue.low,      "{4}" },
+                { DataSourceValue.close,    "{5}" },
+                { DataSourceValue.volume,   "{6}" }
+            };
             #endregion
 
             #region public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
@@ -72,7 +72,7 @@ namespace TuringTrader.Simulator
                             double high = double.Parse(items[2]);
                             double low = double.Parse(items[3]);
                             double close = double.Parse(items[4]);
-                            long volume = long.Parse(items[5]);
+                            long volume; try { volume = long.Parse(items[5]); } catch { volume = 0; }
 
                             Bar bar = new Bar(
                                 Info[DataSourceValue.symbol], time,
