@@ -102,9 +102,10 @@
     <Compile Include="IndicatorsVolatility.cs" />
     <Compile Include="IndicatorsVolume.cs" />
     <Compile Include="Instrument.cs" />
+    <Compile Include="LogEntryCategories.cs" />
     <Compile Include="ITimeSeries.cs" />
     <Compile Include="LogEntry.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Plotter.cs" />
     <Compile Include="MTJobQueue.cs" />
     <Compile Include="OptimizerGrid.cs" />
     <Compile Include="OptimizerParam.cs" />

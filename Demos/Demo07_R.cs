@@ -23,7 +23,7 @@ namespace TuringTrader.Demos
     class Demo07_R : Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly double _initialCash = 100000.00;
         private readonly string _instrumentNick = "^SPX.Index";
         private readonly string _template = "SimpleChart";
@@ -41,7 +41,7 @@ namespace TuringTrader.Demos
             Deposit(_initialCash);
 
             // add instruments
-            DataSources.Add(DataSource.New(_instrumentNick));
+            AddDataSource(_instrumentNick);
 
             // reset plotters
             _plotter.Clear();
@@ -54,12 +54,12 @@ namespace TuringTrader.Demos
 
                 _plotter.SelectPlot("Price", "date");
                 _plotter.SetX(SimTime[0]);
-                _plotter.Log("price", instr.Close[0]);
-                _plotter.Log("ema", instr.Close.EMA(200)[0]);
+                _plotter.Plot("price", instr.Close[0]);
+                _plotter.Plot("ema", instr.Close.EMA(200)[0]);
 
                 _plotter.SelectPlot("Drawdown", "date");
                 _plotter.SetX(SimTime[0]);
-                _plotter.Log("dd", instr.Close[0] / instr.Close.Highest(252)[0] - 1.0);
+                _plotter.Plot("dd", instr.Close[0] / instr.Close.Highest(252)[0] - 1.0);
             }
         }
 

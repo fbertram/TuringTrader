@@ -147,6 +147,21 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), N);
         }
         #endregion
+        #region public static ITimeSeries<double> Range(this Instrument series, int n)
+        /// <summary>
+        /// Calculate range over the specified number of past bars.
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">number of bars to search</param>
+        /// <returns>range between highest and lowest value of past n bars</returns>
+        public static ITimeSeries<double> Range(this Instrument series, int n)
+        {
+            return series.High
+                .Highest(n)
+                .Subtract(series.Low
+                    .Lowest(n));
+        }
+        #endregion
         #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate range over the specified number of past bars.
@@ -160,6 +175,18 @@ namespace TuringTrader.Simulator
                 .Highest(n)
                 .Subtract(series
                     .Lowest(n));
+        }
+        #endregion
+        #region public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Normalize time series over number of bars; 1.0 being the average.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">normalizing period</param>
+        /// <returns>normalized time series</returns>
+        public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
+        {
+            return series.Divide(series.EMA(n));
         }
         #endregion
 
@@ -218,6 +245,33 @@ namespace TuringTrader.Simulator
                 series.GetHashCode());
         }
         #endregion
+        #region public static ITimeSeries<double> Sqrt(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate square root of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>square root time series</returns>
+        public static ITimeSeries<double> Sqrt(this ITimeSeries<double> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Sqrt(series[t]),
+                series.GetHashCode());
+        }
+        #endregion
+        #region public static ITimeSeries<double> Log(this ITimeSeries<double> series)
+        /// <summary>
+        /// Calculate natural logarithm of time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>logarithmic time series</returns>
+        public static ITimeSeries<double> Log(this ITimeSeries<double> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => Math.Log(series[t]),
+                series.GetHashCode());
+        }
+        #endregion
+
     }
 }
 

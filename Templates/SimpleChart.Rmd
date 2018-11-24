@@ -15,6 +15,10 @@ params:
 -->
 
 ```{r setup, include=FALSE}
+#-------------------------------------------------------------------------------
+# setup
+#-------------------------------------------------------------------------------
+
 knitr::opts_chunk$set(echo = TRUE)
 
 # command-line arguments come in pairs: the plot name, and the csv with the data
@@ -22,7 +26,14 @@ args <- split(commandArgs(trailingOnly = TRUE), 1:2)
 
 # colors to use for the plots. as the first plot uses column 2, 
 # the first value is used for the grid
-colors <- c('gray60', 'black', 'red', 'green', 'blue', 'orange', 'cyan', 'darkorchid', 'deeppink', 'gold', 'orangered', 'purple', 'slategray', 'turquoise', 'brown', 'tan')
+colors <- c('gray60', 
+	    'black', 'red', 'green', 'blue', 'orange', 
+	    'cyan', 'darkorchid', 'deeppink', 'gold', 'orangered', 
+	    'purple', 'slategray', 'turquoise', 'brown', 'tan')
+
+#-------------------------------------------------------------------------------
+# define helper functions
+#-------------------------------------------------------------------------------
 
 # function to convert to date
 # also see here: https://stackoverflow.com/questions/18178451/is-there-a-way-to-check-if-a-column-is-a-date-in-r
@@ -34,7 +45,10 @@ is.date <- function(x) (!all(is.na(to.date(x))))
 # function to create a pretty plot
 create.plot <- function(title, df) {
 	# plot the 1st series
-	plot(df[,1], df[,2], type = 'l', axes = FALSE, col = colors[[2]], xlab = '', ylab = '', main = '')
+	plot(df[,1], 
+	     df[,2], ylim = c(min(df[,-1]), max(df[-1])), type = 'l', 
+	     axes = TRUE, col = colors[[2]], 
+	     xlab = colnames(df)[1], ylab = '', main = title)
 
 	# plot the 2nd and following series
 	if (ncol(df) >= 3) {
@@ -43,20 +57,11 @@ create.plot <- function(title, df) {
 		}
 	}
 
-	# set the labels for x and y axis
-	if (sapply(df, class)[1] == "Date") {
-		axis.Date(1, at = seq(min(df[,1]), max(df[,1]), by="3 mon"), format = '%m-%Y', cex.axis = 0.7)
-		abline(v = seq(min(df[,1]), max(df[,1]), by = "3 month") , col = colors[[1]], lty = "dotted")
-		grid(nx = NA, ny = NULL, col = colors[[1]], lty = "dotted")
-	} else {
-		axis(1, labels = TRUE)
-		grid(col = colors[[1]], lty = "dotted")
-	}
-	axis(2, labels = TRUE)
-
-	# set title, legend, and box
-	title(main = title, xlab = colnames(df)[1])
-	legend("topleft", legend=colnames(df)[2:ncol(df)], col=colors[2:ncol(df)], lty=1, lwd=2, cex=0.9, bty='n')
+	# set grid, legend, and box
+	grid(col = colors[[1]], lty = "dotted")
+	legend("topleft", 
+	       legend=colnames(df)[2:ncol(df)], col=colors[2:ncol(df)], 
+	       lty=1, lwd=2, cex=0.9, bty='n')
 	box()
 }
 
@@ -89,7 +94,12 @@ create.plot.or.table <- function(title, csv) {
 ```
 
 ```{r echo=FALSE, warning=FALSE}
+#-------------------------------------------------------------------------------
+# main logic
+#-------------------------------------------------------------------------------
+
 # somehow, creating tables fails if we use a for-loop here
+# plots can be created in a loop though
 if (length(args[[1]]) >= 1) create.plot.or.table(args[[1]][1], args[[2]][1])
 if (length(args[[1]]) >= 2) create.plot.or.table(args[[1]][2], args[[2]][2])
 if (length(args[[1]]) >= 3) create.plot.or.table(args[[1]][3], args[[2]][3])

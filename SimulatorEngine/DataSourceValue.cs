@@ -42,10 +42,6 @@ namespace TuringTrader.Simulator
         /// stock ticker
         /// </summary>
         ticker,
-        /// <summary>
-        /// fully qualified stock symbol
-        /// </summary>
-        symbol,
 
         /// <summary>
         /// timestamp, data part

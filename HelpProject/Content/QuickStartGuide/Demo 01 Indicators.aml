@@ -112,14 +112,12 @@
       	<codeReference>Demo01#ProcessBars</codeReference>
       	<para>
       		Inside this loop, we can access the
-      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Instruments</codeEntityReference>
-      		dictionary, which
+      		<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.Instruments</codeEntityReference>
+      		property, which
       		holds all known instruments. There are a number of ways to find the
       		instrument object we are looking for. For a simple algorithm,
       		working on only a single instrument, e.g. a basic stock-trading
-      		algorithm, we can simply use the first element of the 
-      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Instruments</codeEntityReference>
-      		dictionary:
+      		algorithm, we can simply use the first element:
       	</para>
       	<codeReference>Demo01#FirstInstrument</codeReference>
 		<para>
@@ -183,7 +181,9 @@
 		<para>
 			With the output of indicators being time series, we can calculate
 			indicators on indicators. The following code details the calculation
-			of MACD step by step:
+			of
+			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.IndicatorsTrend.MACD(TuringTrader.Simulator.ITimeSeries{System.Double},System.Int32,System.Int32,System.Int32)</codeEntityReference>
+			step by step:
 		</para>
 		<codeReference>Demo01#MACD</codeReference>
 	  </content>
@@ -197,29 +197,38 @@
       		results with us. TuringTrader can easily save data to a CSV,
       		or plot in Excel and
       		R. To do so, we first need to create a 
-      		<codeInline>Logger</codeInline>       		
+      		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Plotter</codeEntityReference>
       		object:
       	</para>
       	<codeReference>Demo01#NewLogger</codeReference>
       	<para>
-      		A <codeInline>Logger</codeInline> object can hold multiple plots. Before we add data to a plot,
-      		we need to set a working plot, and specify the name of the horizontal
-      		axis:
+      		A
+      		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Plotter</codeEntityReference>
+      		object can hold multiple plots. Before we add data to a plot,
+      		we need to selec a working plot, and specify the name of the horizontal
+      		axis with
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Plotter.SelectPlot(System.String,System.String)</codeEntityReference>
+      		:
       	</para>
       	<codeReference>Demo01#SelectPlot</codeReference>
       	<para>
       		Now, for every bar we process, we need to set the value on the
-      		horizontal axis:
+      		horizontal axis with
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Plotter.SetX(System.Object)</codeEntityReference>
+      		:
       	</para>
       	<codeReference>Demo01#SetX</codeReference>
       	<para>
       		Once we have done so, we can add one or more values to the
-      		vertical axis:
+      		vertical axis with
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Plotter.Plot(System.String,System.Object)</codeEntityReference>
+      		:
       	</para>
       	<codeReference>Demo01#Log</codeReference>
       	<para>
-      		At the end of the simulation, we can create a CSV file with a single
-      		line of code:
+      		At the end of the simulation, we can create a CSV file with a simple call to
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Plotter.SaveAsCsv(System.String,System.String,System.Func{System.Object,System.String})</codeEntityReference>
+      		:
       	</para>
       	<codeReference>Demo01#SaveAsCsv</codeReference>
       	<para>
@@ -236,19 +245,23 @@
       	</para>
       	<para>
       		Typically, a graphical representation of our data is more appealing.
-      		Creating an Excel plot can also done with just a single line of code:
+      		Creating an pretty plot requires just a simple call to
+      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Plotter.OpenWith(System.String)</codeEntityReference>
+      		:
       	</para>
       	<codeReference>Demo01#OpenWithExcel</codeReference>
       	<para>
-      		The parameter passed into the 
-      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Logger.OpenWithExcel(System.String)</codeEntityReference>
-      		function points to an
-      		Excel template. These templates include a VBA macro, that will
-      		receive the CSV, and create the desired output. 
-			By modifying the templates, there are virtually no limits to
-      		the customized plots and reports that can be created.
-      		The project includes
-      		a simple template, which will create plots like this:
+      		The parameter passed into the method points to a template, which
+      		controls the appearance. There are virtually no 
+      		limits to the customized reports and plots that can be created. 
+      		The repository contains simple templates, but you are welcome to 
+      		create your own.
+  		</para>
+  		<para>
+      		If you are plotting with Excel, the template you need is an Excel
+      		worksheet containing a VBA macro. If you are plotting to R, the
+      		required template is either a straight R script, or an RMarkdown
+      		script. Here is how a simple Excel plot will look like:
       	</para>
       	<mediaLink>
 		<!-- <caption>Demo 01-plot-small</caption> -->

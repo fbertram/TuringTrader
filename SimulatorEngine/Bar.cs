@@ -31,7 +31,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Create and initialize a bar object.
         /// </summary>
-        /// <param name="symbol">Initializer for Symbol field</param>
+        /// <param name="ticker">ticker, most often same as symbol</param>
         /// <param name="time">Initializer for Time field</param>
         /// <param name="open">Initializer for Open field</param>
         /// <param name="high">Initializer for High field</param>
@@ -48,12 +48,12 @@ namespace TuringTrader.Simulator
         /// <param name="optionStrike">Initializer for OptionStrike field</param>
         /// <param name="optionIsPut">Initializer for OptionIsPut field</param>
         public Bar(
-            string symbol, DateTime time,
+            string ticker, DateTime time,
             double open, double high, double low, double close, long volume, bool hasOHLC,
             double bid, double ask, long bidVolume, long askVolume, bool hasBidAsk,
             DateTime optionExpiry, double optionStrike, bool optionIsPut)
         {
-            Symbol = symbol;
+            Symbol = ticker; // default value, changed for options below
             Time = time;
 
             Open = open;

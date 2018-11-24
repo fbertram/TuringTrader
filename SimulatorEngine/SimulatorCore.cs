@@ -30,10 +30,34 @@ namespace TuringTrader.Simulator
     {
         #region internal data
         private Dictionary<string, Instrument> _instruments = new Dictionary<string, Instrument>();
+        private List<DataSource> _dataSources = new List<DataSource>();
         #endregion
         #region internal helpers
         private void ExecOrder(Order ticket)
         {
+            if (ticket.Type == OrderType.cash)
+            {
+                // to make things similar to stocks, a positive quantity
+                // results in a debit, a negative quantity in a credit
+                Cash -= ticket.Quantity * ticket.Price;
+
+                LogEntry l = new LogEntry()
+                {
+                    Symbol = "N/A",
+                    InstrumentType = LogEntryInstrument.Cash,
+                    OrderTicket = ticket,
+                    BarOfExecution = Instruments
+                        .Where(i => i.Time[0] == SimTime[0])
+                        .First()[0],
+                    NetAssetValue = NetAssetValue[0],
+                    FillPrice = ticket.Price,
+                    Commission = 0.0,
+                };
+                Log.Add(l);
+
+                return;
+            }
+
             // no trades during warmup phase
             if (SimTime[0] < StartTime)
                 return;
@@ -112,6 +136,9 @@ namespace TuringTrader.Simulator
             LogEntry log = new LogEntry()
             {
                 Symbol = ticket.Instrument.Symbol,
+                InstrumentType = ticket.Instrument.IsOption
+                    ? (ticket.Instrument.OptionIsPut ? LogEntryInstrument.OptionPut : LogEntryInstrument.OptionCall)
+                    : LogEntryInstrument.Equity,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
                 NetAssetValue = netAssetValue,
@@ -263,7 +290,7 @@ namespace TuringTrader.Simulator
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
 
                 // reset all enumerators
-                foreach (DataSource source in DataSources)
+                foreach (DataSource source in _dataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
                     source.LoadData((DateTime)WarmupStartTime, EndTime);
@@ -277,9 +304,10 @@ namespace TuringTrader.Simulator
                 // reset fitness
                 TradingDays = 0;
 
-                // reset net asset value
+                // reset cash and net asset value
                 // we create a new time-series here, to make sure that
                 // any indicators depending on it, are also re-created
+                Cash = 0.0;
                 NetAssetValue = new TimeSeries<double>();
                 NetAssetValue.Value = Cash;
                 NetAssetValueHighestHigh = 0.0;
@@ -288,12 +316,12 @@ namespace TuringTrader.Simulator
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
-                    SimTime.Value = DataSources
+                    SimTime.Value = _dataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
                     // go through all data sources
-                    foreach (DataSource source in DataSources)
+                    foreach (DataSource source in _dataSources)
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
@@ -301,7 +329,20 @@ namespace TuringTrader.Simulator
                         {
                             if (!_instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
                                 _instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            _instruments[source.BarEnumerator.Current.Symbol].Value = source.BarEnumerator.Current;
+                            Instrument instrument = _instruments[source.BarEnumerator.Current.Symbol];
+
+                            // we shouldn't need to check for duplicate bars here. unfortunately, this
+                            // happens with options having multiple roots. it is unclear what the best
+                            // course of action is here, for now we just skip the duplicates.
+                            // it seems that the duplicate issue stops 11/5/2013???
+                            if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
+                                instrument.Value = source.BarEnumerator.Current;
+                            else
+                            {
+                                //Output.WriteLine(string.Format("{0}: {1} has duplicate bar on {2}",
+                                //        Name, source.BarEnumerator.Current.Symbol, SimTime[0]));
+                            }
+
                             hasData[source] = source.BarEnumerator.MoveNext();
                         }
                     }
@@ -342,7 +383,7 @@ namespace TuringTrader.Simulator
                 _instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
-                DataSources.Clear();
+                //DataSources.Clear();
 
                 yield break;
             }
@@ -364,12 +405,19 @@ namespace TuringTrader.Simulator
         protected bool IsLastBar = false;
         #endregion
 
-        #region protected List<DataSource> DataSources
+        #region protected void AddDataSource(string nickname)
         /// <summary>
-        /// List of data sources. Algorithms will add data sources to this list,
-        /// in order to have them processed by the simulator.
+        /// Add data source. If the data source already exists, the call is ignored.
         /// </summary>
-        protected List<DataSource> DataSources = new List<DataSource>();
+        /// <param name="nickname">nickname of data source</param>
+        protected void AddDataSource(string nickname)
+        {
+            foreach (DataSource source in _dataSources)
+                if (source.Info[DataSourceValue.nickName] == nickname)
+                    return;
+
+            _dataSources.Add(DataSource.New(nickname));
+        }
         #endregion
         #region public IEnumerable<Instrument> Instruments
         /// <summary>
@@ -411,8 +459,7 @@ namespace TuringTrader.Simulator
         /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
-            List<Instrument> optionChain = _instruments
-                    .Select(kv => kv.Value)
+            List<Instrument> optionChain = _instruments.Values
                     .Where(i => i.Nickname == nickname  // check nickname
                         && i[0].Time == SimTime[0]      // current bar
                         && i.IsOption                   // is option
@@ -452,7 +499,21 @@ namespace TuringTrader.Simulator
         /// <param name="amount">amount to deposit</param>
         protected void Deposit(double amount)
         {
-            Cash += amount;
+            if (amount < 0.0)
+                throw new Exception("SimulatorCore: Deposit w/ negative amount");
+
+            if (amount > 0.0)
+            {
+                Order order = new Order()
+                {
+                    Instrument = null,
+                    Quantity = -1,
+                    Type = OrderType.cash,
+                    Price = amount,
+                };
+
+                PendingOrders.Add(order);
+            }
         }
         #endregion
         #region protected void Withdraw(double amount)
@@ -462,7 +523,21 @@ namespace TuringTrader.Simulator
         /// <param name="amount">amount to withdraw</param>
         protected void Withdraw(double amount)
         {
-            Cash -= amount;
+            if (amount < 0.0)
+                throw new Exception("SimulatorCore: Withdraw w/ negative amount");
+
+            if (amount > 0.0)
+            {
+                Order order = new Order()
+                {
+                    Instrument = null,
+                    Quantity = 1,
+                    Type = OrderType.cash,
+                    Price = amount,
+                };
+
+                PendingOrders.Add(order);
+            }
         }
         #endregion
         #region protected double Cash

@@ -24,7 +24,7 @@ namespace TuringTrader.Demos
     public class Demo01_Indicators : Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly string _instrumentNick = "^SPX.Index";
         private readonly double _offsetPrice = -1800.0;
@@ -39,7 +39,7 @@ namespace TuringTrader.Demos
             EndTime = DateTime.Parse("12/31/2016");
 
             // add instruments
-            DataSources.Add(DataSource.New(_instrumentNick));
+            AddDataSource(_instrumentNick);
 
             // reset plotters
             _plotter.Clear();
@@ -65,11 +65,11 @@ namespace TuringTrader.Demos
                 _plotter.SelectPlot("indicators vs time", "date");
                 _plotter.SetX(simTime);
 
-                _plotter.Log(instrument.Symbol, instrument.Close[0] + _offsetPrice);
-                _plotter.Log("ema26", ema26[0] + _offsetPrice);
-                _plotter.Log("ema12", ema12[0] + _offsetPrice);
-                _plotter.Log("macd", macd[0]);
-                _plotter.Log("signal", signal[0]);
+                _plotter.Plot(instrument.Symbol, instrument.Close[0] + _offsetPrice);
+                _plotter.Plot("ema26", ema26[0] + _offsetPrice);
+                _plotter.Plot("ema12", ema12[0] + _offsetPrice);
+                _plotter.Plot("macd", macd[0]);
+                _plotter.Plot("signal", signal[0]);
             }
         }
 

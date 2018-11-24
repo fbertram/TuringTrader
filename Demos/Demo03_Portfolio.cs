@@ -25,7 +25,7 @@ namespace TuringTrader.Demos
     public class Demo03_Portfolio: Algorithm
     {
         #region internal data
-        private Logger _plotter = new Logger();
+        private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private readonly List<string> _tradingInstruments = new List<string>()
@@ -51,7 +51,7 @@ namespace TuringTrader.Demos
 
             // add instruments
             foreach (string nickname in _tradingInstruments)
-                DataSources.Add(DataSource.New(nickname));
+                AddDataSource(nickname);
 
             // clear plotters
             _plotter.Clear();
@@ -88,7 +88,7 @@ namespace TuringTrader.Demos
                 // plot net asset value on Sheet1
                 _plotter.SelectPlot("Performance vs Time", "date");
                 _plotter.SetX(simTime);
-                _plotter.Log("Net Asset Value", NetAssetValue[0] / _initialCash);
+                _plotter.Plot("Net Asset Value", NetAssetValue[0] / _initialCash);
             }
 
             //---------- post-processing
@@ -98,9 +98,10 @@ namespace TuringTrader.Demos
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Log("qty", entry.OrderTicket.Quantity);
-                _plotter.Log("instr", entry.Symbol);
-                _plotter.Log("price", entry.FillPrice);
+                _plotter.Plot("action", entry.Action);
+                _plotter.Plot("instr", entry.Symbol);
+                _plotter.Plot("qty", entry.OrderTicket.Quantity);
+                _plotter.Plot("price", entry.FillPrice);
             }
         }
 

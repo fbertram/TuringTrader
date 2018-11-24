@@ -40,7 +40,7 @@ namespace TuringTrader.Simulator
             {
                 string[] items = (Info[DataSourceValue.ticker] + "," + line).Split(',');
 
-                string symbol = Info[DataSourceValue.ticker];
+                string ticker = Info[DataSourceValue.ticker];
                 DateTime date = default(DateTime);
                 DateTime time = default(DateTime);
 
@@ -101,7 +101,7 @@ namespace TuringTrader.Simulator
                 DateTime barTime = date.Date + time.TimeOfDay;
 
                 return new Bar(
-                                symbol, barTime,
+                                ticker, barTime,
                                 open, high, low, close, volume, hasOHLC,
                                 bid, ask, bidVolume, askVolume, hasBidAsk,
                                 optionExpiry, optionStrike, optionIsPut);

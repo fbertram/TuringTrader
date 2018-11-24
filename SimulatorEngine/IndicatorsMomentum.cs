@@ -24,10 +24,20 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsMomentum
     {
-        // TODO:
-        // - Stochastic Oscillator
-
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        /// <summary>
+        /// Calculate Commodity Channel Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>CCI time series</returns>
+        public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        {
+            return series.TypicalPrice().CCI(n);
+        }
+        #endregion
+        #region public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20)
         /// <summary>
         /// Calculate Commodity Channel Index of input time series, as described here:
         /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
@@ -35,15 +45,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>CCI time series</returns>
-        public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20)
         {
-            // see https://www.tradingview.com/wiki/Commodity_Channel_Index_(CCI)
-
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    ITimeSeries<double> typicalPrices = series.TypicalPrice();
-                    ITimeSeries<double> delta = typicalPrices.Subtract(typicalPrices.SMA(n));
+                    ITimeSeries<double> delta = series.Subtract(series.SMA(n));
                     ITimeSeries<double> meanDeviation = delta.AbsValue().SMA(n);
 
                     return delta[0] / (0.15 * meanDeviation[0]);
@@ -101,6 +108,142 @@ namespace TuringTrader.Simulator
                 },
                 50.0,
                 series.GetHashCode(), n);
+        }
+        #endregion
+        #region public static ITimeSeries<double> WilliamsPercentR(this Instrument series, int n = 10)
+        /// <summary>
+        /// Calculate Williams %R, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Williams_%25R"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">period</param>
+        /// <returns>Williams %R as time series</returns>
+        public static ITimeSeries<double> WilliamsPercentR(this Instrument series, int n = 10)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.High.Highest(n)[0];
+                    double ll = series.Low.Lowest(n)[0];
+
+                    //return -100.0 * (hh - series.Close[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? -100.0 * (hh - series.Close[0]) / denom
+                        : -50.0;
+                },
+                -50.0,
+                series.GetHashCode(), n);
+        }
+        #endregion
+        #region public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
+        /// <summary>
+        /// Calculate Williams %R, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Williams_%25R"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">period</param>
+        /// <returns>Williams %R as time series</returns>
+        public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.Highest(n)[0];
+                    double ll = series.Lowest(n)[0];
+
+                    //return -100.0 * (hh - series[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? -100.0 * (hh - series[0]) / denom
+                        : -50.0;
+                },
+                -50.0,
+                series.GetHashCode(), n);
+        }
+        #endregion
+        #region public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
+        {
+            var container = Cache<StochasticOscillatorResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new StochasticOscillatorResult());
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.High.Highest(n)[0];
+                    double ll = series.Low.Lowest(n)[0];
+
+                    //return 100.0 * (hh - series[0].Close) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? 100.0 * (hh - series[0].Close) / denom
+                        : 50.0;
+                },
+                50.0,
+                series.GetHashCode(), n);
+
+            container.PercentD = container.PercentK.SMA(3);
+
+            return container;
+        }
+        #endregion
+        #region public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
+        {
+            var container = Cache<StochasticOscillatorResult>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new StochasticOscillatorResult());
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    double hh = series.Highest(n)[0];
+                    double ll = series.Lowest(n)[0];
+
+                    //return 100.0 * (hh - series[0]) / (hh - ll);
+                    double denom = hh - ll;
+                    return denom != 0.0
+                        ? 100.0 * (hh - series[0]) / denom
+                        : 50.0;
+                },
+                50.0,
+                series.GetHashCode(), n);
+
+            container.PercentD = container.PercentK.SMA(3);
+
+            return container;
+        }
+
+        /// <summary>
+        /// Container for Stochastic Oscillator result.
+        /// </summary>
+        public class StochasticOscillatorResult
+        {
+            /// <summary>
+            /// %K
+            /// </summary>
+            public ITimeSeries<double> PercentK;
+
+            /// <summary>
+            /// %D
+            /// </summary>
+            public ITimeSeries<double> PercentD;
         }
         #endregion
 
