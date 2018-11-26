@@ -167,31 +167,31 @@ namespace TuringTrader.Simulator
             {
                 string tmpFile = Path.ChangeExtension(Path.GetTempFileName(), ".csv");
 
-                string _convertToString(object o)
+                // use lambda expression, as local functions require VS2017 or later
+                // see https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions
+                Func<object, string> _convertToString = (o) =>
                 {
                     // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
-
                     if (o.GetType() == typeof(DateTime))
                     {
                         DateTime d = (DateTime)o;
-                        //return (d.Year + d.DayOfYear / 365.25).ToString();
                         return string.Format("{0:MM/dd/yyyy}", d);
                     }
 
                     return o.ToString();
-                }
+                };
 
                 SaveAsCsv(tmpFile, plotTitle, _convertToString);
 
                 // see https://stackoverflow.com/questions/5510343/escape-command-line-arguments-in-c-sharp/6040946#6040946
-                string _encodeParameterArgument(string original)
+                Func<string, string> _encodeParameterArgument = (original) =>
                 {
                     if (string.IsNullOrEmpty(original))
                         return original;
                     string value = Regex.Replace(original, @"(\\*)" + "\"", @"$1\$0");
                     value = Regex.Replace(value, @"^(.*\s.*?)(\\*)$", "\"$1$2$2\"");
                     return value;
-                }
+                };
 
                 // Note that this version does the same but handles new lines in the arugments
                 /*string _enncodeParameterArgumentMultiLine(string original)
