@@ -13,33 +13,50 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TuringTrader.Simulator;
 
-namespace Tests
+namespace SimulatorEngine.Tests
 {
     [TestClass]
     public class IndicatorsMomentum
     {
+        #region public void Test_LinearRegression()
         [TestMethod]
         public void Test_LinearRegression()
         {
-            /*
-            https://stackoverflow.com/questions/5083465/fast-efficient-least-squares-fit-algorithm-in-c
-            REAL x[6]= {1, 2, 4,  5,  10, 20};
-            REAL y[6]= {4, 6, 12, 15, 34, 68};
-            m=3.43651 b=-0.888889 r=0.999192    
-            */
+            double[,] testVectors =
+            {
+                {100.00000, 0.00000, 0.00000, 0.00000, 0.00000,},
+                {105.00000, 1.50000, 0.00000, 0.00000, 0.00000,},
+                {102.50000, 1.25000, 1.50000, 0.00000, 0.00000,},
+                {107.50000, 2.00000, 1.25000, 1.50000, 0.00000,},
+                {105.00000, 0.50000, 2.00000, 1.25000, 1.50000,},
+                {110.00000, 2.00000, 0.50000, 2.00000, 1.25000,},
+                {107.50000, 0.50000, 2.00000, 0.50000, 2.00000,},
+                {112.50000, 2.00000, 0.50000, 2.00000, 0.50000,},
+                {110.00000, 0.50000, 2.00000, 0.50000, 2.00000,},
+                {115.00000, 2.00000, 0.50000, 2.00000, 0.50000,},
+            };
 
-            ITimeSeries<double> series1 = IndicatorsBasic.Lambda(
-                (t) => 100.0 + Math.Sin(2.0 * Math.PI * t / 10.0),
-                0);
-            double result1 = series1.LinRegression(10)[0];
-            Assert.IsTrue(Math.Abs(result1 - 0.18653) < 1e-4);
+            TimeSeries<double> stimulus = new TimeSeries<double>();
 
-            ITimeSeries<double> series2 = IndicatorsBasic.Lambda(
-                (t) => 100.0 -2.5 * t,
-                0);
-            double result2 = series2.LinRegression(10)[0];
-            Assert.IsTrue(Math.Abs(result2 - 2.5000) < 1e-4);
+            for (int row = 0; row <= testVectors.GetUpperBound(0); row++)
+            {
+                stimulus.Value = testVectors[row, 0];
+                ITimeSeries<double> response = stimulus.LinRegression(4);
+                //Output.Write("{{{0:F5},", testVectors[row, 0]);
+
+                for (int col = 1; col <= testVectors.GetUpperBound(1); col++)
+                {
+                    int t = col - 1;
+                    double responseValue = response[t];
+                    double expectedValue = testVectors[row, col];
+                    //Output.Write("{0:F5},", responseValue);
+
+                    Assert.IsTrue(Math.Abs(responseValue - expectedValue) < 1e-5);
+                }
+                //Output.WriteLine("},");
+            }
         }
+        #endregion
     }
 }
 

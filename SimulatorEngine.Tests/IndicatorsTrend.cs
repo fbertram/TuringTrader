@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TuringTrader.Simulator;
 
-namespace Tests
+namespace SimulatorEngine.Tests
 {
     [TestClass]
     public class IndicatorsTrend

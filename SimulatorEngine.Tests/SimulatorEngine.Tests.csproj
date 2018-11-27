@@ -52,6 +52,7 @@
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeSeries.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

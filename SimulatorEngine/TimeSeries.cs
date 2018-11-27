@@ -85,10 +85,8 @@ namespace TuringTrader.Simulator
 #else
         // faster: implementation with diy cyclic buffer
         #region internal data
-        private int _maxBarsBack;
         private T[] _barData;
         private int _newestBar;
-        private int _numBars;
         #endregion
 
         #region public TimeSeries(int maxBarsBack)
@@ -98,10 +96,10 @@ namespace TuringTrader.Simulator
         /// <param name="maxBarsBack">number of bars to hold</param>
         public TimeSeries(int maxBarsBack = 256)
         {
-            _maxBarsBack = maxBarsBack;
-            _barData = new T[_maxBarsBack];
+            MaxBarsBack = maxBarsBack;
+            _barData = new T[MaxBarsBack];
             _newestBar = -1;
-            _numBars = 0;
+            BarsAvailable = 0;
         }
         #endregion
 
@@ -113,8 +111,8 @@ namespace TuringTrader.Simulator
         {
             set
             {
-                _newestBar = (_newestBar + 1) % _maxBarsBack;
-                _numBars = Math.Min(_numBars + 1, _maxBarsBack);
+                _newestBar = (_newestBar + 1) % MaxBarsBack;
+                BarsAvailable = Math.Min(BarsAvailable + 1, MaxBarsBack);
                 _barData[_newestBar] = value;
             }
         }
@@ -129,13 +127,13 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                if (_numBars < 1)
+                if (BarsAvailable < 1)
                     throw new Exception("time series lookup past available bars");
 
                 // adjust daysBack, if exceeding # of available bars
-                barsBack = Math.Max(Math.Min(barsBack, _numBars - 1), 0);
+                barsBack = Math.Max(Math.Min(barsBack, BarsAvailable - 1), 0);
 
-                int idx = (_newestBar + _maxBarsBack - barsBack) % _maxBarsBack;
+                int idx = (_newestBar + MaxBarsBack - barsBack) % MaxBarsBack;
                 T value = _barData[idx];
 
                 return value;
@@ -148,11 +146,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         public int BarsAvailable
         {
-            get
-            {
-                return _numBars;
-            }
+            get;
+            private set;
         }
+        #endregion
+        #region public readonly int MaxBarsBack
+        /// <summary>
+        /// Maximum number of bars available.
+        /// </summary>
+        public readonly int MaxBarsBack;
         #endregion
 #endif
     }
