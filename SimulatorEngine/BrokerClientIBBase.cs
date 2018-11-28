@@ -29,7 +29,7 @@ namespace TuringTrader.Simulator
     {
         protected readonly EReaderSignal Signal;
         protected readonly EClientSocket ClientSocket;
-        protected int NextOrderId;
+        protected volatile int NextOrderId;
 
         public BrokerClientIBBase()
         {

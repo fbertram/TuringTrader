@@ -34,6 +34,12 @@ namespace TuringTrader.Simulator
         /// <returns>lambda time series</returns>
         public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
         {
+            // CAUTION:
+            // lambda.GetHashCode() might not work w/ .Net Core
+            // there are alternatives, see here:
+            // https://stackoverflow.com/questions/283537/most-efficient-way-to-test-equality-of-lambda-expressions
+            // however, we might not need to hash the lambda, as it is reasonably safe to assume
+            // that for a different lambda, the call stack would also be different
             var functor = Cache<FunctorLambda>.GetData(
                     // TODO: try to eliminate nested calls to Cache.UniqueId
                     Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
@@ -71,6 +77,12 @@ namespace TuringTrader.Simulator
         /// <returns>lambda time series</returns>
         public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first = 0.0, params int[] identifier)
         {
+            // CAUTION:
+            // lambda.GetHashCode() might not work w/ .Net Core
+            // there are alternatives, see here:
+            // https://stackoverflow.com/questions/283537/most-efficient-way-to-test-equality-of-lambda-expressions
+            // however, we might not need to hash the lambda, as it is reasonably safe to assume
+            // that for a different lambda, the call stack would also be different
             var timeSeries = Cache<TimeSeries<double>>.GetData(
                 Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
                 () => new TimeSeries<double>());

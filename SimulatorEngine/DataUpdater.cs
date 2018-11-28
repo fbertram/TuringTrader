@@ -27,7 +27,7 @@ namespace TuringTrader.Simulator
     abstract public class DataUpdater
     {
         //----- object factory
-        #region static public DataUpdate New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        #region static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         /// <summary>
         /// Factory method to create new data updater object, based on info dictionary.
         /// </summary>
@@ -88,7 +88,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public partial class DataUpdaterCollection
     {
-        #region static public DataUpdate New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        #region static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
         /// <summary>
         /// Factory method to create new data updater object, based on info dictionary.
         /// </summary>
