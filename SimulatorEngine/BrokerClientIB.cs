@@ -436,7 +436,7 @@ namespace TuringTrader.Simulator
 
                 if (ClientSocket.IsConnected())
                 {
-                    Output.WriteLine("Connected.");
+                    Output.WriteLine("Socket connected.");
                     break;
                 }
 
@@ -460,6 +460,7 @@ namespace TuringTrader.Simulator
             {
                 // once we are connected, we will have an order id > 0
             }
+            Output.WriteLine("TWS API connected.");
         }
         #endregion
         #region public void Disconnect()
