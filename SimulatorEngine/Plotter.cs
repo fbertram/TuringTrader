@@ -97,7 +97,7 @@ namespace TuringTrader.Simulator
             int rows = AllData.Keys
                 .Select(item => AllData[item].Count)
                 .Max();
-            if (rows <= 1)
+            if (rows < 1)
             {
                 Clear();
                 return;

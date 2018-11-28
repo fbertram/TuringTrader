@@ -9,6 +9,8 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#if false
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +56,8 @@ namespace SimulatorEngine.Tests
         #endregion
     }
 }
+
+#endif
 
 //==============================================================================
 // end of file

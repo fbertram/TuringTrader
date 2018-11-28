@@ -14,12 +14,12 @@ This project implements a trading simulator/ backtester for stocks and options w
 * multi-threaded optimizer engine, able to utilize all CPU cores
 * demo algorithms to shorten learning curve
 * API documentation, and quick start guide, as Windows help file
+* Unit tests
 
 The following features are planned for the near future:
 
 * support for limit orders
 * Data management tool
-* Unit tests
 
 The following environment is required for building and running the simulator:
 

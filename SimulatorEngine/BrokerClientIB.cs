@@ -421,15 +421,26 @@ namespace TuringTrader.Simulator
         {
             Output.WriteLine("Connecting to TWS...");
 
-            try
+            int numTries = 0;
+            do
             {
+                numTries++;
+
+                if (numTries > 1)
+                {
+                    Output.WriteLine("Launching TWS...");
+                    LaunchTWS(username, password, port);
+                }
+
                 ClientSocket.eConnect(ip, port, 0);
-            }
-            catch (Exception)
-            {
-                LaunchTWS(username, password, port);
-                ClientSocket.eConnect(ip, port, 0);
-            }
+
+                if (ClientSocket.IsConnected())
+                {
+                    Output.WriteLine("Connected.");
+                    break;
+                }
+
+            } while (numTries <= 3);
 
             EReaderSignal readerSignal = Signal;
             var reader = new EReader(ClientSocket, readerSignal);
