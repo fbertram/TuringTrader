@@ -57,14 +57,13 @@ namespace TuringTrader.Demos
                 ITimeSeries<double> ema26 = instrument.Close.EMA(26);
                 ITimeSeries<double> ema12 = instrument.Close.EMA(12);
 
-                // indicators can be calculated on top indicators
+                // therefore, indicators can be calculated on top of indicators
                 ITimeSeries<double> macd = ema12.Subtract(ema26);
                 ITimeSeries<double> signal = macd.EMA(9);
 
                 // plot our data
                 _plotter.SelectPlot("indicators vs time", "date");
                 _plotter.SetX(simTime);
-
                 _plotter.Plot(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Plot("ema26", ema26[0] + _offsetPrice);
                 _plotter.Plot("ema12", ema12[0] + _offsetPrice);
@@ -75,6 +74,7 @@ namespace TuringTrader.Demos
 
         public override void Report()
         {
+            // open the plot with Excel, or R
             _plotter.OpenWith(_template);
         }
     }

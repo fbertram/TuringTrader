@@ -191,6 +191,8 @@ namespace TuringTrader.Simulator
                     : Positions[instrument];
 
                 nav += quantity * price;
+
+                // TODO: close any stale positions
             }
 
             return nav;

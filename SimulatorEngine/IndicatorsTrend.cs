@@ -59,6 +59,27 @@ namespace TuringTrader.Simulator
                 series.GetHashCode(), n);
         }
         #endregion
+        #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Weighted Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Weighted_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>WMA time series</returns>
+        public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
+        {
+            double sum = n / 2.0 * (n + 1.0);
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    return Enumerable.Range(0, n - 1)
+                        .Sum(t => (n - t ) / sum * series[t]);
+                },
+                series[0],
+                series.GetHashCode(), n);
+        }
+        #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate Exponential Moving Average, as described here:
@@ -127,6 +148,28 @@ namespace TuringTrader.Simulator
                 .Subtract(series
                     .EMA(n)
                     .EMA(n));
+        }
+        #endregion
+        #region public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Hull Moving Average, as described here:
+        /// <see href="https://alanhull.com/hull-moving-average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>HMA time series</returns>
+        public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
+        {
+            // http://www.incrediblecharts.com/indicators/weighted_moving_average.php
+            // Integer(SquareRoot(Period)) WMA [2 x Integer(Period/2) WMA(Price) - Period WMA(Price)]
+
+            int n2 = (int)Math.Round(n / 2.0);
+            int n3 = (int)Math.Round(Math.Sqrt(n));
+
+            return series.WMA(n2)
+                .Multiply(2.0)
+                .Subtract(series.WMA(n))
+                .WMA(n3);
         }
         #endregion
         #region public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
