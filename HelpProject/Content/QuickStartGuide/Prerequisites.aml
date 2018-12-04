@@ -12,8 +12,9 @@
            a specific number of sub-topics when creating the outline.  Specify
            zero (0) to limit it to top-level sections only.  -->
       <!-- <autoOutline /> -->
-      <para>
+      	<para>
 		The following environment is required for building and running TuringTrader:
+	  	</para>
 		<list class="bullet">
 			<listItem><para>
 				Microsoft Visual Studio, Community 2017
@@ -30,7 +31,6 @@
 				data files for the instruments to simulate. For convenience, some end-of-day quotes are pre-configured
 			</para></listItem>
 		</list>
-      </para>
     </introduction>
     <relatedTopics>
       <!-- One or more of the following:

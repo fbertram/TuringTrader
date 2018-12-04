@@ -3,17 +3,17 @@
   <developerWalkthroughDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
 
     <introduction>
-      <para>
-		This demo loads a range of quote data for a common stock, calculates 
-		indicators on the quote data, and places trades based on the indicator 
-		values. The following key concepts are demonstrated:
+      	<para>
+			This demo loads a range of quote data for a common stock, calculates 
+			indicators on the quote data, and places trades based on the indicator 
+			values. The following key concepts are demonstrated:
+ 		</para>
 		<list class="bullet">
 			<listItem>Setting initial capital</listItem>
 			<listItem>Determining net asset value</listItem>
 			<listItem>Placing orders</listItem>
 			<listItem>Keeping track of positions</listItem>
 		</list>
-	  </para>
 	  <para>
 		The method implemented here is a simple moving-average crossover, as 
 		this is easy to understand and widely referenced. Please don’t use 

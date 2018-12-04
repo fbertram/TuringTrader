@@ -240,3 +240,18 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+Help/index.html
+Help/search.html
+Help/SearchHelp.aspx
+Help/SearchHelp.inc.php
+Help/SearchHelp.php
+Help/Web.Config
+Help/WebKI.xml
+Help/WebTOC.xml
+Help/fti/
+Help/html/
+Help/icons/
+Help/media/
+Help/scripts/
+Help/styles/
+Help/toc/

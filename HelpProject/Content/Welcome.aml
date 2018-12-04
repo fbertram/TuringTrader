@@ -11,6 +11,7 @@
 			</para>
 			<para>
 			TuringTrader is a trading simulator/ backtester for stocks and options with the following features:
+			</para>
 			<list class="bullet">
 			  <listItem>simple Windows Desktop UI for interactive sessions</listItem>
 			  <listItem>import data in various CSV formats and with configurable column-mapping</listItem>
@@ -25,21 +26,20 @@
 			  <listItem>multi-threaded optimizer engine, utilizing all available CPU cores</listItem>
 			  <listItem>demo algorithms to shorten learning curve</listItem>
 			  <listItem>API documentation and quick start guide</listItem>
+			  <listItem>production quality code including unit tests</listItem>
 			</list>
-			</para>
 			<para>
 			The following features are planned for the near future:
+			</para>
 			<list class="bullet">
 			  <listItem>support for limit orders</listItem>
 			  <listItem>Data management tool</listItem>
-			  <listItem>Unit tests</listItem>
 			</list>
-			</para>
 			<para>
 			Happy coding,
 			<externalLink>
 				<linkText>Felix Bertram</linkText>
-				<linkUri>mailto:info@bertram.solutions</linkUri>
+				<linkUri>mailto:info@turingtrader.org</linkUri>
 			</externalLink>
 			</para>
 		</introduction>
