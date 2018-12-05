@@ -36,12 +36,15 @@
 			<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.Cash</codeEntityReference>
 			property at any point in the simulation, to
 			determine the amount of cash at hand. However, this property is
-			readonly. In order to simulate deposits and withdrawals, we have
-			to use the 
+			readonly. 
+		</para>
+		<para>
+			Further, using the 
 			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
-			and the 
+			and 
 			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Withdraw(System.Double)</codeEntityReference>
-			methods.
+			methods, we can simulate deposits and withdrawals at any point during the simulation.
+			This allows us to simulate savings plans, or retirement scenarios.
 		</para>
       </content>
 	</section>
