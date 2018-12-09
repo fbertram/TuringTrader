@@ -35,6 +35,8 @@ namespace TuringTrader.Simulator
         {
             // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 
+            // TODO: (1) rewrite using Linq. See WMA implementation
+            //       (2) we should be able to remove try/catch blocks
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -103,6 +105,7 @@ namespace TuringTrader.Simulator
 
             public void Calc()
             {
+                // TODO: check if we can remove try/catch here
                 try
                 {
                     // calculate exponentially-weighted mean and variance

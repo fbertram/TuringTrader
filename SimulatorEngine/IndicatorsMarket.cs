@@ -24,154 +24,133 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsMarket
     {
-        #region public static CAPMResult CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
+        #region public static ITimeSeries<double> Benchmark(this IEnumerable<Instrument> market)
+        /// <summary>
+        /// Calculate equally-weighted market benchmark.
+        /// </summary>
+        /// <param name="market">enumerable of instruments making up market</param>
+        /// <returns>benchmark time series</returns>
+        public static ITimeSeries<double> Benchmark(this IEnumerable<Instrument> market)
+        {
+            // TODO: need to figure out, if we want to include the market in the calcualtion
+            //       of the cache id. for now, we decided to _not_ include the market,
+            //       as instruments included might change, for the _same_ market
+            return IndicatorsBasic.BufferedLambda(
+                (p) =>
+                {
+                    double todaysLogReturn = market
+                        .Average(i => i.Close.LogReturn()[0]);
+                    return p * Math.Exp(todaysLogReturn);
+                },
+                1.0,
+                Cache.UniqueId(0));
+        }
+        #endregion
+
+        #region public static _CAPM CAPM(this Instrument series, Instrument benchmark, int n)
         /// <summary>
         /// Calculate Capital Asset Pricing Model parameters.
         /// <see href="http://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
-        /// </summary>
-        /// <param name="market">collection of instruments forming market</param>
-        /// <param name="benchmark">instrument serving as benchmark</param>
-        /// <param name="n">length of rolling window</param>
-        /// <returns>CAPM info</returns>
-        public static CAPMResult CAPM(this IEnumerable<Instrument> market, Instrument benchmark, int n)
+        /// This indicator uses an exponentially-weighted, incremental method of
+        /// calculation, based on Tony Finch, which is very fast and efficient.
+        /// /// </summary>
+        /// <param name="series">input instrument</param>
+        /// <param name="benchmark">benchmark time series</param>
+        /// <param name="n">length of observation window</param>
+        /// <returns>container w/ CAPM parameters</returns>
+        public static _CAPM CAPM(this Instrument series, Instrument benchmark, int n)
         {
-            var functor = Cache<CAPMResult>.GetData(
-                    // TODO: does the market need to be included in the unique id?
-                    //       for now, we have decided to _not_ include the market,
-                    //       but pass it on to Calc() as a parameter.
-                    //Cache.UniqueId(market.GetHashCode(), benchmark.GetHashCode(), n),
-                    Cache.UniqueId(benchmark.GetHashCode(), n),
-                    () => new CAPMResult(market, benchmark, n));
+            return series.Close.CAPM(
+                benchmark.Close,
+                n);
+        }
+        #endregion
+        #region public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
+        /// <summary>
+        /// Calculate Capital Asset Pricing Model parameters.
+        /// <see href="http://en.wikipedia.org/wiki/Capital_asset_pricing_model"/>
+        /// This indicator uses an exponentially-weighted, incremental method of
+        /// calculation, based on Tony Finch, which is very fast and efficient.
+        /// /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="benchmark">benchmark time series</param>
+        /// <param name="n">length of observation window</param>
+        /// <returns>container w/ CAPM parameters</returns>
+        public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
+        {
+            var functor = Cache<CAPMFunctor>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), benchmark.GetHashCode(), n),
+                    () => new CAPMFunctor(series, benchmark, n));
 
-            functor.Calc(market);
+            functor.Calc();
 
             return functor;
         }
+
         /// <summary>
         /// Container holding CAPM parameters.
         /// </summary>
-        public class CAPMResult
+        public class _CAPM
         {
-            private readonly double _alpha;
-            private Dictionary<Instrument, double> _avg = new Dictionary<Instrument, double>();
-            private Dictionary<Instrument, double> _var = new Dictionary<Instrument, double>();
-            private Dictionary<Instrument, double> _cov = new Dictionary<Instrument, double>();
-
             /// <summary>
-            /// Enumerable defining market.
+            /// CAPM alpha time series.
             /// </summary>
-            public /*readonly*/ IEnumerable<Instrument> Market;
-
+            public ITimeSeries<double> Alpha = new TimeSeries<double>();
             /// <summary>
-            /// Benchmark instrument
+            /// CAPM beta time series.
             /// </summary>
-            public readonly Instrument Benchmark;
+            public ITimeSeries<double> Beta = new TimeSeries<double>();
+        }
 
-            /// <summary>
-            /// Length of rolling window.
-            /// </summary>
-            public readonly int N;
+        private class CAPMFunctor : _CAPM
+        {
+            private ITimeSeries<double> _series;
+            private ITimeSeries<double> _benchmark;
+            private int _n;
 
-            /// <summary>
-            /// Alpha time series, indexed by instrument.
-            /// </summary>
-            public Dictionary<Instrument, TimeSeries<double>> Alpha = new Dictionary<Instrument, TimeSeries<double>>();
+            private double _alpha;
+            private double _avgSeries;
+            private double _avgBench;
+            private double _varSeries;
+            private double _varBench;
+            private double _cov;
 
-            /// <summary>
-            /// Beta time series, indexed by instrument.
-            /// </summary>
-            public Dictionary<Instrument, TimeSeries<double>> Beta = new Dictionary<Instrument, TimeSeries<double>>();
-
-            /// <summary>
-            /// Volatility time series, indexed by instrument.
-            /// </summary>
-            public Dictionary<Instrument, TimeSeries<double>> Volatility = new Dictionary<Instrument, TimeSeries<double>>();
-
-            /// <summary>
-            /// Create and initialize CAPM functor.
-            /// </summary>
-            /// <param name="market">Enumerable of instruments defining market</param>
-            /// <param name="benchmark">Benchmark instrument</param>
-            /// <param name="n">Length of rolling window</param>
-            public CAPMResult(IEnumerable<Instrument> market, Instrument benchmark, int n)
+            public CAPMFunctor(ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
             {
-                Market = market;
-                Benchmark = benchmark;
-                N = n;
+                _series = series;
+                _benchmark = benchmark;
+                _n = n;
 
-                _alpha = 2.0 / (1.0 + N);
-
-                //--- initialize benchmark data
-                if (!_avg.ContainsKey(Benchmark))
-                {
-                    _avg[Benchmark] = 0.0;
-                    _var[Benchmark] = 0.0;
-                    _cov[Benchmark] = 0.0;
-
-                    //Alpha[Benchmark] = new TimeSeries<double>();
-                    //Beta[Benchmark] = new TimeSeries<double>();
-                }
+                _alpha = 2.0 / (1.0 + _n);
+                _avgSeries = 0.0;
+                _avgBench = 0.0;
+                _varSeries = 0.0025; // exact value uncritical, but helps startup behavior
+                _varBench = 0.0025;
+                _cov = 0.0025;
             }
 
-            /// <summary>
-            /// Calculate new values for CAPM model.
-            /// </summary>
-            public void Calc(IEnumerable<Instrument> market)
+            public void Calc()
             {
-                // TODO: need to revisit how to handle market. It seems we can't save
-                //       an enumerable from a Linq expression, which is why we pass it
-                //       in as a parameter here.
-                Market = market;
+                //--- average & variance for series
+                double seriesNew = _series.LogReturn()[0];
+                double seriesDiff = seriesNew - _avgSeries;
+                double seriesIncr = _alpha * seriesDiff;
+                _avgSeries = _avgSeries + seriesIncr;
+                _varSeries = (1.0 - _alpha) * (_varSeries + seriesDiff * seriesIncr);
 
-                // see Tony Finch, Incrmental calculation of weighted mean and variance, February 2009
+                //--- average & variance for benchmark
+                double benchNew = _benchmark.LogReturn()[0];
+                double benchDiff = benchNew - _avgBench;
+                double benchIncr = _alpha * benchDiff;
+                _avgBench = _avgBench + benchIncr;
+                _varBench = (1.0 - _alpha) * (_varBench + benchDiff * benchIncr);
 
-                //--- calculate benchmark's average and variance
-                double benchmarkNew = Benchmark.Close.LogReturn()[0];
-                double benchmarkDiff = benchmarkNew - _avg[Benchmark];
-                double benchmarkIncr = _alpha * benchmarkDiff;
-                _avg[Benchmark] = _avg[Benchmark] + benchmarkIncr;
-                _var[Benchmark] = (1.0 - _alpha) * (_var[Benchmark] + benchmarkDiff * benchmarkIncr);
+                //--- covariance
+                _cov = (1.0 - _alpha) * (_cov + seriesDiff * benchIncr);
 
-                foreach (Instrument instrument in Market)
-                {
-                    if (instrument == Benchmark)
-                    {
-                        //Alpha[Benchmark].Value = 0.0;
-                        //Beta[Benchmark].Value = 1.0;
-                        continue;
-                    }
-
-                    //--- initialize instrument data
-                    // NOTE: this can't be done during object construction, as instruments
-                    //       might be added to or removed from the market
-                    if (!_avg.ContainsKey(instrument))
-                    {
-                        _avg[instrument] = 0.0;
-                        _var[instrument] = 0.0;
-                        _cov[instrument] = 0.0;
-
-                        Alpha[instrument] = new TimeSeries<double>();
-                        Beta[instrument] = new TimeSeries<double>();
-                        Volatility[instrument] = new TimeSeries<double>();
-                    }
-
-                    //--- calculate instrument's average and variance
-                    double instrumentNew = instrument.Close.LogReturn()[0];
-                    double instrumentDiff = instrumentNew - _avg[instrument];
-                    double instrumentIncr = _alpha * instrumentDiff;
-                    _avg[instrument] = _avg[instrument] + instrumentIncr;
-                    _var[instrument] = (1.0 - _alpha) * (_var[instrument] + instrumentDiff * instrumentIncr);
-
-                    Volatility[instrument].Value = Math.Sqrt(_var[instrument]);
-
-                    //--- calculate instrument's covariance and CAPM
-                    // FUB's own abstraction of Tony Finch for covariance
-                    _cov[instrument] = (1.0 - _alpha) * (_cov[instrument] + instrumentDiff * benchmarkIncr);
-
-                    // and now to CAPM
-                    Beta[instrument].Value = _cov[instrument] / Math.Max(1e-10, _var[Benchmark]);
-                    Alpha[instrument].Value = _avg[instrument] - Beta[instrument][0] * _avg[Benchmark];
-                }
+                //--- CAPM
+                (Beta as TimeSeries<double>).Value = _cov / Math.Max(1e-10, _varBench);
+                (Alpha as TimeSeries<double>).Value = _avgSeries - Beta[0] * _avgBench;
             }
         }
         #endregion

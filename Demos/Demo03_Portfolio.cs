@@ -86,7 +86,7 @@ namespace TuringTrader.Demos
                 }
 
                 // plot net asset value on Sheet1
-                _plotter.SelectPlot("Performance vs Time", "date");
+                _plotter.SelectChart("Performance vs Time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Plot("Net Asset Value", NetAssetValue[0] / _initialCash);
             }
@@ -94,7 +94,7 @@ namespace TuringTrader.Demos
             //---------- post-processing
 
             // create a list of trades on Sheet2
-            _plotter.SelectPlot("trades", "time");
+            _plotter.SelectChart("trades", "time");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);

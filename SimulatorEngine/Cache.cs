@@ -30,7 +30,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class Cache
     {
-        #region static public int UniqueId(params int[] parameterIds)
+        #region static public int UniqueId(IEnumerable<int> parameterIds)
         /// <summary>
         /// Create unique cryptographic key from a list of integer parameters, as
         /// well as the current stack trace. This ID is used to uniquely identify 
@@ -38,7 +38,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="parameterIds">list of integer parameters</param>
         /// <returns>unique id</returns>
-        static public int UniqueId(params int[] parameterIds)
+        static public int UniqueId(IEnumerable<int> parameterIds)
         {
             // on top of the parameter ids, we also need to uniquely identify the call stack
             // currently, we use only the native offset for this
@@ -46,7 +46,7 @@ namespace TuringTrader.Simulator
             IEnumerable<int> stackFrames = new System.Diagnostics.StackTrace().GetFrames()
                 .Select(f => f.GetNativeOffset().GetHashCode());
 
-            var subIds = parameterIds.AsEnumerable()
+            var subIds = parameterIds
                 .Concat(stackFrames);
 
             // see https://stackoverflow.com/questions/7278136/create-hash-value-on-a-list
@@ -57,6 +57,19 @@ namespace TuringTrader.Simulator
                 return subIds
                     .Aggregate(seed, (current, item) => (current * modifier) + item);
             }
+        }
+        #endregion
+        #region static public int UniqueId(params int[] parameterIds)
+        /// <summary>
+        /// Create unique cryptographic key from a list of integer parameters, as
+        /// well as the current stack trace. This ID is used to uniquely identify 
+        /// auto-magically created indicator functors.
+        /// </summary>
+        /// <param name="parameterIds">list of integer parameters</param>
+        /// <returns>unique id</returns>
+        static public int UniqueId(params int[] parameterIds)
+        {
+            return UniqueId(parameterIds.AsEnumerable());
         }
         #endregion
     }

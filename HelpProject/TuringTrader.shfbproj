@@ -54,7 +54,8 @@
     <CopyrightHref>http://www.bertram.solutions</CopyrightHref>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="TuringTrader.Simulator" isDocumented="True" xmlns="">This namespace contains all of TuringTrader's simulator engine, indicators, and data sources.</NamespaceSummaryItem></NamespaceSummaries>
+      <NamespaceSummaryItem name="TuringTrader.Simulator" isDocumented="True" xmlns="">This namespace contains all of TuringTrader's simulator engine, indicators, and data sources.</NamespaceSummaryItem>
+    </NamespaceSummaries>
     <HtmlSdkLinkType>Msdn</HtmlSdkLinkType>
     <BinaryTOC>True</BinaryTOC>
     <IncludeFavorites>False</IncludeFavorites>
@@ -115,6 +116,10 @@
     <Content Include="icons\Help.png" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="media\OutputMenu.JPG">
+      <ImageId>OutputMenu</ImageId>
+      <AlternateText>Output Menu</AlternateText>
+    </Image>
     <Image Include="media\Demo02-plot-small.png">
       <ImageId>Demo02-plot-small</ImageId>
       <AlternateText>Demo 02-plot-small</AlternateText>

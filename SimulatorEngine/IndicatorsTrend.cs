@@ -34,6 +34,7 @@ namespace TuringTrader.Simulator
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
+            // TODO: rewrite this using Linq, see WMA implementation
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -228,6 +229,7 @@ namespace TuringTrader.Simulator
         /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
+            // TODO: we should be able to remove the try/ catch blocks here
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {

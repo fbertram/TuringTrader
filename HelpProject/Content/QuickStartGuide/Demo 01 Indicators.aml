@@ -252,7 +252,17 @@
       	<codeReference>Demo01#OpenWithExcel</codeReference>
       	<para>
       		The parameter passed into the method points to a template, which
-      		controls the appearance. There are virtually no 
+      		controls the appearance. Please note that in the example the template
+      		file name does not include an extension. In this case, the extension
+      		is specified through the Output menu of the TuringTrader application,
+      		allowing to switch between them quickly:
+      	</para>
+  		<mediaLink>
+			<!-- ><caption>Output Menu</caption> -->
+			<image xlink:href="OutputMenu"/>
+		</mediaLink>
+      	<para>
+      		There are virtually no
       		limits to the customized reports and plots that can be created. 
       		The repository contains simple templates, but you are welcome to 
       		create your own.

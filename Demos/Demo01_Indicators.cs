@@ -62,7 +62,7 @@ namespace TuringTrader.Demos
                 ITimeSeries<double> signal = macd.EMA(9);
 
                 // plot our data
-                _plotter.SelectPlot("indicators vs time", "date");
+                _plotter.SelectChart("indicators vs time", "date");
                 _plotter.SetX(simTime);
                 _plotter.Plot(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Plot("ema26", ema26[0] + _offsetPrice);
