@@ -116,6 +116,18 @@
     <Content Include="icons\Help.png" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="media\demo03_chart-small.png">
+      <ImageId>demo03_chart-small</ImageId>
+      <AlternateText>demo 03 chart-small</AlternateText>
+    </Image>
+    <Image Include="media\demo03_log.png">
+      <ImageId>demo03_log</ImageId>
+      <AlternateText>demo 03 log</AlternateText>
+    </Image>
+    <Image Include="media\demo03_chart.png">
+      <ImageId>demo03_chart</ImageId>
+      <AlternateText>demo 03 chart</AlternateText>
+    </Image>
     <Image Include="media\OutputMenu.JPG">
       <ImageId>OutputMenu</ImageId>
       <AlternateText>Output Menu</AlternateText>
@@ -134,6 +146,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <CodeSnippets Include="Content\QuickStartGuide\Demo 03 Trading portfolios.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 02 Trading stocks.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Setting up data.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 01 Code.snippets" />

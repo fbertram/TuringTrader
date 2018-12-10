@@ -97,6 +97,7 @@
     <Compile Include="IndicatorsBasic.cs" />
     <Compile Include="IndicatorsMarket.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
+    <Compile Include="IndicatorsPerformance.cs" />
     <Compile Include="IndicatorsPrice.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />
