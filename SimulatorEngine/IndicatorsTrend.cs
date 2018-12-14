@@ -259,7 +259,7 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        #region public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         /// <summary>
         /// Calculate MACD, as described here:
         /// <see href="https://en.wikipedia.org/wiki/MACD"/>
@@ -269,11 +269,11 @@ namespace TuringTrader.Simulator
         /// <param name="slow">slow EMA period</param>
         /// <param name="signal">signal line period</param>
         /// <returns></returns>
-        public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         {
-            var container = Cache<MACDResult>.GetData(
+            var container = Cache<_MACD>.GetData(
                     Cache.UniqueId(series.GetHashCode(), fast, slow, signal),
-                    () => new MACDResult());
+                    () => new _MACD());
 
             container.Fast = series.EMA(fast);
             container.Slow = series.EMA(slow);
@@ -287,7 +287,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Container for MACD result.
         /// </summary>
-        public class MACDResult
+        public class _MACD
         {
             /// <summary>
             /// Fast EMA.

@@ -131,6 +131,8 @@ namespace TuringTrader.Simulator
                     throw new Exception("time series lookup past available bars");
 
                 // adjust daysBack, if exceeding # of available bars
+                // NOTE: we will *not* throw an exception when referencing bars
+                //       exceeding BarsAvailable
                 barsBack = Math.Max(Math.Min(barsBack, BarsAvailable - 1), 0);
 
                 int idx = (_newestBar + MaxBarsBack - barsBack) % MaxBarsBack;

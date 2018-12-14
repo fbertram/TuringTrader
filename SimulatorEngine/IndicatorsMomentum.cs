@@ -253,62 +253,83 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>annualized return as time series</returns>
-        public static ITimeSeries<double> LinRegression(this ITimeSeries<double> series, int n)
+        /// <returns>regression parameters as time series</returns>
+        public static _Regression LinRegression(this ITimeSeries<double> series, int n)
         {
-            // simple linear regression
-            // see https://en.wikipedia.org/wiki/Simple_linear_regression
-            // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
-            //   = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx)
-            // a = avg(y) - b * avg(x)
-            //   = 1 / n * Sy - b /n * Sx
+            var functor = Cache<LinRegressionFunctor>.GetData(
+                    Cache.UniqueId(series.GetHashCode(), n),
+                    () => new LinRegressionFunctor(series, n));
 
-            // coefficient of determination
-            // see https://en.wikipedia.org/wiki/Coefficient_of_determination
-            // f = a + b * x
-            // SSreg = sum((f - avg(y))^2)
-            // SSres = sum((y - f)^2)
+            functor.Calc();
 
-            return IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    double sx = 0.0;
-                    double sy = 0.0;
-                    double sxx = 0.0;
-                    double sxy = 0.0;
-                    int N = 0;
+            return functor;
+        }
 
-                    try
-                    {
-                        for (int t = 0; t < n; t++)
-                        {
-                            double x = -t;
-                            double y = series[t];
-                            sx += x;
-                            sy += y;
-                            sxx += x * x;
-                            sxy += x * y;
-                            N++;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // we get here when we access bars too far in the past
-                    }
+        /// <summary>
+        /// Container holding regression parameters.
+        /// </summary>
+        public class _Regression
+        {
+            /// <summary>
+            /// Slope as time series.
+            /// </summary>
+            public ITimeSeries<double> Slope = new TimeSeries<double>();
+            /// <summary>
+            /// Y-axis intercept as time series.
+            /// </summary>
+            public ITimeSeries<double> Intercept = new TimeSeries<double>();
+            /// <summary>
+            /// Coefficient of determination, R2, as time series.
+            /// </summary>
+            public ITimeSeries<double> R2 = new TimeSeries<double>();
+        }
+        private class LinRegressionFunctor : _Regression
+        {
+            private ITimeSeries<double> _series;
+            private int _n;
 
-                    if (N > 1)
-                    {
-                        double b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
-                        double a = sy / n - b * sx / n;
-                        return b;
-                    }
-                    else
-                    {
-                        return 0.0;
-                    }
-                },
-                0.0,
-                series.GetHashCode(), n);
+            public LinRegressionFunctor(ITimeSeries<double> series, int n)
+            {
+                _series = series;
+                _n = n;
+            }
+
+            public void Calc()
+            {
+                // simple linear regression
+                // https://en.wikipedia.org/wiki/Simple_linear_regression
+                // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
+                // a = avg(y) - b * avg(x)
+
+                double avgX = Enumerable.Range(-_n + 1, _n)
+                    .Average(x => x);
+                double avgY = Enumerable.Range(-_n + 1, _n)
+                    .Average(x => _series[-x]);
+                double sumXx = Enumerable.Range(-_n + 1, _n)
+                    .Sum(x => Math.Pow(x - avgX, 2));
+                double sumXy = Enumerable.Range(-_n + 1, _n)
+                    .Sum(x => (x - avgX) * (_series[-x] - avgY));
+                double b = sumXy / sumXx;
+                double a = avgY - b * avgX;
+
+                // coefficient of determination
+                // https://en.wikipedia.org/wiki/Coefficient_of_determination
+                // f = a + b * x
+                // SSreg = sum((f - avg(y))^2)
+                // SSres = sum((y - f)^2)
+
+                double regressionSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                    .Sum(x => Math.Pow(a + b * x - avgY, 2));
+                double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
+                double r2 = regressionSumOfSquares != 0.0
+                    ? 1.0 - residualSumOfSquares / regressionSumOfSquares
+                    : 0.0;
+
+                (Slope as TimeSeries<double>).Value = b;
+                (Intercept as TimeSeries<double>).Value = a;
+                (R2 as TimeSeries<double>).Value = r2;
+            }
         }
         #endregion
         #region public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
@@ -317,15 +338,10 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
-        /// <returns>annualized return as time series</returns>
-        public static ITimeSeries<double> LogRegression(this ITimeSeries<double> series, int n)
+        /// <returns>regression parameters as time series</returns>
+        public static _Regression LogRegression(this ITimeSeries<double> series, int n)
         {
-            ITimeSeries<double> logPrice = IndicatorsBasic.BufferedLambda(
-                (v) => Math.Log(series[0]),
-                0.0,
-                series.GetHashCode(), n);
-
-            return logPrice.LinRegression(n);
+            return series.Log().LinRegression(n);
         }
         #endregion
     }
