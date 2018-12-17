@@ -3,6 +3,7 @@
 // Name:        Livingston_MuscularPortfolios_MamaBear
 // Description: 'Mama Bear' strategy, as published in Brian Livingston's book
 //              'Muscular Portfolios'.
+//               https://muscularportfolios.com/
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC

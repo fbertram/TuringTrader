@@ -1,8 +1,9 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Antonacci_DualMomentumInvesting
+// Name:        Clenow_StocksOnTheMove
 // Description: Strategy, as published in Andreas F Clenow's book
 //              'Stocks on the Move'.
+//              http://www.followingthetrend.com/
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
@@ -23,6 +24,22 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Clenow_StocksOnTheMove : Algorithm
     {
+        #region inputs
+        [OptimizerParam(63, 252, 21)]
+        public int MOM_PERIOD = 90;
+
+        [OptimizerParam(110, 125, 5)]
+        public int MAX_MOVE = 115;
+
+        [OptimizerParam(63, 252, 21)]
+        public int INSTR_FLT = 100;
+
+        [OptimizerParam(5, 25, 5)]
+        public int ATR_PERIOD = 20;
+
+        [OptimizerParam(63, 252, 21)]
+        public int INDEX_FLT = 200;
+        #endregion
         #region private data
         private const double _initialFunds = 100000;
         private string _spx = "^SPX.Index";
@@ -263,6 +280,7 @@ namespace TuringTrader.BooksAndPubs
         };
         #endregion
 
+        #region public override void Run()
         public override void Run()
         {
             //---------- initialization
@@ -299,15 +317,12 @@ namespace TuringTrader.BooksAndPubs
                     .Select(i => new
                     {
                         instrument = i,
-                        regression = i.Close.LogRegression(90),
-                        maxMove = i.Close.LogReturn().Highest(90),
-                        avg100 = i.Close.EMA(100),
-                        atr20 = i.AverageTrueRange(20),
+                        regression = i.Close.LogRegression(MOM_PERIOD),
+                        maxMove = i.Close.LogReturn().Highest(MOM_PERIOD),
+                        avg100 = i.Close.SMA(INSTR_FLT),
+                        atr20 = i.AverageTrueRange(ATR_PERIOD),
                     })
                     .ToList();
-
-                var indexFilter = FindInstrument(_spx).Close
-                    .Divide(FindInstrument(_spx).Close.EMA(200));
 
                 // rank instruments by volatility-adjusted momentum,
                 // determine position size as percentage of NAV, set
@@ -317,21 +332,34 @@ namespace TuringTrader.BooksAndPubs
                     .Select(e => new
                     {
                         instrument = e.instrument,
-                        positionSize = (e.maxMove[0] < 0.15 && e.instrument.Close[0] > e.avg100[0])
+                        positionSize = (e.maxMove[0] < Math.Log(MAX_MOVE / 100.0)
+                                && e.instrument.Close[0] > e.avg100[0]
+                                && e.regression.Slope[0] > 0.0)
                             ? 0.001 / e.atr20[0] * e.instrument.Close[0]
                             : 0.0,
                     })
                     .ToList();
 
-                // assign equity, until we run out of cash
+                // assign equity, until we run out of cash,
+                // or we are no longer in the top 20%
                 var instrumentEquity = Enumerable.Range(0, instrumentRanking.Count)
                     .ToDictionary(
                         i => instrumentRanking[i].instrument,
-                        i => Math.Min(
-                            instrumentRanking[i].positionSize,
-                            instrumentRanking.Take(i).Sum(r => r.positionSize)));
+                        i => i <= 0.2 * instrumentRanking.Count
+                            ? Math.Min(
+                                instrumentRanking[i].positionSize,
+                                Math.Max(0.0, 1.0 - instrumentRanking.Take(i).Sum(r => r.positionSize)))
+                            : 0.0);
+
+                //Output.WriteLine("{0:MM/dd/yyyy}: total = {1:P2}, pre = {2:P2}", SimTime[0], instrumentEquity.Sum(i => i.Value), instrumentRanking.Sum(i => i.positionSize));
+
+                // index filter: only buy any shares, when S&P500 is trading above its EMA(200)
+                var indexFilter = FindInstrument(_spx).Close
+                    .Divide(FindInstrument(_spx).Close.SMA(INDEX_FLT));
 
                 // trade once per week
+                // this is a slight simplification from Clenow's suggestion to change positions
+                // every week, and adjust position sizes only every other week
                 if (SimTime[0].DayOfWeek >= DayOfWeek.Wednesday && SimTime[1].DayOfWeek < DayOfWeek.Wednesday)
                 {
                     foreach (Instrument instrument in instrumentEquity.Keys)
@@ -339,17 +367,17 @@ namespace TuringTrader.BooksAndPubs
                         int currentShares = instrument.Position;
                         int targetShares = (int)Math.Round(NetAssetValue[0] * instrumentEquity[instrument] / instrument.Close[0]);
 
-                        if (targetShares > currentShares)
-                        {
-                            // only buy more shares, if S&P is trading above its EMA(200)
-                            if (indexFilter[0] > 0.0)
-                                instrument.Trade(targetShares - currentShares);
-                        }
-                        else
-                        {
-                            instrument.Trade(targetShares - currentShares);
-                        }
+                        if (indexFilter[0] < 0.0)
+                            targetShares = Math.Min(targetShares, currentShares);
+
+                        instrument.Trade(targetShares - currentShares);
                     }
+
+                    string message = instrumentEquity
+                        .Where(i => i.Value != 0.0)
+                        .Aggregate(string.Format("{0:MM/dd/yyyy}: ", SimTime[0]),
+                            (prev, next) => prev + string.Format("{0}={1:P2} ", next.Key.Symbol, next.Value));
+                    Output.WriteLine(message);
                 }
 
                 // create plots on Sheet 1
@@ -383,10 +411,13 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
         }
-
+        #endregion
+        #region public override void Report()
         public override void Report()
         {
+            _plotter.OpenWith("SimpleChart");
         }
+        #endregion
     }
 }
 
