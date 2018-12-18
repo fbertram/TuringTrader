@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
 // Name:        Clenow_StocksOnTheMove
-// Description: Strategy, as published in Andreas F Clenow's book
+// Description: Strategy, as published in Andreas F. Clenow's book
 //              'Stocks on the Move'.
 //              http://www.followingthetrend.com/
 // History:     2018xii14, FUB, created
@@ -9,6 +9,17 @@
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
+//==============================================================================
+//
+// Strategy
+// * Trade once a week
+// * Rank stocks by volatility-adjusted momentum
+// * disqualify if
+//   - moves greater than 15%
+//   - trading below 100-day moving average
+//   - ranking lower than top 20%
+// * only buy new shares, if S&P trading above 200-day moving average
+//
 //==============================================================================
 
 #region libraries
@@ -39,6 +50,11 @@ namespace TuringTrader.BooksAndPubs
 
         [OptimizerParam(63, 252, 21)]
         public int INDEX_FLT = 200;
+
+        // Clenow uses 20 here. We need to use a higher number,
+        // as we are using a much smaller universe.
+        [OptimizerParam(5, 50, 5)]
+        public int TOP_PCNT = 25;
         #endregion
         #region private data
         private const double _initialFunds = 100000;
@@ -310,6 +326,15 @@ namespace TuringTrader.BooksAndPubs
                             && i.Time[0] == simTime)
                     .ToList();
 
+                var inactiveInstruments = Instruments
+                    .Where(i => _tradingInstruments.Contains(i.Nickname)
+                            && i.Time[0] != simTime)
+                    .ToList();
+                double stuckInactive = inactiveInstruments
+                    .Sum(i => i.Position * i.Close[0]);
+                if (stuckInactive > 0.0)
+                    Output.WriteLine("{0:MM/dd/yyyy}: stuckInactive = {1:C2}", SimTime[0], stuckInactive);
+
                 // calculate indicators
                 // store to list, to make sure indicators are evaluated
                 // exactly once per bar
@@ -319,7 +344,7 @@ namespace TuringTrader.BooksAndPubs
                         instrument = i,
                         regression = i.Close.LogRegression(MOM_PERIOD),
                         maxMove = i.Close.LogReturn().Highest(MOM_PERIOD),
-                        avg100 = i.Close.SMA(INSTR_FLT),
+                        avg100 = i.Close.EMA(INSTR_FLT),
                         atr20 = i.AverageTrueRange(ATR_PERIOD),
                     })
                     .ToList();
@@ -341,21 +366,19 @@ namespace TuringTrader.BooksAndPubs
                     .ToList();
 
                 // assign equity, until we run out of cash,
-                // or we are no longer in the top 20%
+                // or we are no longer in the top-ranking 20%
                 var instrumentEquity = Enumerable.Range(0, instrumentRanking.Count)
                     .ToDictionary(
                         i => instrumentRanking[i].instrument,
-                        i => i <= 0.2 * instrumentRanking.Count
+                        i => i <= TOP_PCNT / 100.0 * instrumentRanking.Count
                             ? Math.Min(
                                 instrumentRanking[i].positionSize,
                                 Math.Max(0.0, 1.0 - instrumentRanking.Take(i).Sum(r => r.positionSize)))
                             : 0.0);
 
-                //Output.WriteLine("{0:MM/dd/yyyy}: total = {1:P2}, pre = {2:P2}", SimTime[0], instrumentEquity.Sum(i => i.Value), instrumentRanking.Sum(i => i.positionSize));
-
-                // index filter: only buy any shares, when S&P500 is trading above its EMA(200)
+                // index filter: only buy any shares, while S&P500 is trading above its 200-day moving average
                 var indexFilter = FindInstrument(_spx).Close
-                    .Divide(FindInstrument(_spx).Close.SMA(INDEX_FLT));
+                    .Divide(FindInstrument(_spx).Close.EMA(INDEX_FLT));
 
                 // trade once per week
                 // this is a slight simplification from Clenow's suggestion to change positions
@@ -390,6 +413,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
                     _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
                     _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
+                    _plotter.Plot("Cash", Cash / NetAssetValue[0]);
+                    _plotter.Plot("Inv", instrumentEquity.Values.Sum());
                 }
             }
 

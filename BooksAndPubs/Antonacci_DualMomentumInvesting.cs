@@ -12,15 +12,15 @@
 //==============================================================================
 //
 // Strategy
-// * Equal weight for all 4 categories
-// * Hold one of 2 instruments, if 1-year performance greater than other instrument, or cash
-// * ... unless average of 3-month, 6-month, and 12-month performance is worse than holding cash
 // * Trade once a month
+// * Equal weight for all 4 categories
+// * Within each category: determine momentum,
+//   and hold instrument with highest momentum
 //
 // Instruments
 // * Equity
 // - VTI, US Equities
-// - VEU, US Equities
+// - VEU, All-World ex-US
 // - SHY, Cash
 // * Credit Risk
 // - HYG, High Yield Bond
@@ -34,8 +34,6 @@
 // - GLD, Gold
 // - TLT, Long-term Treasuries
 // - Cash
-//
-// Also: SPY/EFA, TLT/GLD, VNQ/REM, HYG/CIU
 //
 //------------------------------------------------------------------------------
 //
@@ -90,6 +88,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass { weight = 0.25, assets = new HashSet<string> {
                 "VTI.ETF",   // available since 02/25/2005
                 "VEU.ETF",   // available since 03/08/2007
+                // could use SPY/ EFA here
                 _safeInstrument
             } },
             //--- credit
