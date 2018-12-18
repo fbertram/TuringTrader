@@ -72,6 +72,7 @@ namespace TuringTrader.Simulator
                         else return LogEntryAction.Deposit;
 
                     case OrderType.optionExpiryClose:
+                    case OrderType.stockInactiveClose:
                         return LogEntryAction.Expiry;
 
                     default:

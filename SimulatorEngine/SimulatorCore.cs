@@ -83,6 +83,12 @@ namespace TuringTrader.Simulator
                     price = execBar.Open;
                     break;
 
+                case OrderType.stockInactiveClose:
+                    execBar = instrument[0];
+                    netAssetValue = NetAssetValue[5]; // this is probably incorrect
+                    price = execBar.Close;
+                    break;
+
                 case OrderType.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
@@ -124,6 +130,7 @@ namespace TuringTrader.Simulator
 
             // determine commission (no commission on expiry)
             double commission = ticket.Type != OrderType.optionExpiryClose
+                            && ticket.Type != OrderType.stockInactiveClose
                 ? Math.Abs(numberOfShares) * CommissionPerShare
                 : 0.00;
 
@@ -162,6 +169,19 @@ namespace TuringTrader.Simulator
                 Price = instr.OptionIsPut
                     ? Math.Max(0.00, instr.OptionStrike - price)
                     : Math.Max(0.00, price - instr.OptionStrike),
+            };
+
+            // force execution
+            ExecOrder(ticket);
+        }
+        private void ExpireInstrument(Instrument instrument)
+        {
+            // create order ticket
+            Order ticket = new Order()
+            {
+                Instrument = instrument,
+                Quantity = -instrument.Position,
+                Type = OrderType.stockInactiveClose,
             };
 
             // force execution
@@ -361,6 +381,14 @@ namespace TuringTrader.Simulator
 
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
+
+                    // handle instrument expiry
+                    IEnumerable<Instrument> instrumentsToExpire = Instruments
+                        .Where(i => i.Time[0] < SimTime[5]
+                            && i.Position != 0);
+
+                    foreach (Instrument instr in instrumentsToExpire)
+                        ExpireInstrument(instr);
 
                     // update net asset value
                     NetAssetValue.Value = CalcNetAssetValue();

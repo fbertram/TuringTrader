@@ -41,6 +41,11 @@ namespace TuringTrader.Simulator
         optionExpiryClose,
 
         /// <summary>
+        /// close out a position in an inactive stock
+        /// </summary>
+        stockInactiveClose,
+
+        /// <summary>
         /// execute stop order during next bar
         /// </summary>
         stopNextBar,
