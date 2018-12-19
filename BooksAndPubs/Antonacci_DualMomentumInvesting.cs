@@ -10,45 +10,6 @@
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
-//
-// Strategy
-// * Trade once a month
-// * Equal weight for all 4 categories
-// * Within each category: determine momentum,
-//   and hold instrument with highest momentum
-//
-// Instruments
-// * Equity
-// - VTI, US Equities
-// - VEU, All-World ex-US
-// - SHY, Cash
-// * Credit Risk
-// - HYG, High Yield Bond
-// - CIU, Interim Credit Bond
-// - SHY, Cash
-// * Real-Estate Risk
-// - VNQ, Equity REIT
-// - REM, Mortgage REIT
-// - SHY, Cash
-// * Economic Stress
-// - GLD, Gold
-// - TLT, Long-term Treasuries
-// - Cash
-//
-//------------------------------------------------------------------------------
-//
-// Criticism:
-//
-//------------------------------------------------------------------------------
-//
-// further references:
-// https://www.scottsinvestments.com/2016/05/25/updated-dual-momentum-test/
-// https://www.scottsinvestments.com/wp-content/uploads/2016/05/dual2.png
-// https://www.scottsinvestments.com/wp-content/uploads/2018/11/Dual-November-2018.png
-//
-// https://docs.google.com/spreadsheets/d/1S5YVvjIXexBOjonrpgSM0ngr3O-82NGalGnfbj5hOxU/edit#gid=1298415711
-//
-//==============================================================================
 
 #region libraries
 using System;
@@ -63,11 +24,6 @@ namespace TuringTrader.BooksAndPubs
 {
     class Antonacci_DualMomentumInvesting : Algorithm
     {
-        #region inputs
-        [OptimizerParam(1, 10, 1)] public int STOP_LEN = 126;
-        [OptimizerParam(1, 10, 1)] public int STOP_TRAIL = 875;
-        [OptimizerParam(1, 10, 1)] public int MOM_WGHT = 60;
-        #endregion
         #region internal data
         private const double _initialFunds = 100000;
         private string _spx = "^SPX.Index";
@@ -75,41 +31,34 @@ namespace TuringTrader.BooksAndPubs
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments
-        private struct AssetClass
-        {
-            public double weight;
-            public HashSet<string> assets;
-        }
-
-        private static readonly string _safeInstrument = "SHY.etf"; // available since 02/25/2005
-        private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
+        private static readonly HashSet<HashSet<string>> _assetClasses = new HashSet<HashSet<string>>
         {
             //--- equity
-            new AssetClass { weight = 0.25, assets = new HashSet<string> {
+            new HashSet<string> {
                 "VTI.ETF",   // available since 02/25/2005
                 "VEU.ETF",   // available since 03/08/2007
                 // could use SPY/ EFA here
-                _safeInstrument
-            } },
+                "SHY.etf",   // available since 02/25/2005
+            },
             //--- credit
-            new AssetClass { weight = 0.25, assets = new HashSet<string> {
+            new HashSet<string> {
                 "HYG.ETF",   // available since 04/11/2007
                 //"CIU.ETF" => changed to IGIB in 06/2018
                 "IGIB.ETF",  // available since 01/11/2007
-                _safeInstrument
-            } },
+                "SHY.etf",   // available since 02/25/2005
+            },
             //--- real estate
-            new AssetClass { weight = 0.25, assets = new HashSet<string> {
+            new HashSet<string> {
                 "VNQ.ETF",   // available since 02/25/2005
                 "REM.ETF",   // available since 05/04/2007
-                _safeInstrument
-            } },
+                "SHY.etf",   // available since 02/25/2005
+            },
             //--- economic stress
-            new AssetClass { weight = 0.25, assets = new HashSet<string> {
+            new HashSet<string> {
                 "GLD.ETF",   // available since 02/25/2005
                 "TLT.ETF",   // available since 02/25/2005
-                _safeInstrument
-            } },
+                "SHY.etf",   // available since 02/25/2005
+            },
         };
         #endregion
 
@@ -123,11 +72,12 @@ namespace TuringTrader.BooksAndPubs
             EndTime = DateTime.Parse("11/30/2018, 4pm");
 
             AddDataSource(_spx);
-            foreach (AssetClass assetClass in _assetClasses)
-                foreach (string nick in assetClass.assets)
+            foreach (HashSet<string> assetClass in _assetClasses)
+                foreach (string nick in assetClass)
                     AddDataSource(nick);
 
             Deposit(_initialFunds);
+            CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
 
             _plotter.Clear();
 
@@ -136,13 +86,15 @@ namespace TuringTrader.BooksAndPubs
             foreach (DateTime simTime in SimTimes)
             {
                 // collect all of our trading instruments
+                // note that the safe instrument is duplicated
+                // in each asset class
                 List<Instrument> instruments = _assetClasses
-                    .SelectMany(s => s.assets)
+                    .SelectMany(s => s)
                     .Distinct()
                     .Select(n => FindInstrument(n))
                     .ToList();
 
-                // evaluate instrument momentum: make sure instrument indicators are only evaluated once!
+                // evaluate instrument momentum
                 Dictionary<Instrument, double> instrumentMomentum = instruments
                     .ToDictionary(i => i,
                         i => 1.0 / 3.0
@@ -155,30 +107,29 @@ namespace TuringTrader.BooksAndPubs
                     .ToDictionary(i => i, i => 0.0);
 
                 // loop through all asset classes
-                foreach (AssetClass assetClass in _assetClasses)
+                foreach (HashSet<string> assetClass in _assetClasses)
                 {
-                    List<Instrument> assetClassInstruments = assetClass.assets
+                    List<Instrument> assetClassInstruments = assetClass
                         .Select(n => FindInstrument(n))
                         .ToList();
 
+                    // find the instrument with the highest momentum
+                    // in each asset class
                     var bestInstrument = assetClassInstruments
                         .OrderByDescending(i => instrumentMomentum[i])
                         .Take(1)
                         .First();
 
-                    instrumentWeights[bestInstrument] += assetClass.weight;
+                    // sum up the weights (because the safe instrument is duplicated)
+                    instrumentWeights[bestInstrument] += 1.0 / _assetClasses.Count;
                 }
 
                 // execute trades once per month
                 if (SimTime[0].Month != SimTime[1].Month)
                 {
-                    double totalWeight = _assetClasses
-                        .Sum(a => a.weight);
-                    double equityUnit = NetAssetValue[0] / totalWeight;
-
                     foreach (var instrumentWeight in instrumentWeights)
                     {
-                        int targetShares = (int)Math.Floor(instrumentWeight.Value * equityUnit / instrumentWeight.Key.Close[0]);
+                        int targetShares = (int)Math.Floor(instrumentWeight.Value * NetAssetValue[0] / instrumentWeight.Key.Close[0]);
                         int currentShares = instrumentWeight.Key.Position;
 
                         Order newOrder = instrumentWeight.Key.Trade(targetShares - currentShares);

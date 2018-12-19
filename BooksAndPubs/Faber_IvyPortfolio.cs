@@ -1,63 +1,12 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        RND_Ivy
-// Description: Strategy as published in Mebane Faber's book
+// Name:        Faber_IvyPortfolio
+// Description: Variuous strategies as published in Mebane Faber's book
 //              'The Ivy Portfolio'.
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
-//==============================================================================
-//
-// see 'Ivy Portfolio'on Scott's Investments
-// https://www.scottsinvestments.com/ivy-commission-free-portfolios/
-// https://docs.google.com/spreadsheets/d/1DbLtigPIUy8-dgA_v9FN7rVM2_5BD_H2SMgHoYCW8Sg/edit#gid=956060578
-//
-// https://seekingalpha.com/article/4134753-ivy-portfolio-2018-update
-//
-// There are 2 options here, each with 5, 10, or 20 assets
-// 
-// __Timing Strategy__
-// * Determine, if asset trading above or below 10-month moving average
-//   - above: invested
-//   - below: cash
-//
-// __Rotation Strategy___
-// * Rank by average return 3 month, 6 month, 12 month
-// * Hold top 5 (Ivy 10) or top 3 (Ivy 5)
-// * When a security is trading below its 10-month simple moving average, the 
-//   position is listed as "Cash." When the security is trading above its 10-month 
-//   simple moving average the position is listed as "Invested."
-// * Trading/ rebalancing once per month
-//
-// Instruments, see page 192:
-// --- domestic stocks ---
-// Domestic Large Cap:          20, 10, 5, VTI, Vanguard Total Stock Market ETF
-// Domestic Mid Cap:            20,        VO,  
-// Domestic Small Cap:          20, 10,    VB,  Vanguard Small Cap ETF
-// Domestic Micro Cap:          20,        IWC
-// --- foreign stocks ---
-// Foreign Developed Stocks:    20, 10, 5, VEU, Vanguard FTSE All-World ex-US ETF
-// Foreign Emerging Stocks:     20, 10,    VWO, Vanguard Emerging Markets Stock ETF
-// Foreign Developed Small Cap: 20,        GWX
-// Foreign Emerging Small Cap:  20,        EWX
-// --- bonds ---
-// Domestic Bonds:              20, 10, 5, BND, Vanguard Total Bond Market ETF
-// TIPS:                        20, 10,    TIP, iShares Barclays TIPS Bond
-// Foreign Bonds:               20,        BWX
-// Emerging Bonds:              20,        ESD
-// --- real estate ---
-// Real Estate:                 20, 10, 5, VNQ, Vanguard REIT Index ETF
-// Foreign Real Estate:         20, 10,    RWX, SPDR DJ International Real Estate ETF
-// Infrastructure:              20,        IGF, iShares Global Infrastructure ETF
-// Timber:                      20,        TREE.L, CAMBIUM GLOBAL TIMBERLAND LIMIT
-// --- commodities ---
-// Commodities:                 20,        DBA, Invesco DB Agriculture Fund
-// Commodities:                 20,        DBE, Invesco DB Energy Fund
-// Commodities:                 20,        DBB, Invesco DB Base Metals Fund
-// Commodities:                 20,        DBP, Invesco DB Precious Metals Fund
-// Commodities:                     10, 5, DBC, PowerShares DB Commodity Index Tracking
-// Commodities:                     10,    GSG, S&P GSCI(R) Commodity-Indexed Trust
 //==============================================================================
 
 #region libraries
@@ -89,31 +38,32 @@ namespace TuringTrader.BooksAndPubs
 
         #if false
         #region  Ivy-5 portfolio: timing system
+        private static string _name = "Ivy-5 Timing";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
             //--- domestic equity
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new HashSet<string> {
+            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
                 "VTI.ETF", // 10, 5  Vanguard Total Stock Market ETF, data since 02/25/2005
                 _safeInstrument
             } },
             //--- world equity
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new HashSet<string> {
+            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
                 "VEU.ETF", // 10, 5, Vanguard FTSE All-World ex-US ETF, data since 03/08/2007
                 _safeInstrument
             } },
             //--- credit
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new HashSet<string> {
+            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
                  "BND.ETF", // 10, 5, Vanguard Total Bond Market ETF, data since 04/10/2007
                 _safeInstrument
             } },
             //--- real estate
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new HashSet<string> {
+            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
                 "VNQ.ETF", // 10, 5, Vanguard REIT Index ETF, data since 02/25/2005
                 _safeInstrument
             } },
             //--- economic stress
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new HashSet<string> {
+            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
                 "DBC.ETF", // 10, 5, PowerShares DB Commodity Index Tracking, data since 02/03/2006
                 _safeInstrument
             } },
@@ -123,14 +73,15 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] > i.Close.EMA(200)[0]
+            return i.Close[0] > i.Close.EMA(210)[0]
                 ? 1.0
                 : -1.0;
         };
         #endregion
         #endif
-        #if false
+        #if true
         #region Ivy-5 portfolio: rotation system
+        private static string _name = "Ivy-5 Rotation";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
@@ -167,6 +118,7 @@ namespace TuringTrader.BooksAndPubs
         #endif
         #if false
         #region Ivy-10 portfolio: timing system
+        private static string _name = "Ivy-10 Timing";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
@@ -225,8 +177,9 @@ namespace TuringTrader.BooksAndPubs
         };
         #endregion
         #endif
-        #if true
+        #if false
         #region Ivy-10 portfolio: rotation system
+        private static string _name = "Ivy-10 Rotation";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
@@ -358,18 +311,19 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
 
-                    _plotter.SelectChart(Name + " performance", "date");
+                    _plotter.SelectChart(_name + " performance", "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
                     _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
                     _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
+                    _plotter.Plot("Cash", FindInstrument(_safeInstrument).Position * FindInstrument(_safeInstrument).Close[0] / NetAssetValue[0]);
                 }
             }
 
             //----- post processing
 
             // create trading log on Sheet 2
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart(_name + " trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);

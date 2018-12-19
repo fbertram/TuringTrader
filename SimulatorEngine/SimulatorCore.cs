@@ -474,9 +474,16 @@ namespace TuringTrader.Simulator
         /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
-            return _instruments.Values
-                .Where(i => i.Nickname == nickname)
-                .First();
+            try
+            {
+                return _instruments.Values
+                    .Where(i => i.Nickname == nickname)
+                    .First();
+            }
+            catch
+            {
+                throw new Exception(string.Format("Instrument {0} not available on {1:MM/dd/yyyy}", nickname, SimTime[0]));
+            }
         }
         #endregion
         #region protected List<Instrument> OptionChain(string)

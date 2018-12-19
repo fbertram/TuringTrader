@@ -44,8 +44,7 @@
     <Compile Include="Antonacci_DualMomentumInvesting.cs" />
     <Compile Include="Clenow_StocksOnTheMove.cs" />
     <Compile Include="Faber_IvyPortfolio.cs" />
-    <Compile Include="Livingston_MuscularPortfolios_MamaBear.cs" />
-    <Compile Include="Livingston_MuscularPortfolios_PapaBear.cs" />
+    <Compile Include="Livingston_MuscularPortfolios.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

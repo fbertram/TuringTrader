@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     Trading Simulator
-// Name:        Livingston_MuscularPortfolios_MamaBear
-// Description: 'Mama Bear' strategy, as published in Brian Livingston's book
+// Name:        Livingston_MuscularPortfolios
+// Description: 'Mama Bear' and 'Papa Bear' strategies, as published in Brian Livingston's book
 //              'Muscular Portfolios'.
 //               https://muscularportfolios.com/
 // History:     2018xii14, FUB, created
@@ -9,24 +9,6 @@
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
-//==============================================================================
-//
-// Strategy:
-// * Menu of 9 ETFs, covering all major asset classes
-// * Rank by average return 3 month, 6 month, 12 month
-// * Hold top 3
-// * Trading/ rebalancing once per month
-//
-//------------------------------------------------------------------------------
-//
-// Criticism:
-// * the book was published in 2018, and shows performance
-//   data between 01/01/1973 and 12/31/2015
-// * why was no performance shown later than that?
-// * many of the ETFs used in the portfolio have not been around for
-//   that timeframe. how were those data backfilled?
-// * maximum drawdown in 2008 (31%) does not match book (21%)
-//
 //==============================================================================
 
 #region libraries
@@ -40,18 +22,68 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Livingston_MuscularPortfolios_MamaBear : Algorithm
+    class Livingston_MuscularPortfolios : Algorithm
     {
+        #region internal data
         private const double _initialFunds = 100000;
         private string _spx = "^SPX.index";
         private double? _spxInitial = null;
         private Plotter _plotter = new Plotter();
+        #endregion
+        #region ETF menu & momentum calculation
+#if false
+        #region Mama Bear
+        private string _name = "Mama Bear";
+
         private HashSet<string> _etfMenu = new HashSet<string>()
         {
-#if true
+
+            // note that some instruments have not been around for the whole
+            // simulation period, leading to skewed results
+
             //--- equities
             "VONE.etf", // Vanguard Russell 1000 ETF, available since 11/16/2010
             "VIOO.etf", // Vanguard Small-Cap 600 ETF, available since 09/14/2010
+            "VEA.etf",  // Vanguard FTSE Developed Markets ETF, available since 7/26/2007
+            "VWO.etf",  // Vanguard FTSE Emerging Markets ETF, available since 3/10/2005
+            //--- hard assets
+            "VNQ.etf",  // Vanguard Real Estate ETF, available since 2/25/2005
+            "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF, available since 11/11/2014
+            "IAU.etf",  // iShares Gold Trust, available since 2/25/2005
+            //--- fixed-income
+            "VGLT.etf", // Vanguard Long-Term Govt. Bond ETF, available since 11/24/2009
+            "SHV.etf",  // iShares Short-Term Treasury ETF, available since 01/11/2007
+
+            // the book mentions that CXO is using different ETFs:
+            // SPY
+            // IWM
+            // EFA
+            // EEM
+            // VNQ
+            // DBC
+            // GLD
+            // TLT
+            // Cash
+        };
+
+        // simple 5-month momentum
+        private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
+        #endregion
+#endif
+#if true
+        #region Papa Bear
+        private string _name = "Papa Bear";
+
+        private HashSet<string> _etfMenu = new HashSet<string>()
+        {
+            // note that some instruments have not been around for the whole
+            // simulation period, leading to skewed results
+
+            //--- equities
+            "VTV.etf",  // US large-cap value stocks, available since 2/25/2005
+            "VUG.etf",  // US large-cap growth stocks, available since 2/25/2005
+            "VIOV.etf", // US small-cap value stocks, available since 9/14/2010
+            "VIOG.etf", // US small-cap growth stocks, available since 9/14/2010
             "VEA.etf",  // Developed-market stocks, available since 7/26/2007
             "VWO.etf",  // Emerging-market stocks, available since 3/10/2005
             //--- hard assets
@@ -59,28 +91,27 @@ namespace TuringTrader.BooksAndPubs
             "PDBC.etf", // Commodities, available since 11/11/2014
             "IAU.etf",  // Gold, available since 2/25/2005
             //--- fixed-income
-            "VGLT.etf", // Vanguard Long-Term Govt. Bond ETF, available since 11/24/2009
-            "SHV.etf",  // iShares Short-Term Treasury ETF, available since 01/11/2007
-#else
-            // the book mentions that CXO is using different ETFs:
-            SPY
-            IWM
-            EFA
-            EEM
-            VNQ
-            DBC
-            GLD
-            TLT
-            Cash
-#endif
+            "EDV.etf",  // US Treasury bonds, 30-year, available since 12/13/2007
+            "VGIT.etf", // US Treasury notes, 10-year, available since 11/23/2009
+            "VCLT.etf", // US investment-grade corporate bonds, available since 11/23/2009
+            "BNDX.etf", // Non-US govt. & corporate bonds, available since 6/7/2013
         };
 
+        // average momentum over 3, 6, and 12 months
+        private Func<Instrument, double> _momentum = (i) =>
+            (4.0 * (i.Close[0] / i.Close[63] - 1.0)
+            + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
+            + 1.0 * (i.Close[0] / i.Close[252] - 1.0)) / 3.0;
+        #endregion
+#endif
+        #endregion
+
+        #region override public void Run()
         override public void Run()
         {
             //----- algorithm setup
             WarmupStartTime = DateTime.Parse("01/01/2006");
             StartTime = DateTime.Parse("01/01/2008");
-            //EndTime = DateTime.Parse("12/31/2015, 4pm"); // as published in book
             EndTime = DateTime.Parse("11/30/2018, 4pm");
 
             AddDataSource(_spx);
@@ -88,25 +119,22 @@ namespace TuringTrader.BooksAndPubs
                 AddDataSource(nick);
 
             Deposit(100000);
-            //CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
+            //CommissionPerShare = 0.015; // the book does not deduct commissions
 
             //----- simulation loop
             foreach (DateTime simTime in SimTimes)
             {
-                // find active instruments. note that many instruments
-                // have not been around for the whole simulation period
+                // find active instruments
                 var instruments = Instruments
                     .Where(i => _etfMenu.Contains(i.Nickname));
 
-                // evaluate instruments. note that we store this in a
-                // dictionary, to make sure indicators are only evaluated
-                // once
+                // calculate momentum w/ algorithm-specific helper function
                 var evaluation = instruments
                     .ToDictionary(
                         i => i,
-                        i => i.Close[0] / i.Close[5 * 21]);
+                        i => _momentum(i));
 
-                // select top-3 instruments
+                // rank, and select top-3 instruments
                 const int numHold = 3;
                 var top3 = evaluation
                     .OrderByDescending(e => e.Value)
@@ -119,9 +147,9 @@ namespace TuringTrader.BooksAndPubs
                     .Max(i => (top3.Count() > 0 && top3.Contains(i) ? 1.0 : 0.0)
                         * Math.Abs(i.Position * i.Close[0] / NetAssetValue[0] - targetPercentage) / targetPercentage);
 
-                // rebalance only once per month, and only if we need more than 20% change
+                // rebalance once per month, and only if we need adjustments exceeding 20%
                 if (SimTime[0].Month != SimTime[1].Month
-                    && maxOff > 0.2)
+                    && maxOff > 0.20)
                 {
                     foreach (Instrument i in instruments)
                     {
@@ -151,7 +179,7 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
 
-                    _plotter.SelectChart(Name + " performance", "date");
+                    _plotter.SelectChart(_name + " performance", "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
                     _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
@@ -162,7 +190,7 @@ namespace TuringTrader.BooksAndPubs
             //----- post processing
 
             // create trading log on Sheet 2
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart(_name + " trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -177,11 +205,13 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
         }
-
+        #endregion
+        #region public override void Report()
         public override void Report()
         {
             _plotter.OpenWith("SimpleChart");
         }
+        #endregion
     }
 }
 

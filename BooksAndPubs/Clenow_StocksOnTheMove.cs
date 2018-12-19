@@ -10,17 +10,6 @@
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
-//
-// Strategy
-// * Trade once a week
-// * Rank stocks by volatility-adjusted momentum
-// * disqualify if
-//   - moves greater than 15%
-//   - trading below 100-day moving average
-//   - ranking lower than top 20%
-// * only buy new shares, if S&P trading above 200-day moving average
-//
-//==============================================================================
 
 #region libraries
 using System;
@@ -326,15 +315,6 @@ namespace TuringTrader.BooksAndPubs
                             && i.Time[0] == simTime)
                     .ToList();
 
-                var inactiveInstruments = Instruments
-                    .Where(i => _tradingInstruments.Contains(i.Nickname)
-                            && i.Time[0] != simTime)
-                    .ToList();
-                double stuckInactive = inactiveInstruments
-                    .Sum(i => i.Position * i.Close[0]);
-                if (stuckInactive > 0.0)
-                    Output.WriteLine("{0:MM/dd/yyyy}: stuckInactive = {1:C2}", SimTime[0], stuckInactive);
-
                 // calculate indicators
                 // store to list, to make sure indicators are evaluated
                 // exactly once per bar
@@ -343,15 +323,19 @@ namespace TuringTrader.BooksAndPubs
                     {
                         instrument = i,
                         regression = i.Close.LogRegression(MOM_PERIOD),
-                        maxMove = i.Close.LogReturn().Highest(MOM_PERIOD),
+                        maxMove = i.Close.LogReturn().AbsValue().Highest(MOM_PERIOD),
                         avg100 = i.Close.EMA(INSTR_FLT),
                         atr20 = i.AverageTrueRange(ATR_PERIOD),
                     })
                     .ToList();
 
-                // rank instruments by volatility-adjusted momentum,
-                // determine position size as percentage of NAV, set
-                // position size to zero for disqualified instruments
+                // 1) rank instruments by volatility-adjusted momentum
+                // 2) determine position size with risk equal to 10-basis points
+                //    of NAV per instrument, based on 20-day ATR
+                // 3) disqualify instruments, when
+                //    - trading below 100-day moving average
+                //    - negative momentum
+                //    - maximum move > 15%
                 var instrumentRanking = instrumentEvaluation
                     .OrderByDescending(e => e.regression.Slope[0] * e.regression.R2[0])
                     .Select(e => new
@@ -376,7 +360,7 @@ namespace TuringTrader.BooksAndPubs
                                 Math.Max(0.0, 1.0 - instrumentRanking.Take(i).Sum(r => r.positionSize)))
                             : 0.0);
 
-                // index filter: only buy any shares, while S&P500 is trading above its 200-day moving average
+                // index filter: only buy any shares, while S&P-500 is trading above its 200-day moving average
                 var indexFilter = FindInstrument(_spx).Close
                     .Divide(FindInstrument(_spx).Close.EMA(INDEX_FLT));
 
@@ -413,7 +397,6 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
                     _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
                     _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Cash", Cash / NetAssetValue[0]);
                     _plotter.Plot("Inv", instrumentEquity.Values.Sum());
                 }
             }
