@@ -1,0 +1,14 @@
+name=Vanguard Value ETF
+dataPath=Data\VTV.ETF
+ticker=VTV
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VTV
+symbolStooq=vtv.us
+symbolYahoo=VTV
+dataUpdater=stooq

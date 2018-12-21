@@ -1,0 +1,14 @@
+name=Vanguard FTSE All-Wld ex-US ETF
+dataPath=Data\VEU.ETF
+ticker=VEU
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VEU
+symbolStooq=veu.us
+symbolYahoo=VEU
+dataUpdater=stooq

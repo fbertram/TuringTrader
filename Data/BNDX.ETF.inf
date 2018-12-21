@@ -1,0 +1,14 @@
+name=Vanguard Total International Bond ETF
+dataPath=Data\BNDX.ETF
+ticker=BNDX
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=BNDX
+symbolStooq=bndx.us
+symbolYahoo=BNDX
+dataUpdater=stooq

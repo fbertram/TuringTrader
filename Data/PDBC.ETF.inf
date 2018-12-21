@@ -1,0 +1,14 @@
+name=Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF
+dataPath=Data\PDBC.ETF
+ticker=PDBC
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=PDBC
+symbolStooq=pdbc.us
+symbolYahoo=PDBC
+dataUpdater=stooq

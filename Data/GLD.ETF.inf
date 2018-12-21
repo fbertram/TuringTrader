@@ -1,0 +1,13 @@
+name=SPDR Gold Trust ETF
+dataPath=Data\GLD.ETF
+ticker=GLD
+date={1:MM/dd/yyyy}
+time=16:00
+open={2:F2}
+high={3:F2}
+low={4:F2}
+close={5:F2}
+volume={6}
+symbolYahoo=GLD
+symbolStooq=gld.us
+dataUpdater=stooq
