@@ -240,7 +240,15 @@ namespace TuringTrader.Simulator
             }
 
             // instantiate data source
-            return new DataSourceCsv(infos);
+            if (infos.ContainsKey(DataSourceValue.dataSource)
+            && infos[DataSourceValue.dataSource].ToLower().Contains("norgate"))
+            {
+                return new DataSourceNorgate(infos);
+            }
+            else
+            {
+                return new DataSourceCsv(infos);
+            }
         }
         #endregion
     }

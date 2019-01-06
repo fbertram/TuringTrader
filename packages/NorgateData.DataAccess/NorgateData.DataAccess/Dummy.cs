@@ -1,4 +1,17 @@
-﻿using System;
+﻿//==============================================================================
+// Project:     Norgate Data dummy dll
+// Name:        Dummy.cs
+// Description: dummy DLL for Norgate Data, modeled after API v4.0.7.105
+//              this is required, so that we don't need to redistribute
+//              Norgate's original DLLs as part of TuringTrader.
+// History:     2019i06, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+//              http://www.bertram.solutions
+// License:     this code is licensed under GPL-3.0-or-later
+//==============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,3 +78,6 @@ namespace NorgateData.DataAccess
         public static OperationResult GetData(string symbol, out List<RecOHLC> result, DateTime fromDate, DateTime toDate) { result = null; return null; }
     }
 }
+
+//==============================================================================
+// end of file
