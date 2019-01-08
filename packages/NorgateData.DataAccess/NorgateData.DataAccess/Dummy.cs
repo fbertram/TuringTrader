@@ -73,6 +73,8 @@ namespace NorgateData.DataAccess
 
     public static class Api
     {
+        public static DateTime LastDatabaseUpdateTime { get; }
+        public static DateTime GetSecondLastQuotedDate(string symbol) { return default(DateTime); }
         public static AdjustmentType SetAdjustmentType { get; set; }
         public static PaddingType SetPaddingType { get; set; }
         public static OperationResult GetData(string symbol, out List<RecOHLC> result, DateTime fromDate, DateTime toDate) { result = null; return null; }

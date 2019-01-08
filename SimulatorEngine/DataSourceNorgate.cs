@@ -12,6 +12,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -31,70 +32,71 @@ namespace TuringTrader.Simulator
             private List<Bar> _data;
             private IEnumerator<Bar> _barEnumerator;
             private static bool _handleUnresolvedAssemblies = true;
+            private static DateTime _lastNDURun = default(DateTime);
             #endregion
             #region internal helpers
             private Bar CreateBar(NDU.RecOHLC norgate)
             {
-                /*
-                    namespace NorgateData.DataAccess
-                    {
-                        public class RecOHLC
-                        {
-                            public DateTime Date;
-                            public float? Open;
-                            public float? High;
-                            public float? Low;
-                            public float? Close;
-                            public float? Volume;
-                            public float? Aux1;
-                            public float? Aux2;
-                            public float? Aux3;
-                            public int? Status;
+                DateTime barTime = norgate.Date.Date
+                    + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
 
-                            public RecOHLC();
-                            public RecOHLC(DateTime date, float? open, float? high, float? low, float? close, float? volume, float? turnover, int? status);
-                            public RecOHLC(DateTime date, float? open, float? high, float? low, float? close, float? volume, float? aux1, float? aux2, float? aux3, int? status);
-
-                            [Obsolete("Turnover is deprecated, please use Aux2 instead.")]
-                            public float? TurnOver { get; }
-                        }
-                    }
-                */
                 return new Bar(
-                                Info[DataSourceValue.ticker], norgate.Date,
+                                Info[DataSourceValue.ticker], barTime,
                                 (double)norgate.Open, (double)norgate.High, (double)norgate.Low, (double)norgate.Close, (long)norgate.Volume, true,
                                 0.0, 0.0, 0, 0, false,
                                 default(DateTime), 0.0, false);
             }
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
-                List<NDU.RecOHLC> norgateData;
+                //--- Norgate setup
+                NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
+                    ? NDU.AdjustmentType.TotalReturn
+                    //: NDU.AdjustmentType.CapitalSpecial;
+                    : NDU.AdjustmentType.Capital;
+                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
-                try
-                {
-                    // Norgate setup
-                    NDU.Api.SetAdjustmentType = NDU.AdjustmentType.TotalReturn;
-                    NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
+                //--- run NDU as required
+                //DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
+                //DateTime dbTimeStamp = NDU.Api.GetSecondLastQuotedDate("$SPX");
+                List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
+                NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
+                DateTime dbTimeStamp = q
+                    .Select(ohlc => ohlc.Date)
+                    .OrderByDescending(d => d)
+                    .First();
 
-                    // get data from Norgate
-                    norgateData = new List<NDU.RecOHLC>();
-                    NDU.Api.GetData(Info[DataSourceValue.symbolNorgate], out norgateData, startTime, endTime);
+                if (endTime > dbTimeStamp)
+                    RunNDU();
 
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("DataSourceNorgate: API failure");
-                }
+                //--- get data from Norgate
+                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
+                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceValue.symbolNorgate], out norgateData, startTime, endTime);
 
                 // create TuringTrader bars
                 foreach (var ohlc in norgateData)
                     data.Add(CreateBar(ohlc));
             }
 
+            private static void RunNDU()
+            {
+                if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                {
+                    _lastNDURun = DateTime.Now;
+
+                    string nduBinPath;
+                    getNDUBinPath(out nduBinPath);
+                    string nduTrigger = Path.Combine(nduBinPath, "NDU.Trigger.exe");
+
+                    Process ndu = Process.Start(nduTrigger, "UPDATE CLOSE WAIT");
+                    ndu.WaitForExit();
+                }
+            }
             private static void HandleUnresovledAssemblies()
             {
                 if (_handleUnresolvedAssemblies)
                 {
+                    _handleUnresolvedAssemblies = false;
+
                     AppDomain currentDomain = AppDomain.CurrentDomain;
                     currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
                 }
