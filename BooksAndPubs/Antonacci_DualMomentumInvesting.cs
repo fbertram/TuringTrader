@@ -69,7 +69,7 @@ namespace TuringTrader.BooksAndPubs
 
             WarmupStartTime = DateTime.Parse("05/04/2007");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("11/30/2018, 4pm");
+            EndTime = DateTime.Parse("12/31/2018, 4pm");
 
             AddDataSource(_spx);
             foreach (HashSet<string> assetClass in _assetClasses)

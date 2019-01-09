@@ -88,7 +88,7 @@ namespace TuringTrader.BooksAndPubs
             "BRK.A.Stock",
             "BRK.B.Stock",
             "C.Stock",
-            "CA.Stock",
+            "CA.stock.x",
             "CAT.Stock",
             "CELG.Stock",
             "CERN.Stock",
@@ -122,7 +122,7 @@ namespace TuringTrader.BooksAndPubs
             "EBAY.Stock",
             "EMR.Stock",
             "EOG.Stock",
-            "ESRX.Stock",
+            "ESRX.Stock.X",
             "EXC.Stock",
             "EXPD.Stock",
             "F.Stock",
@@ -293,7 +293,7 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
             WarmupStartTime = DateTime.Parse("01/01/2005");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("11/30/2018, 4pm");
+            EndTime = DateTime.Parse("12/31/2018, 4pm");
 
             // set account value
             Deposit(_initialFunds);

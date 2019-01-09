@@ -2,6 +2,7 @@
 // Project:     Trading Simulator
 // Name:        DataSourceNorgate
 // Description: Data source for Norgate Data.
+//              Tested w/ Norgate Data API 4.1.5.27.
 // History:     2019i06, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2019, Bertram Solutions LLC
@@ -35,14 +36,18 @@ namespace TuringTrader.Simulator
             private static DateTime _lastNDURun = default(DateTime);
             #endregion
             #region internal helpers
-            private Bar CreateBar(NDU.RecOHLC norgate)
+            private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
             {
                 DateTime barTime = norgate.Date.Date
                     + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
 
                 return new Bar(
                                 Info[DataSourceValue.ticker], barTime,
-                                (double)norgate.Open, (double)norgate.High, (double)norgate.Low, (double)norgate.Close, (long)norgate.Volume, true,
+                                (double)norgate.Open * priceMultiplier, 
+                                (double)norgate.High * priceMultiplier, 
+                                (double)norgate.Low * priceMultiplier, 
+                                (double)norgate.Close * priceMultiplier, 
+                                (long)norgate.Volume, true,
                                 0.0, 0.0, 0, 0, false,
                                 default(DateTime), 0.0, false);
             }
@@ -51,19 +56,21 @@ namespace TuringTrader.Simulator
                 //--- Norgate setup
                 NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
                     ? NDU.AdjustmentType.TotalReturn
-                    //: NDU.AdjustmentType.None;
                     : NDU.AdjustmentType.CapitalSpecial;
                 NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                 //--- run NDU as required
-                //DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
-                //DateTime dbTimeStamp = NDU.Api.GetSecondLastQuotedDate("$SPX");
+            #if false
+                // this should work, but seems broken as of 01/09/2019
+                DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
+            #else
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
                 DateTime dbTimeStamp = q
                     .Select(ohlc => ohlc.Date)
                     .OrderByDescending(d => d)
                     .First();
+            #endif
 
                 if (endTime > dbTimeStamp)
                     RunNDU();
@@ -72,9 +79,13 @@ namespace TuringTrader.Simulator
                 List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
                 NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceValue.symbolNorgate], out norgateData, startTime, endTime);
 
-                // create TuringTrader bars
+                //--- copy to TuringTrader bars
+                double priceMultiplier = Info.ContainsKey(DataSourceValue.dataUpdaterPriceMultiplier)
+                    ? Convert.ToDouble(Info[DataSourceValue.dataUpdaterPriceMultiplier])
+                    : 1.0;
+
                 foreach (var ohlc in norgateData)
-                    data.Add(CreateBar(ohlc));
+                    data.Add(CreateBar(ohlc, priceMultiplier));
             }
 
             private static void RunNDU()

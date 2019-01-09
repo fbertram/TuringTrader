@@ -31,7 +31,7 @@ namespace TuringTrader.BooksAndPubs
         private Plotter _plotter = new Plotter();
         #endregion
         #region ETF menu & momentum calculation
-#if false
+#if true
         #region Mama Bear
         private string _name = "Mama Bear";
 
@@ -70,7 +70,7 @@ namespace TuringTrader.BooksAndPubs
         private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
         #endregion
 #endif
-#if true
+#if false
         #region Papa Bear
         private string _name = "Papa Bear";
 
@@ -112,7 +112,7 @@ namespace TuringTrader.BooksAndPubs
             //----- algorithm setup
             WarmupStartTime = DateTime.Parse("01/01/2006");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("11/30/2018, 4pm");
+            EndTime = DateTime.Parse("12/31/2018, 4pm");
 
             AddDataSource(_spx);
             foreach (string nick in _etfMenu)
