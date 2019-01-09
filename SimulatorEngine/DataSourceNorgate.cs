@@ -51,8 +51,8 @@ namespace TuringTrader.Simulator
                 //--- Norgate setup
                 NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
                     ? NDU.AdjustmentType.TotalReturn
-                    //: NDU.AdjustmentType.CapitalSpecial;
-                    : NDU.AdjustmentType.Capital;
+                    //: NDU.AdjustmentType.None;
+                    : NDU.AdjustmentType.CapitalSpecial;
                 NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                 //--- run NDU as required
