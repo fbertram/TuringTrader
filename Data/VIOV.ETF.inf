@@ -1,0 +1,14 @@
+name=Vanguard Small-Cap 600 Value ETF
+dataPath=Data\VIOV.ETF
+ticker=VIOV
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VIOV
+symbolStooq=viov.us
+symbolYahoo=VIOV
+dataUpdater=stooq

@@ -34,6 +34,7 @@ namespace TuringTrader.Simulator
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
+            // TODO: rewrite this using Linq, see WMA implementation
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -54,6 +55,27 @@ namespace TuringTrader.Simulator
                     }
 
                     return sum / num;
+                },
+                series[0],
+                series.GetHashCode(), n);
+        }
+        #endregion
+        #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Weighted Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Weighted_moving_average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>WMA time series</returns>
+        public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
+        {
+            double sum = n / 2.0 * (n + 1.0);
+            return IndicatorsBasic.BufferedLambda(
+                (v) =>
+                {
+                    return Enumerable.Range(0, n - 1)
+                        .Sum(t => (n - t ) / sum * series[t]);
                 },
                 series[0],
                 series.GetHashCode(), n);
@@ -129,6 +151,28 @@ namespace TuringTrader.Simulator
                     .EMA(n));
         }
         #endregion
+        #region public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate Hull Moving Average, as described here:
+        /// <see href="https://alanhull.com/hull-moving-average"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>HMA time series</returns>
+        public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
+        {
+            // http://www.incrediblecharts.com/indicators/weighted_moving_average.php
+            // Integer(SquareRoot(Period)) WMA [2 x Integer(Period/2) WMA(Price) - Period WMA(Price)]
+
+            int n2 = (int)Math.Round(n / 2.0);
+            int n3 = (int)Math.Round(Math.Sqrt(n));
+
+            return series.WMA(n2)
+                .Multiply(2.0)
+                .Subtract(series.WMA(n))
+                .WMA(n3);
+        }
+        #endregion
         #region public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate Triple Exponential Moving Average, as described here:
@@ -185,6 +229,7 @@ namespace TuringTrader.Simulator
         /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
         {
+            // TODO: we should be able to remove the try/ catch blocks here
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -214,7 +259,7 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        #region public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         /// <summary>
         /// Calculate MACD, as described here:
         /// <see href="https://en.wikipedia.org/wiki/MACD"/>
@@ -224,11 +269,11 @@ namespace TuringTrader.Simulator
         /// <param name="slow">slow EMA period</param>
         /// <param name="signal">signal line period</param>
         /// <returns></returns>
-        public static MACDResult MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         {
-            var container = Cache<MACDResult>.GetData(
+            var container = Cache<_MACD>.GetData(
                     Cache.UniqueId(series.GetHashCode(), fast, slow, signal),
-                    () => new MACDResult());
+                    () => new _MACD());
 
             container.Fast = series.EMA(fast);
             container.Slow = series.EMA(slow);
@@ -242,7 +287,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Container for MACD result.
         /// </summary>
-        public class MACDResult
+        public class _MACD
         {
             /// <summary>
             /// Fast EMA.

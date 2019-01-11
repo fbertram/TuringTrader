@@ -280,11 +280,11 @@ namespace TuringTrader
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             if (optimizerSettings.ShowDialog() == true)
             {
-                _runningOptimization = true;
-
                 await Task.Run(() =>
                 {
                     _optimizer = new OptimizerGrid(_currentAlgorithm);
+                    _runningOptimization = true;
+
                     _optimizer.Run();
 
                     LogOutput.Dispatcher.BeginInvoke(new Action(() =>

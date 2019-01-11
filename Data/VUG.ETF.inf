@@ -1,0 +1,14 @@
+name=Vanguard Growth ETF
+dataPath=Data\VUG.ETF
+ticker=VUG
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VUG
+symbolStooq=vug.us
+symbolYahoo=VUG
+dataUpdater=stooq

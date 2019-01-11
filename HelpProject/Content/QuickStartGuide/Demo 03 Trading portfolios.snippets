@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- This is an example code snippets file -->
+<examples>
+
+<item id="Demo03#Init1">
+<sampleCode language="CSharp">
+StartTime = DateTime.Parse("01/01/2007");
+EndTime = DateTime.Parse("12/01/2018");
+Deposit(100000);
+</sampleCode>
+</item>
+
+<item id="Demo03#InitHelpers">
+<sampleCode language="CSharp">
+private readonly string _spx = "^SPX.index";
+private readonly List&lt;string&gt; _universe = new List&lt;string&gt;()
+{
+    "XLY.etf", "XLV.etf", "XLK.etf",
+    "XLP.etf", "XLE.etf", "XLI.etf",
+    "XLF.etf", "XLU.etf", "XLB.etf",
+};
+</sampleCode>
+</item>
+
+<item id="Demo03#InitDataSources">
+<sampleCode language="CSharp">
+AddDataSource(_spx);
+foreach (string nickname in _universe)
+    AddDataSource(nickname);
+</sampleCode>
+</item>
+
+<item id="Demo03#ActiveInstruments">
+<sampleCode language="CSharp">
+var activeInstruments = Instruments
+        .Where(i =&gt; i.Time[0] == simTime
+            &amp;&amp; _universe.Contains(i.Nickname));
+</sampleCode>
+</item>
+
+<item id="Demo03#Evaluation">
+<sampleCode language="CSharp">
+var evalInstruments = activeInstruments
+    .Select(i =&gt; new
+    {
+        instrument = i,
+        romad = i.Close.ReturnOnMaxDrawdown(252)[0],
+    })
+    .ToList();
+</sampleCode>
+</item>
+
+<item id="Demo03#Selection">
+<sampleCode language="CSharp">
+var holdInstruments = evalInstruments
+    .Where(e =&gt; e.romad &gt; 0.0)
+    .OrderByDescending(e =&gt; e.romad)
+    .Take(7)
+    .Select(e =&gt; e.instrument)
+    .ToList();
+</sampleCode>
+</item>
+
+<item id="Demo03#Trading">
+<sampleCode language="CSharp">
+foreach (Instrument instr in activeInstruments)
+{
+    double targetEquity = holdInstruments.Contains(instr)
+        ? NetAssetValue[0]
+            / Math.Max(1.0, Math.Max(holdInstruments.Count, 3))
+        : 0.0;
+
+    int targetShares = (int)Math.Floor(targetEquity / instr.Close[0]);
+    int currentShares = instr.Position;
+
+    Order newOrder = instr.Trade(targetShares - currentShares);
+}
+</sampleCode>
+</item>
+
+<item id="Demo03#TradingComment">
+<sampleCode language="CSharp">
+if (newOrder != null)
+{
+    if (currentShares == 0)
+        newOrder.Comment = "open";
+    else if (targetShares == 0)
+        newOrder.Comment = "close";
+    else
+        newOrder.Comment = "rebalance";
+}
+</sampleCode>
+</item>
+
+<item id="Demo03#TradingLog">
+<sampleCode language="CSharp">
+_plotter.SelectChart("trades", "time");
+foreach (LogEntry entry in Log)
+{
+    _plotter.SetX(entry.BarOfExecution.Time);
+    _plotter.Plot("action", entry.Action);
+    _plotter.Plot("instr", entry.Symbol);
+    _plotter.Plot("qty", entry.OrderTicket.Quantity);
+    _plotter.Plot("fill", entry.FillPrice);
+    _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+}
+</sampleCode>
+</item>
+
+<item id="Demo03#">
+<sampleCode language="CSharp">
+</sampleCode>
+</item>
+</examples>
+

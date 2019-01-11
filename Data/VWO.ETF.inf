@@ -1,0 +1,14 @@
+name=Vanguard MSCI Emerging Markets ETF
+dataPath=Data\VWO.ETF
+ticker=VWO
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VWO
+symbolStooq=vwo.us
+symbolYahoo=VWO
+dataUpdater=stooq

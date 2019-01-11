@@ -166,6 +166,25 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public bool AdjustForDividends
+        private static bool _adjustQuotes = true;
+        /// <summary>
+        /// Enable/ disable quote adjustment for dividends. Default is true.
+        /// Note that most data feeds (other than Norgate) cannot adjust for dividends.
+        /// For these data feeds, this switch won't have any effect.
+        /// </summary>
+        static public bool AdjustForDividends
+        {
+            get
+            {
+                return _adjustQuotes;
+            }
+            set
+            {
+                _adjustQuotes = value;
+            }
+        }
+        #endregion
 
         #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
         /// <summary>

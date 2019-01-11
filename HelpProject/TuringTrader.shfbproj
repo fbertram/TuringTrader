@@ -29,7 +29,7 @@
     <DocumentationSources>
       <DocumentationSource sourceFile="..\SimulatorEngine\SimulatorEngine.csproj" xmlns="" />
     </DocumentationSources>
-    <HelpFileFormat>HtmlHelp1</HelpFileFormat>
+    <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
     <SyntaxFilters>C#</SyntaxFilters>
     <PresentationStyle>VS2013</PresentationStyle>
     <CleanIntermediates>True</CleanIntermediates>
@@ -38,7 +38,7 @@
     <IndentHtml>False</IndentHtml>
     <BuildAssemblerVerbosity>OnlyWarningsAndErrors</BuildAssemblerVerbosity>
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
-    <HelpTitle>TuringTrader API Documentation</HelpTitle>
+    <HelpTitle>TuringTrader Documentation</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
     <RootNamespaceContainer>False</RootNamespaceContainer>
     <NamespaceGrouping>False</NamespaceGrouping>
@@ -47,8 +47,26 @@
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <CopyrightText>Copyright %28c%29 2011-2018, Bertram Solutions LLC</CopyrightText>
-    <FeedbackEMailAddress>info%40bertram.solutions</FeedbackEMailAddress>
-    <FeedbackEMailLinkText>Felix Bertram</FeedbackEMailLinkText>
+    <FeedbackEMailAddress>
+    </FeedbackEMailAddress>
+    <FeedbackEMailLinkText>
+    </FeedbackEMailLinkText>
+    <CopyrightHref>http://www.bertram.solutions</CopyrightHref>
+    <NamespaceSummaries>
+      <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
+      <NamespaceSummaryItem name="TuringTrader.Simulator" isDocumented="True" xmlns="">This namespace contains all of TuringTrader's simulator engine, indicators, and data sources.</NamespaceSummaryItem>
+    </NamespaceSummaries>
+    <HtmlSdkLinkType>Msdn</HtmlSdkLinkType>
+    <BinaryTOC>True</BinaryTOC>
+    <IncludeFavorites>False</IncludeFavorites>
+    <WebsiteSdkLinkType>Msdn</WebsiteSdkLinkType>
+    <WebsiteAdContent>
+    </WebsiteAdContent>
+    <AppendMarkdownFileExtensionsToUrls>False</AppendMarkdownFileExtensionsToUrls>
+    <HeaderText>
+    </HeaderText>
+    <FooterText>
+    </FooterText>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -98,6 +116,22 @@
     <Content Include="icons\Help.png" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="media\demo03_chart-small.png">
+      <ImageId>demo03_chart-small</ImageId>
+      <AlternateText>demo 03 chart-small</AlternateText>
+    </Image>
+    <Image Include="media\demo03_log.png">
+      <ImageId>demo03_log</ImageId>
+      <AlternateText>demo 03 log</AlternateText>
+    </Image>
+    <Image Include="media\demo03_chart.png">
+      <ImageId>demo03_chart</ImageId>
+      <AlternateText>demo 03 chart</AlternateText>
+    </Image>
+    <Image Include="media\OutputMenu.JPG">
+      <ImageId>OutputMenu</ImageId>
+      <AlternateText>Output Menu</AlternateText>
+    </Image>
     <Image Include="media\Demo02-plot-small.png">
       <ImageId>Demo02-plot-small</ImageId>
       <AlternateText>Demo 02-plot-small</AlternateText>
@@ -112,6 +146,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <CodeSnippets Include="Content\QuickStartGuide\Demo 03 Trading portfolios.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 02 Trading stocks.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Setting up data.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 01 Code.snippets" />

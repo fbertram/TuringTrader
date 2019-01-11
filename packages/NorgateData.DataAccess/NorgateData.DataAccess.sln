@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NorgateData.DataAccess", "NorgateData.DataAccess\NorgateData.DataAccess.csproj", "{07F2EAA8-2C56-4E71-810F-FC2C565FA04A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07F2EAA8-2C56-4E71-810F-FC2C565FA04A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F2EAA8-2C56-4E71-810F-FC2C565FA04A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F2EAA8-2C56-4E71-810F-FC2C565FA04A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F2EAA8-2C56-4E71-810F-FC2C565FA04A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3EB44017-9206-421A-A907-7576D68B4354}
+	EndGlobalSection
+EndGlobal

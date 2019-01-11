@@ -1,0 +1,14 @@
+name=iShares Gold Trust ETF
+dataPath=Data\IAU.ETF
+ticker=IAU
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=IAU
+symbolStooq=iau.us
+symbolYahoo=IAU
+dataUpdater=stooq

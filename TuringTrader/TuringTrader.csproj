@@ -148,6 +148,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BooksAndPubs\BooksAndPubs.csproj">
+      <Project>{3155c4aa-828f-4528-adbb-b34e2e3d1c9c}</Project>
+      <Name>BooksAndPubs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Demos\Demos.csproj">
       <Project>{2e5c8dfa-b485-431a-9f54-d1473fff8b65}</Project>
       <Name>Demos</Name>

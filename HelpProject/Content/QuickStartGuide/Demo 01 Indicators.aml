@@ -7,6 +7,7 @@
       <para>
       	Now that we have set up our data, it is time to create our first algorithm.
       	This example will demonstrate the following techniques:
+      </para>
       	<list class="bullet">
       		<listItem>Basic algorithm structure</listItem>
       		<listItem>Loading data</listItem>
@@ -14,7 +15,6 @@
       		<listItem>Accessing time series data</listItem>
       		<listItem>Plotting data</listItem>
       	</list>
-      </para>
     </introduction>
 
     <section address="Section1">
@@ -70,26 +70,26 @@
       		method.
       		The first thing an algorithm needs to do, is to
       		load data. There are two aspects to this:
-      		<list class="bullet">
-      			<listItem>Specify the simulation range. We do so, by setting
-      				the 
-      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.StartTime</codeEntityReference>
-      				and 
-      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.EndTime</codeEntityReference>
-      				properties.</listItem>
-      			<listItem>Add one or more data sources to our algorithm. We
-      				do so, by adding 
-      				<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.DataSource</codeEntityReference>
-      				objects
-      				to the 
-      				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.DataSources</codeEntityReference>
-      				property. These objects should be created using the 
-      				<codeInline>New</codeInline> 
-      				method, which will determine the appropriate data source
-      				implementation to load the data.
-      				</listItem>
-      		</list>
       	</para>
+  		<list class="bullet">
+  			<listItem>Specify the simulation range. We do so, by setting
+  				the 
+  				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.StartTime</codeEntityReference>
+  				and 
+  				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.EndTime</codeEntityReference>
+  				properties.</listItem>
+  			<listItem>Add one or more data sources to our algorithm. We
+  				do so, by adding 
+  				<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.DataSource</codeEntityReference>
+  				objects
+  				to the 
+  				<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.DataSources</codeEntityReference>
+  				property. These objects should be created using the 
+  				<codeInline>New</codeInline> 
+  				method, which will determine the appropriate data source
+  				implementation to load the data.
+  				</listItem>
+  		</list>
       	<para>
       		The relevant portion of code looks like this:
       	</para>
@@ -137,18 +137,18 @@
 		<para>
 			An
 			<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Instrument</codeEntityReference>
-			holds, among others, the following static fields:
-			<list class="bullet">
-				<listItem>Nickname. The nickname we used to add the data source</listItem>
-				<listItem>Name. The descriptive name of the instrument. E.g. "Alphabet Inc Class A".</listItem>
-				<listItem>Symbol. The full symbol used to trade this instrument. 
-					This may be the ticker, as in "GOOGL", or the ticker plus 
-					expiry, right, and strike as in "XSP180919P00284000".</listItem>
-				<listItem>LastTime. This is the timestamp of the last bar 
-					received by this instrument. This is important to
-					distinguish active from stale instruments.</listItem>
-			</list>
+			holds, among others, the following invariable information:
 		</para>
+		<list class="bullet">
+			<listItem>Nickname. The nickname we used to add the data source</listItem>
+			<listItem>Name. The descriptive name of the instrument. E.g. "Alphabet Inc Class A".</listItem>
+			<listItem>Symbol. The full symbol used to trade this instrument. 
+				This may be the ticker, as in "GOOGL", or the ticker plus 
+				expiry, right, and strike as in "XSP180919P00284000".</listItem>
+			<listItem>LastTime. This is the timestamp of the last bar 
+				received by this instrument. This is important to
+				distinguish active from stale instruments.</listItem>
+		</list>
 	  </content>
 	</section>
 
@@ -159,11 +159,11 @@
       		An 
       		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Instrument</codeEntityReference>
       		also holds, among others, the following time series:
-      		<list class="bullet">
-      			<listItem>Open, High, Low, Close, Volume: The market quote data.</listItem>
-      			<listItem>Bid, Ask, BidVolume, AskVolume: The bid/ask quote data.</listItem>
-      		</list>
       	</para>
+  		<list class="bullet">
+  			<listItem>Open, High, Low, Close, Volume: The market quote data.</listItem>
+  			<listItem>Bid, Ask, BidVolume, AskVolume: The bid/ask quote data.</listItem>
+  		</list>
       	<para>
       		We can access time series data much like array elements, via the 
       		<codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.ITimeSeries`1</codeEntityReference>
@@ -252,7 +252,17 @@
       	<codeReference>Demo01#OpenWithExcel</codeReference>
       	<para>
       		The parameter passed into the method points to a template, which
-      		controls the appearance. There are virtually no 
+      		controls the appearance. Please note that in the example the template
+      		file name does not include an extension. In this case, the extension
+      		is specified through the Output menu of the TuringTrader application,
+      		allowing to switch between them quickly:
+      	</para>
+  		<mediaLink>
+			<!-- ><caption>Output Menu</caption> -->
+			<image xlink:href="OutputMenu"/>
+		</mediaLink>
+      	<para>
+      		There are virtually no
       		limits to the customized reports and plots that can be created. 
       		The repository contains simple templates, but you are welcome to 
       		create your own.

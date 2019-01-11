@@ -152,7 +152,7 @@ namespace TuringTrader.Demos
                 }
 
                 // plot the underlying against our strategy results, plus volatility
-                _plotter.SelectPlot("nav vs time", "time"); // this will go to Sheet1
+                _plotter.SelectChart("nav vs time", "time"); // this will go to Sheet1
                 _plotter.SetX(simTime);
                 _plotter.Plot(_underlyingInstrument.Symbol, underlyingPrice / (double)_initialUnderlyingPrice);
                 _plotter.Plot("volatility", volatilitySeries[0]);

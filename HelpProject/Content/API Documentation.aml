@@ -14,7 +14,7 @@
       <!-- <autoOutline /> -->
       <para>
       Here are some recommended entrypoints into TuringTrader's APIs:
-      
+      </para>
 		<list class="bullet">
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Algorithm</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.Bar</codeEntityReference></listItem>
@@ -27,7 +27,6 @@
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.IndicatorsTrend</codeEntityReference></listItem>
 			<listItem><codeEntityReference qualifyHint="false">T:TuringTrader.Simulator.IndicatorsVolatility</codeEntityReference></listItem>
 		</list>
-      </para>
     </introduction>
 
     <relatedTopics>

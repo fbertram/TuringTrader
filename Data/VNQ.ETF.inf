@@ -1,0 +1,14 @@
+name=Vanguard REIT ETF
+dataPath=Data\VNQ.ETF
+ticker=VNQ
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VNQ
+symbolStooq=vnq.us
+symbolYahoo=VNQ
+dataUpdater=stooq

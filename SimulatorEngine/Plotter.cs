@@ -272,23 +272,23 @@ namespace TuringTrader.Simulator
         #endregion
 
         //----- logging values
-        #region public void SelectPlot(string plotTitle, string xLabel)
+        #region public void SelectChart(string chartTitle, string xLabel)
         /// <summary>
-        /// Select current plot.
+        /// Select current chart.
         /// </summary>
-        /// <param name="plotTitle">title of plot</param>
+        /// <param name="chartTitle">title of chart</param>
         /// <param name="xLabel">label on x-axis</param>
-        public void SelectPlot(string plotTitle, string xLabel)
+        public void SelectChart(string chartTitle, string xLabel)
         {
-            if (!AllLabels.ContainsKey(plotTitle))
-                AllLabels[plotTitle] = new List<string>();
+            if (!AllLabels.ContainsKey(chartTitle))
+                AllLabels[chartTitle] = new List<string>();
 
-            if (!AllData.ContainsKey(plotTitle))
-                AllData[plotTitle] = new List<Dictionary<string, object>>();
+            if (!AllData.ContainsKey(chartTitle))
+                AllData[chartTitle] = new List<Dictionary<string, object>>();
 
-            CurrentPlot = plotTitle;
-            CurrentData = AllData[plotTitle];
-            CurrentLabels = AllLabels[plotTitle];
+            CurrentPlot = chartTitle;
+            CurrentData = AllData[chartTitle];
+            CurrentLabels = AllLabels[chartTitle];
 
             if (CurrentLabels.Count == 0)
                 CurrentLabels.Add(xLabel);
@@ -305,7 +305,7 @@ namespace TuringTrader.Simulator
         public void SetX(object xValue)
         {
             if (CurrentPlot == null)
-                SelectPlot("Untitled Plot", "x");
+                SelectChart("Untitled Plot", "x");
 
             // create row for xValue (multiple rows w/ identical xValues are possible)
             CurrentData.Add(new Dictionary<string, object>());

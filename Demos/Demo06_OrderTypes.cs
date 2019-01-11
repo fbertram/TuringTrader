@@ -82,7 +82,7 @@ namespace TuringTrader.Demos
 
             //---------- post-processing
 
-            _plotter.SelectPlot("trades", "time");
+            _plotter.SelectChart("trades", "time");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);

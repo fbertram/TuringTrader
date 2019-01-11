@@ -1,0 +1,13 @@
+name=iShares 20+ Year Treasury Bond ETF
+dataPath=Data\TLT.ETF
+ticker=TLT
+date={1:MM/dd/yyyy}
+time=16:00
+open={2:F2}
+high={3:F2}
+low={4:F2}
+close={5:F2}
+volume={6}
+symbolYahoo=TLT
+symbolStooq=tlt.us
+dataUpdater=stooq

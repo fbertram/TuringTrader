@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\SimulatorEngine.xml</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -42,10 +43,15 @@
       <HintPath>..\packages\IQFeed.CSharpApiClient.1.4.2\lib\net461\IQFeed.CSharpApiClient.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="norgate.data.dotnet">
+      <HintPath>..\packages\NorgateData.DataAccess\NorgateData.DataAccess\bin\Release\norgate.data.dotnet.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -85,6 +91,7 @@
     <Compile Include="Cache.cs" />
     <Compile Include="DataSource.cs" />
     <Compile Include="DataSourceCsv.cs" />
+    <Compile Include="DataSourceNorgate.cs" />
     <Compile Include="DataSourceValue.cs" />
     <Compile Include="DataUpdater.cs" />
     <Compile Include="DataUpdaterIBOptions.cs" />
@@ -97,6 +104,7 @@
     <Compile Include="IndicatorsBasic.cs" />
     <Compile Include="IndicatorsMarket.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
+    <Compile Include="IndicatorsPerformance.cs" />
     <Compile Include="IndicatorsPrice.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />

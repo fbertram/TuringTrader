@@ -2,7 +2,7 @@
 // Project:     Trading Simulator
 // Name:        Demo03_Portfolio
 // Description: portfolio trading demo
-// History:     2018ix10, FUB, created
+// History:     2018xii10, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -28,13 +28,13 @@ namespace TuringTrader.Demos
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
-        private readonly List<string> _tradingInstruments = new List<string>()
+        private double _initialSpx = 0.0;
+        private readonly string _spx = "^SPX.index";
+        private readonly List<string> _universe = new List<string>()
         {
-            "FB.Stock",
-            "AAPL.Stock",
-            "AMZN.Stock",
-            "NFLX.Stock",
-            "GOOGL.Stock"
+            "XLY.etf", "XLV.etf", "XLK.etf",
+            "XLP.etf", "XLE.etf", "XLI.etf",
+            "XLF.etf", "XLU.etf", "XLB.etf",
         };
         #endregion
 
@@ -44,13 +44,14 @@ namespace TuringTrader.Demos
 
             // set simulation time frame
             StartTime = DateTime.Parse("01/01/2007");
-            EndTime = DateTime.Parse("08/01/2018");
+            EndTime = DateTime.Parse("12/01/2018");
 
-            // set account value
+            // set initial account value
             Deposit(_initialCash);
 
             // add instruments
-            foreach (string nickname in _tradingInstruments)
+            AddDataSource(_spx);
+            foreach (string nickname in _universe)
                 AddDataSource(nickname);
 
             // clear plotters
@@ -61,47 +62,85 @@ namespace TuringTrader.Demos
             // loop through all bars
             foreach (DateTime simTime in SimTimes)
             {
+                if (_initialSpx == 0.0)
+                    _initialSpx = FindInstrument(_spx).Open[0];
 
                 // this list of instruments is dynamic: the simulator engine
-                // adds a new instrument whenever needed. we need to determine 
-                // which of these instruments have received new bars.
-                // also, we want to ignore our benchmark instrument.
+                // adds a new instrument whenever needed. we need to weed out
+                // stale instruments, as well as our benchmark instrument
                 var activeInstruments = Instruments
                         .Where(i => i.Time[0] == simTime
-                            && _tradingInstruments.Contains(i.Nickname));
+                            && _universe.Contains(i.Nickname));
 
-                // this algorithm allocates an equal share of the net asset value
-                // to all active instruments, and rebalances daily
-                double targetEquity = NetAssetValue[0] / Math.Max(1, activeInstruments.Count());
+                // calculate indicators for all active instruments.
+                // the result is stored to a list, to make sure indicators
+                // are evaluated exactly once per bar
+                var evalInstruments = activeInstruments
+                    .Select(i => new
+                    {
+                        instrument = i,
+                        romad = i.Close.ReturnOnMaxDrawdown(252)[0],
+                    })
+                    .ToList();
+
+                // select instruments, based on the evaluation
+                var holdInstruments = evalInstruments
+                    .Where(e => e.romad > 0.0)
+                    .OrderByDescending(e => e.romad)
+                    .Take(7)
+                    .Select(e => e.instrument)
+                    .ToList();
 
                 foreach (Instrument instr in activeInstruments)
                 {
-                    // determine # of shares
+                    // determine equity per instrument
+                    double targetEquity = holdInstruments.Contains(instr)
+                        ? NetAssetValue[0]
+                            / Math.Max(1.0, Math.Max(holdInstruments.Count, 3))
+                        : 0.0;
+
+                    // determine number of shares
                     int targetShares = (int)Math.Floor(targetEquity / instr.Close[0]);
                     int currentShares = instr.Position;
 
                     // place trades
-                    if (targetShares != currentShares)
-                        instr.Trade(targetShares - currentShares);
+                    Order newOrder = instr.Trade(targetShares - currentShares);
+
+                    // add comment
+                    if (newOrder != null)
+                    {
+                        if (currentShares == 0)
+                            newOrder.Comment = "open";
+                        else if (targetShares == 0)
+                            newOrder.Comment = "close";
+                        else
+                            newOrder.Comment = "rebalance";
+                    }
                 }
 
                 // plot net asset value on Sheet1
-                _plotter.SelectPlot("Performance vs Time", "date");
+                _plotter.SelectChart("Performance vs Time", "date");
                 _plotter.SetX(simTime);
+                _plotter.Plot(FindInstrument(_spx).Name, FindInstrument(_spx).Close[0] / _initialSpx);
                 _plotter.Plot("Net Asset Value", NetAssetValue[0] / _initialCash);
+
+                // we could plot our indicators here
+                //foreach (var i in evalInstruments)
+                //    _plotter.Plot(i.instrument.Symbol, i.romad);
             }
 
             //---------- post-processing
 
             // create a list of trades on Sheet2
-            _plotter.SelectPlot("trades", "time");
+            _plotter.SelectChart("trades", "time");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
                 _plotter.Plot("action", entry.Action);
                 _plotter.Plot("instr", entry.Symbol);
                 _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("price", entry.FillPrice);
+                _plotter.Plot("fill", entry.FillPrice);
+                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
         }
 

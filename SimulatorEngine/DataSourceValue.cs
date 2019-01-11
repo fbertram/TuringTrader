@@ -124,6 +124,14 @@ namespace TuringTrader.Simulator
         /// </summary>
         symbolInteractiveBrokers,
         /// <summary>
+        /// symbol for Norgate Data
+        /// </summary>
+        symbolNorgate,
+        /// <summary>
+        /// data source to use
+        /// </summary>
+        dataSource,
+        /// <summary>
         /// data updater to use
         /// </summary>
         dataUpdater,

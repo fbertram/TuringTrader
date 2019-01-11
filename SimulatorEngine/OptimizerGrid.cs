@@ -215,7 +215,7 @@ namespace TuringTrader.Simulator
         {
             Plotter logger = new Plotter();
 
-            logger.SelectPlot("Optimizer Results", "iteration");
+            logger.SelectChart("Optimizer Results", "iteration");
 
             for (int i = 0; i < Results.Count; i++)
             {

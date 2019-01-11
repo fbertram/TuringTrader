@@ -52,12 +52,12 @@ namespace TuringTrader.Demos
             {
                 Instrument instr = FindInstrument(_instrumentNick);
 
-                _plotter.SelectPlot("Price", "date");
+                _plotter.SelectChart("Price", "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("price", instr.Close[0]);
                 _plotter.Plot("ema", instr.Close.EMA(200)[0]);
 
-                _plotter.SelectPlot("Drawdown", "date");
+                _plotter.SelectChart("Drawdown", "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("dd", instr.Close[0] / instr.Close.Highest(252)[0] - 1.0);
             }

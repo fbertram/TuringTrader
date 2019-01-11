@@ -83,6 +83,12 @@ namespace TuringTrader.Simulator
                     price = execBar.Open;
                     break;
 
+                case OrderType.stockInactiveClose:
+                    execBar = instrument[0];
+                    netAssetValue = NetAssetValue[5]; // this is probably incorrect
+                    price = execBar.Close;
+                    break;
+
                 case OrderType.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
@@ -124,6 +130,7 @@ namespace TuringTrader.Simulator
 
             // determine commission (no commission on expiry)
             double commission = ticket.Type != OrderType.optionExpiryClose
+                            && ticket.Type != OrderType.stockInactiveClose
                 ? Math.Abs(numberOfShares) * CommissionPerShare
                 : 0.00;
 
@@ -167,6 +174,19 @@ namespace TuringTrader.Simulator
             // force execution
             ExecOrder(ticket);
         }
+        private void ExpireInstrument(Instrument instrument)
+        {
+            // create order ticket
+            Order ticket = new Order()
+            {
+                Instrument = instrument,
+                Quantity = -instrument.Position,
+                Type = OrderType.stockInactiveClose,
+            };
+
+            // force execution
+            ExecOrder(ticket);
+        }
         private double CalcNetAssetValue()
         {
             double nav = Cash;
@@ -191,6 +211,8 @@ namespace TuringTrader.Simulator
                     : Positions[instrument];
 
                 nav += quantity * price;
+
+                // TODO: close any stale positions
             }
 
             return nav;
@@ -360,6 +382,14 @@ namespace TuringTrader.Simulator
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
+                    // handle instrument expiry
+                    IEnumerable<Instrument> instrumentsToExpire = Instruments
+                        .Where(i => i.Time[0] < SimTime[5]
+                            && i.Position != 0);
+
+                    foreach (Instrument instr in instrumentsToExpire)
+                        ExpireInstrument(instr);
+
                     // update net asset value
                     NetAssetValue.Value = CalcNetAssetValue();
                     ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
@@ -444,9 +474,16 @@ namespace TuringTrader.Simulator
         /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
-            return _instruments.Values
-                .Where(i => i.Nickname == nickname)
-                .First();
+            try
+            {
+                return _instruments.Values
+                    .Where(i => i.Nickname == nickname)
+                    .First();
+            }
+            catch
+            {
+                throw new Exception(string.Format("Instrument {0} not available on {1:MM/dd/yyyy}", nickname, SimTime[0]));
+            }
         }
         #endregion
         #region protected List<Instrument> OptionChain(string)
