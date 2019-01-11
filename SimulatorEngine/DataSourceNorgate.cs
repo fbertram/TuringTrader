@@ -53,6 +53,9 @@ namespace TuringTrader.Simulator
             }
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
+                if (!isAPIAvaliable)
+                    throw new Exception("DataSourceNorgate: Norgata Data Updater not installed");
+
                 //--- Norgate setup
                 NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
                     ? NDU.AdjustmentType.TotalReturn
