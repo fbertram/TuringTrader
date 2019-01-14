@@ -9,6 +9,13 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+// TODO: review this as a possible improvement
+// Peter Jäckel's LetsBeRational is an extremely fast and accurate method for 
+// obtaining Black's implied volatility from option prices with as little as 
+// two iterations to maximum attainable precision on standard(64 bit floating point) 
+// hardware for all possible inputs.
+// https://pypi.org/project/lets_be_rational/#files
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -60,6 +67,10 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+#if false
+        // this is the nicer code, but does not take dividend yield into account,
+        // and doesn't calculate greeks
+        // TODO: use this as basis for cleanup of methods further below
         #region public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
         /// <summary>
         /// Calculate arbitrage-free price of European-style option,
@@ -91,6 +102,171 @@ namespace TuringTrader.Simulator
             return contract.OptionIsPut
                     ? CDF(-d2) * K * Math.Exp(-r * T) - CDF(-d1) * S // put
                     : CDF(d1) * S - CDF(d2) * K * Math.Exp(-r * T);  // call
+        }
+        #endregion
+#endif
+
+        #region public class OptionPriceAndGreeks
+        /// <summary>
+        /// Container to hold option price and greeks.
+        /// </summary>
+        public class OptionPriceVolGreeks
+        {
+            /// <summary>
+            /// option price
+            /// </summary>
+            public double Price;
+            /// <summary>
+            /// option volatility
+            /// </summary>
+            public double Volatility;
+            /// <summary>
+            /// option delta
+            /// </summary>
+            public double Delta;
+            /// <summary>
+            /// option gamma
+            /// </summary>
+            public double Gamma;
+            /// <summary>
+            /// option vega
+            /// </summary>
+            public double Vega;
+            /// <summary>
+            /// option rho
+            /// </summary>
+            public double Rho;
+            /// <summary>
+            /// option theta
+            /// </summary>
+            public double Theta;
+        }
+        #endregion
+        #region public static OptionPriceAndGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate)
+        /// <summary>
+        /// Calculate Black-Scholes arbitrage-free price for European-style options,
+        /// plus the common option greeks.
+        /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
+        /// </summary>
+        /// <param name="contract">option contract to calculate</param>
+        /// <param name="volatility">annualized volatility of underlying asset</param>
+        /// <param name="riskFreeRate">annualized risk-free rate of return</param>
+        /// <returns>container w/ price and greeks</returns>
+        public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate, double dividendYield = 0.0)
+        {
+            DateTime today = contract.Simulator.SimTime[0];
+            Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
+            double underlyingPrice = underlying.Close[0];
+            double strike = contract.OptionStrike;
+            double yearsToExpiry = (contract.OptionExpiry - today).TotalDays / 365.25;
+
+            // see https://github.com/pelife/QuantRiskLib/blob/master/QuantRiskLib/QuantRiskLib/Options.cs
+
+            //setting dividendYield = 0 gives the classic Black Scholes model
+            //setting dividendYield = foreign risk-free rate gives a model for European currency options, see Garman and Kohlhagen (1983)
+
+            double sqrtT = Math.Sqrt(yearsToExpiry);
+            double d1 = (Math.Log(underlyingPrice / strike) + (riskFreeRate - dividendYield + 0.5 * volatility * volatility) * yearsToExpiry) / (volatility * sqrtT);
+            double d2 = d1 - volatility * sqrtT;
+            double N1 = CDF(d1);
+            double N2 = CDF(d2);
+            double n1 = PDF(d1);
+            double n2 = PDF(d2);
+
+            double eNegRiskFreeRateTimesYearsToExpiry = Math.Exp(-riskFreeRate * yearsToExpiry);
+            double eNegDivYieldYearsToExpiry = Math.Exp(-dividendYield * yearsToExpiry);
+
+            double price = contract.OptionIsPut
+                ? (1 - N2) * strike * eNegRiskFreeRateTimesYearsToExpiry - (1 - N1) * underlyingPrice * eNegDivYieldYearsToExpiry // put
+                : N1 * underlyingPrice *eNegDivYieldYearsToExpiry - N2 * strike * eNegRiskFreeRateTimesYearsToExpiry; // call                
+
+            double delta = contract.OptionIsPut
+                ? eNegDivYieldYearsToExpiry * (N1 - 1.0) // put
+                : eNegDivYieldYearsToExpiry * N1; // call
+
+            double gamma = eNegDivYieldYearsToExpiry * n1 / (underlyingPrice * volatility * sqrtT);
+            double vega = underlyingPrice * Math.Exp(-dividendYield * yearsToExpiry) * n1 * sqrtT;
+
+            double rho = contract.OptionIsPut
+                ? -yearsToExpiry * strike * eNegRiskFreeRateTimesYearsToExpiry * (1 - N2) // put
+                : yearsToExpiry* strike *eNegRiskFreeRateTimesYearsToExpiry * N2; // call
+
+            double a = -underlyingPrice * eNegDivYieldYearsToExpiry * n1 * volatility / (2.0 * sqrtT);
+            double b = dividendYield * underlyingPrice * eNegDivYieldYearsToExpiry;
+            double theta = contract.OptionIsPut
+                ? a - b * (1 - N1) + riskFreeRate * strike * eNegRiskFreeRateTimesYearsToExpiry * (1 - N2) // put
+                : a + b * N1 - riskFreeRate * strike * eNegRiskFreeRateTimesYearsToExpiry * N2; // call
+
+            double convexity = contract.OptionIsPut
+                ? -rho * ((n2 * sqrtT) / ((1 - N2) * volatility) + yearsToExpiry) // put
+                : rho * ((n2 * sqrtT) / (N2 * volatility) - yearsToExpiry); // call
+
+            return new OptionPriceVolGreeks
+            {
+                Price = price,
+                Volatility = volatility,
+                Delta = delta,
+                Gamma = gamma,
+                Vega = vega,
+                Rho = rho,
+                Theta = theta
+            };
+        }
+        #endregion
+        #region public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double riskFreeRate)
+        /// <summary>
+        /// Calculate implied volatility from Black-Scholes arbitrage-free price for European-style options,
+        /// plus the common option greeks.
+        /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <param name="riskFreeRate"></param>
+        /// <param name="dividendYield"></param>
+        /// <returns></returns>
+        public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
+        {
+            DateTime today = contract.Simulator.SimTime[0];
+            Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
+
+            double underlyingPrice = underlying.Close[0];
+            double strike = contract.OptionStrike;
+            double yearsToExpiry = (contract.OptionExpiry - today).Duration().Days / 365.25;
+            double midPrice = (contract.Bid[0] + contract.Ask[0]) / 2.0;
+
+            // see https://github.com/pelife/QuantRiskLib/blob/master/QuantRiskLib/QuantRiskLib/Options.cs
+
+            const double tolerance = 0.001;
+            const int maxLoops = 16;
+
+            double vol = Math.Sqrt(2 * Math.Abs(Math.Log(underlyingPrice / strike) / yearsToExpiry + riskFreeRate));    //Manaster and Koehler intial vol value
+            vol = Math.Max(0.01, vol);
+            var optionGreeks = contract.BlackScholes(vol, riskFreeRate, dividendYield);
+            double impliedPrice = optionGreeks.Price;
+            double vega = optionGreeks.Vega;
+
+            // TODO: this loop is really ugly. Need to refactor after validation.
+
+            // TODO: check if things are converging properly. It is recommended to calculate only
+            // out-of-the-money options with this method. In case of in-the-money options, put-call
+            // parity should be used to transform to the other case. see here:
+            // https://quant.stackexchange.com/questions/15198/what-is-an-efficient-method-to-find-implied-volatility
+
+            int nLoops = 0;
+            while (Math.Abs(impliedPrice - midPrice) > tolerance)
+            {
+                nLoops++;
+                if (nLoops > maxLoops)
+                    throw new Exception("BlackScholesImpliedVolatility did not converge.");
+
+                vol = vol - (impliedPrice - midPrice) / vega;
+                if (vol <= 0)
+                    vol = 0.5 * (vol + (impliedPrice - midPrice) / vega); //half way btwn previous estimate and zero
+
+                optionGreeks = contract.BlackScholes(vol, riskFreeRate, dividendYield);
+                impliedPrice = optionGreeks.Price;
+                vega = optionGreeks.Vega;
+            }
+            return optionGreeks;
         }
         #endregion
     }

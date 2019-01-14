@@ -91,7 +91,8 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                return Info.ContainsKey(DataSourceValue.optionExpiration);
+                //return Info.ContainsKey(DataSourceValue.optionExpiration);
+                return Info.ContainsKey(DataSourceValue.optionUnderlying);
             }
         }
         #endregion

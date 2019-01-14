@@ -449,6 +449,19 @@ namespace TuringTrader.Simulator
             _dataSources.Add(DataSource.New(nickname));
         }
         #endregion
+        #region protected void AddDataSource(DataSource dataSource)
+        /// <summary>
+        /// Add data source. If the data source already exists, the call is ignored.
+        /// </summary>
+        /// <param name="dataSource">new data source</param>
+        protected void AddDataSource(DataSource dataSource)
+        {
+            if (_dataSources.Contains(dataSource))
+                return;
+
+            _dataSources.Add(dataSource);
+        }
+        #endregion
         #region public IEnumerable<Instrument> Instruments
         /// <summary>
         /// Enumeration of instruments available to the simulator. It is
