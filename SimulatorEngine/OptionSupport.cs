@@ -81,7 +81,7 @@ namespace TuringTrader.Simulator
         /// <param name="volatility">annualized volatility of underlying asset</param>
         /// <param name="riskFreeRate">annualized risk free rate</param>
         /// <returns>option price</returns>
-        public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
+        public static double _old_BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
         {
             if (!contract.IsOption)
                 return 0.00;
@@ -90,7 +90,7 @@ namespace TuringTrader.Simulator
 
             DateTime today = contract.Simulator.SimTime[0];
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
-            double T = (contract.OptionExpiry - today).Duration().Days / 365.25;
+            double T = (contract.OptionExpiry - today).TotalDays / 365.25;
             double S = underlying.Close[0];
             double K = contract.OptionStrike;
             double r = riskFreeRate;
@@ -154,6 +154,9 @@ namespace TuringTrader.Simulator
         /// <returns>container w/ price and greeks</returns>
         public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate, double dividendYield = 0.0)
         {
+            if (!contract.IsOption)
+                throw new Exception("BlackScholes: input not an option contract");
+
             DateTime today = contract.Simulator.SimTime[0];
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
             double underlyingPrice = underlying.Close[0];
@@ -213,7 +216,7 @@ namespace TuringTrader.Simulator
             };
         }
         #endregion
-        #region public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double riskFreeRate)
+        #region public static OptionPriceVolGreeks BlackScholesImplied(this Instrument contract, double riskFreeRate)
         /// <summary>
         /// Calculate implied volatility from Black-Scholes arbitrage-free price for European-style options,
         /// plus the common option greeks.
@@ -223,7 +226,7 @@ namespace TuringTrader.Simulator
         /// <param name="riskFreeRate"></param>
         /// <param name="dividendYield"></param>
         /// <returns></returns>
-        public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
+        public static OptionPriceVolGreeks BlackScholesImplied(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
         {
             DateTime today = contract.Simulator.SimTime[0];
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
@@ -256,7 +259,7 @@ namespace TuringTrader.Simulator
             {
                 nLoops++;
                 if (nLoops > maxLoops)
-                    throw new Exception("BlackScholesImpliedVolatility did not converge.");
+                    throw new Exception("BlackScholesImpliedVolatility: implied volatility did not converge.");
 
                 vol = vol - (impliedPrice - midPrice) / vega;
                 if (vol <= 0)

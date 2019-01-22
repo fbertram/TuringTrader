@@ -384,7 +384,8 @@ namespace TuringTrader.Simulator
 
                     // handle instrument expiry
                     IEnumerable<Instrument> instrumentsToExpire = Instruments
-                        .Where(i => i.Time[0] < SimTime[5]
+                        .Where(i => i.IsOption
+                            && i.Time[0] < SimTime[5]
                             && i.Position != 0);
 
                     foreach (Instrument instr in instrumentsToExpire)
