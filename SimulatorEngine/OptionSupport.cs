@@ -31,80 +31,324 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class OptionSupport
     {
-        #region internal helpers
+        #region from Espen Gaarder Haug: The Complete Guide to Option Pricing Formulas, Second Edition
+
+        #region private static double ND(double x)
         /// <summary>
-        /// Probability Density Function
+        /// Normal distribution function.
         /// </summary>
-        private static double PDF(double zScore)
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private static double ND(double x)
         {
-            // see https://en.wikipedia.org/wiki/Normal_distribution
-            double x = Math.Abs(zScore);
-            return 1.0 / Math.Sqrt(2 * Math.PI) * Math.Exp(-x * x / 2.0);
+            /*
+                '// The normal distribution function
+                Public Function ND(x As Double) As Double
+                    ND = 1 / Sqr(2 * Pi) * Exp(-x ^ 2 / 2)
+                End Function
+            */
+            return 1 / Math.Sqrt(2 * Math.PI) * Math.Exp(-x * x / 2);
         }
-
+        #endregion
+        #region private static double CND(double x)
         /// <summary>
-        /// Cumulative Distribution Function
+        /// Cumulative normal distribution, see chapter 13.1.1
         /// </summary>
-        public static double CDF(double zScore)
+        /// <param name=""></param>
+        /// <returns></returns>
+        public static double CND(double x)
         {
-            double x = Math.Abs(zScore);
+            /*
+                '// Cummulative double precision algorithm based on Hart 1968
+                '// Based on implementation by Graeme West
+                Function CND(x As Double) As Double
+                    Dim y As Double, Exponential As Double, SumA As Double, SumB As Double
 
-            // see https://en.wikipedia.org/wiki/Normal_distribution#Numerical_approximations_for_the_normal_CDF
-            // => Zelen & Severo (1964),
-            // => algorithm 26.2.17 http://people.math.sfu.ca/~cbm/aands/page_932.htm
-            const double p = 0.2316419;
-            double t = 1.0 / (1.0 + p * x);
-            const double b1 = 0.31938153;
-            const double b2 = -0.356563782;
-            const double b3 = 1.781477937;
-            const double b4 = -1.821255978;
-            const double b5 = 1.330274429;
-            double Px = 1.0 - PDF(x) * (((((b5 * t) + b4) * t + b3) * t + b2) * t + b1) * t;
+                    y = Abs(x)
+                    If y > 37 Then
+                        CND = 0
+                    Else
+                        Exponential = Exp(-y ^ 2 / 2)
+                        If y < 7.07106781186547 Then
+                            SumA = 3.52624965998911E-02 * y + 0.700383064443688
+                            SumA = SumA * y + 6.37396220353165
+                            SumA = SumA * y + 33.912866078383
+                            SumA = SumA * y + 112.079291497871
+                            SumA = SumA * y + 221.213596169931
+                            SumA = SumA * y + 220.206867912376
+                            SumB = 8.83883476483184E-02 * y + 1.75566716318264
+                            SumB = SumB * y + 16.064177579207
+                            SumB = SumB * y + 86.7807322029461
+                            SumB = SumB * y + 296.564248779674
+                            SumB = SumB * y + 637.333633378831
+                            SumB = SumB * y + 793.826512519948
+                            SumB = SumB * y + 440.413735824752
+                            CND = Exponential * SumA / SumB
+                        Else
+                            SumA = y + 0.65
+                            SumA = y + 4 / SumA
+                            SumA = y + 3 / SumA
+                            SumA = y + 2 / SumA
+                            SumA = y + 1 / SumA
+                            CND = Exponential / (SumA * 2.506628274631)
+                        End If
+                  End If
 
-            return zScore < 0.0
-                ? 1.0 - Px
-                : Px;
+                  If x > 0 Then CND = 1 - CND
+
+                End Function
+            */
+
+            double y = Math.Abs(x);
+            double CND;
+
+            if (y > 37)
+            {
+                CND = 0;
+            }
+            else
+            {
+                double Exponential = Math.Exp(-y * y / 2);
+                if (y < 7.07106781186547)
+                {
+                    double SumA = 3.52624965998911E-02 * y + 0.700383064443688;
+                    SumA = SumA * y + 6.37396220353165;
+                    SumA = SumA * y + 33.912866078383;
+                    SumA = SumA * y + 112.079291497871;
+                    SumA = SumA * y + 221.213596169931;
+                    SumA = SumA * y + 220.206867912376;
+                    double SumB = 8.83883476483184E-02 * y + 1.75566716318264;
+                    SumB = SumB * y + 16.064177579207;
+                    SumB = SumB * y + 86.7807322029461;
+                    SumB = SumB * y + 296.564248779674;
+                    SumB = SumB * y + 637.333633378831;
+                    SumB = SumB * y + 793.826512519948;
+                    SumB = SumB * y + 440.413735824752;
+                    CND = Exponential * SumA / SumB;
+                }
+                else
+                {
+                    double SumA = y + 0.65;
+                    SumA = y + 4 / SumA;
+                    SumA = y + 3 / SumA;
+                    SumA = y + 2 / SumA;
+                    SumA = y + 1 / SumA;
+                    CND = Exponential / (SumA * 2.506628274631);
+                }
+            }
+
+            if (x > 0)
+                CND = 1 - CND;
+
+            return CND;
         }
         #endregion
 
-#if false
-        // this is the nicer code, but does not take dividend yield into account,
-        // and doesn't calculate greeks
-        // TODO: use this as basis for cleanup of methods further below
-        #region public static double BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
+        #region private static double GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
         /// <summary>
-        /// Calculate arbitrage-free price of European-style option,
-        /// according to Black-Scholes equation as described here:
-        /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
+        /// Generalized Black-Scholes-Merton Option Pricing, see chapter 1.1.6
         /// </summary>
-        /// <param name="contract">input option contract</param>
-        /// <param name="volatility">annualized volatility of underlying asset</param>
-        /// <param name="riskFreeRate">annualized risk free rate</param>
-        /// <returns>option price</returns>
-        public static double _old_BlackScholesPrice(this Instrument contract, double volatility, double riskFreeRate)
+        /// <param name="CallPutFlag">true for calls, false for puts</param>
+        /// <param name="S">price of underlying asset</param>
+        /// <param name="X">strike price of option</param>
+        /// <param name="T">time to expiration in years</param>
+        /// <param name="r">risk-free interest rate</param>
+        /// <param name="b">cost of carry rate</param>
+        /// <param name="v">volatility</param>
+        /// <returns></returns>
+        private static double GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
         {
-            if (!contract.IsOption)
-                return 0.00;
+            /*
+                '//  The generalized Black and Scholes formula
+                Public Function GBlackScholes(CallPutFlag As String, S As Double, x _
+                                As Double, T As Double, r As Double, b As Double, v As Double) As Double
 
-            // see https://en.wikipedia.org/wiki/Black–Scholes_model
+                    Dim d1 As Double, d2 As Double
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    d2 = d1 - v * Sqr(T)
 
-            DateTime today = contract.Simulator.SimTime[0];
-            Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
-            double T = (contract.OptionExpiry - today).TotalDays / 365.25;
-            double S = underlying.Close[0];
-            double K = contract.OptionStrike;
-            double r = riskFreeRate;
-            double v = volatility;
+                    If CallPutFlag = "c" Then
+                        GBlackScholes = S * Exp((b - r) * T) * CND(d1) - x * Exp(-r * T) * CND(d2)
+                    ElseIf CallPutFlag = "p" Then
+                        GBlackScholes = x * Exp(-r * T) * CND(-d2) - S * Exp((b - r) * T) * CND(-d1)
+                    End If
+    
+                End Function
+             */
 
-            double d1 = (Math.Log(S / K) + (r + v * v / 2.0) * T) / (v * Math.Sqrt(T));
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
             double d2 = d1 - v * Math.Sqrt(T);
 
-            return contract.OptionIsPut
-                    ? CDF(-d2) * K * Math.Exp(-r * T) - CDF(-d1) * S // put
-                    : CDF(d1) * S - CDF(d2) * K * Math.Exp(-r * T);  // call
+            double GBlackScholes = CallPutFlag
+                ? S * Math.Exp((b - r) * T) * CND(d1) - X * Math.Exp(-r * T) * CND(d2)    // call
+                : X * Math.Exp(-r * T) * CND(-d2) - S * Math.Exp((b - r) * T) * CND(-d1); // put
+
+            return GBlackScholes;
         }
         #endregion
-#endif
+        #region private static double GDelta(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        private static double GDelta(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        {
+            /*
+                Public Function GDelta(CallPutFlag As String, S As Double, x As Double, T As Double, r As Double, b As Double, v As Double) As Double
+
+                    Dim d1 As Double
+
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    If CallPutFlag = "c" Then
+                        GDelta = Exp((b - r) * T) * CND(d1)
+                    Else
+                        GDelta = -Exp((b - r) * T) * CND(-d1)
+                    End If
+
+                End Function
+            */
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
+            return CallPutFlag
+                ? Math.Exp((b - r) * T) * CND(d1) // call
+                : -Math.Exp((b - r) * T) * CND(-d1); // put
+        }
+        #endregion
+        #region private static double GGamma(double S, double X, double T, double r, double b, double v)
+        private static double GGamma(double S, double X, double T, double r, double b, double v)
+        {
+            /*
+                '// Gamma for the generalized Black and Scholes formula
+                Public Function GGamma(S As Double, x As Double, T As Double, r As Double, b As Double, v As Double) As Double
+    
+                    Dim d1 As Double
+    
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    GGamma = Exp((b - r) * T) * ND(d1) / (S * v * Sqr(T))
+                End Function
+            */
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
+            return Math.Exp((b - r) * T) * ND(d1) / (S * v * Math.Sqrt(T));
+        }
+        #endregion
+        #region private static double GVega(double S, double X, double T, double r, double b, double v)
+        private static double GVega(double S, double X, double T, double r, double b, double v)
+        {
+            /*
+                Public Function GVega(S As Double, x As Double, T As Double, r As Double, b As Double, v As Double) As Double
+    
+                    Dim d1 As Double
+    
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    GVega = S * Exp((b - r) * T) * ND(d1) * Sqr(T)
+
+                End Function
+            */
+
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
+            return S * Math.Exp((b - r) * T) * ND(d1) * Math.Sqrt(T);
+        }
+        #endregion
+        #region private static double GRho(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        private static double GRho(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        {
+            /*
+                '// Rho for the generalized Black and Scholes formula for all options except futures
+                Public Function GRho(CallPutFlag As String, S As Double, x As Double, T As Double, r As Double, b As Double, v As Double) As Double
+    
+                   Dim d1 As Double, d2 As Double
+    
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    d2 = d1 - v * Sqr(T)
+                    If CallPutFlag = "c" Then
+                            GRho = T * x * Exp(-r * T) * CND(d2)
+                    ElseIf CallPutFlag = "p" Then
+                            GRho = -T * x * Exp(-r * T) * CND(-d2)
+                    End If
+
+                End Function
+            */
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
+            double d2 = d1 - v * Math.Sqrt(T);
+
+            return CallPutFlag
+                ? T * X * Math.Exp(-r * T) * CND(d2) // call
+                : -T * X * Math.Exp(-r * T) * CND(-d2); // put
+        }
+        #endregion
+        #region private static double GTheta(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        private static double GTheta(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        {
+            /*
+                Public Function GTheta(CallPutFlag As String, S As Double, x As Double, T As Double, r As Double, b As Double, v As Double) As Double
+    
+                    Dim d1 As Double, d2 As Double
+    
+                    d1 = (Log(S / x) + (b + v ^ 2 / 2) * T) / (v * Sqr(T))
+                    d2 = d1 - v * Sqr(T)
+
+                    If CallPutFlag = "c" Then
+                        GTheta = -S * Exp((b - r) * T) * ND(d1) * v / (2 * Sqr(T)) - (b - r) * S * Exp((b - r) * T) * CND(d1) - r * x * Exp(-r * T) * CND(d2)
+                    ElseIf CallPutFlag = "p" Then
+                        GTheta = -S * Exp((b - r) * T) * ND(d1) * v / (2 * Sqr(T)) + (b - r) * S * Exp((b - r) * T) * CND(-d1) + r * x * Exp(-r * T) * CND(-d2)
+                    End If
+
+                End Function
+            */
+            double d1 = (Math.Log(S / X) + (b + v * v / 2) * T) / (v * Math.Sqrt(T));
+            double d2 = d1 - v * Math.Sqrt(T);
+
+            return CallPutFlag
+                ? -S * Math.Exp((b - r) * T) * ND(d1) * v / (2 * Math.Sqrt(T)) - (b - r) * S * Math.Exp((b - r) * T) * CND(d1) - r * X * Math.Exp(-r * T) * CND(d2) // call
+                : -S * Math.Exp((b - r) * T) * ND(d1) * v / (2 * Math.Sqrt(T)) + (b - r) * S * Math.Exp((b - r) * T) * CND(-d1) + r * X * Math.Exp(-r * T) * CND(-d2); // put
+        }
+        #endregion
+
+        #region private static double GImpliedVolatility(bool CallPutFlag, double S, double X, double T, double r, double b, double cm, double epsilon)
+        private static double GImpliedVolatility(bool CallPutFlag, double S, double X, double T, double r, double b, double cm, double epsilon)
+        {
+            /*
+                Public Function GImpliedVolatilityNR(CallPutFlag As String, S As Double, x _
+                As Double, T As Double, r As Double, b As Double, cm As Double, epsilon As Double)
+
+                    Dim vi As Double, ci As Double
+                    Dim vegai As Double
+                    Dim minDiff As Double
+
+                    'Manaster and Koehler seed value (vi)
+                    vi = Sqr(Abs(Log(S / x) + r * T) * 2 / T)
+                    ci = GBlackScholes(CallPutFlag, S, x, T, r, b, vi)
+                    vegai = GVega(S, x, T, r, b, vi)
+                    minDiff = Abs(cm - ci)
+
+                    While Abs(cm - ci) >= epsilon And Abs(cm - ci) <= minDiff
+                        vi = vi - (ci - cm) / vegai
+                        ci = GBlackScholes(CallPutFlag, S, x, T, r, b, vi)
+                        vegai = GVega(S, x, T, r, b, vi)
+                        minDiff = Abs(cm - ci)
+                    Wend
+
+                    If Abs(cm - ci) < epsilon Then GImpliedVolatilityNR = vi Else GImpliedVolatilityNR = "NA"
+                End Function
+            */
+
+            // Manaster and Koehler seed value (vi)
+            double vi = Math.Sqrt(Math.Abs(Math.Log(S / X) + r * T) * 2 / T);
+            double ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
+            double vegai = GVega(S, X, T, r, b, vi);
+            double minDiff = Math.Abs(cm - ci);
+
+            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff)
+            {
+                vi = vi - (ci - cm) / vegai;
+                ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
+                vegai = GVega(S, X, T, r, b, vi);
+                minDiff = Math.Abs(cm - ci);
+            }
+
+            if (Math.Abs(cm - ci) < epsilon)
+                return vi;
+            else
+                throw new Exception("failed to calculate implied volatility");
+        }
+        #endregion
+
+        #endregion
 
         #region public class OptionPriceAndGreeks
         /// <summary>
@@ -142,6 +386,7 @@ namespace TuringTrader.Simulator
             public double Theta;
         }
         #endregion
+
         #region public static OptionPriceAndGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate)
         /// <summary>
         /// Calculate Black-Scholes arbitrage-free price for European-style options,
@@ -151,6 +396,7 @@ namespace TuringTrader.Simulator
         /// <param name="contract">option contract to calculate</param>
         /// <param name="volatility">annualized volatility of underlying asset</param>
         /// <param name="riskFreeRate">annualized risk-free rate of return</param>
+        /// <param name="dividendYield">annualized continuous dividend yield</param>
         /// <returns>container w/ price and greeks</returns>
         public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate, double dividendYield = 0.0)
         {
@@ -159,60 +405,29 @@ namespace TuringTrader.Simulator
 
             DateTime today = contract.Simulator.SimTime[0];
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
-            double underlyingPrice = underlying.Close[0];
-            double strike = contract.OptionStrike;
-            double yearsToExpiry = (contract.OptionExpiry - today).TotalDays / 365.25;
 
-            // see https://github.com/pelife/QuantRiskLib/blob/master/QuantRiskLib/QuantRiskLib/Options.cs
-
-            //setting dividendYield = 0 gives the classic Black Scholes model
-            //setting dividendYield = foreign risk-free rate gives a model for European currency options, see Garman and Kohlhagen (1983)
-
-            double sqrtT = Math.Sqrt(yearsToExpiry);
-            double d1 = (Math.Log(underlyingPrice / strike) + (riskFreeRate - dividendYield + 0.5 * volatility * volatility) * yearsToExpiry) / (volatility * sqrtT);
-            double d2 = d1 - volatility * sqrtT;
-            double N1 = CDF(d1);
-            double N2 = CDF(d2);
-            double n1 = PDF(d1);
-            double n2 = PDF(d2);
-
-            double eNegRiskFreeRateTimesYearsToExpiry = Math.Exp(-riskFreeRate * yearsToExpiry);
-            double eNegDivYieldYearsToExpiry = Math.Exp(-dividendYield * yearsToExpiry);
-
-            double price = contract.OptionIsPut
-                ? (1 - N2) * strike * eNegRiskFreeRateTimesYearsToExpiry - (1 - N1) * underlyingPrice * eNegDivYieldYearsToExpiry // put
-                : N1 * underlyingPrice *eNegDivYieldYearsToExpiry - N2 * strike * eNegRiskFreeRateTimesYearsToExpiry; // call                
-
-            double delta = contract.OptionIsPut
-                ? eNegDivYieldYearsToExpiry * (N1 - 1.0) // put
-                : eNegDivYieldYearsToExpiry * N1; // call
-
-            double gamma = eNegDivYieldYearsToExpiry * n1 / (underlyingPrice * volatility * sqrtT);
-            double vega = underlyingPrice * Math.Exp(-dividendYield * yearsToExpiry) * n1 * sqrtT;
-
-            double rho = contract.OptionIsPut
-                ? -yearsToExpiry * strike * eNegRiskFreeRateTimesYearsToExpiry * (1 - N2) // put
-                : yearsToExpiry* strike *eNegRiskFreeRateTimesYearsToExpiry * N2; // call
-
-            double a = -underlyingPrice * eNegDivYieldYearsToExpiry * n1 * volatility / (2.0 * sqrtT);
-            double b = dividendYield * underlyingPrice * eNegDivYieldYearsToExpiry;
-            double theta = contract.OptionIsPut
-                ? a - b * (1 - N1) + riskFreeRate * strike * eNegRiskFreeRateTimesYearsToExpiry * (1 - N2) // put
-                : a + b * N1 - riskFreeRate * strike * eNegRiskFreeRateTimesYearsToExpiry * N2; // call
-
-            double convexity = contract.OptionIsPut
-                ? -rho * ((n2 * sqrtT) / ((1 - N2) * volatility) + yearsToExpiry) // put
-                : rho * ((n2 * sqrtT) / (N2 * volatility) - yearsToExpiry); // call
+            bool CallPutFlag = !contract.OptionIsPut;
+            double S = underlying.Close[0];
+            double X = contract.OptionStrike;
+            double T = (contract.OptionExpiry - today).TotalDays / 365.25;
+            double r = riskFreeRate;
+            double q = dividendYield;
+            //double b = r;        // Black and Scholes (1973) stock option model
+            double b = r - q;    // Merton (1973) stock option model w/ continuous dividend yield q
+            //double b = 0;        // Black (1976) futures option model
+            //double b = 0; r = 0; // Asay (1982) margined futures option model
+            //double b = r - rf;   // Garman and Kohlhagen (1983) currency option model
+            double v = volatility;
 
             return new OptionPriceVolGreeks
             {
-                Price = price,
-                Volatility = volatility,
-                Delta = delta,
-                Gamma = gamma,
-                Vega = vega,
-                Rho = rho,
-                Theta = theta
+                Price = GBlackScholes(CallPutFlag, S, X, T, r, b, v),
+                Volatility = v,
+                Delta = GDelta(CallPutFlag, S, X, T, r, b, v),
+                Gamma = GGamma(S, X, T, r, b, v),
+                Vega = GVega(S, X, T, r, b, v),
+                Rho = GRho(CallPutFlag, S, X, T, r, b, v),
+                Theta = GTheta(CallPutFlag, S, X, T, r, b, v),
             };
         }
         #endregion
@@ -228,50 +443,57 @@ namespace TuringTrader.Simulator
         /// <returns></returns>
         public static OptionPriceVolGreeks BlackScholesImplied(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
         {
+            if (!contract.IsOption)
+                throw new Exception("BlackScholes: input not an option contract");
+
             DateTime today = contract.Simulator.SimTime[0];
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
 
-            double underlyingPrice = underlying.Close[0];
-            double strike = contract.OptionStrike;
-            double yearsToExpiry = (contract.OptionExpiry - today).Duration().Days / 365.25;
-            double midPrice = (contract.Bid[0] + contract.Ask[0]) / 2.0;
+            bool CallPutFlag = !contract.OptionIsPut;
+            double S = underlying.Close[0];
+            double X = contract.OptionStrike;
+            double T = (contract.OptionExpiry - today).TotalDays / 365.25;
+            double r = riskFreeRate;
+            double q = dividendYield;
+            //double b = r;        // Black and Scholes (1973) stock option model
+            double b = r - q;    // Merton (1973) stock option model w/ continuous dividend yield q
+            //double b = 0;        // Black (1976) futures option model
+            //double b = 0; r = 0; // Asay (1982) margined futures option model
+            //double b = r - rf;   // Garman and Kohlhagen (1983) currency option model
+            double cm = 0.5 * (contract.Bid[0] + contract.Ask[0]);
+            double epsilon = 0.001;
 
-            // see https://github.com/pelife/QuantRiskLib/blob/master/QuantRiskLib/QuantRiskLib/Options.cs
+#if false
+            double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
 
-            const double tolerance = 0.001;
-            const int maxLoops = 16;
-
-            double vol = Math.Sqrt(2 * Math.Abs(Math.Log(underlyingPrice / strike) / yearsToExpiry + riskFreeRate));    //Manaster and Koehler intial vol value
-            vol = Math.Max(0.01, vol);
-            var optionGreeks = contract.BlackScholes(vol, riskFreeRate, dividendYield);
-            double impliedPrice = optionGreeks.Price;
-            double vega = optionGreeks.Vega;
-
-            // TODO: this loop is really ugly. Need to refactor after validation.
-
-            // TODO: check if things are converging properly. It is recommended to calculate only
-            // out-of-the-money options with this method. In case of in-the-money options, put-call
-            // parity should be used to transform to the other case. see here:
-            // https://quant.stackexchange.com/questions/15198/what-is-an-efficient-method-to-find-implied-volatility
-
-            int nLoops = 0;
-            while (Math.Abs(impliedPrice - midPrice) > tolerance)
+            return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
+#else
+            // use put-call parity to convert ITM options to OTM
+            // this helps making sure the calculation of implied volatility
+            // converges, by enforcing a positive value for cm2
+            if (CallPutFlag && X < S)
             {
-                nLoops++;
-                if (nLoops > maxLoops)
-                    throw new Exception("BlackScholesImpliedVolatility: implied volatility did not converge.");
-
-                vol = vol - (impliedPrice - midPrice) / vega;
-                if (vol <= 0)
-                    vol = 0.5 * (vol + (impliedPrice - midPrice) / vega); //half way btwn previous estimate and zero
-
-                optionGreeks = contract.BlackScholes(vol, riskFreeRate, dividendYield);
-                impliedPrice = optionGreeks.Price;
-                vega = optionGreeks.Vega;
+                // ITM call
+                double cm2 = Math.Max(0.005, cm - S + X * Math.Exp(-r * T));
+                double volatility = GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
+                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
             }
-            return optionGreeks;
+            else if (!CallPutFlag && X > S)
+            {
+                // ITM put
+                double cm2 = Math.Max(0.005, cm + S - X * Math.Exp(-r * T));
+                double volatility = GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
+                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
+            }
+            else
+            {
+                // OTM put or call
+                double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
+                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
+            }
+#endif
         }
-        #endregion
+#endregion
     }
 }
 

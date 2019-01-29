@@ -69,18 +69,20 @@ namespace SimulatorEngine.Tests
                     double riskFreeRate = _riskFree;
                     double dividendYield = _divYield;
 
-                    var iv = option.BlackScholes(riskFreeRate, dividendYield);
+                    var iv = option.BlackScholesImplied(riskFreeRate, dividendYield);
                     var greeks = option.BlackScholes(iv.Volatility, riskFreeRate, dividendYield);
 
-                    //Output.WriteLine("iv={0}, delta={1}, gamma={2}, theta={3}, vega={4}",
-                    //    iv.Volatility, greeks.Delta, greeks.Gamma, greeks.Theta, greeks.Vega);
-
+#if false
+                   Output.WriteLine("impliedVol = {0:F8}, delta = {1:F8}, gamma = {2:F8}, theta = {3:F8}, vega = {4:F8}",
+                        iv.Volatility, greeks.Delta, greeks.Gamma, greeks.Theta, greeks.Vega);
+#else
                     //Assert.IsTrue(Math.Abs(iv.Price - greeks.Price) < 1e-5);
                     Assert.IsTrue(Math.Abs(iv.Volatility - _iv) < 1e-5);
                     Assert.IsTrue(Math.Abs(greeks.Delta - _delta) < 1e-5);
                     Assert.IsTrue(Math.Abs(greeks.Gamma - _gamma) < 1e-5);
                     Assert.IsTrue(Math.Abs(greeks.Theta - _theta) < 1e-5);
                     Assert.IsTrue(Math.Abs(greeks.Vega - _vega) < 1e-5);
+#endif
                 }
             }
         }
@@ -122,41 +124,51 @@ namespace SimulatorEngine.Tests
                 {
                     quoteDate = DateTime.Parse("10/01/2015"),
                     underlyingLast = 1921.42,
-                    riskFreeRate = 0.024, dividendYield = 0.018,
+                    riskFreeRate = 0.024, dividendYield = 0.00, //0.018,
                     expiration = DateTime.Parse("10/16/2015"),
                     strike = 1845, isPut = false, bid = 85.80, ask = 90.00,
                     // impliedVol = 0.2538, delta = 0.798, gamma = 0.0029, theta = -351.149, vega = 107.226 // from historical data
-                    impliedVol = 0.247698736469922, delta = 0.798543648749816, gamma = 0.00290809275058303, theta = -336.456110965229, vega = 109.213844026198 // set to match
+                    impliedVol = 0.23699109, delta = 0.81315737, gamma = 0.00291045, theta = -337.13293066, vega = 104.57753610
                 },
                 new TestVector
                 {
                     quoteDate = DateTime.Parse("10/01/2015"),
                     underlyingLast = 1921.42,
-                    riskFreeRate = 0.024, dividendYield = 0.018,
+                    riskFreeRate = 0.024, dividendYield = 0.00, //0.018,
                     expiration = DateTime.Parse("10/16/2015"),
                     strike = 1980, isPut = false, bid = 6.80, ask = 8.20,
                     // impliedVol = 0.177, delta = 0.2018, gamma = 0.0042, theta = -242.777, vega = 107.183 // from historical data
-                    impliedVol = 0.172841571785126, delta = 0.202310532937698, gamma = 0.00418736136877768, theta = -233.066963429968, vega = 109.732253332688 // set to match
+                    impliedVol = 0.17021597, delta = 0.20473715, gamma = 0.00428357, theta = -238.35915581, vega = 110.54824762
                 },
                 new TestVector
                 {
                     quoteDate = DateTime.Parse("10/01/2015"),
                     underlyingLast = 1921.42,
-                    riskFreeRate = 0.024, dividendYield = 0.018,
+                    riskFreeRate = 0.024, dividendYield = 0.00, //0.018,
                     expiration = DateTime.Parse("10/16/2015"),
                     strike = 1845, isPut = true, bid = 9.40, ask = 11.60,
                     // impliedVol = 0.2472, delta = -0.1961, gamma = 0.0029, theta = -330.323, vega = 105.344 // from historical data
-                    impliedVol = 0.242329894301333, delta = -0.195851223514913, gamma = 0.00292882797276422, theta = -314.974565405346, vega = 107.608482003309 // set to match
+                    impliedVol = 0.24491080, delta = -0.19423270, gamma = 0.00288422, theta = -310.13506432, vega = 107.09810115
                 },
                 new TestVector
                 {
                     quoteDate = DateTime.Parse("10/01/2015"),
                     underlyingLast = 1921.42,
-                    riskFreeRate = 0.024, dividendYield = 0.018,
+                    riskFreeRate = 0.024, dividendYield = 0.00, //0.018,
                     expiration = DateTime.Parse("10/16/2015"),
                     strike = 1980, isPut = true, bid = 63.20, ask = 67.90,
                     // impliedVol = 0.1734, delta = -0.8032, gamma = 0.0042, theta = -227.891, vega = 105.562 // from historical data
-                    impliedVol = 0.172848420338619, delta = -0.796940829541531, gamma = 0.00418731537928118, theta = -220.169637364834, vega = 109.735396057305 // set to match
+                    impliedVol = 0.18275260, delta = -0.77809756, gamma = 0.00418151, theta = -220.34075530, vega = 115.86234498
+                },
+                new TestVector
+                {
+                    quoteDate = DateTime.Parse("01/04/2016"),
+                    underlyingLast = 1993.680054,
+                    riskFreeRate = 0.024, dividendYield = 0.00,
+                    expiration = DateTime.Parse("02/26/2016"),
+                    strike = 300, isPut = false, bid = 1695.00, ask = 1695.00,
+                    //impliedVol = 1.9811, delta = 0.9973, gamma = 0.000004, theta = -0.064148, vega = 0.047015 // from historical data
+                    impliedVol = 1.72686453, delta = 0.99934408, gamma = 0.00000174, theta = -17.45819022, vega = 1.73456198
                 },
             };
 
