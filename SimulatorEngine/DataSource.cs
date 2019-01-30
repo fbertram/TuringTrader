@@ -246,6 +246,11 @@ namespace TuringTrader.Simulator
             {
                 return new DataSourceNorgate(infos);
             }
+            else if (infos.ContainsKey(DataSourceValue.dataSource)
+            && infos[DataSourceValue.dataSource].ToLower().Contains("fakeoptions"))
+            {
+                return new DataSourceFakeOptions(infos);
+            }
             else
             {
                 return new DataSourceCsv(infos);

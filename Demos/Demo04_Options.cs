@@ -27,10 +27,12 @@ namespace TuringTrader.Demos
         #region internal data
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
-        private readonly string _underlyingNickname = "^XSP.Index";
-        private readonly string _optionsNickname = "^XSP.Options";
+        private readonly string _underlyingNickname = "^SPX.index";
+        //private readonly string _optionsNickname = "^SPX.Options";
+        //private readonly string _optionsNickname = "^SPX.Weekly.Options";
+        private readonly string _optionsNickname = "^SPX.Fake.Options";
         private readonly double _regTMarginToUse = 0.8;
-        private readonly double _initialCash = 100000.00;
+        private readonly double _initialCash = 1e6;
         private double? _initialUnderlyingPrice = null;
         private Instrument _underlyingInstrument;
         #endregion
@@ -41,8 +43,8 @@ namespace TuringTrader.Demos
             //---------- initialization
 
             // set simulation time frame
-            WarmupStartTime = DateTime.Parse("01/01/2007");
-            StartTime = DateTime.Parse("01/01/2008");
+            WarmupStartTime = DateTime.Parse("01/01/2017");
+            StartTime = DateTime.Parse("01/01/2017");
             EndTime = DateTime.Parse("08/01/2018");
 
             // set account value
@@ -125,7 +127,8 @@ namespace TuringTrader.Demos
                                             0.10 * underlyingPrice);
                         int contracts = (int)Math.Floor(Math.Max(0.0, _regTMarginToUse * Cash / (100.0 * margin)));
 
-                        shortPut.Trade(-contracts, OrderType.closeThisBar);
+                        shortPut.Trade(-contracts, OrderType.closeThisBar)
+                            .Comment = "open";
                     }
                 }
 
@@ -147,7 +150,8 @@ namespace TuringTrader.Demos
                     &&  shortPut.BidVolume[0] > 0
                     &&  shortPut.Ask[0] < 2 * shortPut.Bid[0])
                     {
-                        shortPut.Trade(-Positions[shortPut], OrderType.closeThisBar);
+                        shortPut.Trade(-Positions[shortPut], OrderType.closeThisBar)
+                            .Comment = "exit early";
                     }
                 }
 
@@ -161,10 +165,21 @@ namespace TuringTrader.Demos
 
             //---------- post-processing
 
+            // create a list of trades on Sheet2
+            _plotter.SelectChart("trades", "time");
+            foreach (LogEntry entry in Log)
+            {
+                _plotter.SetX(entry.BarOfExecution.Time);
+                _plotter.Plot("action", entry.Action);
+                _plotter.Plot("instr", entry.Symbol);
+                _plotter.Plot("qty", entry.OrderTicket.Quantity);
+                _plotter.Plot("fill", entry.FillPrice);
+                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+            }
+
             FitnessValue = NetAssetValue[0];
         }
         #endregion
-
         #region override public void Report()
         public override void Report()
         {

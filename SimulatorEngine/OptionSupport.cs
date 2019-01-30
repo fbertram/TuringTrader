@@ -2,7 +2,7 @@
 // Project:     Trading Simulator
 // Name:        OptionSupport
 // Description: option support functionality
-// History:     2018ix21, FUB, created
+// History:     2019i29, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -156,7 +156,7 @@ namespace TuringTrader.Simulator
         /// <param name="b">cost of carry rate</param>
         /// <param name="v">volatility</param>
         /// <returns></returns>
-        private static double GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        public static double GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
         {
             /*
                 '//  The generalized Black and Scholes formula

@@ -92,6 +92,7 @@
     <Compile Include="DataSource.cs" />
     <Compile Include="DataSourceCsv.cs" />
     <Compile Include="DataSourceNorgate.cs" />
+    <Compile Include="DataSourceFakeOptions.cs" />
     <Compile Include="DataSourceValue.cs" />
     <Compile Include="DataUpdater.cs" />
     <Compile Include="DataUpdaterIBOptions.cs" />
