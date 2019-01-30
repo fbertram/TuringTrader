@@ -50,12 +50,12 @@ namespace TuringTrader.Simulator
             return 1 / Math.Sqrt(2 * Math.PI) * Math.Exp(-x * x / 2);
         }
         #endregion
-        #region private static double CND(double x)
+        #region public static double CND(double x)
         /// <summary>
         /// Cumulative normal distribution, see chapter 13.1.1
         /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
+        /// <param name="x">number of standard-deviations away from average</param>
+        /// <returns>probability, that result is greater or equal to z-score</returns>
         public static double CND(double x)
         {
             /*
@@ -397,7 +397,7 @@ namespace TuringTrader.Simulator
         /// <param name="volatility">annualized volatility of underlying asset</param>
         /// <param name="riskFreeRate">annualized risk-free rate of return</param>
         /// <param name="dividendYield">annualized continuous dividend yield</param>
-        /// <returns>container w/ price and greeks</returns>
+        /// <returns>container w/ price, volatility, and greeks</returns>
         public static OptionPriceVolGreeks BlackScholes(this Instrument contract, double volatility, double riskFreeRate, double dividendYield = 0.0)
         {
             if (!contract.IsOption)
@@ -437,10 +437,10 @@ namespace TuringTrader.Simulator
         /// plus the common option greeks.
         /// <see href="https://en.wikipedia.org/wiki/Black–Scholes_model"/>
         /// </summary>
-        /// <param name="contract"></param>
-        /// <param name="riskFreeRate"></param>
-        /// <param name="dividendYield"></param>
-        /// <returns></returns>
+        /// <param name="contract">option contract to calculate</param>
+        /// <param name="riskFreeRate">annualized risk-free rate of return</param>
+        /// <param name="dividendYield">annualized continuous dividend yield</param>
+        /// <returns>container w/ price, volatility, and greeks</returns>
         public static OptionPriceVolGreeks BlackScholesImplied(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
         {
             if (!contract.IsOption)
