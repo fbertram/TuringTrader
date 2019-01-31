@@ -87,7 +87,7 @@ namespace TuringTrader.Simulator
                                         SimTime[0],
                                         default(double), default(double), default(double), default(double), default(long), false,
                                         price * 0.99, price * 1.01, 100, 100, true,
-                                        expiry + DateTime.Parse("4pm").TimeOfDay,
+                                        expiry.Date,
                                         strike,
                                         putCall == 0 ? true : false);
 
