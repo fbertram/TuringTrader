@@ -155,37 +155,42 @@ namespace TuringTrader.Simulator
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
-        private void ExpireOption(Instrument instr)
+        private void ExpireOption(Instrument instrument)
         {
-            Instrument underlying = _instruments[instr.OptionUnderlying];
+            Instrument underlying = _instruments[instrument.OptionUnderlying];
             double price = underlying.Close[1];
 
             // create order ticket
             Order ticket = new Order()
             {
-                Instrument = instr,
-                Quantity = -Positions[instr],
+                Instrument = instrument,
+                Quantity = -Positions[instrument],
                 Type = OrderType.optionExpiryClose,
-                Price = instr.OptionIsPut
-                    ? Math.Max(0.00, instr.OptionStrike - price)
-                    : Math.Max(0.00, price - instr.OptionStrike),
+                Price = instrument.OptionIsPut
+                    ? Math.Max(0.00, instrument.OptionStrike - price)
+                    : Math.Max(0.00, price - instrument.OptionStrike),
             };
 
             // force execution
             ExecOrder(ticket);
         }
-        private void ExpireInstrument(Instrument instrument)
+        private void DelistInstrument(Instrument instrument)
         {
-            // create order ticket
-            Order ticket = new Order()
+            if (instrument.Position != 0)
             {
-                Instrument = instrument,
-                Quantity = -instrument.Position,
-                Type = OrderType.stockInactiveClose,
-            };
+                // create order ticket
+                Order ticket = new Order()
+                {
+                    Instrument = instrument,
+                    Quantity = -instrument.Position,
+                    Type = OrderType.stockInactiveClose,
+                };
 
-            // force execution
-            ExecOrder(ticket);
+                // force execution
+                ExecOrder(ticket);
+            }
+
+            _instruments.Remove(instrument.Symbol);
         }
         private double CalcNetAssetValue()
         {
@@ -211,8 +216,6 @@ namespace TuringTrader.Simulator
                     : Positions[instrument];
 
                 nav += quantity * price;
-
-                // TODO: close any stale positions
             }
 
             return nav;
@@ -335,6 +338,17 @@ namespace TuringTrader.Simulator
                 NetAssetValueHighestHigh = 0.0;
                 NetAssetValueMaxDrawdown = 1e-10;
 
+                // reset instruments, positions, orders
+                // this is also done at the and of SimTimes, to free memory
+                // we might find some data here, if we exited SimTimes with
+                // an exception
+                // TODO: should we use final {} to fix this?
+                _instruments.Clear();
+                Positions.Clear();
+                //PendingOrders.Clear(); // must not do this, initial deposit is pending!
+
+                SimTime.Clear();
+
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
@@ -382,14 +396,17 @@ namespace TuringTrader.Simulator
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
-                    // handle instrument expiry
-                    IEnumerable<Instrument> instrumentsToExpire = Instruments
-                        .Where(i => !i.IsOption
-                            && i.Time[0] < SimTime[5]
-                            && i.Position != 0);
+                    // handle instrument de-listing
+                    IEnumerable<Instrument> instrumentsToDelist = Instruments
+                        .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
+                        .ToList();
 
-                    foreach (Instrument instr in instrumentsToExpire)
-                        ExpireInstrument(instr);
+                    IEnumerable<Instrument> optionsToDelist = Instruments
+                        .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
+                        .ToList();
+
+                    foreach (Instrument instr in instrumentsToDelist.Concat(optionsToDelist))
+                        DelistInstrument(instr);
 
                     // update net asset value
                     NetAssetValue.Value = CalcNetAssetValue();
