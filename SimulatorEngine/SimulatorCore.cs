@@ -238,7 +238,23 @@ namespace TuringTrader.Simulator
             NetAssetValue.Value = 0.0;
         }
         #endregion
+        #region public void CloneSetup()
+        /// <summary>
+        /// Clone simulator core setup: simulator time frame, data sources,
+        /// commission settings.
+        /// </summary>
+        public void CloneSetup(SimulatorCore copyFrom)
+        {
+            WarmupStartTime = copyFrom.WarmupStartTime;
+            StartTime = copyFrom.StartTime;
+            EndTime = copyFrom.EndTime;
 
+            CommissionPerShare = copyFrom.CommissionPerShare;
+
+            foreach (DataSource dataSource in copyFrom._dataSources)
+                AddDataSource(dataSource);
+        }
+        #endregion
         #region public string Name
         /// <summary>
         /// Return class type name. This method will return the name of the

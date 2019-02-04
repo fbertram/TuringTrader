@@ -55,8 +55,8 @@ namespace TuringTrader.Simulator
 
                     foreach (var simTime in SimTimes)
                     {
-                        Instrument underlying = FindInstrument(UNDERLYING_NICK);
-                        Instrument volatility = FindInstrument(VOLATILITY_NICK);
+                        ITimeSeries<double> underlying = FindInstrument(UNDERLYING_NICK).Close;
+                        ITimeSeries<double> volatility = FindInstrument(VOLATILITY_NICK).Close.Divide(100.0);
 
                         DateTime previousFriday = SimTime[0]
                             - TimeSpan.FromDays((int)SimTime[0].DayOfWeek + 2);
@@ -64,23 +64,28 @@ namespace TuringTrader.Simulator
                         for (int weeks = 1; weeks < 4 * 4; weeks++)
                         {
                             DateTime expiry = previousFriday + TimeSpan.FromDays(weeks * 7);
+                            double T = (expiry - SimTime[0].Date).TotalDays / 365.25;
 
-                            int lowStrike = 5 * (int)Math.Round(underlying.Close[0] * 0.80 / 5.0);
-                            int highStrike = 5 * (int)Math.Round(underlying.Close[0] * 1.20 / 5.0);
+                            int lowStrike = 5 * (int)Math.Round(underlying[0] * 0.80 / 5.0);
+                            int highStrike = 5 * (int)Math.Round(underlying[0] * 1.20 / 5.0);
 
                             for (int strike = lowStrike; strike <= highStrike; strike += 5)
                             {
-                                for (int putCall = 0; putCall < 2; putCall++)
+                                for (int putCall = 0; putCall < 2; putCall++) // 0 = put, 1 = call
                                 {
-                                    double T = (expiry - SimTime[0].Date).TotalDays / 365.25;
+                                    double z = (strike - underlying[0]) 
+                                        / (Math.Sqrt(T) * underlying[0] * volatility[0]);
+
+                                    double vol = volatility[0] * (1.0 + 0.30 * Math.Abs(z));
+
                                     double price = OptionSupport.GBlackScholes(
                                         putCall == 0 ? false : true,
-                                        underlying.Close[0],
+                                        underlying[0],
                                         strike,
                                         T,
                                         0.0, // risk-free rate
                                         0.0, // cost-of-carry rate
-                                        volatility.Close[0] / 100.0 * 1.10);
+                                        vol);
 
                                     Bar bar = new Bar(
                                         "SPX", //symbol,

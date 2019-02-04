@@ -9,6 +9,10 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#define USE_FAKE_QUOTES
+// if this switch is defined, we simulate using fake quotes,
+// created from SPX and VIX using the Black-Scholes model.
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -28,9 +32,12 @@ namespace TuringTrader.Demos
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly string _underlyingNickname = "^SPX.index";
-        //private readonly string _optionsNickname = "^SPX.Options";
-        //private readonly string _optionsNickname = "^SPX.Weekly.Options";
+#if USE_FAKE_QUOTES
         private readonly string _optionsNickname = "^SPX.Fake.Options";
+#else
+        //private readonly string _optionsNickname = "^SPX.Options";
+        private readonly string _optionsNickname = "^SPX.Weekly.Options";
+#endif
         private readonly double _regTMarginToUse = 0.8;
         private readonly double _initialCash = 1e6;
         private double? _initialUnderlyingPrice = null;
