@@ -238,12 +238,12 @@ namespace TuringTrader.Simulator
             NetAssetValue.Value = 0.0;
         }
         #endregion
-        #region public void CloneSetup()
+        #region protected void CloneSimSetup()
         /// <summary>
         /// Clone simulator core setup: simulator time frame, data sources,
         /// commission settings.
         /// </summary>
-        public void CloneSetup(SimulatorCore copyFrom)
+        protected void CloneSimSetup(SimulatorCore copyFrom)
         {
             WarmupStartTime = copyFrom.WarmupStartTime;
             StartTime = copyFrom.StartTime;
@@ -447,7 +447,7 @@ namespace TuringTrader.Simulator
                 _instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
-                //DataSources.Clear();
+                SimTime.Clear();
 
                 yield break;
             }
@@ -555,12 +555,19 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public List<Order> PendingOrders
+        #region public void QueueOrder(Order order)
         /// <summary>
-        /// List of all currently pending orders.
+        /// Queue order ticket for execution
         /// </summary>
-        public List<Order> PendingOrders = new List<Order>();
+        /// <param name="order"></param>
+        public void QueueOrder(Order order)
+        {
+            order.QueueTime = SimTime.BarsAvailable > 0
+                ? SimTime[0] : default(DateTime);
+            PendingOrders.Add(order);
+        }
         #endregion
+        public List<Order> PendingOrders = new List<Order>();
         #region public Dictionary<Instrument, int> Positions
         /// <summary>
         /// Collection of all instrument objects with currently open positions.
@@ -596,7 +603,7 @@ namespace TuringTrader.Simulator
                     Price = amount,
                 };
 
-                PendingOrders.Add(order);
+                QueueOrder(order);
             }
         }
         #endregion
@@ -620,7 +627,7 @@ namespace TuringTrader.Simulator
                     Price = amount,
                 };
 
-                PendingOrders.Add(order);
+                QueueOrder(order);
             }
         }
         #endregion

@@ -22,7 +22,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Antonacci_DualMomentumInvesting : Algorithm
+    public class Antonacci_DualMomentumInvesting : Algorithm
     {
         #region internal data
         private const double _initialFunds = 100000;

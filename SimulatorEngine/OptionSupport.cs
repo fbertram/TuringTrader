@@ -329,6 +329,7 @@ namespace TuringTrader.Simulator
 
             // Manaster and Koehler seed value (vi)
             double vi = Math.Sqrt(Math.Abs(Math.Log(S / X) + r * T) * 2 / T);
+            vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
             double ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
             double vegai = GVega(S, X, T, r, b, vi);
             double minDiff = Math.Abs(cm - ci);
@@ -336,6 +337,7 @@ namespace TuringTrader.Simulator
             while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff)
             {
                 vi = vi - (ci - cm) / vegai;
+                vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
                 ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
                 vegai = GVega(S, X, T, r, b, vi);
                 minDiff = Math.Abs(cm - ci);

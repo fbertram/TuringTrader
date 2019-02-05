@@ -20,7 +20,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Faber_IvyPortfolio : Algorithm
+    public class Faber_IvyPortfolio : Algorithm
     {
         #region private data
         private const double _initialFunds = 100000;

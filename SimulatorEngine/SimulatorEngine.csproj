@@ -84,7 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AfterTax.cs" />
+    <Compile Include="LogAnalysis.cs" />
     <Compile Include="Algorithm.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="BrokerClientIB.cs" />

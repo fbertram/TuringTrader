@@ -22,7 +22,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Livingston_MuscularPortfolios : Algorithm
+    public class Livingston_MuscularPortfolios : Algorithm
     {
         #region internal data
         private const double _initialFunds = 100000;
