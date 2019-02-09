@@ -4,7 +4,7 @@
 // Description: option support functionality
 // History:     2019i29, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2017-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
@@ -158,6 +158,16 @@ namespace TuringTrader.Simulator
         /// <returns></returns>
         public static double GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
         {
+            // some additions to make Espen Gaarder Haug's code more robust
+            if (T <= 0.0)
+                return CallPutFlag
+                    ? Math.Max(S - X, 0.0)  // call
+                    : Math.Max(X - S, 0.0); // put
+            else
+                return _GBlackScholes(CallPutFlag, S, X, T, r, b, v);
+        }
+        private static double _GBlackScholes(bool CallPutFlag, double S, double X, double T, double r, double b, double v)
+        {
             /*
                 '//  The generalized Black and Scholes formula
                 Public Function GBlackScholes(CallPutFlag As String, S As Double, x _
@@ -301,6 +311,33 @@ namespace TuringTrader.Simulator
 
         #region private static double GImpliedVolatility(bool CallPutFlag, double S, double X, double T, double r, double b, double cm, double epsilon)
         private static double GImpliedVolatility(bool CallPutFlag, double S, double X, double T, double r, double b, double cm, double epsilon)
+        {
+            // some additions to make Espen Gaarder Haug's code more robust
+            // use put-call parity to convert ITM options to OTM
+            // this helps making sure the calculation of implied volatility
+            // converges, by enforcing a positive value for cm2
+
+            double minValue = 0.005;
+
+            if (CallPutFlag && X < S)
+            {
+                // ITM call => OTM put
+                double cm2 = Math.Max(minValue, cm - S + X * Math.Exp(-r * T));
+                return _GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
+            }
+            else if (!CallPutFlag && X > S)
+            {
+                // ITM put => OTM call
+                double cm2 = Math.Max(minValue, cm + S - X * Math.Exp(-r * T));
+                return _GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
+            }
+            else
+            {
+                // OTM put or call => as is
+                return _GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
+            }
+        }
+        private static double _GImpliedVolatility(bool CallPutFlag, double S, double X, double T, double r, double b, double cm, double epsilon)
         {
             /*
                 Public Function GImpliedVolatilityNR(CallPutFlag As String, S As Double, x _
@@ -465,37 +502,98 @@ namespace TuringTrader.Simulator
             double cm = 0.5 * (contract.Bid[0] + contract.Ask[0]);
             double epsilon = 0.001;
 
-#if false
             double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
 
             return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
-#else
-            // use put-call parity to convert ITM options to OTM
-            // this helps making sure the calculation of implied volatility
-            // converges, by enforcing a positive value for cm2
-            if (CallPutFlag && X < S)
-            {
-                // ITM call
-                double cm2 = Math.Max(0.005, cm - S + X * Math.Exp(-r * T));
-                double volatility = GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
-                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
-            }
-            else if (!CallPutFlag && X > S)
-            {
-                // ITM put
-                double cm2 = Math.Max(0.005, cm + S - X * Math.Exp(-r * T));
-                double volatility = GImpliedVolatility(!CallPutFlag, S, X, T, r, b, cm2, epsilon);
-                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
-            }
-            else
-            {
-                // OTM put or call
-                double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
-                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
-            }
-#endif
         }
-#endregion
+        #endregion
+
+        #region public class RiskGraph
+        /// <summary>
+        /// Class to calculate the risk graph for option strategies.
+        /// </summary>
+        public class RiskGraph
+        {
+            #region internal stuff
+            private Dictionary<Instrument, OptionPriceVolGreeks> _greeks = new Dictionary<Instrument, OptionPriceVolGreeks>();
+            private double _riskFreeRate;
+            private double _todaysTrueValue;
+
+            private double GetTrueValue(Instrument instrument)
+            {
+                double price = instrument.HasBidAsk
+                    ? 0.5 * (instrument.Bid[0] + instrument.Ask[0])
+                    : instrument.Close[0];
+
+                return instrument.IsOption
+                    ? 100.0 * price
+                    : price;
+            }
+
+            private double GetHypotheticalValue(Instrument instrument, double hypotheticalUnderlyingPrice, DateTime date)
+            {
+                if (instrument.IsOption)
+                {
+                    double r = _riskFreeRate;
+                    double q = 0.0; // dividend yield
+                    double b = r - q;
+
+                    return 100.0 * GBlackScholes(
+                        !instrument.OptionIsPut,
+                        hypotheticalUnderlyingPrice,
+                        instrument.OptionStrike,
+                        (instrument.OptionExpiry - date).TotalDays / 365.25,
+                        r,
+                        b,
+                        _greeks[instrument].Volatility);          
+                }
+                else
+                {
+                    return hypotheticalUnderlyingPrice;
+                }
+            }
+            #endregion
+
+            #region public Dictionary<Instrument, int> Positions
+            /// <summary>
+            /// Dictionary holding the positions for this risk graph
+            /// </summary>
+            public Dictionary<Instrument, int> Positions = new Dictionary<Instrument, int>();
+            #endregion
+            #region public void Calc(double riskFreeRate)
+            /// <summary>
+            /// Calculate option greeks, set reference value.
+            /// </summary>
+            /// <param name="riskFreeRate"></param>
+            public void Calc(double riskFreeRate)
+            {
+                _riskFreeRate = riskFreeRate;
+
+                foreach (Instrument i in Positions.Keys)
+                    if (i.IsOption)
+                        _greeks[i] = i.BlackScholesImplied(_riskFreeRate);
+
+                _todaysTrueValue = Positions.Keys
+                    .Sum(p => Positions[p] * GetTrueValue(p));
+            }
+            #endregion
+            #region public double PnL(double hypotheticalUnderlyingPrice, DateTime date)
+            /// <summary>
+            /// Return profit & loss for hypothetical underlying price and target date
+            /// </summary>
+            /// <param name="hypotheticalUnderlyingPrice"></param>
+            /// <param name="date"></param>
+            /// <returns></returns>
+            public double PnL(double hypotheticalUnderlyingPrice, DateTime date)
+            {
+                double hypotheticalValue = Positions.Keys
+                    .Sum(p => Positions[p]
+                        * GetHypotheticalValue(p, hypotheticalUnderlyingPrice, date));
+                return hypotheticalValue - _todaysTrueValue;
+            }
+            #endregion
+        }
+        #endregion
     }
 }
 
