@@ -579,7 +579,7 @@ namespace TuringTrader.Simulator
             #endregion
             #region public double PnL(double hypotheticalUnderlyingPrice, DateTime date)
             /// <summary>
-            /// Return profit & loss for hypothetical underlying price and target date
+            /// Return profit and loss for hypothetical underlying price and target date
             /// </summary>
             /// <param name="hypotheticalUnderlyingPrice"></param>
             /// <param name="date"></param>

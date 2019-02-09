@@ -103,6 +103,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public void Clear()
+        /// <summary>
+        /// Clear contents of time series.
+        /// </summary>
         public void Clear()
         {
             _newestBar = -1;

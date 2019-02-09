@@ -135,7 +135,7 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
         /// <returns>variance as time series</returns>
-        public static FunctorSemiDeviation SemiDeviation(this ITimeSeries<double> series, int n = 10)
+        public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10)
         {
             var functor = Cache<FunctorSemiDeviation>.GetData(
                     Cache.UniqueId(series.GetHashCode(), n),
@@ -146,7 +146,28 @@ namespace TuringTrader.Simulator
             return functor;
         }
 
-        public class FunctorSemiDeviation
+        /// <summary>
+        /// Result for semi-deviation
+        /// </summary>
+        public class SemiDeviationResult
+        {
+            /// <summary>
+            /// average of time series
+            /// </summary>
+            public TimeSeries<double> Average = new TimeSeries<double>();
+
+            /// <summary>
+            /// standard deviation to the upside
+            /// </summary>
+            public TimeSeries<double> Upside = new TimeSeries<double>();
+
+            /// <summary>
+            /// standard deviation to the downside
+            /// </summary>
+            public TimeSeries<double> Downside = new TimeSeries<double>();
+        }
+
+        private class FunctorSemiDeviation : SemiDeviationResult
         {
             public readonly ITimeSeries<double> Series;
             public readonly int N;
@@ -155,10 +176,6 @@ namespace TuringTrader.Simulator
             private double _average;
             private double _varianceUpside;
             private double _varianceDownside;
-
-            public TimeSeries<double> Average = new TimeSeries<double>();
-            public TimeSeries<double> Upside = new TimeSeries<double>();
-            public TimeSeries<double> Downside = new TimeSeries<double>();
 
             public FunctorSemiDeviation(ITimeSeries<double> series, int n)
             {

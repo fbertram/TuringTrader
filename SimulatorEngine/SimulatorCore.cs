@@ -567,7 +567,12 @@ namespace TuringTrader.Simulator
             PendingOrders.Add(order);
         }
         #endregion
-        public List<Order> PendingOrders = new List<Order>();
+        #region public List<Order> PendingOrders
+        /// <summary>
+        /// List of pending orders.
+        /// </summary>
+        private List<Order> PendingOrders = new List<Order>();
+        #endregion
         #region public Dictionary<Instrument, int> Positions
         /// <summary>
         /// Collection of all instrument objects with currently open positions.
