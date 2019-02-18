@@ -11,6 +11,9 @@
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
+#define MAMA_BEAR
+//#define PAPA_BEAR
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -31,7 +34,7 @@ namespace TuringTrader.BooksAndPubs
         private Plotter _plotter = new Plotter();
         #endregion
         #region ETF menu & momentum calculation
-#if true
+#if MAMA_BEAR
         #region Mama Bear
         private string _name = "Mama Bear";
 
@@ -70,7 +73,7 @@ namespace TuringTrader.BooksAndPubs
         private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
         #endregion
 #endif
-#if false
+#if PAPAA_BEAR
         #region Papa Bear
         private string _name = "Papa Bear";
 
