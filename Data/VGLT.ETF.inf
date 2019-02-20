@@ -1,0 +1,15 @@
+name=Vanguard Long-Term Govt. ETF
+dataPath=Data\VGLT.ETF
+ticker=VGLT
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VGLT
+symbolStooq=vglt.us
+symbolYahoo=VGLT
+symbolNorgate=VGLT
+dataUpdater=yahoo
