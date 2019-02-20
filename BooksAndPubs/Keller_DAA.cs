@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader Demos
 // Name:        Keller_DAA
 // Description: Strategy, as published in Wouter J. Keller and Jan Willem Keuning's
 //              paper 'Breadth Momentum and the Canary Universe:
@@ -224,7 +224,7 @@ namespace BooksAndPubs
             AddDataSource(_spx);
 
             Deposit(_initialFunds);
-            CommissionPerShare = 0.015;
+            //CommissionPerShare = 0.015; // paper does not consider trade commissions
 
             _plotter.Clear();
 
