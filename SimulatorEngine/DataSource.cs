@@ -91,7 +91,8 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                return Info.ContainsKey(DataSourceValue.optionExpiration);
+                //return Info.ContainsKey(DataSourceValue.optionExpiration);
+                return Info.ContainsKey(DataSourceValue.optionUnderlying);
             }
         }
         #endregion
@@ -244,6 +245,11 @@ namespace TuringTrader.Simulator
             && infos[DataSourceValue.dataSource].ToLower().Contains("norgate"))
             {
                 return new DataSourceNorgate(infos);
+            }
+            else if (infos.ContainsKey(DataSourceValue.dataSource)
+            && infos[DataSourceValue.dataSource].ToLower().Contains("fakeoptions"))
+            {
+                return new DataSourceFakeOptions(infos);
             }
             else
             {

@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogAnalysis.cs" />
     <Compile Include="Algorithm.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="BrokerClientIB.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="DataSource.cs" />
     <Compile Include="DataSourceCsv.cs" />
     <Compile Include="DataSourceNorgate.cs" />
+    <Compile Include="DataSourceFakeOptions.cs" />
     <Compile Include="DataSourceValue.cs" />
     <Compile Include="DataUpdater.cs" />
     <Compile Include="DataUpdaterIBOptions.cs" />

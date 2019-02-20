@@ -98,6 +98,16 @@ namespace TuringTrader.Simulator
         {
             MaxBarsBack = maxBarsBack;
             _barData = new T[MaxBarsBack];
+
+            Clear();
+        }
+        #endregion
+        #region public void Clear()
+        /// <summary>
+        /// Clear contents of time series.
+        /// </summary>
+        public void Clear()
+        {
             _newestBar = -1;
             BarsAvailable = 0;
         }

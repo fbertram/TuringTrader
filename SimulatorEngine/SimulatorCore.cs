@@ -155,37 +155,42 @@ namespace TuringTrader.Simulator
             ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
-        private void ExpireOption(Instrument instr)
+        private void ExpireOption(Instrument instrument)
         {
-            Instrument underlying = _instruments[instr.OptionUnderlying];
+            Instrument underlying = _instruments[instrument.OptionUnderlying];
             double price = underlying.Close[1];
 
             // create order ticket
             Order ticket = new Order()
             {
-                Instrument = instr,
-                Quantity = -Positions[instr],
+                Instrument = instrument,
+                Quantity = -Positions[instrument],
                 Type = OrderType.optionExpiryClose,
-                Price = instr.OptionIsPut
-                    ? Math.Max(0.00, instr.OptionStrike - price)
-                    : Math.Max(0.00, price - instr.OptionStrike),
+                Price = instrument.OptionIsPut
+                    ? Math.Max(0.00, instrument.OptionStrike - price)
+                    : Math.Max(0.00, price - instrument.OptionStrike),
             };
 
             // force execution
             ExecOrder(ticket);
         }
-        private void ExpireInstrument(Instrument instrument)
+        private void DelistInstrument(Instrument instrument)
         {
-            // create order ticket
-            Order ticket = new Order()
+            if (instrument.Position != 0)
             {
-                Instrument = instrument,
-                Quantity = -instrument.Position,
-                Type = OrderType.stockInactiveClose,
-            };
+                // create order ticket
+                Order ticket = new Order()
+                {
+                    Instrument = instrument,
+                    Quantity = -instrument.Position,
+                    Type = OrderType.stockInactiveClose,
+                };
 
-            // force execution
-            ExecOrder(ticket);
+                // force execution
+                ExecOrder(ticket);
+            }
+
+            _instruments.Remove(instrument.Symbol);
         }
         private double CalcNetAssetValue()
         {
@@ -211,8 +216,6 @@ namespace TuringTrader.Simulator
                     : Positions[instrument];
 
                 nav += quantity * price;
-
-                // TODO: close any stale positions
             }
 
             return nav;
@@ -235,7 +238,23 @@ namespace TuringTrader.Simulator
             NetAssetValue.Value = 0.0;
         }
         #endregion
+        #region protected void CloneSimSetup()
+        /// <summary>
+        /// Clone simulator core setup: simulator time frame, data sources,
+        /// commission settings.
+        /// </summary>
+        protected void CloneSimSetup(SimulatorCore copyFrom)
+        {
+            WarmupStartTime = copyFrom.WarmupStartTime;
+            StartTime = copyFrom.StartTime;
+            EndTime = copyFrom.EndTime;
 
+            CommissionPerShare = copyFrom.CommissionPerShare;
+
+            foreach (DataSource dataSource in copyFrom._dataSources)
+                AddDataSource(dataSource);
+        }
+        #endregion
         #region public string Name
         /// <summary>
         /// Return class type name. This method will return the name of the
@@ -335,6 +354,17 @@ namespace TuringTrader.Simulator
                 NetAssetValueHighestHigh = 0.0;
                 NetAssetValueMaxDrawdown = 1e-10;
 
+                // reset instruments, positions, orders
+                // this is also done at the and of SimTimes, to free memory
+                // we might find some data here, if we exited SimTimes with
+                // an exception
+                // TODO: should we use final {} to fix this?
+                _instruments.Clear();
+                Positions.Clear();
+                //PendingOrders.Clear(); // must not do this, initial deposit is pending!
+
+                SimTime.Clear();
+
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
@@ -370,9 +400,9 @@ namespace TuringTrader.Simulator
                     }
 
                     // execute orders
-                    foreach (Order order in PendingOrders)
+                    foreach (Order order in _pendingOrders)
                         ExecOrder(order);
-                    PendingOrders.Clear();
+                    _pendingOrders.Clear();
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
@@ -382,13 +412,17 @@ namespace TuringTrader.Simulator
                     foreach (Instrument instr in optionsToExpire)
                         ExpireOption(instr);
 
-                    // handle instrument expiry
-                    IEnumerable<Instrument> instrumentsToExpire = Instruments
-                        .Where(i => i.Time[0] < SimTime[5]
-                            && i.Position != 0);
+                    // handle instrument de-listing
+                    IEnumerable<Instrument> instrumentsToDelist = Instruments
+                        .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
+                        .ToList();
 
-                    foreach (Instrument instr in instrumentsToExpire)
-                        ExpireInstrument(instr);
+                    IEnumerable<Instrument> optionsToDelist = Instruments
+                        .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
+                        .ToList();
+
+                    foreach (Instrument instr in instrumentsToDelist.Concat(optionsToDelist))
+                        DelistInstrument(instr);
 
                     // update net asset value
                     NetAssetValue.Value = CalcNetAssetValue();
@@ -412,8 +446,8 @@ namespace TuringTrader.Simulator
                 //----- attempt to free up resources
                 _instruments.Clear();
                 Positions.Clear();
-                PendingOrders.Clear();
-                //DataSources.Clear();
+                _pendingOrders.Clear();
+                SimTime.Clear();
 
                 yield break;
             }
@@ -447,6 +481,19 @@ namespace TuringTrader.Simulator
                     return;
 
             _dataSources.Add(DataSource.New(nickname));
+        }
+        #endregion
+        #region protected void AddDataSource(DataSource dataSource)
+        /// <summary>
+        /// Add data source. If the data source already exists, the call is ignored.
+        /// </summary>
+        /// <param name="dataSource">new data source</param>
+        protected void AddDataSource(DataSource dataSource)
+        {
+            if (_dataSources.Contains(dataSource))
+                return;
+
+            _dataSources.Add(dataSource);
         }
         #endregion
         #region public IEnumerable<Instrument> Instruments
@@ -508,11 +555,28 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region public void QueueOrder(Order order)
+        /// <summary>
+        /// Queue order ticket for execution
+        /// </summary>
+        /// <param name="order"></param>
+        public void QueueOrder(Order order)
+        {
+            order.QueueTime = SimTime.BarsAvailable > 0
+                ? SimTime[0] : default(DateTime);
+            _pendingOrders.Add(order);
+        }
+        #endregion
         #region public List<Order> PendingOrders
         /// <summary>
-        /// List of all currently pending orders.
+        /// List of pending orders.
         /// </summary>
-        public List<Order> PendingOrders = new List<Order>();
+        public List<Order> PendingOrders
+        {
+            get;
+            private set;
+        }
+        private List<Order> _pendingOrders = new List<Order>();
         #endregion
         #region public Dictionary<Instrument, int> Positions
         /// <summary>
@@ -549,7 +613,7 @@ namespace TuringTrader.Simulator
                     Price = amount,
                 };
 
-                PendingOrders.Add(order);
+                QueueOrder(order);
             }
         }
         #endregion
@@ -573,7 +637,7 @@ namespace TuringTrader.Simulator
                     Price = amount,
                 };
 
-                PendingOrders.Add(order);
+                QueueOrder(order);
             }
         }
         #endregion

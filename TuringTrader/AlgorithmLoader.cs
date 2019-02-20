@@ -49,7 +49,9 @@ namespace TuringTrader
 
                 foreach (Type type in types)
                 {
-                    if (!type.IsAbstract && type.IsSubclassOf(typeof(Algorithm)))
+                    if (!type.IsAbstract 
+                    && type.IsPublic
+                    && type.IsSubclassOf(typeof(Algorithm)))
                         yield return type;
                 }
             }

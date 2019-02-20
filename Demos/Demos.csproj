@@ -47,7 +47,6 @@
     <Compile Include="Demo04_Options.cs" />
     <Compile Include="Demo05_Optimizer.cs" />
     <Compile Include="Demo06_OrderTypes.cs" />
-    <Compile Include="Demo07_R.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

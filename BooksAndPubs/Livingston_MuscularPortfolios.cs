@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader Demos
 // Name:        Livingston_MuscularPortfolios
 // Description: 'Mama Bear' and 'Papa Bear' strategies, as published in Brian Livingston's book
 //              'Muscular Portfolios'.
@@ -10,6 +10,9 @@
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
+
+#define MAMA_BEAR
+//#define PAPA_BEAR
 
 #region libraries
 using System;
@@ -22,7 +25,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Livingston_MuscularPortfolios : Algorithm
+    public class Livingston_MuscularPortfolios : Algorithm
     {
         #region internal data
         private const double _initialFunds = 100000;
@@ -31,7 +34,7 @@ namespace TuringTrader.BooksAndPubs
         private Plotter _plotter = new Plotter();
         #endregion
         #region ETF menu & momentum calculation
-#if true
+#if MAMA_BEAR
         #region Mama Bear
         private string _name = "Mama Bear";
 
@@ -70,7 +73,7 @@ namespace TuringTrader.BooksAndPubs
         private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
         #endregion
 #endif
-#if false
+#if PAPAA_BEAR
         #region Papa Bear
         private string _name = "Papa Bear";
 

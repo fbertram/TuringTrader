@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader Demos
 // Name:        Faber_IvyPortfolio
 // Description: Variuous strategies as published in Mebane Faber's book
 //              'The Ivy Portfolio'.
@@ -8,6 +8,11 @@
 // Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 //==============================================================================
+
+//#define IVY_5_TIMING
+#define IVY_5_ROTATION
+//#define IVY_10_TIMING
+//#define IVY_10_ROTATION
 
 #region libraries
 using System;
@@ -20,7 +25,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Faber_IvyPortfolio : Algorithm
+    public class Faber_IvyPortfolio : Algorithm
     {
         #region private data
         private const double _initialFunds = 100000;
@@ -36,7 +41,7 @@ namespace TuringTrader.BooksAndPubs
             public List<string> assets;
         }
 
-        #if false
+        #if IVY_5_TIMING
         #region  Ivy-5 portfolio: timing system
         private static string _name = "Ivy-5 Timing";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
@@ -79,7 +84,7 @@ namespace TuringTrader.BooksAndPubs
         };
         #endregion
         #endif
-        #if true
+        #if IVY_5_ROTATION
         #region Ivy-5 portfolio: rotation system
         private static string _name = "Ivy-5 Rotation";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
@@ -116,7 +121,7 @@ namespace TuringTrader.BooksAndPubs
         };
         #endregion
         #endif
-        #if false
+        #if IVY_10_TIMING
         #region Ivy-10 portfolio: timing system
         private static string _name = "Ivy-10 Timing";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
@@ -177,7 +182,7 @@ namespace TuringTrader.BooksAndPubs
         };
         #endregion
         #endif
-        #if false
+        #if IVY_10_ROTATION
         #region Ivy-10 portfolio: rotation system
         private static string _name = "Ivy-10 Rotation";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007

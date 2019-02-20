@@ -384,7 +384,7 @@ namespace TuringTrader.Simulator
                     Price = price,
                 };
 
-                Simulator.PendingOrders.Add(order);
+                Simulator.QueueOrder(order);
                 return order;
             }
             return null;

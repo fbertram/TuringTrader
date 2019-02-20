@@ -85,6 +85,11 @@ namespace TuringTrader.Simulator
         /// user-defined comment
         /// </summary>
         public string Comment;
+
+        /// <summary>
+        /// time stamp of queuing this order
+        /// </summary>
+        public DateTime QueueTime;
     }
 }
 

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader Demos
 // Name:        Antonacci_DualMomentumInvesting
 // Description: Strategy, as published in Gary Antonacci's book
 //              'Dual Momentum Investing'.
@@ -22,7 +22,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    class Antonacci_DualMomentumInvesting : Algorithm
+    public class Antonacci_DualMomentumInvesting : Algorithm
     {
         #region internal data
         private const double _initialFunds = 100000;
