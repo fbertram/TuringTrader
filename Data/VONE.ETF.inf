@@ -1,0 +1,15 @@
+name=Vanguard Russell 1000 ETF
+dataPath=Data\VONE.ETF
+ticker=VONE
+date={1}
+time=16:00
+open={2}
+high={3}
+low={4}
+close={5}
+volume={6}
+symbolIqfeed=VONE
+symbolStooq=vone.us
+symbolYahoo=VONE
+symbolNorgate=VONE
+dataUpdater=yahoo

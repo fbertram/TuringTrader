@@ -1,0 +1,13 @@
+name=iShares 7-10 Year Treasury Bond ETF
+dataPath=Data\IEF.ETF
+ticker=IEF
+date={1:MM/dd/yyyy}
+time=16:00
+open={2:F2}
+high={3:F2}
+low={4:F2}
+close={5:F2}
+volume={6}
+symbolNorgate=IEF
+symbolYahoo=IEF
+dataUpdater=yahoo
