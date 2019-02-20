@@ -9,7 +9,7 @@
 //==============================================================================
 /*
     Developed by Tim Pierson and Dave Thomas,
-    published and discussed on Aeromir.com
+    published and discussed on https://aeromir.com/
 
     SPX Parking Trade
     Entry
@@ -27,15 +27,15 @@
         * If you go into expiration week (can happen if it never exceeds $3.00)
             - Close or roll no matter what on last trading day
             - Roll when price is within one-day SD of the shorts
-
 */
 //==============================================================================
 
 #define FAKE_DATA
-// run on fake data, instead of actual quotes
+// run on fake data, instead of actual quotes. comment out to use actual quotes.
 
 //#define FUB_IMPROVEMENTS
-// enable improvements made by FUB
+// enable improvements made by FUB,
+// some slight modifications/ optimizations to the original rules and settings
 
 #region libraries
 using System;
@@ -95,17 +95,6 @@ namespace TuringTrader.BooksAndPubs
 #endif
         #endregion
         #region private DebugPlot()
-        private void PlotOptionPrice(string ticker)
-        {
-            Instrument i = OptionChain(OPTION_NICK)
-                .Where(o => o.Symbol == ticker)
-                .FirstOrDefault();
-
-            if (i != default(Instrument))
-            {
-                _plotter.Plot(ticker, i.Bid[0]);
-            }
-        }
         private void DebugPlot()
         {
             if (TradingDays <= 0 || IsOptimizing)
@@ -231,7 +220,7 @@ namespace TuringTrader.BooksAndPubs
             double priceToClose = shortLeg.Ask[0] - longLeg.Bid[0];
             double dte = (expiry - SimTime[0]).TotalDays;
 
-            // close the position
+            // close the position, as required
 #if FUB_IMPROVEMENTS
             double profitTarget = CLOSE_PROFIT_TARGET / 100.0 * SPX_SCALE;
             double stopLoss = CLOSE_STOP_LOSS / 100.0 * SPX_SCALE;
@@ -272,9 +261,6 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             // set simulation time frame
-            //WarmupStartTime = DateTime.Parse("06/01/2006");
-            //StartTime = DateTime.Parse("02/01/2007");
-            //EndTime = DateTime.Parse("11/30/2018, 4pm");
             WarmupStartTime = DateTime.Parse("06/01/2011");
             StartTime = DateTime.Parse("01/01/2012");
             EndTime = DateTime.Parse("11/30/2018, 4pm");
@@ -287,8 +273,7 @@ namespace TuringTrader.BooksAndPubs
             Deposit(INITIAL_CASH);
 
             // add instruments
-            // the underlying must be added explicitly,
-            // as the simulation engine requires it
+            // the underlying must be added explicitly, for the simulator to work
             AddDataSource(UNDERLYING_NICK);
             AddDataSource(OPTION_NICK);
 
@@ -303,7 +288,6 @@ namespace TuringTrader.BooksAndPubs
             foreach (DateTime simTime in SimTimes)
             {
                 // find the underlying instrument
-                // we could also find the underlying from the option chain
                 if (_underlyingInstrument == null)
                     _underlyingInstrument = FindInstrument(UNDERLYING_NICK);
 
@@ -332,6 +316,7 @@ namespace TuringTrader.BooksAndPubs
                     OpenParkingTrade(openExpiry);
                 }
 
+                // maintain positions daily
                 foreach (DateTime expiry in Positions.Keys.Select(i => i.OptionExpiry).Distinct())
                 {
                     MaintainParkingTrade(expiry);
@@ -342,6 +327,7 @@ namespace TuringTrader.BooksAndPubs
 
             //---------- post-processing
 
+            // poor man's sharpe ratio
             FitnessValue = (NetAssetValue[0] / INITIAL_CASH - 1.0) / NetAssetValueMaxDrawdown;
         }
         #endregion
