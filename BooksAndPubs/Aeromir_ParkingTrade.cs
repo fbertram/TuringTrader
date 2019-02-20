@@ -6,28 +6,31 @@
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
-//==============================================================================
-/*
-    Developed by Tim Pierson and Dave Thomas,
-    published and discussed on https://aeromir.com/
-
-    SPX Parking Trade
-    Entry
-        * Open a new trade once a week, preferably after a down move. If by
-          Wednesday you are not in, probably should enter it regardless of a
-          down day
-        * Sell the weekly that is approximately 30 days to expiration
-        * 20 or 25 point wide put credit spread
-        * Choose strike to get $1.00 premium, +/- 20 cents
-        * Will normally be about 100 points OTM
-    Exit
-        * Immediately after opening, place a GTC order to close for $0.20
-        * Set an alert on your trigger for recovery
-        * Expectation is 95% or more of trades are no-touch
-        * If you go into expiration week (can happen if it never exceeds $3.00)
-            - Close or roll no matter what on last trading day
-            - Roll when price is within one-day SD of the shorts
-*/
+// License:     This code is licensed under the term of the
+//              GNU Affero General Public License as published by 
+//              the Free Software Foundation, either version 3 of 
+//              the License, or (at your option) any later version.
+//              see: https://www.gnu.org/licenses/agpl-3.0.en.html
+//------------------------------------------------------------------------------
+//    Developed by Tim Pierson and Dave Thomas,
+//    published and discussed on https://aeromir.com/
+//
+//    SPX Parking Trade
+//    Entry
+//        * Open a new trade once a week, preferably after a down move. If by
+//          Wednesday you are not in, probably should enter it regardless of a
+//          down day
+//        * Sell the weekly that is approximately 30 days to expiration
+//        * 20 or 25 point wide put credit spread
+//        * Choose strike to get $1.00 premium, +/- 20 cents
+//        * Will normally be about 100 points OTM
+//    Exit
+//        * Immediately after opening, place a GTC order to close for $0.20
+//        * Set an alert on your trigger for recovery
+//        * Expectation is 95% or more of trades are no-touch
+//        * If you go into expiration week (can happen if it never exceeds $3.00)
+//            - Close or roll no matter what on last trading day
+//            - Roll when price is within one-day SD of the shorts
 //==============================================================================
 
 #define FAKE_DATA
