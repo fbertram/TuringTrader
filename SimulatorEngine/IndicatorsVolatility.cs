@@ -97,7 +97,7 @@ namespace TuringTrader.Simulator
             public readonly int N;
 
             private readonly double _alpha;
-            private double _average;
+            private double? _average = null;
             private double _variance;
 
             public FunctorStandardDeviation(ITimeSeries<double> series, int n)
@@ -114,7 +114,7 @@ namespace TuringTrader.Simulator
                 {
                     // calculate exponentially-weighted mean and variance
                     // see Tony Finch, Incremental calculation of mean and variance
-                    double diff = Series[0] - _average;
+                    double diff = Series[0] - (double)_average;
                     double incr = _alpha * diff;
                     _average = _average + incr;
                     _variance = (1.0 - _alpha) * (_variance + diff * incr);
@@ -123,8 +123,9 @@ namespace TuringTrader.Simulator
                 }
                 catch (Exception)
                 {
-                    // we get here when we access bars too far in the past
+                    // exception thrown, when _average is null
                     _average = Series[0];
+                    _variance = 0.0;
                     Value = 0.0;
                 }
             }
@@ -177,7 +178,7 @@ namespace TuringTrader.Simulator
             public readonly int N;
 
             private readonly double _alpha;
-            private double _average;
+            private double? _average = null;
             private double _varianceUpside;
             private double _varianceDownside;
 
@@ -194,29 +195,35 @@ namespace TuringTrader.Simulator
                 {
                     // calculate exponentially-weighted mean and variance
                     // see Tony Finch, Incremental calculation of mean and variance
-                    double diff = Series[0] - _average;
+                    double diff = Series[0] - (double)_average;
                     double incr = _alpha * diff;
                     _average = _average + incr;
 
+#if false
                     // semi-variance is calculcated only across the samples above (below)
                     // the average. the other samples are ignored, not zero-padded.
                     if (diff > 0.0) _varianceUpside = (1.0 - _alpha) * (_varianceUpside + diff * incr);
                     else _varianceDownside = (1.0 - _alpha) * (_varianceDownside + diff * incr);
+#else
+                    _varianceUpside = (1.0 - _alpha) * (_varianceUpside + Math.Max(0.0, diff) * incr);
+                    _varianceDownside = (1.0 - _alpha) * (_varianceDownside + Math.Min(0.0, diff) * incr);
+#endif
 
-                    Average.Value = _average;
-                    Upside.Value = Math.Sqrt(_varianceUpside);
-                    Downside.Value = Math.Sqrt(_varianceDownside);
                 }
                 catch (Exception)
                 {
-                    // we get here when we access bars too far in the past
+                    // exception thrown, if _average is null
                     _average = Series[0];
                     _varianceUpside = 0.0;
                     _varianceDownside = 0.0;
                 }
+
+                Average.Value = (double)_average;
+                Upside.Value = Math.Sqrt(_varianceUpside);
+                Downside.Value = Math.Sqrt(_varianceDownside);
             }
         }
-        #endregion
+#endregion
 
         #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>

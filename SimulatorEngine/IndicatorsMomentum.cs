@@ -57,7 +57,7 @@ namespace TuringTrader.Simulator
                     ITimeSeries<double> delta = series.Subtract(series.SMA(n));
                     ITimeSeries<double> meanDeviation = delta.AbsValue().SMA(n);
 
-                    return delta[0] / (0.15 * meanDeviation[0]);
+                    return delta[0] / Math.Max(1e-10, 0.015 * meanDeviation[0]);
                 },
                 0.5,
                 series.GetHashCode(), n);

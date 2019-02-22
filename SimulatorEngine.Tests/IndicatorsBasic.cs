@@ -107,6 +107,84 @@ namespace SimulatorEngine.Tests
             }
         }
         #endregion
+        #region public void Test_Normalize()
+        [TestMethod]
+        public void Test_Normalize()
+        {
+            double[,] testVectors =
+            {
+                { 100.00000, 1.00000, 1.00000, 1.00000, 1.00000, },
+                { 105.00000, 1.02439, 1.00000, 1.00000, 1.00000, },
+                { 102.50000, 1.00000, 1.02439, 1.00000, 1.00000, },
+                { 107.50000, 1.02381, 1.00000, 1.02439, 1.00000, },
+                { 105.00000, 1.00000, 1.02381, 1.00000, 1.02439, },
+                { 110.00000, 1.02326, 1.00000, 1.02381, 1.00000, },
+                { 107.50000, 1.00000, 1.02326, 1.00000, 1.02381, },
+                { 112.50000, 1.02273, 1.00000, 1.02326, 1.00000, },
+                { 110.00000, 1.00000, 1.02273, 1.00000, 1.02326, },
+                { 115.00000, 1.02222, 1.00000, 1.02273, 1.00000, },
+            };
+
+            TimeSeries<double> stimulus = new TimeSeries<double>();
+
+            for (int row = 0; row <= testVectors.GetUpperBound(0); row++)
+            {
+                stimulus.Value = testVectors[row, 0];
+                ITimeSeries<double> response = stimulus.Normalize(3);
+                //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
+
+                for (int col = 1; col <= testVectors.GetUpperBound(1); col++)
+                {
+                    int t = col - 1;
+                    double responseValue = response[t];
+                    double expectedValue = testVectors[row, col];
+                    //Output.Write("{0:F5}, ", responseValue);
+
+                    Assert.IsTrue(Math.Abs(responseValue - expectedValue) < 1e-5);
+                }
+                //Output.WriteLine("},");
+            }
+        }
+        #endregion
+        #region public void Test_Range()
+        [TestMethod]
+        public void Test_Range()
+        {
+            double[,] testVectors =
+            {
+                { 100.00000, 0.00000, 0.00000, 0.00000, 0.00000, },
+                { 105.00000, 5.00000, 0.00000, 0.00000, 0.00000, },
+                { 102.50000, 5.00000, 5.00000, 0.00000, 0.00000, },
+                { 107.50000, 7.50000, 5.00000, 5.00000, 0.00000, },
+                { 105.00000, 5.00000, 7.50000, 5.00000, 5.00000, },
+                { 110.00000, 7.50000, 5.00000, 7.50000, 5.00000, },
+                { 107.50000, 5.00000, 7.50000, 5.00000, 7.50000, },
+                { 112.50000, 7.50000, 5.00000, 7.50000, 5.00000, },
+                { 110.00000, 5.00000, 7.50000, 5.00000, 7.50000, },
+                { 115.00000, 7.50000, 5.00000, 7.50000, 5.00000, },
+            };
+
+            TimeSeries<double> stimulus = new TimeSeries<double>();
+
+            for (int row = 0; row <= testVectors.GetUpperBound(0); row++)
+            {
+                stimulus.Value = testVectors[row, 0];
+                ITimeSeries<double> response = stimulus.Range(4);
+                //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
+
+                for (int col = 1; col <= testVectors.GetUpperBound(1); col++)
+                {
+                    int t = col - 1;
+                    double responseValue = response[t];
+                    double expectedValue = testVectors[row, col];
+                    //Output.Write("{0:F5}, ", responseValue);
+
+                    Assert.IsTrue(Math.Abs(responseValue - expectedValue) < 1e-5);
+                }
+                //Output.WriteLine("},");
+            }
+        }
+        #endregion
     }
 }
 
