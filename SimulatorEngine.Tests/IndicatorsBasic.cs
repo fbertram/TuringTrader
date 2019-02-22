@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        IndicatorsBasic
 // Description: unit test for basic indicators
 // History:     2018ixi27, FUB, created

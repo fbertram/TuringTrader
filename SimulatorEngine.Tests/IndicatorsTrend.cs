@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        IndicatorsTrend
 // Description: test trend indicators
 // History:     2018xi27, FUB, created

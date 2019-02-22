@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        TimeSeries
 // Description: unit test for time series
 // History:     2018xi27, FUB, created
