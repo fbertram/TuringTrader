@@ -79,7 +79,7 @@ namespace TuringTrader.Simulator
                 (v) =>
                 {
                     return Enumerable.Range(0, n - 1)
-                        .Sum(t => (n - t ) / sum * series[t]);
+                        .Sum(t => (n - t) / sum * series[t]);
                 },
                 series[0],
                 series.GetHashCode(), n);
