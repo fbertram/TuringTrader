@@ -50,7 +50,6 @@ namespace BooksAndPubs
         #region internal data
         private const double _initialFunds = 100000;
         private string _spx = "^SPX.Index";
-        private double? _spxInitial = null;
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & settings
@@ -219,9 +218,8 @@ namespace BooksAndPubs
         {
             //----- initialization
 
-            WarmupStartTime = DateTime.Parse("01/01/2007");
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            StartTime = DateTime.Parse("01/01/1990");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
             foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))
                 AddDataSource(nick);
@@ -245,6 +243,15 @@ namespace BooksAndPubs
                             + 4.0 * (i.Close[0] / i.Close[63] - 1.0)
                             + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
                             + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
+
+                // skip if there are any missing instruments
+                // we want to make sure our strategy has all instruments available
+                bool instrumentsMissing = riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse)
+                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
+                    .Count() > 0;
+
+                if (instrumentsMissing)
+                    continue;
 
                 // find T top risky assets
                 IEnumerable<Instrument> topInstruments = Instruments
@@ -297,14 +304,10 @@ namespace BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
-
-                    _plotter.SelectChart(_name + " performance", "date");
+                    _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Cash", Instruments.Where(i => cashUniverse.Contains(i.Nickname)).Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
                 }
             }
 
@@ -342,7 +345,7 @@ namespace BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

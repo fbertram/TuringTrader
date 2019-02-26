@@ -88,14 +88,17 @@ namespace TuringTrader.BooksAndPubs
             foreach (DateTime simTime in SimTimes)
             {
                 // evaluate momentum for all known instruments
+                // it is not 100% clear, how Antonacci is weighting
+                // the 3 individual momentums
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
-                        i => 1.0 / 3.0
-                            * (i.Close[0] / i.Close[63]
-                            + i.Close[0] / i.Close[126]
-                            + i.Close[0] / i.Close[252]));
+                        i => 0.3333
+                            * (4.0 * (i.Close[0] / i.Close[63] - 1.0)
+                            + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
+                            + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
 
-                // skip if there are missing instruments
+                // skip if there are any missing instruments
+                // we want to make sure our strategy has all instruments available
                 bool instrumentsMissing = _assetClasses
                     .SelectMany(c => c)
                     .Distinct()
