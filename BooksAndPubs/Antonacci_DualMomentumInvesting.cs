@@ -31,7 +31,6 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         private const double _initialFunds = 100000;
         private string _spx = "^SPX.Index";
-        private double? _spxInitial = null;
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments
@@ -39,29 +38,29 @@ namespace TuringTrader.BooksAndPubs
         {
             //--- equity
             new HashSet<string> {
-                "VTI.ETF",   // available since 02/25/2005
-                "VEU.ETF",   // available since 03/08/2007
+                "VTI.ETF",   // Vanguard Total Stock Market Index ETF
+                "VEU.ETF",   // Vanguard FTSE All World ex US ETF
                 // could use SPY/ EFA here
-                "SHY.etf",   // available since 02/25/2005
+                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- credit
             new HashSet<string> {
-                "HYG.ETF",   // available since 04/11/2007
+                "HYG.ETF",   // iShares iBoxx High Yield Corporate Bond ETF
                 //"CIU.ETF" => changed to IGIB in 06/2018
-                "IGIB.ETF",  // available since 01/11/2007
-                "SHY.etf",   // available since 02/25/2005
+                "IGIB.ETF",  // iShares Intermediate-Term Corporate Bond ETF
+                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- real estate
             new HashSet<string> {
-                "VNQ.ETF",   // available since 02/25/2005
-                "REM.ETF",   // available since 05/04/2007
-                "SHY.etf",   // available since 02/25/2005
+                "VNQ.ETF",   // Vanguard Real Estate Index ETF
+                "REM.ETF",   // iShares Mortgage Real Estate ETF
+                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- economic stress
             new HashSet<string> {
-                "GLD.ETF",   // available since 02/25/2005
-                "TLT.ETF",   // available since 02/25/2005
-                "SHY.etf",   // available since 02/25/2005
+                "GLD.ETF",   // SPDR Gold Shares ETF
+                "TLT.ETF",   // iShares 20+ Year Treasury Bond ETF
+                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
             },
         };
         #endregion
@@ -71,9 +70,8 @@ namespace TuringTrader.BooksAndPubs
         {
             //----- initialization
 
-            WarmupStartTime = DateTime.Parse("05/04/2007");
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            StartTime = DateTime.Parse("01/01/1990");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
             AddDataSource(_spx);
             foreach (HashSet<string> assetClass in _assetClasses)
@@ -89,25 +87,26 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (DateTime simTime in SimTimes)
             {
-                // collect all of our trading instruments
-                // note that the safe instrument is duplicated
-                // in each asset class
-                List<Instrument> instruments = _assetClasses
-                    .SelectMany(s => s)
-                    .Distinct()
-                    .Select(n => FindInstrument(n))
-                    .ToList();
-
-                // evaluate instrument momentum
-                Dictionary<Instrument, double> instrumentMomentum = instruments
+                // evaluate momentum for all known instruments
+                Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
                         i => 1.0 / 3.0
                             * (i.Close[0] / i.Close[63]
                             + i.Close[0] / i.Close[126]
                             + i.Close[0] / i.Close[252]));
 
+                // skip if there are missing instruments
+                bool instrumentsMissing = _assetClasses
+                    .SelectMany(c => c)
+                    .Distinct()
+                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
+                    .Count() > 0;
+
+                if (instrumentsMissing)
+                    continue;
+
                 // create empty structure for instrument weights
-                Dictionary<Instrument, double> instrumentWeights = instruments
+                Dictionary<Instrument, double> instrumentWeights = Instruments
                     .ToDictionary(i => i, i => 0.0);
 
                 // loop through all asset classes
@@ -150,13 +149,10 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
-
-                    _plotter.SelectChart(Name + " performance", "date");
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
                 }
             }
 
@@ -182,7 +178,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }
