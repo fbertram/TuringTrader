@@ -297,7 +297,7 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
             WarmupStartTime = DateTime.Parse("01/01/2005");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
             // set account value
             Deposit(_initialFunds);
@@ -396,12 +396,10 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
 
-                    _plotter.SelectChart(Name + " performance", "date");
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Inv", instrumentEquity.Values.Sum());
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
                 }
             }
 
@@ -427,7 +425,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }
