@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Aeromir_ParkingTrade
 // Description: Aeromir.com's Parking Trade
 // History:     2019i18, FUB, created

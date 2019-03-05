@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataUpdaterStooq
 // Description: Web data updater, stooq.com
 // History:     2018x05, FUB, created

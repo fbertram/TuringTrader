@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Livingston_MuscularPortfolios
 // Description: 'Mama Bear' and 'Papa Bear' strategies, as published in Brian Livingston's book
 //              'Muscular Portfolios'.

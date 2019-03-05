@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo02_Stocks
 // Description: demonstrate simple stock trading
 // History:     2018ix15, FUB, created

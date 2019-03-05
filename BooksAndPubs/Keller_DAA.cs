@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Keller_DAA
 // Description: Strategy, as published in Wouter J. Keller and Jan Willem Keuning's
 //              paper 'Breadth Momentum and the Canary Universe:

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo01_Indicators
 // Description: demonstrate use of indicators
 // History:     2018ix15, FUB, created

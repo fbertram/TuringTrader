@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        GlobalSettings
 // Description: Global settings for simulator engine
 // History:     2018x09, FUB, created

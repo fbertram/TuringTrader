@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        TimeSeries
 // Description: time series template class
 // History:     2018ix10, FUB, created

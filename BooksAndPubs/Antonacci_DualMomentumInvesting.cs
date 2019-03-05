@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Antonacci_DualMomentumInvesting
 // Description: Strategy, as published in Gary Antonacci's book
 //              'Dual Momentum Investing'.

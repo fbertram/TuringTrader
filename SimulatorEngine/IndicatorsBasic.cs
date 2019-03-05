@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsBasic
 // Description: Collection of basic indicators
 // History:     2018ix10, FUB, created

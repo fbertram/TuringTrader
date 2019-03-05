@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        OptimizerGrid
 // Description: exhaustive parameter optimizer
 // History:     2018ix20, FUB, created

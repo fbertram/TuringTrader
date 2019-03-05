@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo05_Optimizer
 // Description: demonstrate algorithm optimization
 // History:     2018ix20, FUB, created

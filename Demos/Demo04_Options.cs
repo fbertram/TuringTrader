@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo04_Options
 // Description: demonstrate option trading
 // History:     2018ix11, FUB, created

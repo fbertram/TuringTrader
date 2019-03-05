@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataUpdaterIBOptions
 // Description: Option data updater, Interactive Brokers
 // History:     2018x19, FUB, created

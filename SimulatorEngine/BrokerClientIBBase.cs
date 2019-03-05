@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        BrokerClientIBBase
 // Description: Broker client for Interactive Brokers: dummy implementation
 // History:     2018x18, FUB, created

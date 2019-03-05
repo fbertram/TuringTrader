@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsMomentum
 // Description: collection of momentum-based indicators
 // History:     2018ix15, FUB, created

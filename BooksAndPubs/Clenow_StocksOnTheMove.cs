@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Clenow_StocksOnTheMove
 // Description: Strategy, as published in Andreas F. Clenow's book
 //              'Stocks on the Move'.

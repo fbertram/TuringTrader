@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsVolatility
 // Description: collection of volatility indicators
 // History:     2018ix10, FUB, created

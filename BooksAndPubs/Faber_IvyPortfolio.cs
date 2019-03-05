@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Faber_IvyPortfolio
 // Description: Variuous strategies as published in Mebane Faber's book
 //              'The Ivy Portfolio'.

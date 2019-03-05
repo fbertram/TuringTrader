@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsPerformance
 // Description: collection of performance indicators
 // History:     2018xii10, FUB, created

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        Cache
 // Description: data cache, to reduce memory footprint and cpu use
 // History:     2018ix21, FUB, created

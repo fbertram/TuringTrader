@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsArithmetic
 // Description: arithmetic on time series
 // History:     2018ix14, FUB, created

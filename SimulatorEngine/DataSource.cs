@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataSource
 // Description: base class for instrument data
 // History:     2018ix10, FUB, created
@@ -254,6 +254,11 @@ namespace TuringTrader.Simulator
             && infos[DataSourceValue.dataSource].ToLower().Contains("fakeoptions"))
             {
                 return new DataSourceFakeOptions(infos);
+            }
+            else if (infos.ContainsKey(DataSourceValue.dataSource)
+            && infos[DataSourceValue.dataSource].ToLower().Contains("constantyield"))
+            {
+                return new DataSourceConstantYield(infos);
             }
             else
             {

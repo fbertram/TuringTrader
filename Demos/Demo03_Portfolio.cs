@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo03_Portfolio
 // Description: portfolio trading demo
 // History:     2018xii10, FUB, created
