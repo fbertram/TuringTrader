@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        SimulatorCore
 // Description: Simulator engine core
 // History:     2018ix10, FUB, created
@@ -480,11 +480,13 @@ namespace TuringTrader.Simulator
         /// <param name="nickname">nickname of data source</param>
         protected void AddDataSource(string nickname)
         {
+            string nickLower = nickname.ToLower();
+
             foreach (DataSource source in _dataSources)
-                if (source.Info[DataSourceValue.nickName] == nickname)
+                if (source.Info[DataSourceValue.nickName] == nickLower)
                     return;
 
-            _dataSources.Add(DataSource.New(nickname));
+            _dataSources.Add(DataSource.New(nickLower));
         }
         #endregion
         #region protected void AddDataSource(DataSource dataSource)
@@ -525,10 +527,12 @@ namespace TuringTrader.Simulator
         /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
+            string nickLower = nickname.ToLower();
+                
             try
             {
                 return _instruments.Values
-                    .Where(i => i.Nickname == nickname)
+                    .Where(i => i.Nickname == nickLower)
                     .First();
             }
             catch
@@ -547,8 +551,10 @@ namespace TuringTrader.Simulator
         /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
+            string nickLower = nickname.ToLower();
+
             List<Instrument> optionChain = _instruments.Values
-                    .Where(i => i.Nickname == nickname  // check nickname
+                    .Where(i => i.Nickname == nickLower // check nickname
                         && i[0].Time == SimTime[0]      // current bar
                         && i.IsOption                   // is option
                         && i.OptionExpiry > SimTime[0]  // future expiry
