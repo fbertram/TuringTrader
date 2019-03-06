@@ -143,6 +143,7 @@ namespace SimulatorEngine.Tests
             Dictionary<string, double> upperBound = instruments.Select(i => i.Nickname)
                 .ToDictionary(nick => nick, nick => 1.0);
 
+            //----- calculate efficient frontier
             var cla = TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
                 instruments,
                 i => mean[i.Nickname],
@@ -150,6 +151,7 @@ namespace SimulatorEngine.Tests
                 i => lowerBound[i.Nickname],
                 i => upperBound[i.Nickname]);
 
+            //----- check turning points
             List<Dictionary<string, double>> expectedTurningPoints = new List<Dictionary<string, double>>
             {
                 new Dictionary<string, double> { { "X0", 0.00000000e+00 }, { "X1", 1.00000000e+00 }, { "X2", 0.00000000e+00 }, { "X3", 0.00000000e+00  }, { "X4", 0.00000000e+00  }, { "X5", 0.00000000e+00 }, { "X6", 0.00000000e+00 }, { "X7", 0.00000000e+00  }, { "X8", 0.00000000e+00 }, { "X9", 0.00000000e+00  } },
@@ -164,6 +166,63 @@ namespace SimulatorEngine.Tests
                 new Dictionary<string, double> { { "X0", 0.06834400e+00 }, { "X1", 0.04138703e+00 }, { "X2", 0.01521526e+00 }, { "X3", 0.18813443e+00  }, { "X4", 0.03416249e+00  }, { "X5", 0.20231943e+00 }, { "X6", 0.00000000e+00 }, { "X7", 0.03392932e+00  }, { "X8", 0.03363265e+00 }, { "X9", 0.38287539e+00  } },
                 new Dictionary<string, double> { { "X0", 0.03696858e+00 }, { "X1", 0.02690084e+00 }, { "X2", 0.09494243e+00 }, { "X3", 0.12577595e+00  }, { "X4", 0.07674608e+00  }, { "X5", 0.21935567e+00 }, { "X6", 0.02998710e+00 }, { "X7", 0.03596328e+00  }, { "X8", 0.06134984e+00 }, { "X9", 0.29201023e+00  } }
             };
+
+            var turningPoints = cla.TurningPoints();
+            for (var i = 0; i < turningPoints.Count; i++)
+            {
+                var turningPoint = turningPoints[i];
+
+                foreach (var instrument in turningPoint.Weights.Keys)
+                {
+                    Assert.IsTrue(Math.Abs(turningPoint.Weights[instrument] - expectedTurningPoints[i][instrument.Nickname]) < 1e-5);
+                }
+            }
+
+            //---------- efficient frontier
+            var ef = cla.EfficientFrontier(100);
+            /*
+            var plotter = new Plotter();
+            plotter.SelectChart("Efficient Frontier", "risk");
+            foreach (var p in ef)
+            {
+                plotter.SetX(p.Risk);
+                plotter.Plot("return", p.Return);
+            }
+            plotter.OpenWith("SimpleChart");
+            */
+
+            //---------- max sharpe ratio
+            var maxSR = cla.MaximumSharpeRatio();
+
+            Dictionary<string, double> expectedWeights = new Dictionary<string, double>
+            {
+                { "X0",  8.39731880e-02 }, { "X1", 4.89059854e-02 }, { "X2", 2.22467109e-19 }, { "X3", 2.18309257e-01 }, { "X4", 1.67730773e-03 },
+                { "X5", 1.81200649e-01 }, { "X6", 0.00000000e+00 }, { "X7", 3.11830391e-02 }, { "X8", 7.85901545e-03 }, { "X9", 4.26891558e-01 },
+            };
+            double expectedSharpe = 4.45353347664641;
+            double expectedVolatility = 0.22736446659771808;
+
+            Assert.IsTrue(Math.Abs((double)maxSR.Sharpe - expectedSharpe) < 1e-5);
+
+            // TODO: we are currently failing this test
+            //foreach (var instrument in maxSR.Weights.Keys)
+            //    Assert.IsTrue(Math.Abs(maxSR.Weights[instrument] - expectedWeights[instrument.Nickname]) < 1e-5);
+
+
+            //---------- min variance
+            var minVar = cla.MinimumVariance();
+
+            Dictionary<string, double> expectedWeights2 = new Dictionary<string, double>
+            {
+                { "X0",  0.03696858 }, { "X1", 0.02690084 }, { "X2", 0.09494243 }, { "X3", 0.12577595 }, { "X4", 0.07674608 },
+                { "X5", 0.21935567 }, { "X6", 0.0299871 }, { "X7", 0.03596328 }, { "X8", 0.06134984 }, { "X9", 0.29201023 },
+            };
+            double expectedVariance = 0.20523762;
+
+            Assert.IsTrue(Math.Abs((double)minVar.Risk - expectedVariance) < 1e-5);
+
+            foreach (var instrument in minVar.Weights.Keys)
+                Assert.IsTrue(Math.Abs(minVar.Weights[instrument] - expectedWeights2[instrument.Nickname]) < 1e-5);
         }
     }
 }

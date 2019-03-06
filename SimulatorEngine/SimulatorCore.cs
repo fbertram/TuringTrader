@@ -480,7 +480,7 @@ namespace TuringTrader.Simulator
         /// <param name="nickname">nickname of data source</param>
         protected void AddDataSource(string nickname)
         {
-            string nickLower = nickname.ToLower();
+            string nickLower = nickname; //.ToLower();
 
             foreach (DataSource source in _dataSources)
                 if (source.Info[DataSourceValue.nickName] == nickLower)
@@ -527,7 +527,7 @@ namespace TuringTrader.Simulator
         /// <returns>instrument matching nickname</returns>
         public Instrument FindInstrument(string nickname)
         {
-            string nickLower = nickname.ToLower();
+            string nickLower = nickname; //.ToLower();
                 
             try
             {
@@ -551,7 +551,7 @@ namespace TuringTrader.Simulator
         /// <returns>list of option instruments</returns>
         protected List<Instrument> OptionChain(string nickname)
         {
-            string nickLower = nickname.ToLower();
+            string nickLower = nickname; //.ToLower();
 
             List<Instrument> optionChain = _instruments.Values
                     .Where(i => i.Nickname == nickLower // check nickname

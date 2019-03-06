@@ -35,8 +35,13 @@ namespace TuringTrader.Simulator
         #region static private RegistryKey OpenSubKey(string sub, bool writable = false)
         static private RegistryKey OpenSubKey(string sub, bool writable = false)
         {
+            var assy = Assembly.GetEntryAssembly();
+            var assyName = assy != null
+                ? assy.GetName().Name
+                : "TuringTrader"; // unit tests don't have an entry assembly
+
             string subKey = "Software"
-                + "\\" + Assembly.GetEntryAssembly().GetName().Name
+                + "\\" + assyName
                 + (sub.Length > 0 ? ("\\" + sub) : "")
                 ;
 
