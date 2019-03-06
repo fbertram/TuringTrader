@@ -346,15 +346,44 @@ namespace TuringTrader.Simulator
                 var f = f_w.Item1;
                 var w = f_w.Item2;
 
-                _w.Add(w);
+                _w.Add(new Dictionary<Instrument, double>(w));
                 _l.Add(null);
                 _g.Add(null);
-                _f.Add(f);
+                _f.Add(new List<Instrument>(f));
 
+                //
+                double? l_in = null;
                 double? l_out = null;
+                Instrument i_in = null;
+                Instrument i_out = null;
+                double? bi_in = null;
+                Matrix<double> covarF = null;
+                Matrix<double> covarF_inv = null;
+                Matrix<double> covarFB = null;
+                Vector<double> meanF = null;
+                Vector<double> wB = null;
 
                 while (true)
                 {
+                    /*----------
+                    In Snippet 3 we saw that the value of 𝜆 which results from 
+                    each candidate i is stored in variable l. Among those 
+                    values of l, we find the maximum, store it as l_out, and 
+                    denote as i_out our candidate to become free. This is only 
+                    a candidate for addition into F, because before making that 
+                    decision we need to consider the possibility that one item 
+                    is removed from F, as follows. 
+ 
+                    After the first run of this iteration, it is also conceivable 
+                    that one asset in F moves to one of its boundaries. Should 
+                    that be the case, Snippet 7 determines which asset would do 
+                    so. Similarly to the addition case, we search for the 
+                    candidate that, after removal, maximizes 𝜆 (or to be more 
+                    precise, minimizes the reduction in 𝜆, since we know that 𝜆 
+                    becomes smaller at each iteration). We store our candidate 
+                    for removal in the variable i_in, and the associated 𝜆 in 
+                    the variable l_in. 
+                    */
                     /*
                             #1) case a): Bound one free weight
                             l_in=None
@@ -367,6 +396,32 @@ namespace TuringTrader.Simulator
                                     if l>l_in:l_in,i_in,bi_in=l,i,bi
                                     j+=1
                     */
+
+                    // #1) case a) Bound one free weight
+                    l_in = null;
+                    if (f.Count > 1)
+                    {
+                        var m = getMatrices(f);
+                        covarF = m.Item1;
+                        covarFB = m.Item2;
+                        meanF = m.Item3;
+                        wB = m.Item4;
+
+                        int j = 0;
+                        foreach (var i in f)
+                        {
+                            var l_bi = computeLambda(covarF_inv, covarFB, meanF, wB, j, new List<double> { _lb[i], _ub[i] });
+                            var l = l_bi.Item1;
+                            var bi = l_bi.Item2;
+                            if (l > l_in)
+                            {
+                                l_in = l;
+                                i_in = i;
+                                bi_in = bi;
+                            }
+                            j++;
+                        }
+                    }
 
 
 
@@ -408,20 +463,26 @@ namespace TuringTrader.Simulator
                     if (f.Count() < _mean.Count())
                     {
                         var b = getB(f);
-                        
+
                         foreach (Instrument i in b)
                         {
                             var f2 = new List<Instrument>(f);
                             f2.Add(i);
                             var m = getMatrices(f2);
-                            var covarF = m.Item1;
-                            var covarFB = m.Item2;
-                            var meanF = m.Item3;
-                            var wB = m.Item4;
-                            var covarF_inv = covarF.Inverse();
-                            //var l = 
-                                computeLambda(covarF_inv, covarFB, meanF, wB, meanF.Count - 1, _w.Last()[i]);
-                            Output.WriteLine("hello");
+                            covarF = m.Item1;
+                            covarFB = m.Item2;
+                            meanF = m.Item3;
+                            wB = m.Item4;
+                            covarF_inv = covarF.Inverse();
+                            var ll = computeLambda(covarF_inv, covarFB, meanF, wB, meanF.Count - 1, new List<double> { _w.Last()[i] });
+                            var l = ll.Item1;
+                            var bi = ll.Item2;
+                            if ((_l.Last() == null || l < _l.Last())
+                            && (l_out == null || l > l_out))
+                            {
+                                l_out = l;
+                                i_out = i;
+                            }
                         }
                     }
 
@@ -443,6 +504,8 @@ namespace TuringTrader.Simulator
                                     f.append(i_out)
                                 covarF,covarFB,meanF,wB=self.getMatrices(f)
                                 covarF_inv=np.linalg.inv(covarF)
+                    */
+                    /*
                             #5) compute solution vector
                             wF,g=self.computeW(covarF_inv,covarFB,meanF,wB)
                             for i in range(len(f)):w[f[i]]=wF[i]
@@ -451,12 +514,60 @@ namespace TuringTrader.Simulator
                             self.f.append(f[:])
                             if self.l[-1]==0:break
                     */
+                    if ((l_in == null || l_in < 0.0)
+                    && (l_out == null || l_out < 0.0))
+                    {
+                        // #3) compute minimum variance solution
+                        _l.Add(0.0);
+                        var m = getMatrices(f);
+                        covarF = m.Item1;
+                        covarFB = m.Item2;
+                        meanF = m.Item3;
+                        wB = m.Item4;
+                        covarF_inv = covarF.Inverse();
+                        meanF = Vector<double>.Build.Dense(meanF.Count, 0.0);
+                    }
+                    else
+                    {
+                        // #4) decide lambda
+                        if (l_in >l_out)
+                        {
+                            throw new Exception("TODO: not implemented, yet");
+                        }
+                        else
+                        {
+                            _l.Add(l_out);
+                            f.Add(i_out);
+                        }
+                        var m = getMatrices(f);
+                        covarF = m.Item1;
+                        covarFB = m.Item2;
+                        meanF = m.Item3;
+                        wB = m.Item4;
+                        covarF_inv = covarF.Inverse();
+                    }
+
+                    // #5) compute solution vector
+                    var wF_g = computeW(covarF_inv, covarFB, meanF, wB);
+                    var wf = wF_g.Item1;
+                    var g = wF_g.Item2;
+                    for (var i = 0; i < f.Count; i++)
+                        w[f[i]] = wf[i];
+                    _w.Add(new Dictionary<Instrument, double>(w));
+                    _g.Add(g);
+                    _f.Add(new List<Instrument>(f));
+                    if (_l.Last() == 0.0)
+                        break;
                 }
                 /*
                     #6) Purge turning points
                     self.purgeNumErr(10e-10)
                     self.purgeExcess()
                 */
+
+                // #6) Purge turning points
+                purgeNumErr(10e-10);
+                purgeExcess();
             }
 
             private Tuple<List<Instrument>, Dictionary<Instrument, double>> initAlgo()
@@ -504,7 +615,7 @@ namespace TuringTrader.Simulator
 
                 // initialize all weights to lower bounds,
                 // assume all assets are free
-                var w = _lb;
+                var w = new Dictionary<Instrument, double>(_lb);
 
                 // increase weights from lower bound to upper bound
                 foreach (var i in _mean.Keys.OrderByDescending(i => _mean[i]))
@@ -528,7 +639,7 @@ namespace TuringTrader.Simulator
 
                 return null;
             }
-            private void computeBi()
+            private double computeBi(double c, List<double> bi)
             {
                 /*
                 def computeBi(self,c,bi):
@@ -538,8 +649,12 @@ namespace TuringTrader.Simulator
                         bi=bi[0][0]
                     return bi
                  */
+
+                return c > 0 ? bi[1] : bi[0];
             }
-            private void computeW()
+            private Tuple<Vector<double>, double> computeW(
+                Matrix<double> covarF_inv, Matrix<double> covarFB,
+                Vector<double> meanF, Vector<double> wB)
             {
                 /*
                 def computeW(self,covarF_inv,covarFB,meanF,wB):
@@ -561,11 +676,43 @@ namespace TuringTrader.Simulator
                     w3=np.dot(covarF_inv,meanF)
                     return -w1+g*w2+self.l[-1]*w3,g
                 */
+
+                // #1) compute gamma
+                var onesF = Vector<double>.Build.Dense(meanF.Count, 1.0);
+                double g1 = (onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(meanF)).Single();
+                double g2 = (onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(onesF)).Single();
+
+                var w2 = covarF_inv.Multiply(onesF);
+                var w3 = covarF_inv.Multiply(meanF);
+
+                double g;
+                Vector<double> w1 = null;
+
+                if (wB == null)
+                {
+                    g = -(double)_l.Last() * g1 / g2 + 1 / g2;
+                    w1 = Vector<double>.Build.Dense(w2.Count, 0.0);
+                }
+                else
+                {
+                    var onesB = Vector<double>.Build.Dense(wB.Count);
+                    var g3 = onesB.ToRowMatrix().Multiply(wB).Single();
+                    var g4x = covarF_inv.Multiply(covarFB);
+                    w1 = g4x.Multiply(wB);
+                    var g4 = onesF.ToRowMatrix().Multiply(w1).Single();
+                    g = -(double)_l.Last() * g1 / g2 + (1.0 - g3 + g4) / g2;
+                }
+
+
+                return new Tuple<Vector<double>, double>(
+                    -w1 + g * w2 + (double)_l.Last() * w3,
+                    g);
             }
-            private void computeLambda(
+
+            private Tuple<double?, double?> computeLambda(
                 Matrix<double> covarF_inv, Matrix<double> covarFB, 
                 Vector<double> meanF, Vector<double> wB,
-                int i, double bi)
+                int i, List<double> bix)
             {
                 /*----------
                 Using the matrices provided by the function getMatrices, 𝜆 can 
@@ -601,13 +748,43 @@ namespace TuringTrader.Simulator
                         l2=np.dot(onesF.T,l3)
                         return float(((1-l1+l2)*c4[i]-c1*(bi+l3[i]))/c),bi
                 */
+
+                // #1) C
                 var onesF = Vector<double>.Build.Dense(meanF.Count, 1.0);
                 var c1 = onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(onesF);
                 var c2 = covarF_inv.Multiply(meanF);
                 var c3 = onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(meanF);
                 var c4 = covarF_inv.Multiply(onesF);
-                var c = -c1 * c2[i] + c3 * c4[i];
-                Output.Write("hello");
+                var c = (-c1 * c2[i] + c3 * c4[i]).Single();
+                if (c == 0.0)
+                {
+                    return new Tuple<double?, double?>(null, null);
+                }
+
+                // #2) bi
+                double bi = bix.Count > 1
+                    ? computeBi(c, bix)
+                    : bix[0];
+
+                // #3) Lambda
+                if (wB == null)
+                {
+                    return new Tuple<double?, double?>(
+                        ((c4[i] - c1 * bi) / c).Single(),
+                        bi);
+                }
+                else
+                {
+                    var onesB = Vector<double>.Build.Dense(wB.Count, 1.0);
+                    var l1 = onesB.ToRowMatrix().Multiply(wB);
+                    var l2x = covarF_inv.Multiply(covarFB);
+                    var l3 = l2x.Multiply(wB);
+                    var l2 = onesF.ToRowMatrix().Multiply(l3);
+
+                    return new Tuple<double?, double?>(
+                        (double?)(((1 - l1 + l2) * c4[i] - c1 * (bi + l3[i])) / c).Single(),
+                        (double?)bi);
+                }
             }
 
             private Tuple<Matrix<double>, Matrix<double>, Vector<double>, Vector<double>> getMatrices(List<Instrument> f)
@@ -630,8 +807,6 @@ namespace TuringTrader.Simulator
                     return covarF,covarFB,meanF,wB
                 */
 
-                // TODO: rows and columns might be swapped here!!!
-
                 var covarF = Matrix<double>.Build.Dense(
                     f.Count(), f.Count(),
                     (i, j) => _covar[f[i]][f[j]]);
@@ -642,19 +817,25 @@ namespace TuringTrader.Simulator
 
                 var b = getB(f);
 
-                var covarFB = Matrix<double>.Build.Dense(
-                    f.Count(), b.Count(),
-                    (i, j) => _covar[f[i]][b[j]]);
+                Matrix<double> covarFB = null;
+                Vector<double> wB = null;
 
-                var wb = Vector<double>.Build.Dense(
-                    b.Count(),
-                    i => _w.Last()[b[i]]);
+                if (b.Count > 0)
+                {
+                    covarFB = Matrix<double>.Build.Dense(
+                        f.Count(), b.Count(),
+                        (i, j) => _covar[f[i]][b[j]]);
+
+                    wB = Vector<double>.Build.Dense(
+                        b.Count(),
+                        i => _w.Last()[b[i]]);
+                }
 
                 return new Tuple<Matrix<double>, Matrix<double>, Vector<double>, Vector<double>>(
                     covarF,
                     covarFB,
                     meanF,
-                    wb);
+                    wB);
             }
             private List<Instrument> getB(List<Instrument> f)
             {
@@ -690,7 +871,7 @@ namespace TuringTrader.Simulator
                     return matrix__
                 */
             }
-            private void purgeNumErr()
+            private void purgeNumErr(double tol)
             {
                 /*
                 def purgeNumErr(self,tol):
@@ -714,6 +895,45 @@ namespace TuringTrader.Simulator
                             i+=1
                     return
                 */
+
+                int i = 0;
+                while (true)
+                {
+                    var flag = false;
+
+                    if (i == _w.Count())
+                        break;
+
+                    if (_w[i].Sum(kv => kv.Value) - 1.0 > tol)
+                    {
+                        flag = true;
+                    }
+                    else
+                    {
+                        foreach (var j in _w[i].Keys)
+                        {
+                            if (_w[i][j] - _lb[j] < -tol
+                            || _w[i][j] - _ub[j] > tol)
+                            {
+                                flag = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        throw new Exception("purgeNumErr is doing something!");
+                        _w.RemoveAt(i);
+                        _l.RemoveAt(i);
+                        _g.RemoveAt(i);
+                        _f.RemoveAt(i);
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
             }
             private void purgeExcess()
             {
@@ -742,6 +962,60 @@ namespace TuringTrader.Simulator
                                 j+=1
                     return
                 */
+
+                var i = 0;
+                var repeat = false;
+
+                while (true)
+                {
+                    if (!repeat)
+                        i++;
+
+                    if (i == _w.Count() - 1)
+                        break;
+
+                    var instruments = _w[i].Keys.ToList();
+
+                    var w = Vector<double>.Build.Dense(
+                        instruments.Count,
+                        x => _w[i][instruments[x]]);
+                    var mean = Vector<double>.Build.Dense(
+                        instruments.Count,
+                        x => _mean[instruments[x]]);
+                    var mu = w.ToRowMatrix().Multiply(mean).Single();
+
+                    var j = i + 1;
+                    repeat = false;
+
+                    while (true)
+                    {
+                        if (j == _w.Count())
+                            break;
+
+                        w = Vector<double>.Build.Dense(
+                            instruments.Count,
+                            x => _w[j][instruments[x]]);
+                        mean = Vector<double>.Build.Dense(
+                            instruments.Count,
+                            x => _mean[instruments[x]]);
+                        var mu_ = w.ToRowMatrix().Multiply(mean).Single();
+
+                        if (mu < mu_)
+                        {
+                            throw new Exception("purgeExcess is doing something!");
+                            _w.RemoveAt(i);
+                            _l.RemoveAt(i);
+                            _g.RemoveAt(i);
+                            _f.RemoveAt(i);
+                            repeat = true;
+                            break;
+                        }
+                        else
+                        {
+                            j++;
+                        }
+                    }
+                }
             }
             private void getMinVar()
             {
