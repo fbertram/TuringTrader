@@ -53,91 +53,109 @@ namespace TuringTrader.Simulator
             public Dictionary<Instrument, double> Weights = null;
         }
         #endregion
-
-        #region public static _MarkowitzCLA MarkowitzCLA(...)
-        /// <summary>
-        /// Create Markowitz CLA object.
-        /// </summary>
-        /// <param name="universe"></param>
-        /// <returns></returns>
-        public static _MarkowitzCLA MarkowitzCLA(
-            IEnumerable<Instrument> universe,
-            Func<Instrument, double> meanFunc,
-            Func<Instrument, Instrument, double> covarianceFunc,
-            Func<Instrument, double> lowerBoundFunc,
-            Func<Instrument, double> upperBoundFunc)
+        #region public class MarkowitzCLA
+        public class MarkowitzCLA
         {
-            var means = universe
-                .ToDictionary(
-                    i => i,
-                    i => meanFunc(i));
-            var covariances = universe
-                .ToDictionary(
-                    i1 => i1,
-                    i1 => universe
-                        .ToDictionary(
-                            i2 => i2,
-                            i2 => covarianceFunc(i1, i2)));
-            var lowerBounds = universe
-                .ToDictionary(
-                    i => i,
-                    i => lowerBoundFunc(i));
-            var upperBounds = universe
-                .ToDictionary(
-                    i => i,
-                    i => upperBoundFunc(i));
+            private _MarkowitzCLA _cla;
+            private List<Instrument> _instruments;
 
-            _MarkowitzCLA cla = new _MarkowitzCLA(
-                means, covariances, lowerBounds, upperBounds);
+            public MarkowitzCLA(
+                IEnumerable<Instrument> universe,
+                Func<Instrument, double> meanFunc,
+                Func<Instrument, Instrument, double> covarianceFunc,
+                Func<Instrument, double> lowerBoundFunc,
+                Func<Instrument, double> upperBoundFunc)
+            {
+                _instruments = universe
+                    .ToList();
 
-            return cla;
+                var mean = Vector<double>.Build.Dense(
+                    _instruments.Count,
+                    idx => meanFunc(_instruments[idx]));
+
+                var covar = Matrix<double>.Build.Dense(
+                    _instruments.Count, _instruments.Count,
+                    (row, col) => covarianceFunc(_instruments[row], _instruments[col]));
+
+                var lowerBound = Vector<double>.Build.Dense(
+                    _instruments.Count,
+                    idx => lowerBoundFunc(_instruments[idx]));
+
+                var upperBound = Vector<double>.Build.Dense(
+                    _instruments.Count,
+                    idx => upperBoundFunc(_instruments[idx]));
+
+                _cla = new _MarkowitzCLA(mean, covar, lowerBound, upperBound);
+            }
+
+            public IEnumerable<MarkowitzPortfolio> TurningPoints()
+            {
+                for (int i = 0; i < _cla._w.Count; i++)
+                {
+                    var pf = new MarkowitzPortfolio
+                    {
+                        Weights = Enumerable.Range(0, _cla._w[i].Count)
+                            .ToDictionary(
+                                idx => _instruments[idx],
+                                idx => _cla._w[i][idx]),
+                    };
+
+                    yield return pf;
+                }
+
+                yield break;
+            }
+
+            public IEnumerable<MarkowitzPortfolio> EfficientFrontier(int points)
+            {
+                yield break;
+            }
+
+            public MarkowitzPortfolio MaximumSharpeRatio()
+            {
+                return null;
+            }
+
+            public MarkowitzPortfolio MinimumVariance()
+            {
+                return null;
+            }
         }
         #endregion
-        #region public class _MarkowitzCLA
-        public class _MarkowitzCLA
-        {
-            #region internal data
-            private Dictionary<Instrument, double> _mean;
-            private Dictionary<Instrument, Dictionary<Instrument, double>> _covar;
-            private Dictionary<Instrument, double> _lb;
-            private Dictionary<Instrument, double> _ub;
 
-            private List<Dictionary<Instrument, double>> _w; // solution
-            private List<double?> _l; // lambdas
-            private List<double?> _g; // gammas
-            private List<List<Instrument>> _f; // free weights
-            #endregion
+        #region private class _MarkowitzCLA
+        private class _MarkowitzCLA
+        {
+            public Vector<double> _mean;
+            public Matrix<double> _covar;
+            public Vector<double> _lb;
+            public Vector<double> _ub;
+
+            public List<Vector<double>> _w; // solution
+            public List<double?> _l; // lambdas
+            public List<double?> _g; // gammas
+            public List<List<int>> _f; // free weights
+
             #region internal helpers
             #region private void solve()
             private void solve()
             {
                 // compute the turning points, free sets and weights
 
-                /*
-                def solve(self):
-                    # Compute the turning points,free sets and weights
-                    f,w=self.initAlgo()
-                    self.w.append(np.copy(w)) # store solution
-                    self.l.append(None)
-                    self.g.append(None)
-                    self.f.append(f[:])
-                    while True:
-                */
-
                 var f_w = initAlgo();
                 var f = f_w.Item1;
                 var w = f_w.Item2;
 
-                _w.Add(new Dictionary<Instrument, double>(w));
+                _w.Add(w.Clone());
                 _l.Add(null);
                 _g.Add(null);
-                _f.Add(new List<Instrument>(f));
+                _f.Add(new List<int>(f));
 
                 //
                 double? l_in = null;
                 double? l_out = null;
-                Instrument i_in = null;
-                Instrument i_out = null;
+                int i_in = 0;
+                int i_out = 0;
                 double? bi_in = null;
                 Matrix<double> covarF = null;
                 Matrix<double> covarF_inv = null;
@@ -246,9 +264,9 @@ namespace TuringTrader.Simulator
                     {
                         var b = getB(f);
 
-                        foreach (Instrument i in b)
+                        foreach (int i in b)
                         {
-                            var f2 = new List<Instrument>(f);
+                            var f2 = new List<int>(f);
                             f2.Add(i);
                             var m = getMatrices(f2);
                             covarF = m.Item1;
@@ -335,9 +353,9 @@ namespace TuringTrader.Simulator
                     var g = wF_g.Item2;
                     for (var i = 0; i < f.Count; i++)
                         w[f[i]] = wf[i];
-                    _w.Add(new Dictionary<Instrument, double>(w));
+                    _w.Add(w.Clone());
                     _g.Add(g);
-                    _f.Add(new List<Instrument>(f));
+                    _f.Add(new List<int>(f));
                     if (_l.Last() == 0.0)
                         break;
                 }
@@ -352,69 +370,32 @@ namespace TuringTrader.Simulator
                 purgeExcess();
             }
             #endregion
-            #region private Tuple<List<Instrument>, Dictionary<Instrument, double>> initAlgo()
-            private Tuple<List<Instrument>, Dictionary<Instrument, double>> initAlgo()
+            #region private Tuple<List<int>, Vector<double>> initAlgo()
+            private Tuple<List<int>, Vector<double>> initAlgo()
             {
-                /*
-                The key insight behind Markowitz’s CLA is to find first the 
-                turning point associated with the highest expected return, and 
-                then compute the sequence of turning points, each with a lower 
-                expected return than the previous. That first turning point 
-                consists in the smallest subset of assets with highest return 
-                such that the sum of their upper boundaries equals or exceeds 
-                one. We have implemented this search for the first turning point 
-                through a structured array. A structured array is a Numpy object 
-                that, among other operations, can be sorted in a way that changes 
-                are tracked. We populate the structured array with items from 
-                the input mean, assigning to each a sequential id index. Then 
-                we sort the structured array in descending order. This gives 
-                us a sequence for searching for the first free asset. All 
-                weights are initially set to their lower bounds, and following 
-                the sequence from the previous step, we move those weights 
-                from the lower to the upper bound until the sum of weights 
-                exceeds one. The last iterated weight is then reduced to comply 
-                with the constraint that the sum of weights equals one. This 
-                last weight is the first free asset, and the resulting vector 
-                of weights the first turning point.
-                */
-
-                /*
-                def initAlgo(self):
-                    # Initialize the algo
-                    #1) Form structured array
-                    a=np.zeros((self.mean.shape[0]),dtype=[('id',int),('mu',float)])
-                    b=[self.mean[i][0] for i in range(self.mean.shape[0])] # dump array into list
-                    a[:]=zip(range(self.mean.shape[0]),b) # fill structured array
-                    #2) Sort structured array
-                    b=np.sort(a,order='mu')
-                    #3) First free weight
-                    i,w=b.shape[0],np.copy(self.lB)
-                    while sum(w)<1:
-                        i-=1
-                        w[b[i][0]]=self.uB[b[i][0]]
-                    w[b[i][0]]+=1-sum(w)
-                    return [b[i][0]],w
-                 */
-
                 // initialize all weights to lower bounds,
                 // assume all assets are free
-                var w = new Dictionary<Instrument, double>(_lb);
+                var w = _lb.Clone();
 
                 // increase weights from lower bound to upper bound
-                foreach (var i in _mean.Keys.OrderByDescending(i => _mean[i]))
+                var indicesDescendingMean = Enumerable.Range(0, _mean.Count)
+                    .OrderByDescending(idx => _mean[idx])
+                    .ToList();
+
+                foreach (var i in indicesDescendingMean)
                 {
                     w[i] = _ub[i];
 
                     // exceeding total weight of 1.0
-                    if (w.Sum(x => x.Value) >= 1.0)
+                    if (w.Sum() >= 1.0)
                     {
                         // reduce weight to comply w/ constraints
-                        w[i] += 1.0 - w.Sum(x => x.Value);
+                        w[i] += 1.0 - w.Sum();
 
                         // return first turning point
-                        return new Tuple<List<Instrument>, Dictionary<Instrument, double>>
+                        return new Tuple<List<int>, Vector<double>>
                         (
-                            new List<Instrument> { i },
+                            new List<int> { i },
                             w
                         );
                     }
@@ -577,29 +558,11 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region private Tuple<Matrix<double>, Matrix<double>, Vector<double>, Vector<double>> getMatrices(...)
-            private Tuple<Matrix<double>, Matrix<double>, Vector<double>, Vector<double>> getMatrices(List<Instrument> f)
+            private Tuple<Matrix<double>, Matrix<double>, Vector<double>, Vector<double>> getMatrices(List<int> f)
             {
-                /*----------
-                This function prepares the necessary matrices to determine the 
-                value of 𝜆 associated with adding each candidate i to F. In 
-                order to do that, it needs to reduce a matrix to a collection 
-                of columns and rows, which is accomplished by the function 
-                reduceMatrix                
-                */
-                /*
-                def getMatrices(self,f):
-                    # Slice covarF,covarFB,covarB,meanF,meanB,wF,wB
-                    covarF=self.reduceMatrix(self.covar,f,f)
-                    meanF=self.reduceMatrix(self.mean,f,[0])
-                    b=self.getB(f)
-                    covarFB=self.reduceMatrix(self.covar,f,b)
-                    wB=self.reduceMatrix(self.w[-1],b,[0])
-                    return covarF,covarFB,meanF,wB
-                */
-
                 var covarF = Matrix<double>.Build.Dense(
                     f.Count(), f.Count(),
-                    (i, j) => _covar[f[i]][f[j]]);
+                    (i, j) => _covar[f[i], f[j]]);
 
                 var meanF = Vector<double>.Build.Dense(
                     f.Count(),
@@ -614,7 +577,7 @@ namespace TuringTrader.Simulator
                 {
                     covarFB = Matrix<double>.Build.Dense(
                         f.Count(), b.Count(),
-                        (i, j) => _covar[f[i]][b[j]]);
+                        (i, j) => _covar[f[i], b[j]]);
 
                     wB = Vector<double>.Build.Dense(
                         b.Count(),
@@ -629,41 +592,13 @@ namespace TuringTrader.Simulator
             }
             #endregion
             #region private List<Instrument> getB(List<Instrument> f)
-            private List<Instrument> getB(List<Instrument> f)
+            private List<int> getB(List<int> f)
             {
-                /*
-                def getB(self,f):
-                    return self.diffLists(range(self.mean.shape[0]),f)
-                */
-                return _mean.Keys
-                    .Where(i => !f.Contains(i))
+                return Enumerable.Range(0, _mean.Count)
+                    .Where(idx => !f.Contains(idx))
                     .ToList();
             }
             #endregion
-            /* private void diffLists()
-            {
-                / *
-                def diffLists(self,list1,list2):
-                    return list(set(list1)-set(list2))
-                * /
-            }*/
-            /*private void reduceMatrix()
-            {
-                / *
-                def reduceMatrix(self,matrix,listX,listY):
-                    # Reduce a matrix to the provided list of rows and columns
-                    if len(listX)==0 or len(listY)==0:return
-                    matrix_=matrix[:,listY[0]:listY[0]+1]
-                    for i in listY[1:]:
-                        a=matrix[:,i:i+1]
-                        matrix_=np.append(matrix_,a,1)
-                    matrix__=matrix_[listX[0]:listX[0]+1,:]
-                    for i in listX[1:]:
-                        a=matrix_[i:i+1,:]
-                        matrix__=np.append(matrix__,a,0)
-                    return matrix__
-                * /
-            }*/
             #region private void purgeNumErr(double tol)
             private void purgeNumErr(double tol)
             {
@@ -698,13 +633,13 @@ namespace TuringTrader.Simulator
                     if (i == _w.Count())
                         break;
 
-                    if (_w[i].Sum(kv => kv.Value) - 1.0 > tol)
+                    if (_w[i].Sum() - 1.0 > tol)
                     {
                         flag = true;
                     }
                     else
                     {
-                        foreach (var j in _w[i].Keys)
+                        foreach (var j in Enumerable.Range(0, _w[i].Count))
                         {
                             if (_w[i][j] - _lb[j] < -tol
                             || _w[i][j] - _ub[j] > tol)
@@ -770,15 +705,8 @@ namespace TuringTrader.Simulator
                     if (i == _w.Count() - 1)
                         break;
 
-                    var instruments = _w[i].Keys.ToList();
-
-                    var w = Vector<double>.Build.Dense(
-                        instruments.Count,
-                        x => _w[i][instruments[x]]);
-                    var mean = Vector<double>.Build.Dense(
-                        instruments.Count,
-                        x => _mean[instruments[x]]);
-                    var mu = w.ToRowMatrix().Multiply(mean).Single();
+                    var w1 = _w[i];
+                    var mu1 = w1.ToRowMatrix().Multiply(_mean).Single();
 
                     var j = i + 1;
                     repeat = false;
@@ -788,15 +716,10 @@ namespace TuringTrader.Simulator
                         if (j == _w.Count())
                             break;
 
-                        w = Vector<double>.Build.Dense(
-                            instruments.Count,
-                            x => _w[j][instruments[x]]);
-                        mean = Vector<double>.Build.Dense(
-                            instruments.Count,
-                            x => _mean[instruments[x]]);
-                        var mu_ = w.ToRowMatrix().Multiply(mean).Single();
+                        var w2 = _w[j];
+                        var mu2 = w2.ToRowMatrix().Multiply(_mean).Single();
 
-                        if (mu < mu_)
+                        if (mu1 < mu2)
                         {
                             throw new Exception("purgeExcess is doing something!");
                             _w.RemoveAt(i);
@@ -906,59 +829,29 @@ namespace TuringTrader.Simulator
 
             #region public _MarkowitzCLA(...)
             public _MarkowitzCLA(
-                Dictionary<Instrument, double> means,
-                Dictionary<Instrument, Dictionary<Instrument, double>> covariances,
-                Dictionary<Instrument, double> lowerBounds,
-                Dictionary<Instrument, double> upperBounds)
+                Vector<double> means,
+                Matrix<double> covariances,
+                Vector<double> lowerBounds,
+                Vector<double> upperBounds)
             {
-                /*----------
-                We have implemented CLA as a class object in Python programming 
-                language. The only external library needed for this core functionality 
-                is Numpy, which in our code we instantiate with the shorthand np. 
-                The class is initialized in Snippet 1. The inputs are:
-                * mean: The (nx1) vector of means.
-                * covar: The (nxn) covariance matrix. 
-                * lB: The (nx1) vector that sets the lower boundaries for each weight. 
-                * uB: The (nx1) vector that sets the upper boundaries for each weight. 
- 
-                Implied is the constraint that the weights will add up to one. 
-                The class object will contain four lists of outputs:  w: A 
-                list with the (nx1) vector of weights at each turning point. 
-                * l: The value of 𝜆 at each turning point. 
-                * g: The value of 𝛾 at each turning point. 
-                * f: For each turning point, a list of elements that constitute F.
-                */
-                /*----------
-                def __init__(self,mean,covar,lB,uB):
-                    # Initialize the class
-                    if (mean==np.ones(mean.shape)*mean.mean()).all():mean[-1,0]+=1e-5
-                    self.mean=mean
-                    self.covar=covar
-                    self.lB=lB
-                    self.uB=uB
-                    self.w=[] # solution
-                    self.l=[] # lambdas
-                    self.g=[] # gammas
-                    self.f=[] # free weights                
-                */
-
-                // TODO: not sure what this does
-                // if (mean == np.ones(mean.shape) * mean.mean()).all():mean[-1, 0] += 1e-5
-
                 _mean = means;
                 _covar = covariances;
                 _lb = lowerBounds;
                 _ub = upperBounds;
 
-                _w = new List<Dictionary<Instrument, double>>();
+                // TODO: not sure what this does
+                // if (mean == np.ones(mean.shape) * mean.mean()).all():mean[-1, 0] += 1e-5
+
+                _w = new List<Vector<double>>();
                 _l = new List<double?>();
                 _g = new List<double?>();
-                _f = new List<List<Instrument>>();
+                _f = new List<List<int>>();
 
                 solve();
             }
             #endregion
 
+#if false
             #region public List<MarkowitzPortfolio> TurningPoints()
             public List<MarkowitzPortfolio> TurningPoints()
             {
@@ -984,7 +877,7 @@ namespace TuringTrader.Simulator
             {
                 /*
                 def efFrontier(self,points):
-                    # Get the efficient frontier
+                    /# Get the efficient frontier
                     mu,sigma,weights=[],[],[]
                     a=np.linspace(0,1,points/len(self.w))[:-1] # remove the 1, to avoid duplications
                     b=range(len(self.w)-1)
@@ -1053,8 +946,8 @@ namespace TuringTrader.Simulator
             {
                 /*
                 def getMaxSR(self):
-                    # Get the max Sharpe ratio portfolio
-                    #1) Compute the local max SR portfolio between any two neighbor turning points
+                    /# Get the max Sharpe ratio portfolio
+                    /#1) Compute the local max SR portfolio between any two neighbor turning points
                     w_sr,sr=[],[]
                     for i in range(len(self.w)-1):
                         w0=np.copy(self.w[i])
@@ -1112,7 +1005,7 @@ namespace TuringTrader.Simulator
             {
                 /*
                 def getMinVar(self):
-                    # Get the minimum variance solution
+                    /# Get the minimum variance solution
                     var=[]
                     for w in self.w:
                         a=np.dot(np.dot(w.T,self.covar),w)
@@ -1143,6 +1036,7 @@ namespace TuringTrader.Simulator
                 };
             }
             #endregion
+#endif
         }
         #endregion
     }
