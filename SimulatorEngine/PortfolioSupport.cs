@@ -29,194 +29,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public class PortfolioSupport
     {
-#if false
-        #region ValueCollection, ValueCollection2Dim
-        /// <summary>
-        /// Container for a 1-dimensional value collection.
-        /// </summary>
-        /// <typeparam name="K"></typeparam>
-        /// <typeparam name="V"></typeparam>
-        public class ValueCollection<K, V>
-        {
-            private Func<K, V> _getter;
-            private Action<K, V> _setter;
-
-            /// <summary>
-            /// Constructor.
-            /// </summary>
-            /// <param name="getter">getter function</param>
-            /// <param name="setter">setter function</param>
-            public ValueCollection(Func<K, V> getter, Action<K, V> setter)
-            {
-                _getter = getter;
-                _setter = setter;
-            }
-
-            /// <summary>
-            /// Access function
-            /// </summary>
-            /// <param name="k">index</param>
-            /// <returns></returns>
-            public V this[K k]
-            {
-                get
-                {
-                    return _getter(k);
-                }
-                set
-                {
-                    _setter(k, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Container for a 1-dimensional value collection.
-        /// </summary>
-        /// <typeparam name="K"></typeparam>
-        /// <typeparam name="V"></typeparam>
-        public class ValueCollection2Dim<K, V>
-        {
-            private Func<K, K, V> _getter;
-            private Action<K, K, V> _setter;
-
-            /// <summary>
-            /// Constructor.
-            /// </summary>
-            /// <param name="getter">getter function</param>
-            /// <param name="setter">setter function</param>
-            public ValueCollection2Dim(Func<K, K, V> getter, Action<K, K, V> setter)
-            {
-                _getter = getter;
-                _setter = setter;
-            }
-
-            /// <summary>
-            /// Access function.
-            /// </summary>
-            /// <param name="k1">first index</param>
-            /// <param name="k2">second index</param>
-            /// <returns></returns>
-            public V this[K k1, K k2]
-            {
-                get
-                {
-                    return _getter(k1, k2);
-                }
-                set
-                {
-                    _setter(k1, k2, value);
-                }
-            }
-        }
-        #endregion
-        #region MarkowitzInfo
-        /// <summary>
-        /// Container class to hold parameters required for Markowitz portfolio optimization.
-        /// </summary>
-        public class MarkowitzInfo
-        {
-            #region internal data
-            #region _mean
-            private Dictionary<Instrument, double> _mean = new Dictionary<Instrument, double>();
-            private double getMean(Instrument i)
-            {
-                if (!_mean.ContainsKey(i))
-                    _mean[i] = 0.0;
-
-                return _mean[i];
-            }
-            private void setMean(Instrument i, double v)
-            {
-                _mean[i] = v;
-            }
-        #endregion
-            #region _cov
-            private Dictionary<Instrument, Dictionary<Instrument, double>> _cov = new Dictionary<Instrument, Dictionary<Instrument, double>>();
-            private double getCov(Instrument i1, Instrument i2)
-            {
-                Instrument iFirst = i1.GetHashCode() < i2.GetHashCode() ? i1 : i2;
-                Instrument iSecond = i1.GetHashCode() > i2.GetHashCode() ? i1 : i2;
-
-                if (!_cov.ContainsKey(iFirst))
-                    _cov[iFirst] = new Dictionary<Instrument, double>();
-
-                if (!_cov[iFirst].ContainsKey(iSecond))
-                    _cov[iFirst][iSecond] = 0.0;
-
-                return _cov[iFirst][iSecond];
-            }
-            private void setCov(Instrument i1, Instrument i2, double v)
-            {
-                Instrument iFirst = i1.GetHashCode() < i2.GetHashCode() ? i1 : i2;
-                Instrument iSecond = i1.GetHashCode() > i2.GetHashCode() ? i1 : i2;
-
-                if (!_cov.ContainsKey(iFirst))
-                    _cov[iFirst] = new Dictionary<Instrument, double>();
-
-                _cov[iFirst][iSecond] = v;
-            }
-            #endregion
-            #region _upperBound
-            private Dictionary<Instrument, double> _upperBound = new Dictionary<Instrument, double>();
-            private double getUB(Instrument i)
-            {
-                if (!_upperBound.ContainsKey(i))
-                    _upperBound[i] = 0.0;
-
-                return _upperBound[i];
-            }
-            private void setUB(Instrument i, double v)
-            {
-                _upperBound[i] = v;
-            }
-            #endregion
-            #region _lowerBound
-            private Dictionary<Instrument, double> _lowerBound = new Dictionary<Instrument, double>();
-            private double getLB(Instrument i)
-            {
-                if (!_lowerBound.ContainsKey(i))
-                    _lowerBound[i] = 0.0;
-
-                return _lowerBound[i];
-            }
-            private void setLB(Instrument i, double v)
-            {
-                _lowerBound[i] = v;
-            }
-#endregion
-            #endregion
-
-            /// <summary>
-            /// Constructor
-            /// </summary>
-            public MarkowitzInfo()
-            {
-                Mean = new ValueCollection<Instrument, double>(getMean, setMean);
-                Covariance = new ValueCollection2Dim<Instrument, double>(getCov, setCov);
-                LowerBound = new ValueCollection<Instrument, double>(getLB, setLB);
-                UpperBound = new ValueCollection<Instrument, double>(getUB, setUB);
-            }
-
-            /// <summary>
-            /// Collection of mean returns.
-            /// </summary>
-            public ValueCollection<Instrument, double> Mean = null;
-            /// <summary>
-            /// Collection of co-variances.
-            /// </summary>
-            public ValueCollection2Dim<Instrument, double> Covariance = null;
-            /// <summary>
-            /// Collection of lower bounds.
-            /// </summary>
-            public ValueCollection<Instrument, double> LowerBound = null;
-            /// <summary>
-            /// Collection of upper bounds
-            /// </summary>
-            public ValueCollection<Instrument, double> UpperBound = null;
-        }
-        #endregion
-#endif
+        #region public class MarkowitzPortfolio
         /// <summary>
         /// Container to hold Markowitz Portfolio
         /// </summary>
@@ -239,7 +52,9 @@ namespace TuringTrader.Simulator
             /// </summary>
             public Dictionary<Instrument, double> Weights = null;
         }
+        #endregion
 
+        #region public static _MarkowitzCLA MarkowitzCLA(...)
         /// <summary>
         /// Create Markowitz CLA object.
         /// </summary>
@@ -277,19 +92,8 @@ namespace TuringTrader.Simulator
 
             return cla;
         }
-
-        /// <summary>
-        /// Container to hold Markowitz CLA results.
-        /// </summary>
-        public class _MarkowitzCLAxxx
-        {
-            public List<Dictionary<Instrument, double>> TurningPoints
-            {
-                get;
-                protected set;
-            }
-        }
-
+        #endregion
+        #region public class _MarkowitzCLA
         public class _MarkowitzCLA
         {
             #region internal data
@@ -665,20 +469,17 @@ namespace TuringTrader.Simulator
                 double g1 = (onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(meanF)).Single();
                 double g2 = (onesF.ToRowMatrix().Multiply(covarF_inv).Multiply(onesF)).Single();
 
-                var w2 = covarF_inv.Multiply(onesF);
-                var w3 = covarF_inv.Multiply(meanF);
-
                 double g;
                 Vector<double> w1 = null;
 
                 if (wB == null)
                 {
                     g = -(double)_l.Last() * g1 / g2 + 1 / g2;
-                    w1 = Vector<double>.Build.Dense(w2.Count, 0.0);
+                    w1 = Vector<double>.Build.Dense(onesF.Count, 0.0);
                 }
                 else
                 {
-                    var onesB = Vector<double>.Build.Dense(wB.Count);
+                    var onesB = Vector<double>.Build.Dense(wB.Count, 1.0);
                     var g3 = onesB.ToRowMatrix().Multiply(wB).Single();
                     var g4x = covarF_inv.Multiply(covarFB);
                     w1 = g4x.Multiply(wB);
@@ -686,9 +487,13 @@ namespace TuringTrader.Simulator
                     g = -(double)_l.Last() * g1 / g2 + (1.0 - g3 + g4) / g2;
                 }
 
+                var w2 = covarF_inv.Multiply(onesF);
+                var w3 = covarF_inv.Multiply(meanF);
+
+                var w = -w1 + g * w2 + (double)_l.Last() * w3;
 
                 return new Tuple<Vector<double>, double>(
-                    -w1 + g * w2 + (double)_l.Last() * w3,
+                    w,
                     g);
             }
             #endregion
@@ -1074,7 +879,7 @@ namespace TuringTrader.Simulator
                 // Loop
                 for (var i = 0; i < numIter; i++)
                 {
-                    if (f1 >f2)
+                    if (f1 > f2)
                     {
                         a = x1;
                         x1 = x2;
@@ -1281,12 +1086,10 @@ namespace TuringTrader.Simulator
                     var a = a_b.Item1;
                     var b = a_b.Item2;
 
-                    var w = w1.Multiply(a).Add(w0.Multiply(1.0 - a));
+                    var w = w0.Multiply(a).Add(w1.Multiply(1.0 - a));
 
                     var portfolio = new MarkowitzPortfolio
                     {
-                        Return = 0.0,
-                        Risk = 0.0,
                         Sharpe = b,
                         Weights = Enumerable.Range(0, instruments.Count)
                             .ToDictionary(
@@ -1298,9 +1101,10 @@ namespace TuringTrader.Simulator
                     portfolioCandidates.Add(portfolio);
                 }
 
-                return portfolioCandidates
-                    .OrderByDescending(p => p.Sharpe)
-                    .First();
+                var max = portfolioCandidates.Max(p => p.Sharpe);
+                var index = portfolioCandidates.FindIndex(p => p.Sharpe == max);
+
+                return portfolioCandidates[index];
             }
             #endregion
             #region public void MinimumVariance()
@@ -1340,6 +1144,7 @@ namespace TuringTrader.Simulator
             }
             #endregion
         }
+        #endregion
     }
 }
 
