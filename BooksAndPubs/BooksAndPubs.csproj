@@ -45,6 +45,7 @@
     <Compile Include="Antonacci_DualMomentumInvesting.cs" />
     <Compile Include="Clenow_StocksOnTheMove.cs" />
     <Compile Include="Faber_IvyPortfolio.cs" />
+    <Compile Include="Keller_CAA.cs" />
     <Compile Include="Keller_DAA.cs" />
     <Compile Include="Livingston_MuscularPortfolios.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
