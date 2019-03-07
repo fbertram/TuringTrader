@@ -2,7 +2,7 @@
 // Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        PortfolioSupport
 // Description: unit test for portfolio support class
-// History:     2019ii03, FUB, created
+// History:     2019iii06, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2017-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -113,7 +113,7 @@ namespace SimulatorEngine.Tests
             }
 
             //---------- efficient frontier
-            var ef = cla.EfficientFrontier(100);
+            var ef = cla.EfficientFrontier(100).ToList();
             /*
             var plotter = new Plotter();
             plotter.SelectChart("Efficient Frontier", "risk");
@@ -136,10 +136,9 @@ namespace SimulatorEngine.Tests
             double expectedSharpe = 4.45353347664641;
             double expectedVolatility = 0.22736446659771808;
 
-            Assert.IsTrue(Math.Abs((double)maxSR.Sharpe - expectedSharpe) < 1e-5);
-            //Assert.IsTrue(Math.Abs((double)maxSR.Risk - expectedVolatility) < 1e-5);
+            Assert.IsTrue(Math.Abs(maxSR.Return / maxSR.Risk - expectedSharpe) < 1e-5);
+            Assert.IsTrue(Math.Abs((double)maxSR.Risk - expectedVolatility) < 1e-5);
 
-            // TODO: we are currently failing this test
             foreach (var instrument in maxSR.Weights.Keys)
                 Assert.IsTrue(Math.Abs(maxSR.Weights[instrument] - expectedWeights[instrument.Nickname]) < 1e-5);
 
