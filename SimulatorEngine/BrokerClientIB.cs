@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Solutions
+// Project:     TuringTrader, simulator core
 // Description: Broker client for Interactive Brokers
 // Description: Proprietary broker client for Interactive Brokers
 // History:     2018x18, FUB, created

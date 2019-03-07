@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsVolatility
 // Description: collection of volatility indicators
 // History:     2018ix10, FUB, created
@@ -97,7 +97,7 @@ namespace TuringTrader.Simulator
             public readonly int N;
 
             private readonly double _alpha;
-            private double _average;
+            private double? _average = null;
             private double _variance;
 
             public FunctorStandardDeviation(ITimeSeries<double> series, int n)
@@ -114,7 +114,7 @@ namespace TuringTrader.Simulator
                 {
                     // calculate exponentially-weighted mean and variance
                     // see Tony Finch, Incremental calculation of mean and variance
-                    double diff = Series[0] - _average;
+                    double diff = Series[0] - (double)_average;
                     double incr = _alpha * diff;
                     _average = _average + incr;
                     _variance = (1.0 - _alpha) * (_variance + diff * incr);
@@ -123,8 +123,9 @@ namespace TuringTrader.Simulator
                 }
                 catch (Exception)
                 {
-                    // we get here when we access bars too far in the past
+                    // exception thrown, when _average is null
                     _average = Series[0];
+                    _variance = 0.0;
                     Value = 0.0;
                 }
             }
@@ -141,13 +142,41 @@ namespace TuringTrader.Simulator
         /// <returns>variance as time series</returns>
         public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10)
         {
-            var functor = Cache<FunctorSemiDeviation>.GetData(
+            var container = Cache<SemiDeviationResult>.GetData(
                     Cache.UniqueId(series.GetHashCode(), n),
-                    () => new FunctorSemiDeviation(series, n));
+                    () => new SemiDeviationResult());
 
-            functor.Calc();
+            container.Average = series.SMA(n);
 
-            return functor;
+            container.Downside = IndicatorsBasic.BufferedLambda(
+                v =>
+                {
+                    var downSeries = Enumerable.Range(0, n)
+                        .Where(t => series[t] < container.Average[0]);
+
+                    if (downSeries.Count() == 0)
+                        return 0.0;
+                    else 
+                        return Math.Sqrt(downSeries
+                            .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
+                }, 0.0,
+                Cache.UniqueId(series.GetHashCode(), n));
+
+            container.Upside = IndicatorsBasic.BufferedLambda(
+                v =>
+                {
+                    var upSeries = Enumerable.Range(0, n)
+                        .Where(t => series[t] > container.Average[0]);
+
+                    if (upSeries.Count() == 0)
+                        return 0.0;
+                    else
+                        return Math.Sqrt(upSeries
+                            .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
+                }, 0.0,
+                Cache.UniqueId(series.GetHashCode(), n));
+
+            return container;
         }
 
         /// <summary>
@@ -158,63 +187,17 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// average of time series
             /// </summary>
-            public TimeSeries<double> Average = new TimeSeries<double>();
+            public ITimeSeries<double> Average;
 
             /// <summary>
             /// standard deviation to the upside
             /// </summary>
-            public TimeSeries<double> Upside = new TimeSeries<double>();
+            public ITimeSeries<double> Upside;
 
             /// <summary>
             /// standard deviation to the downside
             /// </summary>
-            public TimeSeries<double> Downside = new TimeSeries<double>();
-        }
-
-        private class FunctorSemiDeviation : SemiDeviationResult
-        {
-            public readonly ITimeSeries<double> Series;
-            public readonly int N;
-
-            private readonly double _alpha;
-            private double _average;
-            private double _varianceUpside;
-            private double _varianceDownside;
-
-            public FunctorSemiDeviation(ITimeSeries<double> series, int n)
-            {
-                Series = series;
-                N = Math.Max(2, n);
-                _alpha = 2.0 / (N + 1.0);
-            }
-
-            public void Calc()
-            {
-                try
-                {
-                    // calculate exponentially-weighted mean and variance
-                    // see Tony Finch, Incremental calculation of mean and variance
-                    double diff = Series[0] - _average;
-                    double incr = _alpha * diff;
-                    _average = _average + incr;
-
-                    // semi-variance is calculcated only across the samples above (below)
-                    // the average. the other samples are ignored, not zero-padded.
-                    if (diff > 0.0) _varianceUpside = (1.0 - _alpha) * (_varianceUpside + diff * incr);
-                    else _varianceDownside = (1.0 - _alpha) * (_varianceDownside + diff * incr);
-
-                    Average.Value = _average;
-                    Upside.Value = Math.Sqrt(_varianceUpside);
-                    Downside.Value = Math.Sqrt(_varianceDownside);
-                }
-                catch (Exception)
-                {
-                    // we get here when we access bars too far in the past
-                    _average = Series[0];
-                    _varianceUpside = 0.0;
-                    _varianceDownside = 0.0;
-                }
-            }
+            public ITimeSeries<double> Downside;
         }
         #endregion
 

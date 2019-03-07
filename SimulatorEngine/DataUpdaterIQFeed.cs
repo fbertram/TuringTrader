@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataUpdaterIQFeed
 // Description: IQFeed/ DTN data updater
 // History:     2018x02, FUB, created

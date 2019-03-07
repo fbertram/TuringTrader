@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        DataUpdaterStooq
 // Description: unit test for finance.yahoo.com data updater
 // History:     2018xi27, FUB, created

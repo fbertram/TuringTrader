@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        Plotter
 // Description: logging class to connect w/ CSV Files, Excel, R
 // History:     2017xii08, FUB, created

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataUpdaterYahooOptions
 // Description: Option data updater, Yahoo! finance
 // History:     2018x15, FUB, created

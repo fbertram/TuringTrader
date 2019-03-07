@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Clenow_StocksOnTheMove
 // Description: Strategy, as published in Andreas F. Clenow's book
 //              'Stocks on the Move'.
@@ -50,8 +50,8 @@ namespace TuringTrader.BooksAndPubs
         public int TOP_PCNT = 25;
         #endregion
         #region private data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private double? _spxInitial = null;
         private Plotter _plotter = new Plotter();
         #endregion
@@ -297,14 +297,14 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
             WarmupStartTime = DateTime.Parse("01/01/2005");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
             // set account value
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
             CommissionPerShare = 0.015;
 
             // add instruments
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (string nickname in _tradingInstruments)
                 AddDataSource(nickname);
 
@@ -365,8 +365,8 @@ namespace TuringTrader.BooksAndPubs
                             : 0.0);
 
                 // index filter: only buy any shares, while S&P-500 is trading above its 200-day moving average
-                var indexFilter = FindInstrument(_spx).Close
-                    .Divide(FindInstrument(_spx).Close.EMA(INDEX_FLT));
+                var indexFilter = FindInstrument(SPX).Close
+                    .Divide(FindInstrument(SPX).Close.EMA(INDEX_FLT));
 
                 // trade once per week
                 // this is a slight simplification from Clenow's suggestion to change positions
@@ -394,14 +394,12 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
+                    _spxInitial = _spxInitial ?? FindInstrument(SPX).Close[0];
 
-                    _plotter.SelectChart(Name + " performance", "date");
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Inv", instrumentEquity.Values.Sum());
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 
@@ -427,7 +425,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsVolume
 // Description: collection of volume-based indicators
 // History:     2018ix15, FUB, created
@@ -59,7 +59,54 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        // - On-Balance Volume
+        #region public static ITimeSeries<double> OnBalanceVolume(this Instrument series)
+        /// <summary>
+        /// Calculate On-Balance Volume indicator.
+        /// <see href="https://en.wikipedia.org/wiki/On-balance_volume"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>OBV time series</returns>
+        public static ITimeSeries<double> OnBalanceVolume(this Instrument series)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                prev => series.Close[0] > series.Close[1]
+                        ? prev + series.Volume[0]
+                        : prev - series.Volume[0],
+                0,
+                Cache.UniqueId(series.GetHashCode()));
+        }
+        #endregion
+
+        #region public static ITimeSeries<double> MoneyFlowIndex(this Instrument series, int n)
+        /// <summary>
+        /// Calculate Money Flow Index indicator
+        /// <see href="https://en.wikipedia.org/wiki/Money_flow_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">calculation period</param>
+        /// <returns>MFI time series</returns>
+        public static ITimeSeries<double> MoneyFlowIndex(this Instrument series, int n)
+        {
+            var typicalPrice = series.TypicalPrice();
+
+            var postiveMoneyFlow = IndicatorsBasic.BufferedLambda(
+                prev => typicalPrice[0] > typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
+                0.0,
+                Cache.UniqueId(series.GetHashCode(), n));
+
+            var negativeMoneyFlow = IndicatorsBasic.BufferedLambda(
+                prev => typicalPrice[0] < typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
+                0.0,
+                Cache.UniqueId(series.GetHashCode(), n));
+
+            return postiveMoneyFlow.SMA(n)
+                .Divide(
+                    postiveMoneyFlow.SMA(n)
+                    .Add(negativeMoneyFlow.SMA(n)))
+                .Multiply(100.0);
+        }
+        #endregion
+
         // - Volume Rate of Change
     }
 }

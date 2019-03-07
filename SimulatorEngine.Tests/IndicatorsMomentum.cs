@@ -1,5 +1,5 @@
 //==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        IndicatorsMomentum
 // Description: test momentum indicators
 // History:     2018xi27, FUB, created

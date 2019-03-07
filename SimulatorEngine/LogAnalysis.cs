@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        LogAnalysis
 // Description: Analysis of simulation logs.
 // History:     2019ii04, FUB, created

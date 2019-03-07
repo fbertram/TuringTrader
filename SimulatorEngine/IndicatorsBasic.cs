@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsBasic
 // Description: Collection of basic indicators
 // History:     2018ix10, FUB, created
@@ -288,6 +288,19 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        #region public static ITimeSeries<double> ToDouble(this ITimeSeries<long> series)
+        /// <summary>
+        /// Cast time series to double
+        /// </summary>
+        /// <param name="series">input series of long</param>
+        /// <returns>output series of double</returns>
+        public static ITimeSeries<double> ToDouble(this ITimeSeries<long> series)
+        {
+            return IndicatorsBasic.Lambda(
+                (t) => (double)series[t],
+                series.GetHashCode());
+        }
+        #endregion
     }
 }
 

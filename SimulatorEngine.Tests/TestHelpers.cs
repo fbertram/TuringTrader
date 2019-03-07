@@ -1,6 +1,6 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
-// Name:        DataUpdaterStooq
+// Project:     TuringTrader: SimulatorEngine.Tests
+// Name:        TestHelpers
 // Description: unit test for stooq.com data updater
 // History:     2018xi27, FUB, created
 //------------------------------------------------------------------------------

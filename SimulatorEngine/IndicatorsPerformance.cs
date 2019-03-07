@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsPerformance
 // Description: collection of performance indicators
 // History:     2018xii10, FUB, created
@@ -52,7 +52,7 @@ namespace TuringTrader.Simulator
 
         #region public static ITimeSeries<double> Drawdown(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Return current drawdown.
+        /// Return current drawdown in percent, as value between 0 and 1.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length of observation window</param>

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataSourceNorgate
 // Description: Data source for Norgate Data.
 //              Tested w/ Norgate Data API 4.1.5.27.

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataSourceValue
 // Description: enum for data source info values
 // History:     2018ix10, FUB, created

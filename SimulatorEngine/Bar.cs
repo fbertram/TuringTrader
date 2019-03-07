@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        Bar
 // Description: data structure for single instrument bar
 // History:     2018ix11, FUB, created

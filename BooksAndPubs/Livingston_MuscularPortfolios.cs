@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Livingston_MuscularPortfolios
 // Description: 'Mama Bear' and 'Papa Bear' strategies, as published in Brian Livingston's book
 //              'Muscular Portfolios'.
@@ -15,8 +15,9 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+//--- portfolio selection:select only one of these
 #define MAMA_BEAR
-//#define PAPA_BEAR
+//#define PAPA_BEAR // simulation issue: contains many ETFs which were not around until 2014
 
 #region libraries
 using System;
@@ -32,52 +33,58 @@ namespace TuringTrader.BooksAndPubs
     public class Livingston_MuscularPortfolios : Algorithm
     {
         #region internal data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.index";
-        private double? _spxInitial = null;
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region ETF menu & momentum calculation
 #if MAMA_BEAR
         #region Mama Bear
-        private string _name = "Mama Bear";
+        private readonly string _name = "Mama Bear";
 
         private HashSet<string> _etfMenu = new HashSet<string>()
         {
-
-            // note that some instruments have not been around for the whole
-            // simulation period, leading to skewed results
+#if false
+            // note that some instruments have not been around
+            // until 2014, making this hard to simulate
 
             //--- equities
-            "VONE.etf", // Vanguard Russell 1000 ETF, available since 11/16/2010
-            "VIOO.etf", // Vanguard Small-Cap 600 ETF, available since 09/14/2010
-            "VEA.etf",  // Vanguard FTSE Developed Markets ETF, available since 7/26/2007
-            "VWO.etf",  // Vanguard FTSE Emerging Markets ETF, available since 3/10/2005
+            "VONE.etf", // Vanguard Russell 1000 ETF
+            "VIOO.etf", // Vanguard Small-Cap 600 ETF
+            "VEA.etf",  // Vanguard FTSE Developed Markets ETF
+            "VWO.etf",  // Vanguard FTSE Emerging Markets ETF
             //--- hard assets
-            "VNQ.etf",  // Vanguard Real Estate ETF, available since 2/25/2005
-            "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF, available since 11/11/2014
-            "IAU.etf",  // iShares Gold Trust, available since 2/25/2005
+            "VNQ.etf",  // Vanguard Real Estate ETF
+            "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF
+            "IAU.etf",  // iShares Gold Trust
             //--- fixed-income
-            "VGLT.etf", // Vanguard Long-Term Govt. Bond ETF, available since 11/24/2009
-            "SHV.etf",  // iShares Short-Term Treasury ETF, available since 01/11/2007
-
-            // the book mentions that CXO is using different ETFs:
-            // SPY
-            // IWM
-            // EFA
-            // EEM
-            // VNQ
-            // DBC
-            // GLD
-            // TLT
-            // Cash
+            "VGLT.etf", // Vanguard Long-Term Govt. Bond ETF
+            "SHV.etf",  // iShares Short-Term Treasury ETF
+#else
+            // the book mentions that CXO is using different ETFs
+            // we use these, to simulate back to 2007
+            
+            //--- equities
+            "SPY.etf", // SPDR S&P 500 Trust ETF
+            "IWM.etf", // iShares Russell 2000 ETF
+            "EFA.etf", // iShares MSCI EAFE ETF
+            "EEM.etf", // iShares MSCI Emerging Markets ETF
+            //--- hard assets
+            "VNQ.etf", // Vanguard Real Estate ETF
+            "DBC.etf", // Invesco DB Commodity Index Tracking ETF
+            "GLD.etf", // SPDR Gold Shares ETF
+            //--- fixed income
+            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
+            // Cash... substituted by T-Bill, to make strategy work
+            "BIL.etf"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+#endif
         };
 
         // simple 5-month momentum
-        private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
-        #endregion
+        private readonly Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
+#endregion
 #endif
-#if PAPAA_BEAR
+#if PAPA_BEAR
         #region Papa Bear
         private string _name = "Papa Bear";
 
@@ -87,21 +94,21 @@ namespace TuringTrader.BooksAndPubs
             // simulation period, leading to skewed results
 
             //--- equities
-            "VTV.etf",  // US large-cap value stocks, available since 2/25/2005
-            "VUG.etf",  // US large-cap growth stocks, available since 2/25/2005
-            "VIOV.etf", // US small-cap value stocks, available since 9/14/2010
-            "VIOG.etf", // US small-cap growth stocks, available since 9/14/2010
-            "VEA.etf",  // Developed-market stocks, available since 7/26/2007
-            "VWO.etf",  // Emerging-market stocks, available since 3/10/2005
+            "VTV.etf",  // Vanguard Value Index ETF
+            "VUG.etf",  // Vanguard Growth Index ETF
+            "VIOV.etf", // Vanguard S&P Small-Cap 600 Value Index ETF
+            "VIOG.etf", // Vanguard S&P Small-Cap 600 Growth Index ETF
+            "VEA.etf",  // Vanguard Developed Markets Index ETF
+            "VWO.etf",  // Vanguard Emerging Market Stock Index ETF
             //--- hard assets
-            "VNQ.etf",  // US real-estate investment trusts, available since 2/25/2005
-            "PDBC.etf", // Commodities, available since 11/11/2014
-            "IAU.etf",  // Gold, available since 2/25/2005
+            "VNQ.etf",  // Vanguard Real Estate Index ETF
+            "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF
+            "IAU.etf",  // iShares Gold ETF
             //--- fixed-income
-            "EDV.etf",  // US Treasury bonds, 30-year, available since 12/13/2007
-            "VGIT.etf", // US Treasury notes, 10-year, available since 11/23/2009
-            "VCLT.etf", // US investment-grade corporate bonds, available since 11/23/2009
-            "BNDX.etf", // Non-US govt. & corporate bonds, available since 6/7/2013
+            "EDV.etf",  // Vanguard Extended Duration ETF
+            "VGIT.etf", // Vanguard Intermediate-Term Treasury Index ETF
+            "VCLT.etf", // Vanguard Long-Term Corporate Bond Index ETF
+            "BNDX.etf", // Vanguard Total International Bond Index ETF
         };
 
         // average momentum over 3, 6, and 12 months
@@ -117,11 +124,10 @@ namespace TuringTrader.BooksAndPubs
         override public void Run()
         {
             //----- algorithm setup
-            WarmupStartTime = DateTime.Parse("01/01/2006");
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            StartTime = DateTime.Parse("01/01/1990");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (string nick in _etfMenu)
                 AddDataSource(nick);
 
@@ -131,21 +137,29 @@ namespace TuringTrader.BooksAndPubs
             //----- simulation loop
             foreach (DateTime simTime in SimTimes)
             {
-                // find active instruments
-                var instruments = Instruments
-                    .Where(i => _etfMenu.Contains(i.Nickname));
-
                 // calculate momentum w/ algorithm-specific helper function
-                var evaluation = instruments
+                var evaluation = Instruments
                     .ToDictionary(
                         i => i,
                         i => _momentum(i));
 
+                // skip, if there are any missing instruments
+                // we want to make sure our strategy has all instruments available
+                bool instrumentsMissing = _etfMenu
+                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
+                    .Count() > 0;
+
+                if (instrumentsMissing)
+                    continue;
+
+                // find our trading instruments
+                var instruments = Instruments
+                    .Where(i => _etfMenu.Contains(i.Nickname));
+
                 // rank, and select top-3 instruments
                 const int numHold = 3;
-                var top3 = evaluation
-                    .OrderByDescending(e => e.Value)
-                    .Select(e => e.Key)
+                var top3 = instruments
+                    .OrderByDescending(i => evaluation[i])
                     .Take(numHold);
 
                 // calculate target percentage and how far we are off
@@ -184,13 +198,10 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (SimTime[0] >= StartTime)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
-
-                    _plotter.SelectChart(_name + " performance", "date");
+                    _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 
@@ -216,7 +227,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

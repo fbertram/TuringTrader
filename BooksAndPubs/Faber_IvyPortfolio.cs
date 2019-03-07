@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Faber_IvyPortfolio
 // Description: Variuous strategies as published in Mebane Faber's book
 //              'The Ivy Portfolio'.
@@ -33,9 +33,8 @@ namespace TuringTrader.BooksAndPubs
     public class Faber_IvyPortfolio : Algorithm
     {
         #region private data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
-        private double? _spxInitial = null;
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & setup
@@ -49,32 +48,32 @@ namespace TuringTrader.BooksAndPubs
         #if IVY_5_TIMING
         #region  Ivy-5 portfolio: timing system
         private static string _name = "Ivy-5 Timing";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
             //--- domestic equity
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VTI.ETF", // 10, 5  Vanguard Total Stock Market ETF, data since 02/25/2005
+                "VTI.ETF", // Vanguard Total Stock Market ETF
                 _safeInstrument
             } },
             //--- world equity
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VEU.ETF", // 10, 5, Vanguard FTSE All-World ex-US ETF, data since 03/08/2007
+                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
                 _safeInstrument
             } },
             //--- credit
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                 "BND.ETF", // 10, 5, Vanguard Total Bond Market ETF, data since 04/10/2007
+                 "BND.ETF", // Vanguard Total Bond Market ETF
                 _safeInstrument
             } },
             //--- real estate
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VNQ.ETF", // 10, 5, Vanguard REIT Index ETF, data since 02/25/2005
+                "VNQ.ETF", // Vanguard REIT Index ETF
                 _safeInstrument
             } },
             //--- economic stress
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "DBC.ETF", // 10, 5, PowerShares DB Commodity Index Tracking, data since 02/03/2006
+                "DBC.ETF", // PowerShares DB Commodity Index Tracking
                 _safeInstrument
             } },
         };
@@ -91,21 +90,21 @@ namespace TuringTrader.BooksAndPubs
         #endif
         #if IVY_5_ROTATION
         #region Ivy-5 portfolio: rotation system
-        private static string _name = "Ivy-5 Rotation";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
+        private static readonly string _name = "Ivy-5 Rotation";
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
             new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
                 //--- domestic equity
-                "VTI.ETF", // 10, 5  Vanguard Total Stock Market ETF, data since 02/25/2005
+                "VTI.ETF", // Vanguard Total Stock Market ETF
                 //--- world equity
-                "VEU.ETF", // 10, 5, Vanguard FTSE All-World ex-US ETF, data since 03/08/2007
+                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
                 //--- credit
-                 "BND.ETF", // 10, 5, Vanguard Total Bond Market ETF, data since 04/10/2007
+                 "BND.ETF", // Vanguard Total Bond Market ETF
                 //--- real estate
-                "VNQ.ETF", // 10, 5, Vanguard REIT Index ETF, data since 02/25/2005
+                "VNQ.ETF", // Vanguard REIT Index ETF
                 //--- economic stress
-                "DBC.ETF", // 10, 5, PowerShares DB Commodity Index Tracking, data since 02/03/2006
+                "DBC.ETF", // PowerShares DB Commodity Index Tracking
                 _safeInstrument,
                 _safeInstrument,
                 _safeInstrument
@@ -129,52 +128,52 @@ namespace TuringTrader.BooksAndPubs
         #if IVY_10_TIMING
         #region Ivy-10 portfolio: timing system
         private static string _name = "Ivy-10 Timing";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
             //--- domestic equity
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VB.ETF",  // 10,    Vanguard Small Cap ETF, data since 02/25/2005
+                "VB.ETF",  // Vanguard Small Cap ETF
                 _safeInstrument
             } },
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VTI.ETF", // 10, 5  Vanguard Total Stock Market ETF, data since 02/25/2005
+                "VTI.ETF", // Vanguard Total Stock Market ETF
                 _safeInstrument
             } },
             //--- world equity
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VWO.ETF", // 10,    Vanguard Emerging Markets Stock ETF, data since 02/10/2005
+                "VWO.ETF", // Vanguard Emerging Markets Stock ETF
                 _safeInstrument
             } },
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VEU.ETF", // 10, 5, Vanguard FTSE All-World ex-US ETF, data since 03/08/2007
+                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
                 _safeInstrument
             } },
             //--- credit
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "BND.ETF", // 10, 5, Vanguard Total Bond Market ETF, data since 04/10/2007
+                "BND.ETF", // Vanguard Total Bond Market ETF
                 _safeInstrument
             } },
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "TIP.ETF", // 10,    iShares Barclays TIPS Bond, data since 02/25/2005
+                "TIP.ETF", // iShares Barclays TIPS Bond
                 _safeInstrument
             } },
             //--- real estate
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "RWX.ETF", // 10,    SPDR DJ International Real Estate ETF, data since 12/15/2006
+                "RWX.ETF", // SPDR DJ International Real Estate ETF
                 _safeInstrument
             } },
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VNQ.ETF", // 10, 5, Vanguard REIT Index ETF, data since 02/25/2005
+                "VNQ.ETF", // Vanguard REIT Index ETF
                 _safeInstrument
             } },
             //--- economic stress
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "DBC.ETF", // 10, 5, PowerShares DB Commodity Index Tracking, data since 02/03/2006
+                "DBC.ETF", // 1PowerShares DB Commodity Index Tracking
                 _safeInstrument
             } },
             new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "GSG.ETF", // 10,    S&P GSCI(R) Commodity-Indexed Trust, data since 07/21/2006
+                "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
                 _safeInstrument,
             } },
         };
@@ -183,32 +182,34 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] / i.Close.EMA(210)[0] - 1.0;
+            return i.Close[0] > i.Close.EMA(210)[0]
+                ? 1.0
+                : -1.0;
         };
         #endregion
         #endif
         #if IVY_10_ROTATION
         #region Ivy-10 portfolio: rotation system
         private static string _name = "Ivy-10 Rotation";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF, available since 5/30/2007
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
             new AssetClass { weight = 1.00, numpicks = 5, assets = new List<string> {
                 //--- domestic equity
-                "VB.ETF",  // 10,    Vanguard Small Cap ETF, data since 02/25/2005
-                "VTI.ETF", // 10, 5  Vanguard Total Stock Market ETF, data since 02/25/2005
+                "VB.ETF",  // Vanguard Small Cap ETF
+                "VTI.ETF", // Vanguard Total Stock Market ETF
                 //--- world equity
-                "VWO.ETF", // 10,    Vanguard Emerging Markets Stock ETF, data since 02/10/2005
-                "VEU.ETF", // 10, 5, Vanguard FTSE All-World ex-US ETF, data since 03/08/2007
+                "VWO.ETF", // Vanguard Emerging Markets Stock ETF
+                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
                 //--- credit
-                "BND.ETF", // 10, 5, Vanguard Total Bond Market ETF, data since 04/10/2007
-                "TIP.ETF", // 10,    iShares Barclays TIPS Bond, data since 02/25/2005
+                "BND.ETF", // Vanguard Total Bond Market ETF
+                "TIP.ETF", // iShares Barclays TIPS Bond
                 //--- real estate
-                "RWX.ETF", // 10,    SPDR DJ International Real Estate ETF, data since 12/15/2006
-                "VNQ.ETF", // 10, 5, Vanguard REIT Index ETF, data since 02/25/2005
+                "RWX.ETF", // SPDR DJ International Real Estate ETF
+                "VNQ.ETF", // Vanguard REIT Index ETF
                 //--- economic stress
-                "DBC.ETF", // 10, 5, PowerShares DB Commodity Index Tracking, data since 02/03/2006
-                "GSG.ETF", // 10,    S&P GSCI(R) Commodity-Indexed Trust, data since 07/21/2006
+                "DBC.ETF", // PowerShares DB Commodity Index Tracking
+                "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
                 //---
                 _safeInstrument,
                 _safeInstrument,
@@ -239,16 +240,15 @@ namespace TuringTrader.BooksAndPubs
         {
             //----- initialization
 
-            WarmupStartTime = DateTime.Parse("05/30/2007");
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            StartTime = DateTime.Parse("01/01/1990");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (AssetClass assetClass in _assetClasses)
                 foreach (string nick in assetClass.assets)
                     AddDataSource(nick);
 
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
 
             _plotter.Clear();
 
@@ -256,20 +256,25 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (DateTime simTime in SimTimes)
             {
-                // collect all of our trading instruments
-                List<Instrument> instruments = _assetClasses
-                    .SelectMany(s => s.assets)
-                    .Distinct()
-                    .Select(n => FindInstrument(n))
-                    .ToList();
-
-                // evaluate instrument momentum: make sure instrument indicators are only evaluated once!
-                Dictionary<Instrument, double> instrumentMomentum = instruments
+                // evaluate instrument momentum for all known instruments,
+                // we need to make sure to evaluate every instrument only once!
+                Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
                         i => _scoringFunc(i));
 
+                // skip if there are any missing instruments,
+                // we want to make sure our strategy has all instruemnts available
+                bool instrumentsMissing = _assetClasses
+                    .SelectMany(c => c.assets)
+                    .Distinct()
+                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
+                    .Count() > 0;
+
+                if (instrumentsMissing)
+                    continue;
+
                 // create empty structure for instrument weights
-                Dictionary<Instrument, double> instrumentWeights = instruments
+                Dictionary<Instrument, double> instrumentWeights = Instruments
                     .ToDictionary(i => i, i => 0.0);
 
                 // loop through all asset classes
@@ -319,14 +324,10 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
-
                     _plotter.SelectChart(_name + " performance", "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Cash", FindInstrument(_safeInstrument).Position * FindInstrument(_safeInstrument).Close[0] / NetAssetValue[0]);
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 
@@ -352,7 +353,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsTrend
 // Description: collection of trend-based indicators
 // History:     2018ix10, FUB, created
@@ -28,6 +28,21 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsTrend
     {
+        #region public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Calculate rolling window sum.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>sum time series</returns>
+        public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n)
+        {
+            return IndicatorsBasic.BufferedLambda(
+                v => Enumerable.Range(0, n).Sum(t => series[t]),
+                series[0],
+                Cache.UniqueId(series.GetHashCode(), n));
+        }
+        #endregion
         #region public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         /// <summary>
         /// Calculate Simple Moving Average as described here:
@@ -38,6 +53,12 @@ namespace TuringTrader.Simulator
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
+#if true
+            return series
+                .Sum(n)
+                .Divide((double)n);
+#else
+
             // TODO: rewrite this using Linq, see WMA implementation
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
@@ -62,6 +83,7 @@ namespace TuringTrader.Simulator
                 },
                 series[0],
                 series.GetHashCode(), n);
+#endif
         }
         #endregion
         #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
@@ -79,7 +101,7 @@ namespace TuringTrader.Simulator
                 (v) =>
                 {
                     return Enumerable.Range(0, n - 1)
-                        .Sum(t => (n - t ) / sum * series[t]);
+                        .Sum(t => (n - t) / sum * series[t]);
                 },
                 series[0],
                 series.GetHashCode(), n);

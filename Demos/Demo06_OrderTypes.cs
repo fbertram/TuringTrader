@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, demo algorithms
 // Name:        Demo06_OrderTypes
 // Description: demonstrate various order types & trade log
 // History:     2018ix29, FUB, created

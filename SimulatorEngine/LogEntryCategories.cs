@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        LogEntryCategories
 // Description: log entry categories for actions and instruments.
 // History:     2018xi16, FUB, created

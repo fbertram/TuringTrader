@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataSourceCsv
 // Description: Data source for CSV files.
 // History:     2018ix10, FUB, created

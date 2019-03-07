@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        IndicatorsArithmetic
 // Description: arithmetic on time series
 // History:     2018ix14, FUB, created
@@ -128,7 +128,7 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         {
             return IndicatorsBasic.Lambda(
-                (t) => series1[t] / series2[t],
+                (t) => series1[t] / (series2[t] == 0 ? 1e-25 : series2[t]),
                 series1.GetHashCode(), series2.GetHashCode());
         }
         #endregion

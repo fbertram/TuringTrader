@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        ITimeSeries
 // Description: time series interface
 // History:     2018ix10, FUB, created

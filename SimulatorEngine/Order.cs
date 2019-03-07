@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        Order
 // Description: order ticket
 // History:     2018ix11, FUB, created

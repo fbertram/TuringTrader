@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     TuringTrader Demos
+// Project:     TuringTrader, algorithms from books & publications
 // Name:        Keller_DAA
 // Description: Strategy, as published in Wouter J. Keller and Jan Willem Keuning's
 //              paper 'Breadth Momentum and the Canary Universe:
@@ -16,23 +16,13 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-//#define DAA_G4
-// see paper: DAA-G4 has subpar risk/return
-
-//#define DAA_G6
-// see paper: instead of DAA-G4, we use DAA-G6
-
-#define DAA_G12
-// see paper: this is the 'standard' DAA
-
-//#define DAA1_G12
-// see paper: aggressive G12
-
-//#define DAA1_G4
-// see paper: aggressive G4
-
-//#define DAA1_U1
-// see paper: minimalistic version
+//--- universe selection: enable only one of these
+//#define DAA_G4   // see paper: DAA-G4 has subpar risk/return
+//#define DAA_G6   // see paper: instead of DAA-G4, we use DAA-G6
+#define DAA_G12  // see paper: this is the 'standard' DAA
+//#define DAA1_G12 // see paper: aggressive G12
+//#define DAA1_G4  // see paper: aggressive G4
+//#define DAA1_U1  // see paper: minimalistic version
 
 #region libraries
 using System;
@@ -48,9 +38,8 @@ namespace BooksAndPubs
     public class Keller_DAA : Algorithm
     {
         #region internal data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
-        private double? _spxInitial = null;
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & settings
@@ -108,7 +97,7 @@ namespace BooksAndPubs
         private int B = 2; // breadth parameter
 #endif
 #if DAA_G12
-        private static string _name = "DAA-G12";
+        private static readonly string _name = "DAA-G12";
         private static string[] riskyUniverse =
         {
             "SPY.etf", // SPDR S&P 500 ETF
@@ -135,8 +124,8 @@ namespace BooksAndPubs
             "VWO.etf", // Vanguard FTSE Emerging Markets ETF
             "BND.etf"  // Vanguard Total Bond Market ETF
         };
-        private int T = 6; // (risky) top parameter
-        private int B = 2; // breadth parameter
+        private readonly int T = 6; // (risky) top parameter
+        private readonly int B = 2; // breadth parameter
 #endif
 #if DAA1_G12
         private static string _name = "DAA1-G12";
@@ -219,15 +208,14 @@ namespace BooksAndPubs
         {
             //----- initialization
 
-            WarmupStartTime = DateTime.Parse("01/01/2007");
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Parse("12/31/2018, 4pm");
+            StartTime = DateTime.Parse("01/01/1990");
+            EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
             foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))
                 AddDataSource(nick);
-            AddDataSource(_spx);
+            AddDataSource(SPX);
 
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
             //CommissionPerShare = 0.015; // paper does not consider trade commissions
 
             _plotter.Clear();
@@ -245,6 +233,15 @@ namespace BooksAndPubs
                             + 4.0 * (i.Close[0] / i.Close[63] - 1.0)
                             + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
                             + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
+
+                // skip if there are any missing instruments
+                // we want to make sure our strategy has all instruments available
+                bool instrumentsMissing = riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse)
+                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
+                    .Count() > 0;
+
+                if (instrumentsMissing)
+                    continue;
 
                 // find T top risky assets
                 IEnumerable<Instrument> topInstruments = Instruments
@@ -297,14 +294,10 @@ namespace BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _spxInitial = _spxInitial ?? FindInstrument(_spx).Close[0];
-
-                    _plotter.SelectChart(_name + " performance", "date");
+                    _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0] / _initialFunds);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0] / _spxInitial);
-                    _plotter.Plot("DD", (NetAssetValue[0] - NetAssetValueHighestHigh) / NetAssetValueHighestHigh);
-                    _plotter.Plot("Cash", Instruments.Where(i => cashUniverse.Contains(i.Nickname)).Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 
@@ -328,7 +321,7 @@ namespace BooksAndPubs
 
             // calculate Keller ratio
             double R = Math.Exp(
-                252.0 / TradingDays * Math.Log(NetAssetValue[0] / _initialFunds));
+                252.0 / TradingDays * Math.Log(NetAssetValue[0] / INITIAL_FUNDS));
             double K50 = NetAssetValueMaxDrawdown < 0.5 && R > 0.0
                 ? R * (1.0 - NetAssetValueMaxDrawdown / (1.0 - NetAssetValueMaxDrawdown))
                 : 0.0;
@@ -342,7 +335,7 @@ namespace BooksAndPubs
         #region public override void Report()
         public override void Report()
         {
-            _plotter.OpenWith("SimpleChart");
+            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        OptimizerParamAttribute
 // Description: optimizer parameter
 // History:     2018x09, FUB, created

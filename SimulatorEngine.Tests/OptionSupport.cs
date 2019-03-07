@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        OptionSupport
 // Description: unit test for option support class.
 // History:     2019i14, FUB, created
@@ -120,7 +120,7 @@ namespace SimulatorEngine.Tests
 
         #region public void Test_PriceAndGreeks()
         [TestMethod]
-        public void Test_PriceAndGreeksNew()
+        public void Test_PriceAndGreeks()
         {
             List<TestVector> testVectors = new List<TestVector>
             {

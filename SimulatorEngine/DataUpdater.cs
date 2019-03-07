@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        DataUpdater
 // Description: Data updater base class
 // History:     2018ix27, FUB, created

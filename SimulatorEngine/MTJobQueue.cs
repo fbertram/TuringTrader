@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        MTJobQueue
 // Description: multi-threaded job queue to support optimizer
 // History:     2018ix20, FUB, created

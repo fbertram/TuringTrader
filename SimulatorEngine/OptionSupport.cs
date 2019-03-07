@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        OptionSupport
 // Description: option support functionality
 // History:     2019i29, FUB, created

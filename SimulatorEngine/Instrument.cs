@@ -1,5 +1,5 @@
 ﻿//==============================================================================
-// Project:     Trading Simulator
+// Project:     TuringTrader, simulator core
 // Name:        Instrument
 // Description: instrument, a time series of bars
 // History:     2018ix10, FUB, created
