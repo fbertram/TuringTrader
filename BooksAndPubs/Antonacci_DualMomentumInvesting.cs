@@ -29,8 +29,8 @@ namespace TuringTrader.BooksAndPubs
     public class Antonacci_DualMomentumInvesting : Algorithm
     {
         #region internal data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments
@@ -73,12 +73,12 @@ namespace TuringTrader.BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990");
             EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (HashSet<string> assetClass in _assetClasses)
                 foreach (string nick in assetClass)
                     AddDataSource(nick);
 
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
             CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
 
             _plotter.Clear();
@@ -155,7 +155,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 

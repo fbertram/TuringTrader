@@ -33,8 +33,8 @@ namespace TuringTrader.BooksAndPubs
     public class Faber_IvyPortfolio : Algorithm
     {
         #region private data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & setup
@@ -90,7 +90,7 @@ namespace TuringTrader.BooksAndPubs
         #endif
         #if IVY_5_ROTATION
         #region Ivy-5 portfolio: rotation system
-        private static string _name = "Ivy-5 Rotation";
+        private static readonly string _name = "Ivy-5 Rotation";
         private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
         private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
         {
@@ -243,12 +243,12 @@ namespace TuringTrader.BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990");
             EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (AssetClass assetClass in _assetClasses)
                 foreach (string nick in assetClass.assets)
                     AddDataSource(nick);
 
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
 
             _plotter.Clear();
 
@@ -327,7 +327,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(_name + " performance", "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 

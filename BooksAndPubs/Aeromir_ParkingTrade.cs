@@ -54,18 +54,18 @@ namespace TuringTrader.BooksAndPubs
     public class Aeromir_ParkingTrade : Algorithm
     {
         #region inputs
-        private double INITIAL_CASH = 1e6;
-        private double COMMISSION = 0.01;
+        private readonly double INITIAL_CASH = 1e6;
+        private readonly double COMMISSION = 0.01;
 #if FAKE_DATA
-        private string UNDERLYING_NICK = "^SPX.index";
+        private readonly string UNDERLYING_NICK = "^SPX.index";
         public string OPTION_NICK = "^SPX.fake.options";
 #else
         private string UNDERLYING_NICK = "^SPX.index";
         private string OPTION_NICK = "^SPX.weekly.options";
 #endif
-        private string DEBUG_REPORT = "SimpleChart";
+        private readonly string DEBUG_REPORT = "SimpleReport";
 
-        private int RISK_PER_TRADE = 7;
+        private readonly int RISK_PER_TRADE = 7;
 
 #if FUB_IMPROVEMENTS
         public int DOLLAR_REF = 1300; // as of mid 2012
@@ -86,7 +86,6 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         private Plotter _plotter = new Plotter();
         private Instrument _underlyingInstrument = null;
-        private double? _underlyingInitialPrice = null;
 #if FUB_IMPROVEMENTS
         private double SPX_SCALE
         {
@@ -106,9 +105,8 @@ namespace TuringTrader.BooksAndPubs
             // plots on Sheet 1
             _plotter.SelectChart("Aeromir Parking Trade", "date");
             _plotter.SetX(SimTime[0]);
-            _plotter.Plot("NAV", NetAssetValue[0] / INITIAL_CASH);
-            _plotter.Plot("DD", NetAssetValue[0] / NetAssetValueHighestHigh - 1.0);
-            _plotter.Plot("SPX", _underlyingInstrument.Close[0] / _underlyingInitialPrice);
+            _plotter.Plot("NAV", NetAssetValue[0]);
+            _plotter.Plot("SPX", _underlyingInstrument.Close[0]);
 
             // trade log on Sheet 2
             if (IsLastBar)
@@ -283,7 +281,6 @@ namespace TuringTrader.BooksAndPubs
             // reset strategy variables
             _plotter.Clear();
             _underlyingInstrument = null;
-            _underlyingInitialPrice = null;
 
             //---------- simulation
 
@@ -293,10 +290,6 @@ namespace TuringTrader.BooksAndPubs
                 // find the underlying instrument
                 if (_underlyingInstrument == null)
                     _underlyingInstrument = FindInstrument(UNDERLYING_NICK);
-
-                // retrieve the underlying spot price
-                if (_underlyingInitialPrice == null && TradingDays == 1)
-                    _underlyingInitialPrice = _underlyingInstrument.Close[0];
 
                 // find all weekly expiry dates
                 List<DateTime> expiryDates = OptionChain(OPTION_NICK)

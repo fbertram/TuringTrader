@@ -16,23 +16,13 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-//#define DAA_G4
-// see paper: DAA-G4 has subpar risk/return
-
-//#define DAA_G6
-// see paper: instead of DAA-G4, we use DAA-G6
-
-#define DAA_G12
-// see paper: this is the 'standard' DAA
-
-//#define DAA1_G12
-// see paper: aggressive G12
-
-//#define DAA1_G4
-// see paper: aggressive G4
-
-//#define DAA1_U1
-// see paper: minimalistic version
+//--- universe selection: enable only one of these
+//#define DAA_G4   // see paper: DAA-G4 has subpar risk/return
+//#define DAA_G6   // see paper: instead of DAA-G4, we use DAA-G6
+#define DAA_G12  // see paper: this is the 'standard' DAA
+//#define DAA1_G12 // see paper: aggressive G12
+//#define DAA1_G4  // see paper: aggressive G4
+//#define DAA1_U1  // see paper: minimalistic version
 
 #region libraries
 using System;
@@ -48,8 +38,8 @@ namespace BooksAndPubs
     public class Keller_DAA : Algorithm
     {
         #region internal data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.Index";
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.Index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & settings
@@ -107,7 +97,7 @@ namespace BooksAndPubs
         private int B = 2; // breadth parameter
 #endif
 #if DAA_G12
-        private static string _name = "DAA-G12";
+        private static readonly string _name = "DAA-G12";
         private static string[] riskyUniverse =
         {
             "SPY.etf", // SPDR S&P 500 ETF
@@ -134,8 +124,8 @@ namespace BooksAndPubs
             "VWO.etf", // Vanguard FTSE Emerging Markets ETF
             "BND.etf"  // Vanguard Total Bond Market ETF
         };
-        private int T = 6; // (risky) top parameter
-        private int B = 2; // breadth parameter
+        private readonly int T = 6; // (risky) top parameter
+        private readonly int B = 2; // breadth parameter
 #endif
 #if DAA1_G12
         private static string _name = "DAA1-G12";
@@ -223,9 +213,9 @@ namespace BooksAndPubs
 
             foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))
                 AddDataSource(nick);
-            AddDataSource(_spx);
+            AddDataSource(SPX);
 
-            Deposit(_initialFunds);
+            Deposit(INITIAL_FUNDS);
             //CommissionPerShare = 0.015; // paper does not consider trade commissions
 
             _plotter.Clear();
@@ -307,7 +297,7 @@ namespace BooksAndPubs
                     _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 
@@ -331,7 +321,7 @@ namespace BooksAndPubs
 
             // calculate Keller ratio
             double R = Math.Exp(
-                252.0 / TradingDays * Math.Log(NetAssetValue[0] / _initialFunds));
+                252.0 / TradingDays * Math.Log(NetAssetValue[0] / INITIAL_FUNDS));
             double K50 = NetAssetValueMaxDrawdown < 0.5 && R > 0.0
                 ? R * (1.0 - NetAssetValueMaxDrawdown / (1.0 - NetAssetValueMaxDrawdown))
                 : 0.0;

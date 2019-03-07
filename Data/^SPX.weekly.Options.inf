@@ -1,5 +1,5 @@
 name=S&P 500 OPTIONS
-dataPath=Data\^SPX.Options
+dataPath=..\..\FUB_TradingSolutions\Data\Data\^SPX.weekly.options
 ticker=SPX
 date={2:MM/dd/yyyy}
 time=16:00

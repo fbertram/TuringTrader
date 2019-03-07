@@ -15,8 +15,9 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+//--- portfolio selection:select only one of these
 #define MAMA_BEAR
-//#define PAPA_BEAR
+//#define PAPA_BEAR // simulation issue: contains many ETFs which were not around until 2014
 
 #region libraries
 using System;
@@ -32,18 +33,17 @@ namespace TuringTrader.BooksAndPubs
     public class Livingston_MuscularPortfolios : Algorithm
     {
         #region internal data
-        private const double _initialFunds = 100000;
-        private string _spx = "^SPX.index";
+        private readonly double INITIAL_FUNDS = 100000;
+        private readonly string SPX = "^SPX.index";
         private Plotter _plotter = new Plotter();
         #endregion
         #region ETF menu & momentum calculation
 #if MAMA_BEAR
         #region Mama Bear
-        private string _name = "Mama Bear";
+        private readonly string _name = "Mama Bear";
 
         private HashSet<string> _etfMenu = new HashSet<string>()
         {
-
 #if false
             // note that some instruments have not been around
             // until 2014, making this hard to simulate
@@ -81,10 +81,10 @@ namespace TuringTrader.BooksAndPubs
         };
 
         // simple 5-month momentum
-        private Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
+        private readonly Func<Instrument, double> _momentum = (i) => i.Close[0] / i.Close[5 * 21] - 1.0;
 #endregion
 #endif
-#if PAPAA_BEAR
+#if PAPA_BEAR
         #region Papa Bear
         private string _name = "Papa Bear";
 
@@ -127,7 +127,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990");
             EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(_spx);
+            AddDataSource(SPX);
             foreach (string nick in _etfMenu)
                 AddDataSource(nick);
 
@@ -201,7 +201,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_spx, FindInstrument(_spx).Close[0]);
+                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
                 }
             }
 

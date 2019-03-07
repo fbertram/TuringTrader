@@ -256,7 +256,7 @@ namespace BooksAndPubs
 #endif
         #endregion
         #region internal data
-        private string _benchmark = "^SPX.index";
+        private readonly string _benchmark = "^SPX.index";
         private Plotter _plotter = new Plotter();
         #endregion
 
