@@ -910,7 +910,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Class encapsulating calculation of covariance matrix.
         /// </summary>
-        public class PortfolioCovariance
+        public class Covariance
         {
             #region internal data
             private readonly List<Instrument> _instruments;
@@ -926,7 +926,7 @@ namespace TuringTrader.Simulator
             /// <param name="universe">universe of instruments</param>
             /// <param name="numBars"># of bars to calculate</param>
             /// <param name="barSize"># of bars between points, default = 1</param>
-            public PortfolioCovariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
+            public Covariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
             {
                 // save instruments, ordered by their hash code
                 // this is important, so that we can define a 

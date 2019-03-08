@@ -305,7 +305,7 @@ namespace BooksAndPubs
                 //if (SimTime[0].DayOfWeek < SimTime[1].DayOfWeek) // weekly
                 {
                     // calculate covariance
-                    var covar = new PortfolioSupport.PortfolioCovariance(Instruments, 12, 21); // 12 monthly bars
+                    var covar = new PortfolioSupport.Covariance(Instruments, 12, 21); // 12 monthly bars
                     //var covar = new PortfolioSupport.PortfolioCovariance(Instruments, 63); // 63 daily bars
 
                     // calculate efficient frontier for universe
