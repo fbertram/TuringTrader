@@ -28,9 +28,6 @@
 //#define UNIVERSE_N39   // from paper
 //#define UNIVERSE_G4    // FUB addition (see Keller's DAA)
 //#define UNIVERSE_G12   // FUB addition (see Keller's DAA)
-//#define UNIVERSE_FUB3  // FUB addition
-//#define UNIVERSE_FUB4  // FUB addition
-//#define UNIVERSE_FUB12 // FUB addition
 
 #region libraries
 using System;
@@ -203,57 +200,6 @@ namespace BooksAndPubs
             "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 #endif
-#if UNIVERSE_FUB3
-        private readonly string UNIVERSE_NICK = "FUB-3";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "VTI.etf",
-            "TLT.etf", 
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.70;
-        private string[] SAFE_ASSETS =
-        {
-            "BIL.etf", // T-Bills
-        };
-#endif
-#if UNIVERSE_FUB4
-        private readonly string UNIVERSE_NICK = "FUB-4";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "VTI.etf", // US equities
-            "VNQ.etf", // Real estate
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.70;
-        private string[] SAFE_ASSETS =
-        {
-            "LQD.etf", // US investment grade bonds
-            "IEF.etf", // Intermediate-term treasuries
-        };
-#endif
-#if UNIVERSE_FUB12
-        private readonly string UNIVERSE_NICK = "FUB-12";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "SPY.etf", // SPDR S&P 500 Trust ETF
-            "QQQ.etf", // Invesco QQQ Nasdaq-100 ETF
-            "IWM.etf", // iShares Russell 200 ETF
-            "VGK.etf", // Vanguard European Stock Index ETF
-            "EEM.etf", // iShares MSCI Emerging Markets ETF
-            "DXJ.etf", // Wisdom Tree Japan Hedged Equity ETF
-            "VNQ.etf", // Vanguard Real Estate ETF
-            "RWX.etf", // SPDR Dow Jones International Real Estate ETF
-            "DBC.etf", // Invesco DB Commodity Index Tracking ETF
-            "GLD.etf", // SPDR Gold Shares ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.25;
-        private string[] SAFE_ASSETS =
-        {
-            "LQD.etf", // iShares iBoxx $ Investment Grade Corporate Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-        };
-#endif
         #endregion
         #region internal data
         private readonly string _benchmark = "^SPX.index";
@@ -302,18 +248,16 @@ namespace BooksAndPubs
 
                 // trigger rebalancing
                 if (SimTime[0].Month != SimTime[1].Month) // monthly
-                //if (SimTime[0].DayOfWeek < SimTime[1].DayOfWeek) // weekly
                 {
                     // calculate covariance
                     var covar = new PortfolioSupport.Covariance(Instruments, 12, 21); // 12 monthly bars
-                    //var covar = new PortfolioSupport.PortfolioCovariance(Instruments, 63); // 63 daily bars
 
                     // calculate efficient frontier for universe
                     // note how momentum and covariance are annualized here
                     var cla = new PortfolioSupport.MarkowitzCLA(
                         Instruments.Where(i => universe.Contains(i.Nickname)),
                         i => 252.0 * momentum[i],
-                        (i, j) => Math.Sqrt(252.0 / covar.BarSize) * covar[i, j],
+                        (i, j) => Math.Sqrt(252.0 / covar.BarSize) * covar[i, j], // TODO: is sqrt correct?
                         i => 0.0,
                         i => SAFE_ASSETS.Contains(i.Nickname) ? 1.0 : MAX_RISKY_ALLOC);
 

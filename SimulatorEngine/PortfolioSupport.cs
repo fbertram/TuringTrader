@@ -401,6 +401,31 @@ namespace TuringTrader.Simulator
                 private void PurgeNumErr(double tol)
                 {
                     // # Purge violations of inequality constraints (associated with ill-conditioned covar matrix)
+#if false
+                    return;
+
+                    /*
+                    def purgeNumErr(self,tol):
+                        i=0
+                        while True:
+                            flag=False
+                            if i==len(self.w):break
+                            if abs(sum(self.w[i])-1)>tol:
+                                flag=True
+                            else:
+                                for j in range(self.w[i].shape[0]):
+                                    if self.w[i][j]-self.lB[j]<-tol or self.w[i][j]-self.uB[j]>tol:
+                                        flag=True;break
+                            if flag==True:
+                                del self.w[i]
+                                del self.l[i]
+                                del self.g[i]
+                                del self.f[i]
+                            else:
+                                i+=1
+                        return                    
+                    */
+#else
                     int i = 0;
                     while (true)
                     {
@@ -409,7 +434,7 @@ namespace TuringTrader.Simulator
                         if (i == _w.Count())
                             break;
 
-                        if (_w[i].Sum() - 1.0 > tol)
+                        if (Math.Abs(_w[i].Sum() - 1.0) > tol)
                         {
                             flag = true;
                         }
@@ -439,6 +464,7 @@ namespace TuringTrader.Simulator
                             i++;
                         }
                     }
+#endif
                 }
                 #endregion
                 #region private void PurgeExcess()
@@ -857,50 +883,67 @@ namespace TuringTrader.Simulator
                 return pf;
             }
             #endregion
-            #region public MarkowitzPortfolio DefinedRisk(double risk)
+            #region public MarkowitzPortfolio DefinedRisk(double targetRisk)
             /// <summary>
             /// Return portfolio with a given risk (or less). Note that
-            /// the weights of this portfolio might not add up to 1.0.
+            /// the weights of this portfolio might not add up to 1.0:
+            /// This routine will return a portfolio on the capital allocation
+            /// line, if the target risk is lower than the risk of the
+            /// portfolio with the maximum Sharpe Ratio.
             /// </summary>
-            /// <param name="risk">risk setting</param>
+            /// <param name="targetRisk">risk setting</param>
             /// <returns>portfolio</returns>
-            public Portfolio DefinedRisk(double risk)
+            public Portfolio DefinedRisk(double targetRisk)
             {
-                // TODO: this can probably be significantly optimized
-                //       we don't need to calculate the complete EF,
-                //       instead we need to only estimate between
-                //       two turning points
+                var maxSR = MaximumSharpeRatio();
 
-                var ef = EfficientFrontier(250)
-                    .ToList();
-                var minRisk = ef.Min(pf => pf.Risk);
-                var maxRisk = ef.Max(pf => pf.Risk);
-
-                if (minRisk > risk)
+                if (targetRisk < maxSR.Risk)
                 {
-                    // if we can't meet the risk objective,
-                    // we start with the minimum variance portfolio,
-                    // and dilute it with cash
-                    var minVar = MinimumVariance();
-                    var scaleDown = minVar.Risk / risk;
+                    //----- desired portfolio is on the capital allocation line
 
-                    var pf = new Portfolio
+                    var scaleDown = maxSR.Risk / targetRisk;
+
+                    var cal = new Portfolio
                     {
-                        Return = minVar.Return / scaleDown,
-                        Risk = risk,
-                        Weights = minVar.Weights.Keys
+                        Return = maxSR.Return / scaleDown,
+                        Risk = targetRisk,
+                        Weights = maxSR.Weights.Keys
                             .ToDictionary(
-                                i => i, 
-                                i => minVar.Weights[i] / scaleDown),
+                                i => i,
+                                i => maxSR.Weights[i] / scaleDown),
                     };
 
-                    return pf;
-                }
+#if false
+                    // debugging only: plot efficient frontier
+                    Plotter p = new Plotter();
+                    p.SelectChart("Efficient Frontier", "risk");
+                    foreach (var i in EfficientFrontier(250))
+                    {
+                        p.SetX(i.Risk);
+                        p.Plot("return", i.Return);
+                    }
+                    p.OpenWith("SimpleChart");
+#endif
 
-                return ef
-                    .Where(pf => pf.Risk <= risk)
-                    .OrderByDescending(pf => pf.Risk)
-                    .First();
+                    return cal;
+                }
+                else
+                {
+                    //----- desired portfolio is on the efficient frontier
+
+                    // TODO: this can probably be significantly optimized
+                    //       we don't need to calculate the complete EF,
+                    //       instead we need to only estimate between
+                    //       two turning points
+
+                    var ef = EfficientFrontier(250)
+                        .ToList();
+
+                    return ef
+                        .Where(pf => pf.Risk <= targetRisk)
+                        .OrderByDescending(pf => pf.Risk)
+                        .First();
+                }
             }
             #endregion
         }

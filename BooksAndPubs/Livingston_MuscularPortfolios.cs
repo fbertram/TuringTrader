@@ -131,7 +131,7 @@ namespace TuringTrader.BooksAndPubs
             foreach (string nick in _etfMenu)
                 AddDataSource(nick);
 
-            Deposit(100000);
+            Deposit(INITIAL_FUNDS);
             //CommissionPerShare = 0.015; // the book does not deduct commissions
 
             //----- simulation loop
