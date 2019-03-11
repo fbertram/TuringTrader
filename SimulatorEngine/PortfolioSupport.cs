@@ -85,6 +85,39 @@ namespace TuringTrader.Simulator
                 private List<List<int>> _f;
                 #endregion
                 #region internal helpers
+                #region private void DumpTestVectors()
+                private void DumpTestVectors()
+                {
+#if true
+                    Output.WriteLine("double[] mean = {");
+                    for (int i = 0; i < _mean.Count; i++)
+                        Output.WriteLine("    {0:E15}, ", _mean[i]);
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[,] covar = {");
+                    for (int i = 0; i < _covar.RowCount; i++)
+                    {
+                        Output.Write("    { ");
+                        for (int j = 0; j < _covar.ColumnCount; j++)
+                        {
+                            Output.Write("{0:E15}, ", _covar[i, j]);
+                        }
+                        Output.WriteLine("},");
+                    }
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[] lbound = {");
+                    for (int i = 0; i < _lb.Count; i++)
+                        Output.WriteLine("    {0:E15},", _lb[i]);
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[] ubound = {");
+                    for (int i = 0; i < _lb.Count; i++)
+                        Output.WriteLine("    {0:E15},", _ub[i]);
+                    Output.WriteLine("};");
+#endif
+                }
+                #endregion
                 #region private void Solve()
                 private void Solve()
                 {
@@ -105,8 +138,11 @@ namespace TuringTrader.Simulator
                     Vector<double> meanF = null;
                     Vector<double> wB = null;
 
+                    int iter = 0;
                     while (true)
                     {
+                        iter++;
+
                         //----------
                         // #1) case a) Bound one free weight
                         double l_in = -1.0;
@@ -173,8 +209,28 @@ namespace TuringTrader.Simulator
                             }
                         }
 
-                        if (l_in < 0.0 && l_out < 0.0)
+#if true
+                        // FIXME: sometimes method doesn't converge. It is unclear why
+                        // that is, and it seems the issue can't be reproduced in the
+                        // testbench. Probably, the numerical resolution of the test
+                        // vectors dumped by the code below, is not sufficient to do so.
+                        // It was observed that lambdas have been going in circles,
+                        // while it seems they should be monotonically falling?
+                        // For now, we just abort the method here.
+                        bool noConvergence = _w.Count > 50 * _mean.Count; 
+#else
+                        bool noConvergence = false;
+#endif
+
+                        if (l_in < 0.0 && l_out < 0.0
+                        || noConvergence)
                         {
+                            if (noConvergence)
+                            {
+                                Output.WriteLine("MarkowitzCLA: aborted after {0} iterations", iter);
+                                DumpTestVectors();
+                            }
+
                             //----------
                             // #3) compute minimum variance solution
                             _l.Add(0.0);
@@ -235,6 +291,12 @@ namespace TuringTrader.Simulator
                     PurgeNumErr(10e-10);
                     PurgeExcess();
                     PurgeDuplicates(10e-10);
+
+                    if (_w.Count <= 1)
+                    {
+                        Output.WriteLine("MarkowitzCLA: no turning points");
+                        DumpTestVectors();
+                    }
                 }
                 #endregion
                 #region private Tuple<List<int>, Vector<double>> InitAlgo()
@@ -524,7 +586,7 @@ namespace TuringTrader.Simulator
                         {
                             i++;
                         }
-                    } while (i < _w.Count() - 1); // last member is minimum variance portfolio
+                    } while (i < _w.Count() - 2); // last member is minimum variance portfolio
                 }
                 #endregion
                 #region private void EvalSR()
@@ -790,6 +852,10 @@ namespace TuringTrader.Simulator
                 var upperBound = Vector<double>.Build.Dense(
                     _instruments.Count,
                     idx => upperBoundFunc(_instruments[idx]));
+
+                int numParams = Enumerable.Range(0, _instruments.Count)
+                    .Where(i => upperBound[i] - lowerBound[i] > 0.0)
+                    .Count();
 
                 _cla = new CLA(mean, covar, lowerBound, upperBound);
             }
