@@ -264,7 +264,7 @@ namespace BooksAndPubs
                     // find portfolio with specified risk
 #if TVOL_AGGRESSIVE || TVOL_DEFENSIVE
                     // target volatility is annualized, pf is monthly
-                    var pf = cla.DefinedRisk(TVOL);
+                    var pf = cla.TargetVolatility(TVOL);
 #endif
 #if TVOL_MAX_SHARPE
                     var pf = cla.MaximumSharpeRatio();

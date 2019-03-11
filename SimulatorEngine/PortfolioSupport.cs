@@ -99,12 +99,6 @@ namespace TuringTrader.Simulator
                     _g.Add(null);
                     _f.Add(new List<int>(f));
 
-                    //
-                    double? l_in = null;
-                    double? l_out = null;
-                    int i_in = 0;
-                    int i_out = 0;
-                    double? bi_in = null;
                     Matrix<double> covarF = null;
                     Matrix<double> covarF_inv = null;
                     Matrix<double> covarFB = null;
@@ -115,7 +109,10 @@ namespace TuringTrader.Simulator
                     {
                         //----------
                         // #1) case a) Bound one free weight
-                        l_in = null;
+                        double l_in = -1.0;
+                        int i_in = 0;
+                        double bi_in = 0.0;
+
                         if (f.Count > 1)
                         {
                             var m = GetMatrices(f);
@@ -124,12 +121,15 @@ namespace TuringTrader.Simulator
                             meanF = m.Item3;
                             wB = m.Item4;
 
+                            covarF_inv = covarF.Inverse();
+
                             int j = 0;
                             foreach (var i in f)
                             {
                                 var l_bi = ComputeLambda(covarF_inv, covarFB, meanF, wB, j, new List<double> { _lb[i], _ub[i] });
                                 var l = l_bi.Item1;
                                 var bi = l_bi.Item2;
+
                                 if (l > l_in)
                                 {
                                     l_in = l;
@@ -142,28 +142,30 @@ namespace TuringTrader.Simulator
 
                         //----------
                         // #2) case b): Free one bounded weight
-                        l_out = null;
+                        double l_out = -1.0;
+                        int i_out = 0;
+
                         if (f.Count() < _mean.Count())
                         {
                             List<int> b = GetB(f);
 
                             foreach (int i in b)
                             {
-                                List<int> f2 = new List<int>(f)
-                                {
-                                    i
-                                };
-                                var m = GetMatrices(f2);
+                                var fi = new List<int>(f) { i };
+                                var m = GetMatrices(fi);
                                 covarF = m.Item1;
                                 covarFB = m.Item2;
                                 meanF = m.Item3;
                                 wB = m.Item4;
+
                                 covarF_inv = covarF.Inverse();
-                                var ll = ComputeLambda(covarF_inv, covarFB, meanF, wB, meanF.Count - 1, new List<double> { _w.Last()[i] });
+
+                                var ll = ComputeLambda(covarF_inv, covarFB, meanF, wB, fi.FindIndex(v => v == i), new List<double> { _w.Last()[i] });
                                 var l = ll.Item1;
                                 var bi = ll.Item2;
+
                                 if ((_l.Last() == null || l < _l.Last())
-                                && (l_out == null || l > l_out))
+                                && (l > l_out))
                                 {
                                     l_out = l;
                                     i_out = i;
@@ -171,8 +173,7 @@ namespace TuringTrader.Simulator
                             }
                         }
 
-                        if ((l_in == null || l_in < 0.0)
-                        && (l_out == null || l_out < 0.0))
+                        if (l_in < 0.0 && l_out < 0.0)
                         {
                             //----------
                             // #3) compute minimum variance solution
@@ -182,7 +183,9 @@ namespace TuringTrader.Simulator
                             covarFB = m.Item2;
                             meanF = m.Item3;
                             wB = m.Item4;
+
                             covarF_inv = covarF.Inverse();
+
                             meanF = Vector<double>.Build.Dense(meanF.Count, 0.0);
                         }
                         else
@@ -191,23 +194,22 @@ namespace TuringTrader.Simulator
                             // #4) decide lambda
                             if (l_in > l_out)
                             {
-                                throw new Exception("TODO: not implemented, yet");
-                                /*
-                                self.l.append(l_in)
-                                f.remove(i_in)
-                                w[i_in]=bi_in # set value at the correct boundary
-                                */
+                                _l.Add(l_in);
+                                f.Remove(i_in);
+                                w[i_in] = bi_in; // set value at the correct boundary
                             }
                             else
                             {
                                 _l.Add(l_out);
                                 f.Add(i_out);
                             }
+
                             var m = GetMatrices(f);
                             covarF = m.Item1;
                             covarFB = m.Item2;
                             meanF = m.Item3;
                             wB = m.Item4;
+
                             covarF_inv = covarF.Inverse();
                         }
 
@@ -216,11 +218,14 @@ namespace TuringTrader.Simulator
                         var wF_g = ComputeW(covarF_inv, covarFB, meanF, wB);
                         var wf = wF_g.Item1;
                         var g = wF_g.Item2;
+
                         for (var i = 0; i < f.Count; i++)
                             w[f[i]] = wf[i];
+
                         _w.Add(w.Clone());
                         _g.Add(g);
                         _f.Add(new List<int>(f));
+
                         if (_l.Last() == 0.0)
                             break;
                     }
@@ -229,6 +234,7 @@ namespace TuringTrader.Simulator
                     // #6) Purge turning points
                     PurgeNumErr(10e-10);
                     PurgeExcess();
+                    PurgeDuplicates(10e-10);
                 }
                 #endregion
                 #region private Tuple<List<int>, Vector<double>> InitAlgo()
@@ -310,8 +316,8 @@ namespace TuringTrader.Simulator
                         g);
                 }
                 #endregion
-                #region private Tuple<double?, double?> computeLambda(...)
-                private Tuple<double?, double?> ComputeLambda(
+                #region private Tuple<double, double> computeLambda(...)
+                private Tuple<double, double> ComputeLambda(
                     Matrix<double> covarF_inv, Matrix<double> covarFB,
                     Vector<double> meanF, Vector<double> wB,
                     int i, List<double> bix)
@@ -325,7 +331,7 @@ namespace TuringTrader.Simulator
                     var c = (-c1 * c2[i] + c3 * c4[i]).Single();
                     if (c == 0.0)
                     {
-                        return new Tuple<double?, double?>(null, null);
+                        return new Tuple<double, double>(0.0, 0.0);
                     }
 
                     // #2) bi
@@ -337,7 +343,7 @@ namespace TuringTrader.Simulator
                     if (wB == null)
                     {
                         // All free assets
-                        return new Tuple<double?, double?>(
+                        return new Tuple<double, double>(
                             ((c4[i] - c1 * bi) / c).Single(),
                             bi);
                     }
@@ -349,9 +355,9 @@ namespace TuringTrader.Simulator
                         var l3 = l2x.Multiply(wB);
                         var l2 = onesF.ToRowMatrix().Multiply(l3);
 
-                        return new Tuple<double?, double?>(
-                            (double?)(((1 - l1 + l2) * c4[i] - c1 * (bi + l3[i])) / c).Single(),
-                            (double?)bi);
+                        return new Tuple<double, double>(
+                            (((1 - l1 + l2) * c4[i] - c1 * (bi + l3[i])) / c).Single(),
+                            bi);
                     }
                 }
                 #endregion
@@ -401,31 +407,6 @@ namespace TuringTrader.Simulator
                 private void PurgeNumErr(double tol)
                 {
                     // # Purge violations of inequality constraints (associated with ill-conditioned covar matrix)
-#if false
-                    return;
-
-                    /*
-                    def purgeNumErr(self,tol):
-                        i=0
-                        while True:
-                            flag=False
-                            if i==len(self.w):break
-                            if abs(sum(self.w[i])-1)>tol:
-                                flag=True
-                            else:
-                                for j in range(self.w[i].shape[0]):
-                                    if self.w[i][j]-self.lB[j]<-tol or self.w[i][j]-self.uB[j]>tol:
-                                        flag=True;break
-                            if flag==True:
-                                del self.w[i]
-                                del self.l[i]
-                                del self.g[i]
-                                del self.f[i]
-                            else:
-                                i+=1
-                        return                    
-                    */
-#else
                     int i = 0;
                     while (true)
                     {
@@ -464,7 +445,6 @@ namespace TuringTrader.Simulator
                             i++;
                         }
                     }
-#endif
                 }
                 #endregion
                 #region private void PurgeExcess()
@@ -499,7 +479,7 @@ namespace TuringTrader.Simulator
 
                             if (mu1 < mu2)
                             {
-                                Output.WriteLine("CLA: purgeExcess removing turning point");
+                                //Output.WriteLine("CLA: purgeExcess removing turning point");
                                 _w.RemoveAt(i);
                                 _l.RemoveAt(i);
                                 _g.RemoveAt(i);
@@ -513,6 +493,38 @@ namespace TuringTrader.Simulator
                             }
                         }
                     }
+                }
+                #endregion
+                #region private void PurgeDuplicates(double tol)
+                private void PurgeDuplicates(double tol)
+                {
+                    // added by FUB, not part ofBailey & de Prado's 
+                    // original implementation
+                    int i = 0;
+                    do
+                    {
+                        bool identical = true;
+                        foreach (var j in Enumerable.Range(0, _w[i].Count()))
+                        {
+                            if (Math.Abs(_w[i][j] - _w[i + 1][j]) > tol)
+                            {
+                                identical = false;
+                                break;
+                            }
+                        }
+
+                        if (identical)
+                        {
+                            _w.RemoveAt(i);
+                            _l.RemoveAt(i);
+                            _g.RemoveAt(i);
+                            _f.RemoveAt(i);
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    } while (i < _w.Count() - 1); // last member is minimum variance portfolio
                 }
                 #endregion
                 #region private void EvalSR()
@@ -893,7 +905,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="targetRisk">risk setting</param>
             /// <returns>portfolio</returns>
-            public Portfolio DefinedRisk(double targetRisk)
+            public Portfolio TargetVolatility(double targetRisk)
             {
                 var maxSR = MaximumSharpeRatio();
 
