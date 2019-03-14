@@ -52,7 +52,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Copy current simulator status to sub-class Bar
         /// </summary>
-        protected void CreateSubclassBar()
+        protected void CreateSubclassedBar()
         {
             if (SubclassedData != null)
             {
