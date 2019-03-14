@@ -260,6 +260,11 @@ namespace TuringTrader.Simulator
             {
                 return new DataSourceConstantYield(infos);
             }
+            else if (infos.ContainsKey(DataSourceValue.dataSource)
+            && infos[DataSourceValue.dataSource].ToLower().Contains("algorithm"))
+            {
+                return new DataSourceAlgorithm(infos);
+            }
             else
             {
                 return new DataSourceCsv(infos);

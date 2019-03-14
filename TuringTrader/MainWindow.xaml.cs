@@ -88,7 +88,7 @@ namespace TuringTrader
             _dispatcherTimer.Start();
 
             //--- initialize algorithm selector
-            var allAlgorithms = AlgorithmLoader.GetAllAlgorithms();
+            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
 
             foreach (Type algorithm in allAlgorithms)
                 AlgoSelector.Items.Add(algorithm.Name);

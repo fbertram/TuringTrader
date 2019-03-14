@@ -238,8 +238,10 @@ namespace TuringTrader.Simulator
             // during SimTime's initialization. we assign an object
             // here, to avoid a crash in Demo05_Optimizer, which does
             // not have any bars, and does not call SimTime
-            NetAssetValue = new TimeSeries<double>();
-            NetAssetValue.Value = 0.0;
+            NetAssetValue = new TimeSeries<double>
+            {
+                Value = 0.0
+            };
         }
         #endregion
         #region protected void CloneSimSetup()
@@ -353,8 +355,10 @@ namespace TuringTrader.Simulator
                 // we create a new time-series here, to make sure that
                 // any indicators depending on it, are also re-created
                 Cash = 0.0;
-                NetAssetValue = new TimeSeries<double>();
-                NetAssetValue.Value = Cash;
+                NetAssetValue = new TimeSeries<double>
+                {
+                    Value = Cash
+                };
                 NetAssetValueHighestHigh = 0.0;
                 NetAssetValueMaxDrawdown = 1e-10;
 

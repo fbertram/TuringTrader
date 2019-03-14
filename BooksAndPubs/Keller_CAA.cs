@@ -202,7 +202,8 @@ namespace BooksAndPubs
 #endif
         #endregion
         #region internal data
-        private readonly string _benchmark = "^SPX.index";
+        //private readonly string BENCHMARK = "^SPX.index";
+        private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
         #endregion
 
@@ -219,7 +220,7 @@ namespace BooksAndPubs
                 .Concat(SAFE_ASSETS).ToList();
 
             // add all data sources
-            AddDataSource(_benchmark);
+            AddDataSource(BENCHMARK);
             foreach (var nick in universe)
                 AddDataSource(nick);
 
@@ -295,7 +296,7 @@ namespace BooksAndPubs
                 _plotter.SelectChart(strategyName, "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("NAV", NetAssetValue[0]);
-                _plotter.Plot(FindInstrument(_benchmark).Symbol, FindInstrument(_benchmark).Close[0]);
+                _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
             }
 
             //---------- post-processing

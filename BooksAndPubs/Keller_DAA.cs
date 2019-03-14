@@ -39,7 +39,7 @@ namespace BooksAndPubs
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
-        private readonly string SPX = "^SPX.Index";
+        private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments & settings
@@ -213,7 +213,7 @@ namespace BooksAndPubs
 
             foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))
                 AddDataSource(nick);
-            AddDataSource(SPX);
+            AddDataSource(BENCHMARK);
 
             Deposit(INITIAL_FUNDS);
             //CommissionPerShare = 0.015; // paper does not consider trade commissions
@@ -297,7 +297,7 @@ namespace BooksAndPubs
                     _plotter.SelectChart(_name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
+                    _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
                 }
             }
 

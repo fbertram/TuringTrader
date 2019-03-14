@@ -37,10 +37,10 @@ namespace TuringTrader.Simulator
                 private static readonly string UNDERLYING_NICK = "^SPX.index";
 
                 private List<Bar> _data;
-                private DateTime _startTime;
-                private DateTime _endTime;
-                private double _yield;
-                private string _symbol;
+                private readonly DateTime _startTime;
+                private readonly DateTime _endTime;
+                private readonly double _yield;
+                private readonly string _symbol;
 
                 public SimConstantYield(List<Bar> data, DateTime startTime, DateTime endTime, double yield)
                 {

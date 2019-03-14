@@ -89,6 +89,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlgorithmLoader.cs" />
+    <Compile Include="DataSourceAlgorithm.cs" />
     <Compile Include="DataSourceConstantYield.cs" />
     <Compile Include="LogAnalysis.cs" />
     <Compile Include="Algorithm.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="PortfolioSupport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimulatorCore.cs" />
+    <Compile Include="SubclassableAlgorithm.cs" />
     <Compile Include="TimeSeries.cs" />
   </ItemGroup>
   <ItemGroup>

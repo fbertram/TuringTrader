@@ -30,7 +30,7 @@ namespace TuringTrader.BooksAndPubs
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
-        private readonly string SPX = "^SPX.Index";
+        private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments
@@ -73,7 +73,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990");
             EndTime = DateTime.Now - TimeSpan.FromDays(3);
 
-            AddDataSource(SPX);
+            AddDataSource(BENCHMARK);
             foreach (HashSet<string> assetClass in _assetClasses)
                 foreach (string nick in assetClass)
                     AddDataSource(nick);
@@ -155,7 +155,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(SPX, FindInstrument(SPX).Close[0]);
+                    _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
                 }
             }
 
