@@ -249,7 +249,7 @@ namespace TuringTrader.Simulator
             public ITimeSeries<double> PercentK;
 
             /// <summary>
-            /// %D
+            /// %D (filtered %K)
             /// </summary>
             public ITimeSeries<double> PercentD;
         }

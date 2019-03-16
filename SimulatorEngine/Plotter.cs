@@ -116,13 +116,14 @@ namespace TuringTrader.Simulator
 
             //var excel = new Excel.ApplicationClass();
             var excel = new Excel.Application()
-            {
+            /*{
                 Visible = true,
-            };
+            }*/;
+
             var wbooks = excel.Workbooks;
             //var wbook = wbooks.Open(pathToExcelFile);
             var wbook = wbooks.Add(pathToExcelTemplate); // create new w/ file as template
-            Thread.Sleep(500); // this is ugly but prevents Excel from crashing
+            Thread.Sleep(500); // FIXME: prevents Excel from crashing
 
             List<string> plots = AllData.Keys.ToList();
             for (int i = 0; i < plots.Count; i++)
@@ -138,9 +139,41 @@ namespace TuringTrader.Simulator
                 //    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
                 //                        tmpFile, plots.Count, i});
                 excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i, plot);
-
-                Thread.Sleep(500); // this is ugly but prevents Excel from crashing
+                Thread.Sleep(500); // FIXME: prevents Excel from crashing
             }
+
+#if true
+            // return control to the user
+            excel.Visible = true;
+            excel.UserControl = true;
+
+#endif
+#if false
+            // BUGBUG: it seems that Excel is leaving a zombie process behind,
+            // after the workbook is closed.
+
+            void releaseObject(object obj)
+            {
+                try
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                    obj = null;
+                }
+                catch (Exception ex)
+                {
+                    obj = null;
+                }
+                finally
+                {
+                    GC.Collect();
+                }
+            }
+
+            //wbook.Close(false); // can't do this: want to keep document open
+            //excel.Quit();       // can't do this: will ask to save & close
+            releaseObject(excel); // doesn't seem to do anything
+            releaseObject(wbook); // doesn't seem to do anything
+#endif
         }
 #else // ENABLE_EXCEL
 			public void OpenWithExcel(string pathToExcelFile = @"C:\ProgramData\TS Support\MultiCharts .NET64\__FUB_Research.xlsm")
