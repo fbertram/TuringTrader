@@ -521,7 +521,32 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region public Instrument FindInstrument(string)
+        #region protected bool HasInstrument(string nickname)
+        /// <summary>
+        /// Check, if the we have an instrument with the given nickname
+        /// </summary>
+        /// <param name="nickname"></param>
+        /// <returns>true, if instrument exists</returns>
+        protected bool HasInstrument(string nickname)
+        {
+            return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
+        }
+        #endregion
+        #region protected bool HasInstruments(IEnumerable<string> nicknames)
+        /// <summary>
+        /// Check, if we have a list of instruments with given nicknames
+        /// </summary>
+        /// <param name="nicknames"></param>
+        /// <returns>true, if all instruments exists</returns>
+        protected bool HasInstruments(IEnumerable<string> nicknames)
+        {
+            return nicknames
+                .Aggregate(
+                    true,
+                    (prev, nick) => prev && HasInstrument(nick));
+        }
+        #endregion
+        #region protected Instrument FindInstrument(string)
         /// <summary>
         /// Find an instrument in the Instruments collection by its nickname.
         /// In case multiple instruments have the same nickname, the first
@@ -529,7 +554,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="nickname">nickname of instrument to find</param>
         /// <returns>instrument matching nickname</returns>
-        public Instrument FindInstrument(string nickname)
+        protected Instrument FindInstrument(string nickname)
         {
             string nickLower = nickname; //.ToLower();
                 

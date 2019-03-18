@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aeromir_ParkingTrade.cs" />
+    <Compile Include="Alvarez_EtfSectorRotation.cs" />
     <Compile Include="Antonacci_DualMomentumInvesting.cs" />
     <Compile Include="Clenow_StocksOnTheMove.cs" />
     <Compile Include="Faber_IvyPortfolio.cs" />

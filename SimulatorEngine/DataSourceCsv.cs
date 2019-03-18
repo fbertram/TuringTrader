@@ -385,6 +385,9 @@ namespace TuringTrader.Simulator
             /// <param name="info">info dictionary</param>
             public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
             {
+                if (!Info.ContainsKey(DataSourceValue.dataPath))
+                    throw new Exception("DataSourceCsv: missing mandatory dataPath key");
+
                 // expand relative paths, if required
                 if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
                 && !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path

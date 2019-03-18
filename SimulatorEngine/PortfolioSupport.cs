@@ -124,8 +124,23 @@ namespace TuringTrader.Simulator
                     // compute the turning points, free sets and weights
 
                     var f_w = InitAlgo();
+
                     var f = f_w.Item1;
                     var w = f_w.Item2;
+
+                    if (f == null)
+                    {
+                        // InitAlgo failed. The weights returned are 
+                        // still the best possible solution.
+                        for (int i = 0; i < 2; i++)
+                        {
+                            _w.Add(w.Clone());
+                            _l.Add(null);
+                            _g.Add(null);
+                            _f.Add(null);
+                        }
+                        return;
+                    }
 
                     _w.Add(w.Clone());
                     _l.Add(null);
@@ -330,7 +345,11 @@ namespace TuringTrader.Simulator
                         }
                     }
 
-                    return null;
+                    return new Tuple<List<int>, Vector<double>>
+                    (
+                        null,
+                        w
+                    );
                 }
                 #endregion
                 #region private double ComputeBi(double c, List<double> bi)
@@ -1117,6 +1136,14 @@ namespace TuringTrader.Simulator
                 NumBars = numBars;
                 BarSize = barSize;
 
+                // save the price series, so that we may use indicators
+                // in the priceFunc lambda expression, without evaluating
+                // them multiple times per bar
+                Dictionary<Instrument, ITimeSeries<double>> priceSeries = universe
+                    .ToDictionary(
+                        i => i,
+                        i => priceFunc(i));
+
                 _covariance = new Dictionary<Instrument, Dictionary<Instrument, double>>();
                 for (int i1 = 0; i1 < _instruments.Count; i1++)
                 {
@@ -1124,8 +1151,8 @@ namespace TuringTrader.Simulator
 
                     var series1 = Enumerable.Range(0, NumBars)
                         .Select(b => Math.Log(
-                            priceFunc(instrument1)[b * BarSize]
-                            / priceFunc(instrument1)[(b + 1) * BarSize]))
+                            priceSeries[instrument1][b * BarSize]
+                            / priceSeries[instrument1][(b + 1) * BarSize]))
                         .ToList();
                     var average1 = series1.Average();
 
@@ -1139,8 +1166,8 @@ namespace TuringTrader.Simulator
 
                         var series2 = Enumerable.Range(0, NumBars)
                             .Select(b => Math.Log(
-                                priceFunc(instrument2)[b * BarSize]
-                                / priceFunc(instrument2)[(b + 1) * BarSize]))
+                                priceSeries[instrument2][b * BarSize]
+                                / priceSeries[instrument2][(b + 1) * BarSize]))
                             .ToList();
                         var average2 = series2.Average();
 
