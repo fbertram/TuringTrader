@@ -16,14 +16,6 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-//--- universe selection: enable only one of these
-//#define DAA_G4   // see paper: DAA-G4 has subpar risk/return
-//#define DAA_G6   // see paper: instead of DAA-G4, we use DAA-G6
-#define DAA_G12  // see paper: this is the 'standard' DAA
-//#define DAA1_G12 // see paper: aggressive G12
-//#define DAA1_G4  // see paper: aggressive G4
-//#define DAA1_U1  // see paper: minimalistic version
-
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -35,172 +27,18 @@ using TuringTrader.Simulator;
 
 namespace BooksAndPubs
 {
-    public class Keller_DAA : Algorithm
+    public abstract class Keller_DAA : Algorithm
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
-        #endregion
-        #region instruments & settings
-        // possible ETF substitutions:
-        // SPY => VOO
-        // VEA => EFA
-        // VWO => EEM
-        // BND => AGG
-#if DAA_G4
-        private static string _name = "DAA-G4";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "VEA.etf", // Vanguard FTSE Developed Markets ETF
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf", // Vanguard Total Bond Market ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private int T = 2; // (risky) top parameter
-        private int B = 1; // breadth parameter
-#endif
-#if DAA_G6
-        private static string _name = "DAA-G6";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "VEA.etf", // Vanguard FTSE Developed Markets ETF
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "LQD.etf", // iShares iBoxx Investment Grade Corporate Bond ETF
-            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-            "HYG.etf"  // iShares iBoxx High Yield Corporate Bond ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private int T = 6; // (risky) top parameter
-        private int B = 2; // breadth parameter
-#endif
-#if DAA_G12
-        private static readonly string _name = "DAA-G12";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "IWM.etf", // iShares Russell 2000 ETF
-            "QQQ.etf", // Invesco Nasdaq-100 ETF
-            "VGK.etf", // Vanguard FTSE Europe ETF
-            "EWJ.etf", // iShares MSCI Japan ETF
-            "VWO.etf", // Vanguard MSCI Emerging Markets ETF
-            "VNQ.etf", // Vanguard Real Estate ETF
-            "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
-            "GLD.etf", // SPDR Gold Trust ETF
-            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-            "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private readonly int T = 6; // (risky) top parameter
-        private readonly int B = 2; // breadth parameter
-#endif
-#if DAA1_G12
-        private static string _name = "DAA1-G12";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "IWM.etf", // iShares Russell 2000 ETF
-            "QQQ.etf", // Invesco Nasdaq-100 ETF
-            "VGK.etf", // Vanguard FTSE Europe ETF
-            "EWJ.etf", // iShares MSCI Japan ETF
-            "VWO.etf", // Vanguard MSCI Emerging Markets ETF
-            "VNQ.etf", // Vanguard Real Estate ETF
-            "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
-            "GLD.etf", // SPDR Gold Trust ETF
-            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-            "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHV.etf", // iShares Short Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private int T = 2; // (risky) top parameter
-        private int B = 1; // breadth parameter
-#endif
-#if DAA1_G4
-        private static string _name = "DAA1-G4";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "VEA.etf", // Vanguard FTSE Developed Markets ETF
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf", // Vanguard Total Bond Market ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHV.etf", // iShares Short Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private int T = 4; // (risky) top parameter
-        private int B = 1; // breadth parameter
-#endif
-#if DAA1_U1
-        private static string _name = "DAA1-U1";
-        private static string[] riskyUniverse =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-        };
-        private static string[] cashUniverse =
-        {
-            "SHV.etf", // iShares Short Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
-        };
-        private static string[] protectiveUniverse =
-        {
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf"  // Vanguard Total Bond Market ETF
-        };
-        private int T = 1; // (risky) top parameter
-        private int B = 1; // breadth parameter
-#endif
+
+        protected List<string> riskyUniverse = null;
+        protected List<string> cashUniverse = null;
+        protected List<string> protectiveUniverse = null;
+        protected int T = 0; // (risky) top parameter
+        protected int B = 0; // breadth parameter
         #endregion
 
         #region public override void Run()
@@ -291,20 +129,27 @@ namespace BooksAndPubs
                     }
                 }
 
-                // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _plotter.SelectChart(_name, "date");
+                    // create plots on Sheet 1
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
                     _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+
+                    // holdings on Sheet 2
+                    _plotter.SelectChart(Name + " holdings", "date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var i in Positions.Keys)
+                        _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+
                 }
             }
 
             //----- post processing
 
-            // create trading log on Sheet 2
-            _plotter.SelectChart(_name + " trades", "date");
+            // create trading log on Sheet 3
+            _plotter.SelectChart(Name + " trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -339,6 +184,209 @@ namespace BooksAndPubs
         }
         #endregion
     }
+
+    #region DAA-G4 - has subpar risk/ return
+    public class Keller_DAA_G4 : Keller_DAA
+    {
+        public Keller_DAA_G4()
+        {
+            riskyUniverse = new List<string>
+            {
+                "SPY.etf", // SPDR S&P 500 ETF
+                "VEA.etf", // Vanguard FTSE Developed Markets ETF
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf", // Vanguard Total Bond Market ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
+                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 2; // (risky) top parameter
+            B = 1; // breadth parameter
+        }
+    }
+    #endregion
+    #region DAA-G6 - instead of DAA-G4, we use DAA-G6
+    public class Keller_DAA_G6 : Keller_DAA
+    {
+        public Keller_DAA_G6()
+        {
+            riskyUniverse = new List<string>
+            {
+                    "SPY.etf", // SPDR S&P 500 ETF
+                    "VEA.etf", // Vanguard FTSE Developed Markets ETF
+                    "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                    "LQD.etf", // iShares iBoxx Investment Grade Corporate Bond ETF
+                    "TLT.etf", // iShares 20+ Year Treasury Bond ETF
+                    "HYG.etf"  // iShares iBoxx High Yield Corporate Bond ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                    "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
+                    "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                    "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                    "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                    "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 6; // (risky) top parameter
+            B = 2; // breadth parameter
+        }
+    }
+    #endregion
+    #region DAA-G12 - this is the 'standard' DAA
+    public class Keller_DAA_G12 : Keller_DAA
+    {
+        public Keller_DAA_G12()
+        {
+            riskyUniverse = new List<string>
+            {
+                "SPY.etf", // SPDR S&P 500 ETF
+                "IWM.etf", // iShares Russell 2000 ETF
+                "QQQ.etf", // Invesco Nasdaq-100 ETF
+                "VGK.etf", // Vanguard FTSE Europe ETF
+                "EWJ.etf", // iShares MSCI Japan ETF
+                "VWO.etf", // Vanguard MSCI Emerging Markets ETF
+                "VNQ.etf", // Vanguard Real Estate ETF
+                "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
+                "GLD.etf", // SPDR Gold Trust ETF
+                "TLT.etf", // iShares 20+ Year Treasury Bond ETF
+                "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
+                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
+                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 6; // (risky) top parameter
+            B = 2; // breadth parameter
+    }
+}
+    #endregion
+
+    #region DAA1-G4 - aggressive G4
+    public class Keller_DAA1_G4 : Keller_DAA
+    {
+        public Keller_DAA1_G4()
+        {
+            riskyUniverse = new List<string>
+            {
+                "SPY.etf", // SPDR S&P 500 ETF
+                "VEA.etf", // Vanguard FTSE Developed Markets ETF
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf", // Vanguard Total Bond Market ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                "SHV.etf", // iShares Short Treasury Bond ETF
+                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 4; // (risky) top parameter
+            B = 1; // breadth parameter
+        }
+    }
+    #endregion
+    #region DAA1-G12 - aggressive G12
+    public class Keller_DAA1_G12 : Keller_DAA
+    {
+        public Keller_DAA1_G12()
+        {
+            riskyUniverse = new List<string>
+            {
+                "SPY.etf", // SPDR S&P 500 ETF
+                "IWM.etf", // iShares Russell 2000 ETF
+                "QQQ.etf", // Invesco Nasdaq-100 ETF
+                "VGK.etf", // Vanguard FTSE Europe ETF
+                "EWJ.etf", // iShares MSCI Japan ETF
+                "VWO.etf", // Vanguard MSCI Emerging Markets ETF
+                "VNQ.etf", // Vanguard Real Estate ETF
+                "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
+                "GLD.etf", // SPDR Gold Trust ETF
+                "TLT.etf", // iShares 20+ Year Treasury Bond ETF
+                "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
+                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
+                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 2; // (risky) top parameter
+            B = 1; // breadth parameter
+        }
+    }
+    #endregion
+    #region DAA1-U1 - minimalistic version
+    public class Keller_DAA1_U1 : Keller_DAA
+    {
+        public Keller_DAA1_U1()
+        {
+            riskyUniverse = new List<string>
+            {
+                "SPY.etf", // SPDR S&P 500 ETF
+            };
+
+            cashUniverse = new List<string>
+            {
+                "SHV.etf", // iShares Short Treasury Bond ETF
+                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
+                "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
+            };
+
+            protectiveUniverse = new List<string>
+            {
+                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
+                "BND.etf"  // Vanguard Total Bond Market ETF
+            };
+
+            T = 1; // (risky) top parameter
+            B = 1; // breadth parameter
+        }
+}
+    #endregion
 }
 
 //==============================================================================

@@ -14,11 +14,6 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-//#define IVY_5_TIMING
-#define IVY_5_ROTATION
-//#define IVY_10_TIMING
-//#define IVY_10_ROTATION
-
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -30,209 +25,23 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public class Faber_IvyPortfolio : Algorithm
+    public abstract class Faber_IvyPortfolio : Algorithm
     {
-        #region private data
+        #region internal data
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
-        #endregion
-        #region instruments & setup
-        private struct AssetClass
+
+        protected struct AssetClass
         {
             public double weight;
             public int numpicks;
             public List<string> assets;
         }
 
-        #if IVY_5_TIMING
-        #region  Ivy-5 portfolio: timing system
-        private static string _name = "Ivy-5 Timing";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
-        private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
-        {
-            //--- domestic equity
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VTI.ETF", // Vanguard Total Stock Market ETF
-                _safeInstrument
-            } },
-            //--- world equity
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
-                _safeInstrument
-            } },
-            //--- credit
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                 "BND.ETF", // Vanguard Total Bond Market ETF
-                _safeInstrument
-            } },
-            //--- real estate
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VNQ.ETF", // Vanguard REIT Index ETF
-                _safeInstrument
-            } },
-            //--- economic stress
-            new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "DBC.ETF", // PowerShares DB Commodity Index Tracking
-                _safeInstrument
-            } },
-        };
-        private static readonly Func<Instrument, double> _scoringFunc = (i) =>
-        {
-            if (i.Nickname == _safeInstrument)
-                return 0.0;
+        protected HashSet<AssetClass> _assetClasses = null;
 
-            return i.Close[0] > i.Close.EMA(210)[0]
-                ? 1.0
-                : -1.0;
-        };
-        #endregion
-        #endif
-        #if IVY_5_ROTATION
-        #region Ivy-5 portfolio: rotation system
-        private static readonly string _name = "Ivy-5 Rotation";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
-        private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
-        {
-            new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
-                //--- domestic equity
-                "VTI.ETF", // Vanguard Total Stock Market ETF
-                //--- world equity
-                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
-                //--- credit
-                 "BND.ETF", // Vanguard Total Bond Market ETF
-                //--- real estate
-                "VNQ.ETF", // Vanguard REIT Index ETF
-                //--- economic stress
-                "DBC.ETF", // PowerShares DB Commodity Index Tracking
-                _safeInstrument,
-                _safeInstrument,
-                _safeInstrument
-
-            } },
-        };
-        private static readonly Func<Instrument, double> _scoringFunc = (i) =>
-        {
-            if (i.Nickname == _safeInstrument)
-                return 0.0;
-
-            return i.Close[0] > i.Close.EMA(210)[0]
-                ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                        + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                        + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
-                    / 3.0
-                : -1.0;
-        };
-        #endregion
-        #endif
-        #if IVY_10_TIMING
-        #region Ivy-10 portfolio: timing system
-        private static string _name = "Ivy-10 Timing";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
-        private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
-        {
-            //--- domestic equity
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VB.ETF",  // Vanguard Small Cap ETF
-                _safeInstrument
-            } },
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VTI.ETF", // Vanguard Total Stock Market ETF
-                _safeInstrument
-            } },
-            //--- world equity
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VWO.ETF", // Vanguard Emerging Markets Stock ETF
-                _safeInstrument
-            } },
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
-                _safeInstrument
-            } },
-            //--- credit
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "BND.ETF", // Vanguard Total Bond Market ETF
-                _safeInstrument
-            } },
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "TIP.ETF", // iShares Barclays TIPS Bond
-                _safeInstrument
-            } },
-            //--- real estate
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "RWX.ETF", // SPDR DJ International Real Estate ETF
-                _safeInstrument
-            } },
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "VNQ.ETF", // Vanguard REIT Index ETF
-                _safeInstrument
-            } },
-            //--- economic stress
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "DBC.ETF", // 1PowerShares DB Commodity Index Tracking
-                _safeInstrument
-            } },
-            new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
-                "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
-                _safeInstrument,
-            } },
-        };
-        private static readonly Func<Instrument, double> _scoringFunc = (i) =>
-        {
-            if (i.Nickname == _safeInstrument)
-                return 0.0;
-
-            return i.Close[0] > i.Close.EMA(210)[0]
-                ? 1.0
-                : -1.0;
-        };
-        #endregion
-        #endif
-        #if IVY_10_ROTATION
-        #region Ivy-10 portfolio: rotation system
-        private static string _name = "Ivy-10 Rotation";
-        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
-        private static readonly HashSet<AssetClass> _assetClasses = new HashSet<AssetClass>
-        {
-            new AssetClass { weight = 1.00, numpicks = 5, assets = new List<string> {
-                //--- domestic equity
-                "VB.ETF",  // Vanguard Small Cap ETF
-                "VTI.ETF", // Vanguard Total Stock Market ETF
-                //--- world equity
-                "VWO.ETF", // Vanguard Emerging Markets Stock ETF
-                "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
-                //--- credit
-                "BND.ETF", // Vanguard Total Bond Market ETF
-                "TIP.ETF", // iShares Barclays TIPS Bond
-                //--- real estate
-                "RWX.ETF", // SPDR DJ International Real Estate ETF
-                "VNQ.ETF", // Vanguard REIT Index ETF
-                //--- economic stress
-                "DBC.ETF", // PowerShares DB Commodity Index Tracking
-                "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
-                //---
-                _safeInstrument,
-                _safeInstrument,
-                _safeInstrument,
-                _safeInstrument,
-                _safeInstrument,
-
-            } },
-        };
-        private static readonly Func<Instrument, double> _scoringFunc = (i) =>
-        {
-            if (i.Nickname == _safeInstrument)
-                return 0.0;
-
-            return i.Close[0] > i.Close.EMA(210)[0]
-                ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                        + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                        + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
-                    / 3.0
-                : -1.0;
-        };
-        #endregion
-        #endif
+        protected abstract double ScoringFunc(Instrument i);
         #endregion
 
         #region public override void Run()
@@ -260,7 +69,7 @@ namespace TuringTrader.BooksAndPubs
                 // we need to make sure to evaluate every instrument only once!
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
-                        i => _scoringFunc(i));
+                        i => ScoringFunc(i));
 
                 // skip if there are any missing instruments,
                 // we want to make sure our strategy has all instruemnts available
@@ -324,17 +133,25 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-                    _plotter.SelectChart(_name + " performance", "date");
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
                     _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+
+                    // holdings on Sheet 2
+                    _plotter.SelectChart(Name + " holdings", "date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var i in Positions.Keys)
+                    {
+                        _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                    }
                 }
             }
 
             //----- post processing
 
-            // create trading log on Sheet 2
-            _plotter.SelectChart(_name + " trades", "date");
+            // create trading log on Sheet 3
+            _plotter.SelectChart(Name + " trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -357,6 +174,214 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
     }
+
+    #region Ivy 5 Timing
+    public class Faber_IvyPortfolio_5_Timing : Faber_IvyPortfolio
+    {
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
+
+        public Faber_IvyPortfolio_5_Timing()
+        {
+            _assetClasses = new HashSet<AssetClass>
+            {
+                //--- domestic equity
+                new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
+                    "VTI.ETF", // Vanguard Total Stock Market ETF
+                    _safeInstrument
+                } },
+                //--- world equity
+                new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
+                    "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
+                    _safeInstrument
+                } },
+                //--- credit
+                new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
+                     "BND.ETF", // Vanguard Total Bond Market ETF
+                    _safeInstrument
+                } },
+                //--- real estate
+                new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
+                    "VNQ.ETF", // Vanguard REIT Index ETF
+                    _safeInstrument
+                } },
+                //--- economic stress
+                new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
+                    "DBC.ETF", // PowerShares DB Commodity Index Tracking
+                    _safeInstrument
+                } },
+            };
+        }
+
+        protected override double ScoringFunc(Instrument i)
+        {
+            if (i.Nickname == _safeInstrument)
+                return 0.0;
+
+            return i.Close[0] > i.Close.EMA(210)[0]
+                ? 1.0
+                : -1.0;
+        }
+    }
+    #endregion
+    #region Ivy 5 Rotation
+    public class Faber_IvyPortfolio_5_Rotation : Faber_IvyPortfolio
+    {
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
+
+        public Faber_IvyPortfolio_5_Rotation()
+        {
+            _assetClasses = new HashSet<AssetClass>
+            {
+                new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
+                    //--- domestic equity
+                    "VTI.ETF", // Vanguard Total Stock Market ETF
+                    //--- world equity
+                    "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
+                    //--- credit
+                        "BND.ETF", // Vanguard Total Bond Market ETF
+                    //--- real estate
+                    "VNQ.ETF", // Vanguard REIT Index ETF
+                    //--- economic stress
+                    "DBC.ETF", // PowerShares DB Commodity Index Tracking
+                    _safeInstrument,
+                    _safeInstrument,
+                    _safeInstrument
+
+                } },
+            };
+        }
+
+        protected override double ScoringFunc(Instrument i)
+        {
+            if (i.Nickname == _safeInstrument)
+                return 0.0;
+
+            return i.Close[0] > i.Close.EMA(210)[0]
+                ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
+                        + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
+                        + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
+                    / 3.0
+                : -1.0;
+        }
+    }
+    #endregion
+    #region Ivy 10 Timing
+    public class Faber_IvyPortfolio_10_Timing : Faber_IvyPortfolio
+    {
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
+        public Faber_IvyPortfolio_10_Timing()
+        {
+            _assetClasses = new HashSet<AssetClass>
+            {
+                //--- domestic equity
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "VB.ETF",  // Vanguard Small Cap ETF
+                    _safeInstrument
+                } },
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "VTI.ETF", // Vanguard Total Stock Market ETF
+                    _safeInstrument
+                } },
+                //--- world equity
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "VWO.ETF", // Vanguard Emerging Markets Stock ETF
+                    _safeInstrument
+                } },
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
+                    _safeInstrument
+                } },
+                //--- credit
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "BND.ETF", // Vanguard Total Bond Market ETF
+                    _safeInstrument
+                } },
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "TIP.ETF", // iShares Barclays TIPS Bond
+                    _safeInstrument
+                } },
+                //--- real estate
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "RWX.ETF", // SPDR DJ International Real Estate ETF
+                    _safeInstrument
+                } },
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "VNQ.ETF", // Vanguard REIT Index ETF
+                    _safeInstrument
+                } },
+                //--- economic stress
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "DBC.ETF", // 1PowerShares DB Commodity Index Tracking
+                    _safeInstrument
+                } },
+                new AssetClass { weight = 0.10, numpicks = 1, assets = new List<string> {
+                    "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
+                    _safeInstrument,
+                } },
+            };
+        }
+
+        protected override double ScoringFunc(Instrument i)
+        {
+            if (i.Nickname == _safeInstrument)
+                return 0.0;
+
+            return i.Close[0] > i.Close.EMA(210)[0]
+                ? 1.0
+                : -1.0;
+        }
+    }
+    #endregion
+    #region Ivy 10 Rotation
+    public class Faber_IvyPortfolio_10_Rotation : Faber_IvyPortfolio
+    {
+        private static readonly string _safeInstrument = "BIL.etf"; // SPDR Barclays 1-3 Month T-Bill ETF
+
+        public Faber_IvyPortfolio_10_Rotation()
+        {
+            _assetClasses = new HashSet<AssetClass>
+            {
+                new AssetClass { weight = 1.00, numpicks = 5, assets = new List<string> {
+                    //--- domestic equity
+                    "VB.ETF",  // Vanguard Small Cap ETF
+                    "VTI.ETF", // Vanguard Total Stock Market ETF
+                    //--- world equity
+                    "VWO.ETF", // Vanguard Emerging Markets Stock ETF
+                    "VEU.ETF", // Vanguard FTSE All-World ex-US ETF
+                    //--- credit
+                    "BND.ETF", // Vanguard Total Bond Market ETF
+                    "TIP.ETF", // iShares Barclays TIPS Bond
+                    //--- real estate
+                    "RWX.ETF", // SPDR DJ International Real Estate ETF
+                    "VNQ.ETF", // Vanguard REIT Index ETF
+                    //--- economic stress
+                    "DBC.ETF", // PowerShares DB Commodity Index Tracking
+                    "GSG.ETF", // S&P GSCI(R) Commodity-Indexed Trust
+                    //---
+                    _safeInstrument,
+                    _safeInstrument,
+                    _safeInstrument,
+                    _safeInstrument,
+                    _safeInstrument,
+
+                } },
+            };
+        }
+
+        protected override double ScoringFunc(Instrument i)
+        {
+            if (i.Nickname == _safeInstrument)
+                return 0.0;
+
+            return i.Close[0] > i.Close.EMA(210)[0]
+                ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
+                        + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
+                        + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
+                    / 3.0
+                : -1.0;
+        }
+    }
+    #endregion
 }
 
 //==============================================================================

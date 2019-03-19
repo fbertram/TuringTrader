@@ -16,19 +16,6 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-//--- target volatility selection - enable only one of these
-#define TVOL_AGGRESSIVE   // from paper
-//#define TVOL_DEFENSIVE    // from paper
-//#define TVOL_MAX_SHARPE   // FUB addition
-//#define TVOL_MIN_VARIANCE // FUB addition
-
-//--- universe selection - enable only one of these
-#define UNIVERSE_N8    // from paper
-//#define UNIVERSE_N16   // from paper
-//#define UNIVERSE_N39   // from paper
-//#define UNIVERSE_G4    // FUB addition (see Keller's DAA)
-//#define UNIVERSE_G12   // FUB addition (see Keller's DAA)
-
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -40,171 +27,17 @@ using TuringTrader.Simulator;
 
 namespace BooksAndPubs
 {
-    public class Keller_CAA : Algorithm
+    public abstract class Keller_CAA : Algorithm
     {
-        #region target volatility settings
-#if TVOL_DEFENSIVE
-        private readonly string TVOL_NICK = "TV=5%";
-        private readonly double TVOL = 0.05;
-#endif
-#if TVOL_AGGRESSIVE
-        private readonly string TVOL_NICK = "TV=10%";
-        private readonly double TVOL = 0.10;
-#endif
-#if TVOL_MAX_SHARPE
-        private readonly string TVOL_NICK = "Max Sharpe Ratio";
-#endif
-#if TVOL_MIN_VARIANCE
-        private readonly string TVOL_NICK = "Min Variance";
-#endif
-        #endregion
-        #region instrument settings
-#if UNIVERSE_N8
-        private readonly string UNIVERSE_NICK = "N=8";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "SPY.etf", // S&P 500
-            "EFA.etf", // EAFE
-            "EEM.etf", // Emerging Markets
-            "QQQ.etf", // US Technology Sector
-            "EWJ.etf", // Japanese Equities
-            "HYG.etf", // High Yield Bonds
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.25;
-        private readonly string[] SAFE_ASSETS =
-        {
-            "IEF.etf", // 10-Year Treasuries
-            "BIL.etf", // T-Bills
-        };
-#endif
-#if UNIVERSE_N16
-#error This universe is not defined, yet
-        private readonly string UNIVERSE_NICK = "N=16";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "", // Non - Durables
-            "", // Durables
-            "", // Manufacturing
-            "", // Energy
-            "", // Technology
-            "", // Telecom
-            "", // Shops
-            "", // Health
-            "", // Utilities
-            "", // Other
-            "", // 10-Year Treasuries
-            "", // 30-Year Treasuries
-            "", // U.S. Municipal Bonds
-            "", // U.S. Corporate Bonds
-            "", // U.S High Yield Bonds
-            "", // T-Bills
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.25;
-        private readonly string[] SAFE_ASSETS =
-        {
-            "IEF.etf", // 10-Year Treasuries
-            "BIL.etf", // T-Bills
-        };
-#endif
-#if UNIVERSE_N39
-#error This universe is not defined, yet
-        private readonly string UNIVERSE_NICK = "N=16";
-        private readonly string[] RISKY_ASSETS =
-        {
-            "", // S&P 500
-            "", // US Small Caps
-            "", // EAFE
-            "", // Emerging Markets
-            "", // Japanese Equities
-            "", // Non-Durables
-            "", // Durables
-            "", // Manufacturing
-            "", // Energy
-            "", // Technology
-            "", // Telecom 
-            "", // Shops
-            "", // Health
-            "", // Utilities
-            "", // Other Sector
-            "", // Dow Utilities
-            "", // Dow Transports
-            "", // Dow Industrials
-            "", // FTSE US 1000
-            "", // FTSE US 1500 
-            "", // FTSE Global ex-US
-            "", // FTSE Developed Equities
-            "", // FTSE Emerging Markets
-            "", // 10-Year Treasuries
-            "", // 30-Year Treasuries
-            "", // U.S. TIPs
-            "", // U.S. Municipal Bonds
-            "", // U.S. Corporate Bonds
-            "", // U.S High Yield Bonds
-            "", // T-Bills
-            "", // Int’l Gov’t Bonds 
-            "", // Japan 10-Year Gov’t Bond
-            "", // Commodities (GSCI)
-            "", // Gold
-            "", // REITs
-            "", // Mortgage REITs
-            "", // FX (1x )
-            "", // FX (2x)
-            "", // Timber
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.25;
-        private readonly string[] SAFE_ASSETS =
-        {
-            "IEF.etf", // 10-Year Treasuries
-            "BIL.etf", // T-Bills
-        };
-#endif
-#if UNIVERSE_G4
-        private readonly string UNIVERSE_NICK = "G4";
-        private static string[] RISKY_ASSETS =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "VEA.etf", // Vanguard FTSE Developed Markets ETF
-            "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-            "BND.etf", // Vanguard Total Bond Market ETF
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.70; // target of 2 risky assets
-        private static string[] SAFE_ASSETS =
-        {
-            "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-#endif
-#if UNIVERSE_G12
-        private static string UNIVERSE_NICK = "G12";
-        private static string[] RISKY_ASSETS =
-        {
-            "SPY.etf", // SPDR S&P 500 ETF
-            "IWM.etf", // iShares Russell 2000 ETF
-            "QQQ.etf", // Invesco Nasdaq-100 ETF
-            "VGK.etf", // Vanguard FTSE Europe ETF
-            "EWJ.etf", // iShares MSCI Japan ETF
-            "VWO.etf", // Vanguard MSCI Emerging Markets ETF
-            "VNQ.etf", // Vanguard Real Estate ETF
-            "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
-            "GLD.etf", // SPDR Gold Trust ETF
-            "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-            "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
-            //"LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-        private readonly double MAX_RISKY_ALLOC = 0.20; // target of 6 risky assets
-        private static string[] SAFE_ASSETS =
-        {
-            "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-            "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-            "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
-        };
-#endif
-        #endregion
         #region internal data
         //private readonly string BENCHMARK = "^SPX.index";
         private readonly string BENCHMARK = "@60_40.algo";
         private Plotter _plotter = new Plotter();
+
+        protected double TVOL;
+        protected List<string> RISKY_ASSETS;
+        protected List<string> SAFE_ASSETS;
+        private readonly double MAX_RISKY_ALLOC = 0.25;
         #endregion
 
         #region public override void Run()
@@ -227,9 +60,6 @@ namespace BooksAndPubs
             Deposit(1e6);
             CommissionPerShare = 0.015;
 
-            string strategyName = string.Format("Classical Asset Allocation: {0}, {1}",
-                UNIVERSE_NICK, TVOL_NICK);
-
             //---------- simulation loop
 
             foreach (var simTime in SimTimes)
@@ -244,7 +74,7 @@ namespace BooksAndPubs
                             + 12.0 * i.Close.Momentum(252)[0]) / 22.0);
 
                 // skip if there are any instruments missing from our universe
-                if (universe.Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0).Count() > 0)
+                if (!HasInstruments(universe))
                     continue;
 
                 // trigger rebalancing
@@ -258,21 +88,12 @@ namespace BooksAndPubs
                     var cla = new PortfolioSupport.MarkowitzCLA(
                         Instruments.Where(i => universe.Contains(i.Nickname)),
                         i => 252.0 * momentum[i],
-                        (i, j) => Math.Sqrt(252.0 / covar.BarSize) * covar[i, j], // TODO: is sqrt correct?
+                        (i, j) => 252.0 / covar.BarSize * covar[i, j], // TODO: is sqrt correct?
                         i => 0.0,
                         i => SAFE_ASSETS.Contains(i.Nickname) ? 1.0 : MAX_RISKY_ALLOC);
 
                     // find portfolio with specified risk
-#if TVOL_AGGRESSIVE || TVOL_DEFENSIVE
-                    // target volatility is annualized, pf is monthly
                     var pf = cla.TargetVolatility(TVOL);
-#endif
-#if TVOL_MAX_SHARPE
-                    var pf = cla.MaximumSharpeRatio();
-#endif
-#if TVOL_MIN_VARIANCE
-                    var pf = cla.MinimumVariance();
-#endif
 
                     Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
@@ -293,15 +114,23 @@ namespace BooksAndPubs
                     }
                 }
 
-                _plotter.SelectChart(strategyName, "date");
+                _plotter.SelectChart(Name, "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("NAV", NetAssetValue[0]);
                 _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+
+                _plotter.SelectChart(Name + " holdings", "date");
+                _plotter.SetX(SimTime[0]);
+                foreach (var n in universe)
+                {
+                    var i = FindInstrument(n);
+                    _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                }
             }
 
             //---------- post-processing
 
-            _plotter.SelectChart(strategyName + " trades", "date");
+            _plotter.SelectChart(Name + " trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -324,6 +153,141 @@ namespace BooksAndPubs
         }
         #endregion
     }
+
+    #region N=8 universe
+    public abstract class Keller_CAA_N8 : Keller_CAA
+    {
+        public Keller_CAA_N8()
+        {
+            RISKY_ASSETS = new List<string>
+            {
+                "SPY.etf", // S&P 500
+                "EFA.etf", // EAFE
+                "EEM.etf", // Emerging Markets
+                "QQQ.etf", // US Technology Sector
+                "EWJ.etf", // Japanese Equities
+                "HYG.etf", // High Yield Bonds
+            };
+
+            SAFE_ASSETS = new List<string>
+            {
+                "IEF.etf", // 10-Year Treasuries
+                "BIL.etf", // T-Bills
+            };
+        }
+    }
+    #endregion
+    #region N=16 universe
+    /*
+    public abstract class Keller_CAA_N16 : Keller_CAA
+    {
+        public Keller_CAA_N16()
+        {
+            RISKY_ASSETS = new List<string>
+            {
+                "", // Non - Durables
+                "", // Durables
+                "", // Manufacturing
+                "", // Energy
+                "", // Technology
+                "", // Telecom
+                "", // Shops
+                "", // Health
+                "", // Utilities
+                "", // Other
+                "", // 10-Year Treasuries
+                "", // 30-Year Treasuries
+                "", // U.S. Municipal Bonds
+                "", // U.S. Corporate Bonds
+                "", // U.S High Yield Bonds
+                "", // T-Bills
+            };
+
+            SAFE_ASSETS = new List<string>
+            {
+                "IEF.etf", // 10-Year Treasuries
+                "BIL.etf", // T-Bills
+            };
+        }
+    }
+    */
+    #endregion
+    #region N=39 universe
+    /*
+    public abstract class Keller_CAA_N39 : Keller_CAA
+    {
+        public Keller_CAA_N39()
+        {
+            RISKY_ASSETS = new List<string>
+            {
+                "", // S&P 500
+                "", // US Small Caps
+                "", // EAFE
+                "", // Emerging Markets
+                "", // Japanese Equities
+                "", // Non-Durables
+                "", // Durables
+                "", // Manufacturing
+                "", // Energy
+                "", // Technology
+                "", // Telecom 
+                "", // Shops
+                "", // Health
+                "", // Utilities
+                "", // Other Sector
+                "", // Dow Utilities
+                "", // Dow Transports
+                "", // Dow Industrials
+                "", // FTSE US 1000
+                "", // FTSE US 1500 
+                "", // FTSE Global ex-US
+                "", // FTSE Developed Equities
+                "", // FTSE Emerging Markets
+                "", // 10-Year Treasuries
+                "", // 30-Year Treasuries
+                "", // U.S. TIPs
+                "", // U.S. Municipal Bonds
+                "", // U.S. Corporate Bonds
+                "", // U.S High Yield Bonds
+                "", // T-Bills
+                "", // Int’l Gov’t Bonds 
+                "", // Japan 10-Year Gov’t Bond
+                "", // Commodities (GSCI)
+                "", // Gold
+                "", // REITs
+                "", // Mortgage REITs
+                "", // FX (1x )
+                "", // FX (2x)
+                "", // Timber
+            };
+            SAFE_ASSETS = new List<string>
+            {
+                "IEF.etf", // 10-Year Treasuries
+                "BIL.etf", // T-Bills
+            };
+        }
+    }
+    */
+    #endregion
+
+    #region N=8, TV=5%
+    public class Keller_CAA_N8_TV5 : Keller_CAA_N8
+    {
+        public Keller_CAA_N8_TV5()
+        {
+            TVOL = 0.05;
+        }
+    }
+    #endregion
+    #region N=8, TV=10%
+    public class Keller_CAA_N8_TV10 : Keller_CAA_N8
+    {
+        public Keller_CAA_N8_TV10()
+        {
+            TVOL = 0.10;
+        }
+    }
+    #endregion
 }
 
 //==============================================================================
