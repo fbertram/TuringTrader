@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Class to simulate after-tax NAV for United States.
+    /// Helper class to analyze order log.
     /// </summary>
     public class LogAnalysis
     {
@@ -34,6 +34,11 @@ namespace TuringTrader.Simulator
         /// </summary>
         public class Position
         {
+            /// <summary>
+            /// position symbol
+            /// </summary>
+            public string Symbol;
+
             /// <summary>
             /// position quantity
             /// </summary>
@@ -62,7 +67,7 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// fill price of liquidation
             /// </summary>
-            public double SellPrice;
+            public double SellFill;
 
             /// <summary>
             /// commission paid for liquidation
@@ -70,27 +75,30 @@ namespace TuringTrader.Simulator
             public double SellCommission;
         }
         #endregion
-        #region public static Dictionary<string, List<Position>> GroupPositions(List<LogEntry> log)
+
+        #region public static List<Position> GroupPositions(List<LogEntry> log, bool lifo = true)
         /// <summary>
         /// Analyse log files and transform entries and exits into positions held.
         /// </summary>
         /// <param name="log">input log</param>
+        /// <param name="lifo">grouping method. true (default) = last in/ first out. false = first in/ first out</param>
         /// <returns>container w/ positions</returns>
-        public static Dictionary<string, List<Position>> GroupPositions(List<LogEntry> log)
+        public static List<Position> GroupPositions(List<LogEntry> log, bool lifo = true)
         {
-            Dictionary<string, List<Position>> buyTickets = new Dictionary<string, List<Position>>();
-            Dictionary<string, List<Position>> holdTickets = new Dictionary<string, List<Position>>();
+            Dictionary<string, List<Position>> entries = new Dictionary<string, List<Position>>();
+            List<Position> positions = new List<Position>();
 
             foreach (LogEntry logEntry in log)
             {
                 switch (logEntry.Action)
                 {
                     case LogEntryAction.Buy:
-                        if (!buyTickets.ContainsKey(logEntry.Symbol))
-                            buyTickets[logEntry.Symbol] = new List<Position>();
+                        if (!entries.ContainsKey(logEntry.Symbol))
+                            entries[logEntry.Symbol] = new List<Position>();
 
-                        buyTickets[logEntry.Symbol].Add(new Position
+                        entries[logEntry.Symbol].Add(new Position
                         {
+                            Symbol = logEntry.Symbol,
                             Quantity = logEntry.OrderTicket.Quantity,
 
                             BuyDate = logEntry.BarOfExecution.Time,
@@ -103,17 +111,19 @@ namespace TuringTrader.Simulator
                         int totalQuantity = -logEntry.OrderTicket.Quantity;
                         while (totalQuantity > 0)
                         {
-                            Position entry = false
-                                ? buyTickets[logEntry.Symbol].First() // FIFO
-                                : buyTickets[logEntry.Symbol].Last(); // LIFO
+                            if (!entries.ContainsKey(logEntry.Symbol)
+                            || entries[logEntry.Symbol].Count() == 0)
+                                throw new Exception("LogAnalysis.GroupPositions: no entry found");
+
+                            Position entry = lifo
+                                ? entries[logEntry.Symbol].Last()  // LIFO
+                                : entries[logEntry.Symbol].First();// FIFO
 
                             int sellFromEntry = Math.Min(totalQuantity, entry.Quantity);
 
-                            if (!holdTickets.ContainsKey(logEntry.Symbol))
-                                holdTickets[logEntry.Symbol] = new List<Position>();
-
-                            holdTickets[logEntry.Symbol].Add(new Position
+                            positions.Add(new Position
                             {
+                                Symbol = logEntry.Symbol,
                                 Quantity = sellFromEntry,
 
                                 BuyDate = entry.BuyDate,
@@ -121,7 +131,7 @@ namespace TuringTrader.Simulator
                                 BuyCommission = entry.BuyCommission,
 
                                 SellDate = logEntry.BarOfExecution.Time,
-                                SellPrice = logEntry.FillPrice,
+                                SellFill = logEntry.FillPrice,
                                 SellCommission = logEntry.Commission,
                             });
 
@@ -129,13 +139,13 @@ namespace TuringTrader.Simulator
 
                             entry.Quantity -= sellFromEntry;
                             if (entry.Quantity <= 0)
-                                buyTickets[logEntry.Symbol].Remove(entry);
+                                entries[logEntry.Symbol].Remove(entry);
                         }
                         break;
                 }
             }
 
-            return holdTickets;
+            return positions;
         }
         #endregion
 

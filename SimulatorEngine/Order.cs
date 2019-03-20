@@ -50,9 +50,14 @@ namespace TuringTrader.Simulator
         stockInactiveClose,
 
         /// <summary>
-        /// execute stop order during next bar
+        /// execute stop order on next bar
         /// </summary>
         stopNextBar,
+
+        /// <summary>
+        /// execute limit order on next bar
+        /// </summary>
+        limitNextBar,
 
         /// <summary>
         /// deposit/ withdraw cash

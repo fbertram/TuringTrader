@@ -118,9 +118,31 @@ namespace TuringTrader.Simulator
                         price = Math.Min(ticket.Price, execBar.Open);
                     }
                     break;
+
+                case OrderType.limitNextBar:
+                    execBar = instrument[0];
+                    netAssetValue = NetAssetValue[0];
+                    if (ticket.Quantity > 0)
+                    {
+                        if (ticket.Price > execBar.Low)
+                            return;
+
+                        price = Math.Min(ticket.Price, execBar.Open);
+                    }
+                    else
+                    {
+                        if (ticket.Price < execBar.High)
+                            return;
+
+                        price = Math.Max(ticket.Price, execBar.Open);
+                    }
+                    break;
+
+                default:
+                    throw new Exception("SimulatorCore.ExecOrder: unknown order type");
             }
 
-            // add position
+            // adjust position
             if (!Positions.ContainsKey(instrument))
                 Positions[instrument] = 0;
             Positions[instrument] += ticket.Quantity;
@@ -627,7 +649,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region public List<LogEntry> Log
         /// <summary>
-        /// List of trade log entries.
+        /// Simulator's order log.
         /// </summary>
         public List<LogEntry> Log = new List<LogEntry>();
         #endregion
