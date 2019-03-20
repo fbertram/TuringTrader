@@ -66,6 +66,11 @@ namespace TuringTrader.Simulator
             if (SimTime[0] < StartTime)
                 return;
 
+            // conditional orders: cancel, if condition not met
+            if (ticket.Condition != null
+            && !ticket.Condition(ticket.Instrument))
+                return;
+
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
             double netAssetValue = 0.0;

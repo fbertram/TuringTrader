@@ -99,6 +99,11 @@ namespace TuringTrader.Simulator
         /// time stamp of queuing this order
         /// </summary>
         public DateTime QueueTime;
+
+        /// <summary>
+        /// exec condition
+        /// </summary>
+        public Func<Instrument, bool> Condition = null;
     }
 }
 
