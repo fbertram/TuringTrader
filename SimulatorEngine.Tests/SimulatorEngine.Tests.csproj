@@ -55,6 +55,7 @@
     <Compile Include="OptionSupport.cs" />
     <Compile Include="PortfolioSupport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimulatorCore.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TimeSeries.cs" />
     <Compile Include="IndicatorsBasic.cs" />

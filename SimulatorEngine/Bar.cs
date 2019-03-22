@@ -90,6 +90,16 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public Bar NewOHLC(...)
+        static public Bar NewOHLC(string ticker, DateTime t, double o, double h, double l, double c, long v)
+        {
+            return new Bar(
+                ticker, t,
+                o, h, l, c, v, true,
+                default(double), default(double), default(long), default(long), false,
+                default(DateTime), default(double), false);
+        }
+        #endregion
 
         #region public readonly string Symbol
         /// <summary>

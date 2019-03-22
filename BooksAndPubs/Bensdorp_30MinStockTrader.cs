@@ -28,126 +28,14 @@ namespace BooksAndPubs
     /// <summary>
     /// Mean-Reversion Long Strategy
     /// </summary>
-    public class Bensdorp_30MinStockTrader_MRL : Algorithm
+    public abstract class Bensdorp_30MinStockTrader_MRL : Algorithm
     {
         #region internal data
         private static readonly string BENCHMARK = "$SPXTR.index";
-
+        protected abstract List<string> UNIVERSE { get; }
         private Plotter _plotter = new Plotter();
         private Instrument _benchmark;
         private List<Instrument> _universe;
-        #endregion
-        #region trading universe
-        private static readonly List<string> UNIVERSE = new List<string>()
-        {
-            // Trade all US stocks, but filter out 
-            // * ETFs; 
-            // * stocks < $10; and 
-            // * average daily volume< 500,000 over last 50 days.
-
-            // here, we use S&P 100, as of 03/20/2019
-            "AAPL.stock",
-            "ABBV.stock",
-            "ABT.stock",
-            "ACN.stock",
-            "ADBE.stock",
-            "AGN.stock",
-            "AIG.stock",
-            "ALL.stock",
-            "AMGN.stock",
-            "AMZN.stock",
-            "AXP.stock",
-            "BA.stock",
-            "BAC.stock",
-            "BIIB.stock",
-            "BK.stock",
-            "BKNG.stock",
-            "BLK.stock",
-            "BMY.stock",
-            "BRK.B.stock",
-            "C.stock",
-            "CAT.stock",
-            "CELG.stock",
-            "CHTR.stock",
-            "CL.stock",
-            "CMCSA.stock",
-            "COF.stock",
-            "COP.stock",
-            "COST.stock",
-            "CSCO.stock",
-            "CVS.stock",
-            "CVX.stock",
-            "DHR.stock",
-            "DIS.stock",
-            "DUK.stock",
-            "DWDP.stock",
-            "EMR.stock",
-            "EXC.stock",
-            "F.stock",
-            "FB.stock",
-            "FDX.stock",
-            "GD.stock",
-            "GE.stock",
-            "GILD.stock",
-            "GM.stock",
-            "GOOG.stock",
-            "GOOGL.stock",
-            "GS.stock",
-            "HAL.stock",
-            "HD.stock",
-            "HON.stock",
-            "IBM.stock",
-            "INTC.stock",
-            "JNJ.stock",
-            "JPM.stock",
-            "KHC.stock",
-            "KMI.stock",
-            "KO.stock",
-            "LLY.stock",
-            "LMT.stock",
-            "LOW.stock",
-            "MA.stock",
-            "MCD.stock",
-            "MDLZ.stock",
-            "MDT.stock",
-            "MET.stock",
-            "MMM.stock",
-            "MO.stock",
-            "MRK.stock",
-            "MS.stock",
-            "MSFT.stock",
-            "NEE.stock",
-            "NFLX.stock",
-            "NKE.stock",
-            "NVDA.stock",
-            "ORCL.stock",
-            "OXY.stock",
-            "PEP.stock",
-            "PFE.stock",
-            "PG.stock",
-            "PM.stock",
-            "PYPL.stock",
-            "QCOM.stock",
-            "RTN.stock",
-            "SBUX.stock",
-            "SLB.stock",
-            "SO.stock",
-            "SPG.stock",
-            "T.stock",
-            "TGT.stock",
-            "TXN.stock",
-            "UNH.stock",
-            "UNP.stock",
-            "UPS.stock",
-            "USB.stock",
-            "UTX.stock",
-            "V.stock",
-            "VZ.stock",
-            "WBA.stock",
-            "WFC.stock",
-            "WMT.stock",
-            "XOM.stock",
-        };
         #endregion
 
         #region public override void Run()
@@ -191,7 +79,7 @@ namespace BooksAndPubs
                             rsi3 = i.Close.RSI(3),
                         });
 
-                // * daily close must be > 150 - day SMA
+                // * daily close must be > 150-day SMA
                 // * 7-day ADX > 45
                 // * 10-day ATR % > 4 %
                 // * 3-day RSI < 30
@@ -268,7 +156,7 @@ namespace BooksAndPubs
                     //----- stop loss & profit target
 
                     // no stop loss on day1
-                    // next day set stop loss at -2.5 * 10 - day ATR
+                    // next day set stop loss at -2.5 * 10-day ATR
                     // exit at the next day open when the close shows a profit of 3 %, 
                     foreach (var position in Positions.Keys)
                     {
@@ -349,7 +237,6 @@ namespace BooksAndPubs
             }
         }
         #endregion
-
         #region public override void Report()
         public override void Report()
         {
@@ -357,6 +244,251 @@ namespace BooksAndPubs
         }
         #endregion
     }
+
+    #region S&P 100 (OEX)
+    public class Bensdorp_30MinStockTrader_MRL_OEX : Bensdorp_30MinStockTrader_MRL
+    {
+        protected override List<string> UNIVERSE
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    // Trade all US stocks, but filter out 
+                    // * ETFs; 
+                    // * stocks < $10; and 
+                    // * average daily volume< 500,000 over last 50 days.
+
+                    // here, we use S&P 100, as of 03/20/2019
+                    "AAPL.stock",
+                    "ABBV.stock",
+                    "ABT.stock",
+                    "ACN.stock",
+                    "ADBE.stock",
+                    "AGN.stock",
+                    "AIG.stock",
+                    "ALL.stock",
+                    "AMGN.stock",
+                    "AMZN.stock",
+                    "AXP.stock",
+                    "BA.stock",
+                    "BAC.stock",
+                    "BIIB.stock",
+                    "BK.stock",
+                    "BKNG.stock",
+                    "BLK.stock",
+                    "BMY.stock",
+                    "BRK.B.stock",
+                    "C.stock",
+                    "CAT.stock",
+                    "CELG.stock",
+                    "CHTR.stock",
+                    "CL.stock",
+                    "CMCSA.stock",
+                    "COF.stock",
+                    "COP.stock",
+                    "COST.stock",
+                    "CSCO.stock",
+                    "CVS.stock",
+                    "CVX.stock",
+                    "DHR.stock",
+                    "DIS.stock",
+                    "DUK.stock",
+                    "DWDP.stock",
+                    "EMR.stock",
+                    "EXC.stock",
+                    "F.stock",
+                    "FB.stock",
+                    "FDX.stock",
+                    "GD.stock",
+                    "GE.stock",
+                    "GILD.stock",
+                    "GM.stock",
+                    "GOOG.stock",
+                    "GOOGL.stock",
+                    "GS.stock",
+                    "HAL.stock",
+                    "HD.stock",
+                    "HON.stock",
+                    "IBM.stock",
+                    "INTC.stock",
+                    "JNJ.stock",
+                    "JPM.stock",
+                    "KHC.stock",
+                    "KMI.stock",
+                    "KO.stock",
+                    "LLY.stock",
+                    "LMT.stock",
+                    "LOW.stock",
+                    "MA.stock",
+                    "MCD.stock",
+                    "MDLZ.stock",
+                    "MDT.stock",
+                    "MET.stock",
+                    "MMM.stock",
+                    "MO.stock",
+                    "MRK.stock",
+                    "MS.stock",
+                    "MSFT.stock",
+                    "NEE.stock",
+                    "NFLX.stock",
+                    "NKE.stock",
+                    "NVDA.stock",
+                    "ORCL.stock",
+                    "OXY.stock",
+                    "PEP.stock",
+                    "PFE.stock",
+                    "PG.stock",
+                    "PM.stock",
+                    "PYPL.stock",
+                    "QCOM.stock",
+                    "RTN.stock",
+                    "SBUX.stock",
+                    "SLB.stock",
+                    "SO.stock",
+                    "SPG.stock",
+                    "T.stock",
+                    "TGT.stock",
+                    "TXN.stock",
+                    "UNH.stock",
+                    "UNP.stock",
+                    "UPS.stock",
+                    "USB.stock",
+                    "UTX.stock",
+                    "V.stock",
+                    "VZ.stock",
+                    "WBA.stock",
+                    "WFC.stock",
+                    "WMT.stock",
+                    "XOM.stock",
+                };
+            }
+        }
+    }
+    #endregion
+    #region Nasdaq 100 (NDX)
+    public class Bensdorp_30MinStockTrader_MRL_NDX : Bensdorp_30MinStockTrader_MRL
+    {
+        protected override List<string> UNIVERSE
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    // Trade all US stocks, but filter out 
+                    // * ETFs; 
+                    // * stocks < $10; and 
+                    // * average daily volume< 500,000 over last 50 days.
+
+                    // here, we use Nasdaq 100, as of 03/21/2019
+                    "AAL.stock",
+                    "AAPL.stock",
+                    "ADBE.stock",
+                    "ADI.stock",
+                    "ADP.stock",
+                    "ADSK.stock",
+                    "ALGN.stock",
+                    "ALXN.stock",
+                    "AMAT.stock",
+                    "AMD.stock",
+                    "AMGN.stock",
+                    "AMZN.stock",
+                    "ASML.stock",
+                    "ATVI.stock",
+                    "AVGO.stock",
+                    "BIDU.stock",
+                    "BIIB.stock",
+                    "BKNG.stock",
+                    "BMRN.stock",
+                    "CDNS.stock",
+                    "CELG.stock",
+                    "CERN.stock",
+                    "CHKP.stock",
+                    "CHTR.stock",
+                    "CMCSA.stock",
+                    "COST.stock",
+                    "CSCO.stock",
+                    "CSX.stock",
+                    "CTAS.stock",
+                    "CTRP.stock",
+                    "CTSH.stock",
+                    "CTXS.stock",
+                    "DLTR.stock",
+                    "EA.stock",
+                    "EBAY.stock",
+                    "EXPE.stock",
+                    "FAST.stock",
+                    "FB.stock",
+                    "FISV.stock",
+                    "GILD.stock",
+                    "GOOG.stock",
+                    "GOOGL.stock",
+                    "HAS.stock",
+                    "HSIC.stock",
+                    "IDXX.stock",
+                    "ILMN.stock",
+                    "INCY.stock",
+                    "INTC.stock",
+                    "INTU.stock",
+                    "ISRG.stock",
+                    "JBHT.stock",
+                    "JD.stock",
+                    "KHC.stock",
+                    "KLAC.stock",
+                    "LBTYA.stock",
+                    "LBTYK.stock",
+                    "LRCX.stock",
+                    "LULU.stock",
+                    "MAR.stock",
+                    "MCHP.stock",
+                    "MDLZ.stock",
+                    "MELI.stock",
+                    "MNST.stock",
+                    "MSFT.stock",
+                    "MU.stock",
+                    "MXIM.stock",
+                    "MYL.stock",
+                    "NFLX.stock",
+                    "NTAP.stock",
+                    "NTES.stock",
+                    "NVDA.stock",
+                    "NXPI.stock",
+                    "ORLY.stock",
+                    "PAYX.stock",
+                    "PCAR.stock",
+                    "PEP.stock",
+                    "PYPL.stock",
+                    "QCOM.stock",
+                    "REGN.stock",
+                    "ROST.stock",
+                    "SBUX.stock",
+                    "SIRI.stock",
+                    "SNPS.stock",
+                    "SWKS.stock",
+                    "SYMC.stock",
+                    "TFCF.stock",
+                    "TFCFA.stock",
+                    "TMUS.stock",
+                    "TSLA.stock",
+                    "TTWO.stock",
+                    "TXN.stock",
+                    "UAL.stock",
+                    "ULTA.stock",
+                    "VRSK.stock",
+                    "VRSN.stock",
+                    "VRTX.stock",
+                    "WBA.stock",
+                    "WDAY.stock",
+                    "WDC.stock",
+                    "WLTW.stock",
+                    "WYNN.stock",
+                    "XEL.stock",
+                    "XLNX.stock",
+                };
+            }
+        }
+    }
+    #endregion
 }
 
 //==============================================================================

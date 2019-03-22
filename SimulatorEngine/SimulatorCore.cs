@@ -4,7 +4,7 @@
 // Description: Simulator engine core
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -129,14 +129,14 @@ namespace TuringTrader.Simulator
                     netAssetValue = NetAssetValue[0];
                     if (ticket.Quantity > 0)
                     {
-                        if (ticket.Price > execBar.Low)
+                        if (ticket.Price < execBar.Low)
                             return;
 
                         price = Math.Min(ticket.Price, execBar.Open);
                     }
                     else
                     {
-                        if (ticket.Price < execBar.High)
+                        if (ticket.Price > execBar.High)
                             return;
 
                         price = Math.Max(ticket.Price, execBar.Open);

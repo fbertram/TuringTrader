@@ -25,7 +25,7 @@ namespace SimulatorEngine.Tests
     public class OptionSupport
     {
         #region class TestSimulator
-        private class TestSimulator : SimulatorCore
+        private class TestSimulator : TuringTrader.Simulator.SimulatorCore
         {
             private List<DataSource> _testDataSources;
             private double _iv;
@@ -209,7 +209,7 @@ namespace SimulatorEngine.Tests
                 DataSource optionDataSource = new DataSourceFromBars(optionBars, optionInfos);
 
                 //--- run test
-                SimulatorCore callSim = new TestSimulator(
+                TuringTrader.Simulator.SimulatorCore callSim = new TestSimulator(
                     new List<DataSource> { underlyingDataSource, optionDataSource },
                     testVector.riskFreeRate, testVector.dividendYield,
                     testVector.impliedVol, testVector.delta, testVector.gamma, testVector.theta, testVector.vega
