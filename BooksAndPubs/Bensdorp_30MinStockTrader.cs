@@ -30,6 +30,34 @@ namespace BooksAndPubs
     /// </summary>
     public abstract class Bensdorp_30MinStockTrader_MRL : Algorithm
     {
+        #region inputs
+        //[OptimizerParam(126, 252, 21)]
+        public int SMA_DAYS = 150; // default = 150
+
+        [OptimizerParam(0, 100, 5)]
+        public int MIN_ADX = 45; // default = 45
+
+        [OptimizerParam(0, 100, 5)]
+        public int MAX_RSI = 30; // default = 30
+
+        [OptimizerParam(100, 500, 50)]
+        public int MIN_ATR = 400; // default = 4%
+
+        //[OptimizerParam(1, 10, 1)]
+        public int MAX_ENTRIES = 10; // default = 10
+
+        [OptimizerParam(200, 500, 50)]
+        public int STOP_LOSS = 250; // default = 2.5 * ATR
+
+        //[OptimizerParam(100, 500, 50)]
+        public int RISK_PER_TRADE = 200; // default = 2%
+
+        //[OptimizerParam(100, 2000, 100)]
+        public int CAP_PER_TRADE = 1000; // default = 10%
+
+        [OptimizerParam(100, 500, 100)]
+        public int PROFIT_TARGET = 300; // default = 3%
+        #endregion
         #region internal data
         private static readonly string BENCHMARK = "$SPXTR.index";
         protected abstract List<string> UNIVERSE { get; }
@@ -53,6 +81,15 @@ namespace BooksAndPubs
             Deposit(1e6);
             CommissionPerShare = 0.015;
 
+            var entryParameters = Enumerable.Empty<Instrument>()
+                .ToDictionary(
+                    i => i,
+                    i => new
+                    {
+                        entryPrice = 0.0,
+                        stopLoss = 0.0,
+                    });
+
             //========== simulation loop ==========
 
             foreach (var s in SimTimes)
@@ -73,9 +110,9 @@ namespace BooksAndPubs
                         i => i,
                         i => new
                         {
-                            sma150 = i.Close.SMA(150),
+                            sma150 = i.Close.SMA(SMA_DAYS),
                             adx7 = i.AverageDirectionalMovement(7).ADX,
-                            atr10 = i.TrueRange().SMA(10),
+                            atr10 = i.AverageTrueRange(10),
                             rsi3 = i.Close.RSI(3),
                         });
 
@@ -85,9 +122,9 @@ namespace BooksAndPubs
                 // * 3-day RSI < 30
                 var filtered = _universe
                     .Where(i => i.Close[0] > indicators[i].sma150[0]
-                        && indicators[i].adx7[0] > 45.0
-                        && indicators[i].atr10.Divide(i.Close)[0] > 0.04
-                        && indicators[i].rsi3[0] < 30)
+                        && indicators[i].adx7[0] > MIN_ADX
+                        && indicators[i].atr10.Divide(i.Close)[0] > MIN_ATR/10000.0
+                        && indicators[i].rsi3[0] < MAX_RSI)
                     .ToList();
 
                 if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek)
@@ -95,93 +132,72 @@ namespace BooksAndPubs
                     //----- time-based close
 
                     // exit after 4 days regardless
-                    // FIXME: unclear, what 'after 4 days' means. we interpret
-                    // it to be 'before entering new trades'
                     foreach (var i in Positions.Keys)
                         i.Trade(-i.Position).Comment = "time exit";
 
                     //----- determine instruments to trade
 
-                    // Each week, sort all stocks that meet that criteria by RSI
-                    // Then buy the 10 LOWEST RSI scores at the Monday open with 
+                    // each week, sort all stocks that meet that criteria by RSI
+                    // buy the 10 LOWEST RSI scores at the Monday open with 
                     // a LIMIT order 4 % BELOW the Friday close.
                     var entries = filtered
                         .OrderBy(i => indicators[i].rsi3[0])
-                        .Take(10)
+                        .Take(MAX_ENTRIES)
                         .ToList();
-
-                    var tradeParameters = entries
-                        .ToDictionary(
-                            i => i,
-                            i => new
-                            {
-                                // FIXME: is it possible to have stopLoss > entryPrice?
-                                // this probably shouldn't happen, as we filtered
-                                // stocks to have an ATR of more than 4%
-                                entryPrice = i.Close[0] * 0.96,
-                                stopLoss = i.Close[0] - 2.5 * indicators[i].atr10[0],
-                            });
 
                     //----- open positions
 
-                    double totalRisk = 0.10;
                     foreach (var i in entries)
                     {
-                        // FIXME: this is incomplete. we need to keep track
-                        // of both, total risk, and total capital.
+                        // save our entry parameters, so that we may access
+                        // them later to manage exits
+                        entryParameters[i] = new
+                        {
+                            entryPrice = i.Close[0] * (1.0 - MIN_ATR / 10000.0),
+                            stopLoss = i.Close[0] - STOP_LOSS / 100.0 * indicators[i].atr10[0],
+                        };
 
-                        // risk 2 % equity per trade(entry - stop loss = "risk")
-                        // max 10 simultaneous positions, or max 10 % of equity.
-                        double riskPerTrade = Math.Min(0.02, totalRisk);
-                        totalRisk = Math.Max(0.0, totalRisk - riskPerTrade);
+                        // calculate target shares in two ways:
+                        // * fixed-fractional risk (with entry - stop-loss = "risk"), and
+                        // * fixed percentage of total equity
+                        double riskPerShare = Math.Max(0.0, entryParameters[i].entryPrice - entryParameters[i].stopLoss);
+                        int sharesRiskLimited = (int)Math.Floor(RISK_PER_TRADE/10000.0 * NetAssetValue[0] / riskPerShare);
+                        int sharesCapLimited = (int)Math.Floor(CAP_PER_TRADE/10000.0 * NetAssetValue[0] / i.Close[0]);
+                        int targetShares = Math.Min(sharesRiskLimited, sharesCapLimited);
 
-                        double riskPerShare = Math.Max(0.0, tradeParameters[i].entryPrice - tradeParameters[i].stopLoss);
-                        int targetShares = (int)Math.Floor(riskPerTrade * NetAssetValue[0] / riskPerShare);
-
+                        // place trade as limit order
                         i.Trade(targetShares, 
-                            OrderType.limitNextBar, 
-                            tradeParameters[i].entryPrice);
+                            OrderType.limitNextBar,
+                            entryParameters[i].entryPrice);
                     }
                 }
                 else
                 {
                     //----- stop loss & profit target
 
-                    // no stop loss on day1
+                    // no stop loss on day 1
                     // next day set stop loss at -2.5 * 10-day ATR
                     // exit at the next day open when the close shows a profit of 3 %, 
                     foreach (var position in Positions.Keys)
                     {
-                        var entry = Log
-                            .Where(l => (SimTime[0] - l.BarOfExecution.Time).TotalDays < 5.0
-                                && l.Symbol == position.Symbol
-                                && l.OrderTicket.Quantity > 0)
-                            .First();
+                        double entryPrice = entryParameters[position].entryPrice;
+                        double stopLoss = entryParameters[position].stopLoss;
+                        double profitTarget = entryPrice * (1.0 + PROFIT_TARGET/10000.0);
 
-                        double entryPrice = entry.FillPrice;
-                        double stopLoss = entryPrice - 2.5 * indicators[position].atr10[0];
-                        double profitTarget = entryPrice * 1.03;
-
-                        // NOTE: in order to have the worst case backtest result,
-                        // we place the stop-loss order before the profit target
-                        // order. that way, the stop-loss will have a higher priority
-                        // in case both events happen on the same day.
-                        position.Trade(-position.Position, 
-                                OrderType.stopNextBar, 
-                                stopLoss,
-                                i => i.Position > 0)
-                            .Comment = "stop loss";
-
-                        // FIXME: slight deviation from rules. we are not exiting on
-                        // the next open after hitting the profit target, but placing
-                        // a limit order with the profit target. to make sure only
-                        // one of the two competing orders is executed, we use an
-                        // order condition.
-                        position.Trade(-position.Position, 
-                                OrderType.limitNextBar, 
-                                profitTarget,
-                                i => i.Position > 0)
-                            .Comment = "profit target";
+                        if (position.Close[0] >= profitTarget)
+                        {
+                            position.Trade(-position.Position, 
+                                    OrderType.openNextBar)
+                                .Comment = "profit target";
+                        }
+                        else
+                        {
+                            position.Trade(-position.Position,
+                                    OrderType.stopNextBar,
+                                    stopLoss,
+                                    i => i.Position > 0)
+                                .Comment = "stop loss";
+                        }
                     }
                 }
 
@@ -197,6 +213,7 @@ namespace BooksAndPubs
             //========== post processing ==========
 
             // print order log
+#if false
             _plotter.SelectChart(Name + " orders", "date");
             foreach (LogEntry entry in Log)
             {
@@ -211,6 +228,7 @@ namespace BooksAndPubs
                 _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
                 _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
+#endif
 
             // print position log
             var tradeLog = LogAnalysis
@@ -225,7 +243,8 @@ namespace BooksAndPubs
                 _plotter.Plot("Symbol", trade.Symbol);
                 _plotter.Plot("Quantity", trade.Quantity);
                 _plotter.Plot("% Profit", trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
-                _plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
+                _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
+                //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
         }
         #endregion
