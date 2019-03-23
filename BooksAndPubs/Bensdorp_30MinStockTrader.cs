@@ -90,16 +90,8 @@ namespace BooksAndPubs
                         && indicators[i].rsi3[0] < 30)
                     .ToList();
 
-                if (SimTime[0].DayOfWeek < SimTime[1].DayOfWeek)
+                if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek)
                 {
-                    // FIXME: we typically get here on Monday's close,
-                    // instead of Friday's close. ultimately, we assume
-                    // this shouldn't matter too much and is not worth
-                    // fixing. determining the next trading day is
-                    // currently not easily possible with TuringTrader.
-                    // checking for Friday won't work, as there might
-                    // be a holiday.
-
                     //----- time-based close
 
                     // exit after 4 days regardless

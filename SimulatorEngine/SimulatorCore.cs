@@ -215,6 +215,7 @@ namespace TuringTrader.Simulator
                     Instrument = instrument,
                     Quantity = -instrument.Position,
                     Type = OrderType.stockInactiveClose,
+                    Comment = "delisted",
                 };
 
                 // force execution
@@ -407,6 +408,8 @@ namespace TuringTrader.Simulator
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
 
+                    NextSimTime = SimTime[0] + TimeSpan.FromDays(1000); // any date far in the future
+
                     // go through all data sources
                     foreach (DataSource source in _dataSources)
                     {
@@ -432,6 +435,9 @@ namespace TuringTrader.Simulator
 
                             hasData[source] = source.BarEnumerator.MoveNext();
                         }
+
+                        if (hasData[source] && source.BarEnumerator.Current.Time < NextSimTime)
+                            NextSimTime = source.BarEnumerator.Current.Time;
                     }
 
                     // execute orders
@@ -448,9 +454,17 @@ namespace TuringTrader.Simulator
                         ExpireOption(instr);
 
                     // handle instrument de-listing
+#if false
+                    // FIXME: this code is problematic, when using monthly data,
+                    // e.g. from FRED in conjunction w/ daily bars
                     IEnumerable<Instrument> instrumentsToDelist = Instruments
                         .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
                         .ToList();
+#else
+                    IEnumerable<Instrument> instrumentsToDelist = Instruments
+                        .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
+                        .ToList();
+#endif
 
                     IEnumerable<Instrument> optionsToDelist = Instruments
                         .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
@@ -494,6 +508,16 @@ namespace TuringTrader.Simulator
         /// time stamp at index 0.
         /// </summary>
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        #endregion
+        #region public DateTime NextSimTime
+        /// <summary>
+        /// Next simulator time stamp
+        /// </summary>
+        public DateTime NextSimTime
+        {
+            get;
+            private set;
+        }
         #endregion
         #region protected bool IsLastBar
         /// <summary>

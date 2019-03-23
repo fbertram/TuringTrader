@@ -167,6 +167,7 @@ namespace TuringTrader.Simulator
             {
                 string header = reader.ReadLine(); // skip header line
 
+                Bar prevBar = null;
                 for (string line; (line = reader.ReadLine()) != null;)
                 {
                     if (line.Length == 0)
@@ -185,10 +186,16 @@ namespace TuringTrader.Simulator
                     if (bar.Time < LastTime)
                         throw new Exception("DataSourceCsv: bars out of sequence");
 
+                    if (data.Count == 0
+                    && bar.Time > loadStartTime
+                    && prevBar != null)
+                        data.Add(prevBar); // add previous bar, if we don't have a bar at the reqested start
+                  
                     if (bar.Time >= loadStartTime
                     && bar.Time <= loadEndTime)
                         data.Add(bar);
 
+                    prevBar = bar;
                     _totalBarsRead++;
                 }
             }
