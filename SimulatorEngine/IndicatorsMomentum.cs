@@ -103,11 +103,11 @@ namespace TuringTrader.Simulator
                 {
                     double avgUp = IndicatorsBasic.Lambda(
                         (t) => Math.Max(0.0, series.Return()[t]),
-                        series.GetHashCode(), n).EMA(n)[0];
+                        new CacheId(series.GetHashCode(), n)).EMA(n)[0];
 
                     double avgDown = IndicatorsBasic.Lambda(
                         (t) => Math.Max(0.0, -series.Return()[t]),
-                        series.GetHashCode(), n).EMA(n)[0];
+                        new CacheId(series.GetHashCode(), n)).EMA(n)[0];
 
                     double rs = avgUp / Math.Max(1e-10, avgDown);
                     return 100.0 - 100.0 / (1 + rs);

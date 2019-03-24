@@ -28,15 +28,15 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class IndicatorsBasic
     {
-        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
+        #region public static ITimeSeries<double> Lambda(Func<int, double> lambda, CacheId identifier)
         /// <summary>
         /// Create time series based on lambda, with lambda being executed once for
         /// every call to the indexer method. Use this for leight-weight lambdas.
         /// </summary>
         /// <param name="lambda">lambda, taking bars back as parameter and returning time series value</param>
-        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <param name="identifier">cache id used to identify functor</param>
         /// <returns>lambda time series</returns>
-        public static ITimeSeries<double> Lambda(Func<int, double> lambda, params int[] identifier)
+        public static ITimeSeries<double> Lambda(Func<int, double> lambda, CacheId identifier)
         {
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
@@ -46,7 +46,7 @@ namespace TuringTrader.Simulator
             // that for a different lambda, the call stack would also be different
             var functor = Cache<FunctorLambda>.GetData(
                     // TODO: try to eliminate nested calls to Cache.UniqueId
-                    new CacheId(lambda.GetHashCode(), new CacheId(identifier).Key),
+                    new CacheId(lambda.GetHashCode(), identifier.Key),
                     () => new FunctorLambda(lambda));
 
             return functor;
@@ -77,7 +77,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
         /// <param name="first">first value to return</param>
-        /// <param name="identifier">cache key used to identify functor</param>
+        /// <param name="identifier">cache id used to identify functor</param>
         /// <returns>lambda time series</returns>
         public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, CacheId identifier)
         {
@@ -111,7 +111,7 @@ namespace TuringTrader.Simulator
         {
             return Lambda(
                 (t) => constantValue,
-                constantValue.GetHashCode());
+                new CacheId(constantValue.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay)
@@ -125,7 +125,7 @@ namespace TuringTrader.Simulator
         {
             return Lambda(
                 (t) => series[t + delay],
-                series.GetHashCode(), delay);
+                new CacheId(series.GetHashCode(), delay));
         }
         #endregion
 
@@ -216,8 +216,8 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         {
             return Lambda(
-                (t) => series[t] - series[t + 1], 
-                series.GetHashCode());
+                (t) => series[t] - series[t + 1],
+                new CacheId(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series)
@@ -231,7 +231,7 @@ namespace TuringTrader.Simulator
         {
             return Lambda(
                 (t) => Math.Log(series[t] / series[t + 1]),
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
 
@@ -245,7 +245,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Abs(series[t]),
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Square(this ITimeSeries<double> series)
@@ -258,7 +258,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series[t] * series[t],
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Sqrt(this ITimeSeries<double> series)
@@ -271,7 +271,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Sqrt(series[t]),
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Log(this ITimeSeries<double> series)
@@ -284,7 +284,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Log(series[t]),
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
 
@@ -298,7 +298,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => (double)series[t],
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
     }

@@ -251,7 +251,7 @@ namespace TuringTrader.Simulator
                     double low = Math.Min(series[0].Low, series[1].Close);
                     return high - low;
                 },
-                series.GetHashCode());
+                new CacheId(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)

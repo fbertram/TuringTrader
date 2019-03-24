@@ -72,7 +72,7 @@ namespace BooksAndPubs
             //========== initialization ==========
 
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Now - TimeSpan.FromDays(5);
+            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             foreach (var n in UNIVERSE)
                 AddDataSource(n);
@@ -477,8 +477,8 @@ namespace BooksAndPubs
                     "SNPS.stock",
                     "SWKS.stock",
                     "SYMC.stock",
-                    "TFCF.stock",
-                    "TFCFA.stock",
+                    "TFCF.stock.x",
+                    "TFCFA.stock.x",
                     "TMUS.stock",
                     "TSLA.stock",
                     "TTWO.stock",
