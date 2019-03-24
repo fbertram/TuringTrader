@@ -432,7 +432,10 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
-                int cacheKey = Tuple.Create(Info[DataSourceValue.nickName], startTime, endTime).GetHashCode();
+                var cacheKey = new CacheId(
+                    Info[DataSourceValue.nickName].GetHashCode(),
+                    startTime.GetHashCode(),
+                    endTime.GetHashCode());
 
                 List<Bar> retrievalFunction()
                 {
@@ -446,8 +449,8 @@ namespace TuringTrader.Simulator
                     else if (Directory.Exists(Info[DataSourceValue.dataPath]))
                         LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
 
-                // this should never happen - we create an empty directory in DataSource.New
-                else
+                    // this should never happen - we create an empty directory in DataSource.New
+                    else
                         throw new Exception("DataSourceCsv: data path not found");
 
                     DateTime t2 = DateTime.Now;

@@ -91,6 +91,17 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region static public Bar NewOHLC(...)
+        /// <summary>
+        /// Create new OHLC bar.
+        /// </summary>
+        /// <param name="ticker"></param>
+        /// <param name="t"></param>
+        /// <param name="o"></param>
+        /// <param name="h"></param>
+        /// <param name="l"></param>
+        /// <param name="c"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         static public Bar NewOHLC(string ticker, DateTime t, double o, double h, double l, double c, long v)
         {
             return new Bar(

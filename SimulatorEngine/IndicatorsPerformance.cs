@@ -88,7 +88,7 @@ namespace TuringTrader.Simulator
                     return maxDrawdown;
                 },
                 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                new CacheId(series.GetHashCode(), n));
 #else
             // NOTE: the total length of observation is 2x n
             return series
@@ -114,7 +114,7 @@ namespace TuringTrader.Simulator
                     return ret / Math.Max(1e-3, dd);
                 },
                 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
     }

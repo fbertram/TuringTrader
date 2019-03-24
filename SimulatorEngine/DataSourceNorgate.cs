@@ -270,7 +270,10 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
-                int cacheKey = Tuple.Create(Info[DataSourceValue.nickName], startTime, endTime).GetHashCode();
+                var cacheKey = new CacheId(
+                    Info[DataSourceValue.nickName].GetHashCode(),
+                    startTime.GetHashCode(),
+                    endTime.GetHashCode());
 
                 List<Bar> retrievalFunction()
                 {

@@ -69,7 +69,7 @@ namespace TuringTrader.Simulator
                     return Math.Sqrt(Math.Max(0.0, variance));
                 },
                 0.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n)
@@ -83,7 +83,7 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n = 10)
         {
             var functor = Cache<FunctorStandardDeviation>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new FunctorStandardDeviation(series, n));
 
             functor.Calc();
@@ -143,7 +143,7 @@ namespace TuringTrader.Simulator
         public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10)
         {
             var container = Cache<SemiDeviationResult>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new SemiDeviationResult());
 
             container.Average = series.SMA(n);
@@ -160,7 +160,7 @@ namespace TuringTrader.Simulator
                         return Math.Sqrt(downSeries
                             .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
                 }, 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+               new CacheId(series.GetHashCode(), n));
 
             container.Upside = IndicatorsBasic.BufferedLambda(
                 v =>
@@ -174,7 +174,7 @@ namespace TuringTrader.Simulator
                         return Math.Sqrt(upSeries
                             .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
                 }, 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                new CacheId(series.GetHashCode(), n));
 
             return container;
         }
@@ -231,7 +231,7 @@ namespace TuringTrader.Simulator
                     return 0.80 * Math.Sqrt(1.0 / n) * Math.Log(hi / lo);
                 },
                 0.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
 

@@ -46,7 +46,7 @@ namespace TuringTrader.Simulator
             // that for a different lambda, the call stack would also be different
             var functor = Cache<FunctorLambda>.GetData(
                     // TODO: try to eliminate nested calls to Cache.UniqueId
-                    Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                    new CacheId(lambda.GetHashCode(), new CacheId(identifier).Key),
                     () => new FunctorLambda(lambda));
 
             return functor;
@@ -77,9 +77,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
         /// <param name="first">first value to return</param>
-        /// <param name="identifier">array of integers used to identify functor</param>
+        /// <param name="identifier">cache key used to identify functor</param>
         /// <returns>lambda time series</returns>
-        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first = 0.0, params int[] identifier)
+        public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, CacheId identifier)
         {
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
@@ -88,7 +88,7 @@ namespace TuringTrader.Simulator
             // however, we might not need to hash the lambda, as it is reasonably safe to assume
             // that for a different lambda, the call stack would also be different
             var timeSeries = Cache<TimeSeries<double>>.GetData(
-                Cache.UniqueId(lambda.GetHashCode(), Cache.UniqueId(identifier)),
+                new CacheId(lambda.GetHashCode(), identifier.Key),
                 () => new TimeSeries<double>());
 
             double prevValue = timeSeries.BarsAvailable >= 1
@@ -143,7 +143,7 @@ namespace TuringTrader.Simulator
             return BufferedLambda(
                 (v) => Enumerable.Range(0, N).Max(t => series[t]),
                 series[0],
-                series.GetHashCode(), N);
+                new CacheId(series.GetHashCode(), N));
         }
         #endregion
         #region public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n)
@@ -160,7 +160,7 @@ namespace TuringTrader.Simulator
             return BufferedLambda(
                 (v) => Enumerable.Range(0, N).Min(t => series[t]),
                 series[0],
-                series.GetHashCode(), N);
+                new CacheId(series.GetHashCode(), N));
         }
         #endregion
         #region public static ITimeSeries<double> Range(this Instrument series, int n)

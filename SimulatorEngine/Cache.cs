@@ -29,20 +29,14 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    #region public class CacheId
     /// <summary>
-    /// Cache support class.
+    /// Unique ID to identify cache objects.
     /// </summary>
-    public static class Cache
+    public class CacheId
     {
-        #region static public int UniqueId(IEnumerable<int> parameterIds)
-        /// <summary>
-        /// Create unique cryptographic key from a list of integer parameters, as
-        /// well as the current stack trace. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
-        /// </summary>
-        /// <param name="parameterIds">list of integer parameters</param>
-        /// <returns>unique id</returns>
-        static public int UniqueId(IEnumerable<int> parameterIds)
+        #region internal helpers
+        private void CalcKey(IEnumerable<int> parameterIds)
         {
             // on top of the parameter ids, we also need to uniquely identify the call stack
             // currently, we use only the native offset for this
@@ -58,12 +52,24 @@ namespace TuringTrader.Simulator
             const int modifier = 31;
             unchecked
             {
-                return subIds
+                Key = subIds
                     .Aggregate(seed, (current, item) => (current * modifier) + item);
             }
         }
         #endregion
-        #region static public int UniqueId(params int[] parameterIds)
+
+        #region public int Key
+        /// <summary>
+        /// Cryptographic key
+        /// </summary>
+        public int Key
+        {
+            get;
+            private set;
+        }
+        #endregion
+
+        #region public CacheId(IEnumerable<int> parameterIds)
         /// <summary>
         /// Create unique cryptographic key from a list of integer parameters, as
         /// well as the current stack trace. This ID is used to uniquely identify 
@@ -71,12 +77,27 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="parameterIds">list of integer parameters</param>
         /// <returns>unique id</returns>
-        static public int UniqueId(params int[] parameterIds)
+        public CacheId(IEnumerable<int> parameterIds)
         {
-            return UniqueId(parameterIds.AsEnumerable());
+            CalcKey(parameterIds);
+        }
+        #endregion
+        #region public CacheId(params int[] parameterIds)
+        /// <summary>
+        /// Create unique cryptographic key from a list of integer parameters, as
+        /// well as the current stack trace. This ID is used to uniquely identify 
+        /// auto-magically created indicator functors.
+        /// </summary>
+        /// <param name="parameterIds">list of integer parameters</param>
+        /// <returns>unique id</returns>
+        public CacheId(params int[] parameterIds)
+        {
+            CalcKey(parameterIds.AsEnumerable());
         }
         #endregion
     }
+
+    #endregion
 
     /// <summary>
     /// Cache template class. The cache is at the core of TuringTrader's
@@ -88,23 +109,26 @@ namespace TuringTrader.Simulator
     /// <typeparam name="T">type of cache</typeparam>
     public static class Cache<T>
     {
+
         #region internal data
         private static Dictionary<int, T> _cache = new Dictionary<int, T>();
-        private static object _lockCache = new object();
         #endregion
-        #region static public T GetData(int key, Func<T> initialRetrieval)
+        #region static public T GetData(CacheId key, Func<T> initialRetrieval)
         /// <summary>
         /// Retrieve data from cache.
         /// </summary>
-        /// <param name="key">unique ID of data</param>
+        /// <param name="id">unique ID of data</param>
         /// <param name="initialRetrieval">lambda to retrieve data not found in cache</param>
         /// <returns>cached data</returns>
-        static public T GetData(int key, Func<T> initialRetrieval)
+        static public T GetData(CacheId id, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
             return initialRetrieval();
 #else
-            lock(_lockCache)
+            int key = id.Key;
+
+            //lock (_lockCache)
+            lock(_cache)
             {
                 if (!_cache.ContainsKey(key))
                     _cache[key] = initialRetrieval();

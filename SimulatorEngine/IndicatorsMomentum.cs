@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
                     return delta[0] / Math.Max(1e-10, 0.015 * meanDeviation[0]);
                 },
                 0.5,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
 
@@ -84,7 +84,7 @@ namespace TuringTrader.Simulator
                     return 100.0 * numerator / denominator;
                 },
                 0.5,
-                series.GetHashCode(), r, s);
+                new CacheId(series.GetHashCode(), r, s));
         }
         #endregion
 
@@ -113,7 +113,7 @@ namespace TuringTrader.Simulator
                     return 100.0 - 100.0 / (1 + rs);
                 },
                 50.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
 
@@ -140,7 +140,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
@@ -166,7 +166,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
 
@@ -181,7 +181,7 @@ namespace TuringTrader.Simulator
         public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
         {
             var container = Cache<StochasticOscillatorResult>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new StochasticOscillatorResult());
 
             container.PercentK = IndicatorsBasic.BufferedLambda(
@@ -197,7 +197,7 @@ namespace TuringTrader.Simulator
                         : 50.0;
                 },
                 50.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
 
             container.PercentD = container.PercentK.SMA(3);
 
@@ -215,7 +215,7 @@ namespace TuringTrader.Simulator
         public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
         {
             var container = Cache<StochasticOscillatorResult>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new StochasticOscillatorResult());
 
             container.PercentK = IndicatorsBasic.BufferedLambda(
@@ -231,7 +231,7 @@ namespace TuringTrader.Simulator
                         : 50.0;
                 },
                 50.0,
-                series.GetHashCode(), n);
+                new CacheId(series.GetHashCode(), n));
 
             container.PercentD = container.PercentK.SMA(3);
 
@@ -278,7 +278,7 @@ namespace TuringTrader.Simulator
         public static _Regression LinRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<LinRegressionFunctor>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new LinRegressionFunctor(series, n));
 
             functor.Calc();
@@ -377,7 +377,7 @@ namespace TuringTrader.Simulator
         public static _ADX AverageDirectionalMovement(this Instrument series, int n = 14)
         {
             var container = Cache<_ADX>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    new CacheId(series.GetHashCode(), n),
                     () => new _ADX());
 
             var upMove = Math.Max(0.0, series.High[0] - series.High[1]);
@@ -386,12 +386,12 @@ namespace TuringTrader.Simulator
             var plusDM = IndicatorsBasic.BufferedLambda(
                 prev => upMove > downMove ? upMove : 0.0,
                 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                new CacheId(series.GetHashCode(), n));
 
             var minusDM = IndicatorsBasic.BufferedLambda(
                 prev => downMove > upMove ? downMove : 0.0,
                 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                new CacheId(series.GetHashCode(), n));
 
             var atr = series.AverageTrueRange(n);
 

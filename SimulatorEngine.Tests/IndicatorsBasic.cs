@@ -91,7 +91,7 @@ namespace SimulatorEngine.Tests
                     TuringTrader.Simulator.IndicatorsBasic.BufferedLambda(
                         (p) => p + stimulus[0],
                         0.0,
-                        0);
+                        new CacheId(0));
                 //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
 
                 for (int col = 1; col <= testVectors.GetUpperBound(1); col++)
