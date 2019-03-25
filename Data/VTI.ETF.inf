@@ -1,5 +1,5 @@
 name=Vanguard Total Stock Market ETF
-dataPath=Data\VTI.ETF
+dataPath=Data\VTI.etf
 ticker=VTI
 date={1}
 time=16:00

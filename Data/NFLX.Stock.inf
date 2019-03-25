@@ -1,5 +1,5 @@
 name=Netflix
-dataPath=Data\NFLX.Stock
+dataPath=Data\NFLX.stock
 ticker=NFLX
 date={1:MM/dd/yyyy}
 time=16:00

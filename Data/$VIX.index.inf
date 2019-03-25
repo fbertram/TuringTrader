@@ -1,6 +1,6 @@
 name=CBOE Volatility Index
-dataPath=Data\^VIX.Index
-ticker=^VIX
+dataPath=Data\$VIX.Index
+ticker=$VIX
 date={1:MM/dd/yyyy}
 time=16:00
 open={2:F2}

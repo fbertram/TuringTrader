@@ -1,5 +1,5 @@
 name=iShares iBoxx High Yield Corporate Bond ETF
-dataPath=Data\HYG.ETF
+dataPath=Data\HYG.etf
 ticker=HYG
 date={1:MM/dd/yyyy}
 time=16:00

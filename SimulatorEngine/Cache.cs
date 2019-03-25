@@ -98,6 +98,9 @@ namespace TuringTrader.Simulator
             keyCallStack = CombineId(keyCallStack, memberName.GetHashCode());
             keyCallStack = CombineId(keyCallStack, lineNumber);
 #else
+            // this is safer, as we don't need to keep track of the stack trace
+            // however, this is also really slow, especially when running
+            // indicator-rich algorithms in the optimizer
             keyCallStack = StackTraceId();
 #endif
 

@@ -1,5 +1,5 @@
 name=iShares Mortgage Real Estate ETF
-dataPath=Data\REM.ETF
+dataPath=Data\REM.etf
 ticker=REM
 date={1:MM/dd/yyyy}
 time=16:00

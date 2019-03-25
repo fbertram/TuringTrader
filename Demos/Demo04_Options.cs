@@ -35,12 +35,12 @@ namespace TuringTrader.Demos
         #region internal data
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
-        private readonly string _underlyingNickname = "^SPX.index";
+        private readonly string _underlyingNickname = "$SPX.index";
 #if USE_FAKE_QUOTES
-        private readonly string _optionsNickname = "^SPX.Fake.Options";
+        private readonly string _optionsNickname = "$SPX.fake.options";
 #else
-        //private readonly string _optionsNickname = "^SPX.Options";
-        private readonly string _optionsNickname = "^SPX.Weekly.Options";
+        //private readonly string _optionsNickname = "$SPX.options";
+        private readonly string _optionsNickname = "$SPX.weekly.options";
 #endif
         private readonly double _regTMarginToUse = 0.8;
         private readonly double _initialCash = 1e6;

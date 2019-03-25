@@ -1,5 +1,5 @@
 name=Energy Select Sector SPDR ETF
-dataPath=Data\XLE.ETF
+dataPath=Data\XLE.etf
 ticker=XLE
 date={1:MM/dd/yyyy}
 time=16:00

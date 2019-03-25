@@ -1,5 +1,5 @@
 name=iShares 7-10 Year Treasury Bond ETF
-dataPath=Data\IEF.ETF
+dataPath=Data\IEF.etf
 ticker=IEF
 date={1:MM/dd/yyyy}
 time=16:00

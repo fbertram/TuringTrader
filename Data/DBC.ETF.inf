@@ -1,5 +1,5 @@
 name=Invesco DB Commodity Index Tracking Fund 
-dataPath=Data\DBC.ETF
+dataPath=Data\DBC.etf
 ticker=DBC
 date={1}
 time=16:00

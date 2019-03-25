@@ -38,7 +38,7 @@ namespace BooksAndPubs
             "XLU.etf", // utilities
         };
         private static readonly string SAFE_INSTRUMENT = "TLT.etf"; // 20+ year treasury bonds
-        private static readonly string BENCHMARK = "$SPXTR.index"; // S&P 500 total return index
+        private static readonly string BENCHMARK = "$SPX.index"; // S&P 500
         private static readonly int RANK1_DAYS = 252;
         private static readonly int RANK2_DAYS = 126;
 

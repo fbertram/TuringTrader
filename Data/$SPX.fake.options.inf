@@ -1,4 +1,4 @@
 name=S&P 500 FAKE OPTIONS
 ticker=SPX
-optionUnderlying=^SPX
+optionUnderlying=$SPX
 dataSource=FakeOptions

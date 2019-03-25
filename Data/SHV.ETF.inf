@@ -1,5 +1,5 @@
 name=iShares Short Treasury Bond ETF
-dataPath=Data\SHV.ETF
+dataPath=Data\SHV.etf
 ticker=SHV
 date={1:MM/dd/yyyy}
 time=16:00

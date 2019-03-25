@@ -1,5 +1,5 @@
 name=Vanguard FTSE Developed Markets ETF
-dataPath=Data\VEA.ETF
+dataPath=Data\VEA.etf
 ticker=VEA
 date={1}
 time=16:00

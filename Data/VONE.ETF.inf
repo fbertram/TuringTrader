@@ -1,5 +1,5 @@
 name=Vanguard Russell 1000 ETF
-dataPath=Data\VONE.ETF
+dataPath=Data\VONE.etf
 ticker=VONE
 date={1}
 time=16:00

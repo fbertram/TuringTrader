@@ -240,6 +240,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
 Help/index.html
 Help/search.html
 Help/SearchHelp.aspx

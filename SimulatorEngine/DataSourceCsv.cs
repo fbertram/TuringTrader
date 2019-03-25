@@ -186,11 +186,14 @@ namespace TuringTrader.Simulator
                     if (bar.Time < LastTime)
                         throw new Exception("DataSourceCsv: bars out of sequence");
 
+#if true
+                    // add previous bar, if we don't have a bar at the reqested start
                     if (data.Count == 0
                     && bar.Time > loadStartTime
                     && prevBar != null)
-                        data.Add(prevBar); // add previous bar, if we don't have a bar at the reqested start
-                  
+                        data.Add(prevBar); 
+#endif
+
                     if (bar.Time >= loadStartTime
                     && bar.Time <= loadEndTime)
                         data.Add(bar);
@@ -331,7 +334,7 @@ namespace TuringTrader.Simulator
                 // as our update can only append to the end, we need to make
                 // sure we start our database early (e.g. 1990) when we
                 // start initializing an empty data set
-                DateTime loadStartTime = LastTime != null
+                DateTime loadStartTime = LastTime != null && LastTime >= startTime
                     ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
                     : startTime;
                 DateTime updateStartTime = LastTime != null
@@ -344,7 +347,7 @@ namespace TuringTrader.Simulator
                 // we run our update for a few days more than requested (if that's possible)
                 // to make sure we don't run it again, in case the same update is requested again
                 DateTime loadEndTime = endTime;
-                DateTime updateEndTime = endTime.Date + TimeSpan.FromDays(4) - TimeSpan.FromSeconds(1);
+                DateTime updateEndTime = DateTime.Now + TimeSpan.FromDays(4);
 
                 // it doesn't seem to bother our update clients, if we request a time in the future
                 // this also helps overcoming the issue of not requesting enough data, due to 
@@ -356,7 +359,7 @@ namespace TuringTrader.Simulator
                 if (updater != null)
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceCsv: updating data for {0}...", Info[DataSourceValue.nickName]));
+                    Output.Write(string.Format("DataSourceCsv: updating data for {0} using {1}...", Info[DataSourceValue.nickName], updater.Name));
 
                     // retrieve update data
                     // we copy these to a list, to avoid evaluating this multiple times
@@ -393,7 +396,7 @@ namespace TuringTrader.Simulator
             public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
             {
                 if (!Info.ContainsKey(DataSourceValue.dataPath))
-                    throw new Exception("DataSourceCsv: missing mandatory dataPath key");
+                    throw new Exception(string.Format("DataSourceCsv: {0} missing mandatory dataPath key", info[DataSourceValue.nickName]));
 
                 // expand relative paths, if required
                 if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter

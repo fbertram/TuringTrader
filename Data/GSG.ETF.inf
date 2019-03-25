@@ -1,5 +1,5 @@
 name=iShares S&P GSCI Commodity-Indexed Trust
-dataPath=Data\GSG.ETF
+dataPath=Data\GSG.etf
 ticker=GSG
 date={1}
 time=16:00

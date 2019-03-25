@@ -1,5 +1,5 @@
 name=iShares Intermediate-Term Corporate Bond ETF
-dataPath=Data\IGIB.ETF
+dataPath=Data\IGIB.etf
 ticker=IGIB
 date={1:MM/dd/yyyy}
 time=16:00

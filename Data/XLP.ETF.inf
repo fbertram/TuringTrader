@@ -1,5 +1,5 @@
 name=Consumer Staples Select Sector SPDR ETF
-dataPath=Data\XLP.ETF
+dataPath=Data\XLP.etf
 ticker=XLP
 date={1:MM/dd/yyyy}
 time=16:00

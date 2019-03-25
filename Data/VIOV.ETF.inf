@@ -1,5 +1,5 @@
 name=Vanguard Small-Cap 600 Value ETF
-dataPath=Data\VIOV.ETF
+dataPath=Data\VIOV.etf
 ticker=VIOV
 date={1}
 time=16:00

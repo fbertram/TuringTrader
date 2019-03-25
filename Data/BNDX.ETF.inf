@@ -1,5 +1,5 @@
 name=Vanguard Total International Bond ETF
-dataPath=Data\BNDX.ETF
+dataPath=Data\BNDX.etf
 ticker=BNDX
 date={1}
 time=16:00

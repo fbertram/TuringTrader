@@ -1,5 +1,5 @@
 name=Facebook
-dataPath=Data\FB.Stock
+dataPath=Data\FB.stock
 ticker=FB
 date={1:MM/dd/yyyy}
 time=16:00

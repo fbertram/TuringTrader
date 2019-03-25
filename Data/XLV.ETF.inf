@@ -1,5 +1,5 @@
 name=Health Care Select Sect SPDR ETF
-dataPath=Data\XLV.ETF
+dataPath=Data\XLV.etf
 ticker=XLV
 date={1:MM/dd/yyyy}
 time=16:00

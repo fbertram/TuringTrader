@@ -1,5 +1,5 @@
 name=Invesco Nasdaq-100 ETF
-dataPath=Data\QQQ.ETF
+dataPath=Data\QQQ.etf
 ticker=QQQ
 date={1:MM/dd/yyyy}
 time=16:00
