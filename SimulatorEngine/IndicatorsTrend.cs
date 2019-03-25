@@ -51,14 +51,18 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">optional parent cache id</param>
         /// <returns>SMA time series</returns>
-        public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n, CacheId parentId = null)
         {
+            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
+            var cacheId = CacheId.NewFromIdParameters(parentId, series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 v => Enumerable.Range(0, n)
                         .Sum(t => series[t]) / n,
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
@@ -86,9 +90,13 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">optional parent cache id</param>
         /// <returns>EMA time series</returns>
-        public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n, CacheId parentId = null)
         {
+            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
+            var cacheId = CacheId.NewFromIdParameters(parentId, series.GetHashCode(), n);
+
             double alpha = 2.0 / (Math.Max(1, n) + 1);
 
             return IndicatorsBasic.BufferedLambda(
@@ -98,7 +106,7 @@ namespace TuringTrader.Simulator
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)

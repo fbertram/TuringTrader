@@ -34,9 +34,9 @@ namespace TuringTrader.Simulator
         /// every call to the indexer method. Use this for leight-weight lambdas.
         /// </summary>
         /// <param name="lambda">lambda, taking bars back as parameter and returning time series value</param>
-        /// <param name="identifier">cache id used to identify functor</param>
+        /// <param name="parentId">cache id used to identify functor</param>
         /// <returns>lambda time series</returns>
-        public static ITimeSeries<double> Lambda(Func<int, double> lambda, CacheId identifier = null)
+        public static ITimeSeries<double> Lambda(Func<int, double> lambda, CacheId parentId = null)
         {
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
@@ -44,8 +44,8 @@ namespace TuringTrader.Simulator
             // https://stackoverflow.com/questions/283537/most-efficient-way-to-test-equality-of-lambda-expressions
             // however, we might not need to hash the lambda, as it is reasonably safe to assume
             // that for a different lambda, the call stack would also be different
-            identifier = identifier ?? CacheId.NewFromStackTraceParameters();
-            var cacheId = CacheId.NewFromIdParameters(identifier, lambda.GetHashCode());
+            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
+            var cacheId = CacheId.NewFromIdParameters(parentId, lambda.GetHashCode());
 
             var functor = Cache<FunctorLambda>.GetData(
                     cacheId,

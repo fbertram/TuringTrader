@@ -103,12 +103,12 @@ namespace TuringTrader.Simulator
             double avgUp = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, series.Return()[t]),
                     CacheId.NewFromIdParameters(cacheId, 100))
-                .EMA(n)[0];
+                .EMA(n, CacheId.NewFromIdParameters(cacheId, 150))[0];
 
             double avgDown = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, -series.Return()[t]),
                     CacheId.NewFromIdParameters(cacheId, 200))
-                .EMA(n)[0];
+                .EMA(n, CacheId.NewFromIdParameters(cacheId, 250))[0];
 
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
@@ -384,9 +384,8 @@ namespace TuringTrader.Simulator
         /// <returns>ADX time series</returns>
         public static ITimeSeries<double> AverageDirectionalMovement(this Instrument series, int n = 14)
         {
-            // we use the same cache id here, as creating a cache id is expensive
-            // we add a paramter to it, in order to make sure there are no 
-            // conflicts here.
+            // OPTIMIZATION: minimize # of stack traces by re-using 
+            // the basic cache id as much as possible
             var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
 
             var upMove = Math.Max(0.0, series.High[0] - series.High[1]);
@@ -406,13 +405,13 @@ namespace TuringTrader.Simulator
 
             // +DI = 100 * Smoothed+DM / ATR
             var plusDI = plusDM
-                .EMA(n);
+                .EMA(n, CacheId.NewFromIdParameters(cacheId, 300));
                 //.Divide(atr)
                 //.Multiply(100.0);
 
             // -DI = 100 * Smoothed-DM / ATR
             var minusDI = minusDM
-                .EMA(n);
+                .EMA(n, CacheId.NewFromIdParameters(cacheId, 400));
                 //.Divide(atr)
                 //.Multiply(100.0);
 
@@ -420,11 +419,11 @@ namespace TuringTrader.Simulator
             var DX = IndicatorsBasic.BufferedLambda(
                 prev => 100.0 * Math.Abs(plusDI[0] - minusDI[0]) / (plusDI[0] + minusDI[0]),
                 0.0,
-                CacheId.NewFromIdParameters(cacheId, 300));
+                CacheId.NewFromIdParameters(cacheId, 500));
 
             // ADX = (13 * ADX[1] + DX) / 14
             var ADX = DX
-                .EMA(n);
+                .EMA(n, CacheId.NewFromIdParameters(cacheId, 600));
                 //.Multiply(100.0);
 
             return ADX;

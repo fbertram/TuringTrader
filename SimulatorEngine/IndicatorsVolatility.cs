@@ -241,9 +241,13 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">optional parent cache id</param>
         /// <returns>True Range as time series</returns>
-        public static ITimeSeries<double> TrueRange(this Instrument series)
+        public static ITimeSeries<double> TrueRange(this Instrument series, CacheId parentId = null)
         {
+            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
+            var cacheId = CacheId.NewFromIdParameters(parentId, series.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) =>
                 {
@@ -251,7 +255,7 @@ namespace TuringTrader.Simulator
                     double low = Math.Min(series[0].Low, series[1].Close);
                     return high - low;
                 },
-                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
@@ -264,7 +268,13 @@ namespace TuringTrader.Simulator
         /// <returns>ATR time series</returns>
         public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
         {
-            return series.TrueRange().SMA(n);
+            // OPTIMIZATION: minimize # of stack traces by re-using 
+            // the basic cache id as much as possible
+            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+
+            return series
+                .TrueRange(cacheId)
+                .SMA(n, cacheId);
         }
         #endregion
 
