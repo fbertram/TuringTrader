@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -35,13 +36,17 @@ namespace TuringTrader.Simulator
         /// <param name="series">input series</param>
         /// <param name="n">averaging length</param>
         /// <returns>sum time series</returns>
-        public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 v => Enumerable.Range(0, n)
                         .Sum(t => series[t]),
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
@@ -53,10 +58,11 @@ namespace TuringTrader.Simulator
         /// <param name="n">averaging length</param>
         /// <param name="parentId">optional parent cache id</param>
         /// <returns>SMA time series</returns>
-        public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n, CacheId parentId = null)
+        public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
-            var cacheId = CacheId.NewFromIdParameters(parentId, series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
 
             return IndicatorsBasic.BufferedLambda(
                 v => Enumerable.Range(0, n)
@@ -73,14 +79,18 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>WMA time series</returns>
-        public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             double sum = n / 2.0 * (n + 1.0);
             return IndicatorsBasic.BufferedLambda(
                 (v) => Enumerable.Range(0, n - 1)
                         .Sum(t => (n - t) / sum * series[t]),
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
@@ -92,10 +102,12 @@ namespace TuringTrader.Simulator
         /// <param name="n">averaging length</param>
         /// <param name="parentId">optional parent cache id</param>
         /// <returns>EMA time series</returns>
-        public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n, CacheId parentId = null)
+        public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            parentId = parentId ?? CacheId.NewFromStackTraceParameters();
-            var cacheId = CacheId.NewFromIdParameters(parentId, series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
 
             double alpha = 2.0 / (Math.Max(1, n) + 1);
 
@@ -120,8 +132,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>envelope time series</returns>
-        public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             double alpha = 2.0 / (Math.Max(1, n) + 1);
 
             return IndicatorsBasic.BufferedLambda(
@@ -133,7 +149,7 @@ namespace TuringTrader.Simulator
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
 
@@ -145,14 +161,20 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>DEMA time series</returns>
-        public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series
-                .Multiply(2.0)
-                .EMA(n)
-                .Subtract(series
-                    .EMA(n)
-                    .EMA(n));
+                .Multiply(2.0, cacheId)
+                .EMA(n, cacheId)
+                .Subtract(
+                    series
+                        .EMA(n, cacheId)
+                        .EMA(n, cacheId),
+                    cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
@@ -163,18 +185,26 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>HMA time series</returns>
-        public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             // http://www.incrediblecharts.com/indicators/weighted_moving_average.php
             // Integer(SquareRoot(Period)) WMA [2 x Integer(Period/2) WMA(Price) - Period WMA(Price)]
 
             int n2 = (int)Math.Round(n / 2.0);
             int n3 = (int)Math.Round(Math.Sqrt(n));
 
-            return series.WMA(n2)
-                .Multiply(2.0)
-                .Subtract(series.WMA(n))
-                .WMA(n3);
+            return series
+                .WMA(n2, cacheId)
+                .Multiply(2.0, cacheId)
+                .Subtract(
+                    series
+                        .WMA(n, cacheId),
+                    cacheId)
+                .WMA(n3, cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
@@ -185,19 +215,27 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>TEMA time series</returns>
-        public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series
-                .Multiply(3.0)
-                .EMA(n)
-                .Subtract(series
-                    .Multiply(3.0)
-                    .EMA(n)
-                    .EMA(n))
-                .Add(series
-                    .EMA(n)
-                    .EMA(n)
-                    .EMA(n));
+                .Multiply(3.0, cacheId)
+                .EMA(n, cacheId)
+                .Subtract(
+                    series
+                        .Multiply(3.0, cacheId)
+                        .EMA(n, cacheId)
+                        .EMA(n, cacheId),
+                    cacheId)
+                .Add(
+                    series
+                        .EMA(n, cacheId)
+                        .EMA(n, cacheId)
+                        .EMA(n, cacheId),
+                    cacheId);
         }
         #endregion
 
@@ -209,15 +247,23 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="period">averaging length</param>
         /// <returns>ZLEMA as time series</returns>
-        public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period)
+        public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), period);
+
             int lag = (int)Math.Round((period - 1.0) / 2.0);
 
             return series
-                .Add(series
-                    .Subtract(series
-                        .Delay(lag)))
-                .EMA(period);
+                .Add(
+                    series
+                        .Subtract(
+                            series
+                                .Delay(lag, cacheId),
+                            cacheId),
+                    cacheId)
+                .EMA(period, cacheId);
         }
         #endregion
 
@@ -231,8 +277,12 @@ namespace TuringTrader.Simulator
         /// <param name="fastEma">period for fast EMA</param>
         /// <param name="slowEma">period for slow EMA</param>
         /// <returns>KAMA as time series</returns>
-        public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30)
+        public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), erPeriod, fastEma, slowEma);
+   
             // TODO: we should be able to remove the try/ catch blocks here
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
@@ -259,7 +309,7 @@ namespace TuringTrader.Simulator
                     }
                 },
                 series[0],
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), erPeriod, fastEma, slowEma));
+                cacheId);
         }
         #endregion
 
@@ -273,17 +323,21 @@ namespace TuringTrader.Simulator
         /// <param name="slow">slow EMA period</param>
         /// <param name="signal">signal line period</param>
         /// <returns></returns>
-        public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
+        public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), fast, slow, signal);
+
             var container = Cache<_MACD>.GetData(
-                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), fast, slow, signal),
+                    cacheId,
                     () => new _MACD());
 
-            container.Fast = series.EMA(fast);
-            container.Slow = series.EMA(slow);
-            container.MACD = container.Fast.Subtract(container.Slow);
-            container.Signal = container.MACD.EMA(signal);
-            container.Divergence = container.MACD.Subtract(container.Signal);
+            container.Fast = series.EMA(fast, cacheId);
+            container.Slow = series.EMA(slow, cacheId);
+            container.MACD = container.Fast.Subtract(container.Slow, cacheId);
+            container.Signal = container.MACD.EMA(signal, cacheId);
+            container.Divergence = container.MACD.Subtract(container.Signal, cacheId);
 
             return container;
         }

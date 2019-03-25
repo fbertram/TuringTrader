@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -35,12 +36,16 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>accumulation/ distribution index as time series</returns>
-        public static ITimeSeries<double> AccumulationDistributionIndex(this Instrument series)
+        public static ITimeSeries<double> AccumulationDistributionIndex(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
             return IndicatorsBasic.BufferedLambda(
                 (v) => v + series.Volume[0] * series.CLV()[0],
                 0.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> ChaikinOscillator(this Instrument series)
@@ -50,13 +55,20 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>accumulation/ distribution index as time series</returns>
-        public static ITimeSeries<double> ChaikinOscillator(this Instrument series)
+        public static ITimeSeries<double> ChaikinOscillator(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            var adl = series.AccumulationDistributionIndex();
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
+            var adl = series.AccumulationDistributionIndex(cacheId);
+
             return adl
-                .EMA(3)
-                .Subtract(adl
-                    .EMA(10));
+                .EMA(3, cacheId)
+                .Subtract(
+                    adl
+                        .EMA(10, cacheId),
+                    cacheId);
         }
         #endregion
 
@@ -67,14 +79,18 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>OBV time series</returns>
-        public static ITimeSeries<double> OnBalanceVolume(this Instrument series)
+        public static ITimeSeries<double> OnBalanceVolume(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
             return IndicatorsBasic.BufferedLambda(
                 prev => series.Close[0] > series.Close[1]
                         ? prev + series.Volume[0]
                         : prev - series.Volume[0],
                 0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
+                cacheId);
         }
         #endregion
 
@@ -86,25 +102,35 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">calculation period</param>
         /// <returns>MFI time series</returns>
-        public static ITimeSeries<double> MoneyFlowIndex(this Instrument series, int n)
+        public static ITimeSeries<double> MoneyFlowIndex(this Instrument series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             var typicalPrice = series.TypicalPrice();
 
             var postiveMoneyFlow = IndicatorsBasic.BufferedLambda(
                 prev => typicalPrice[0] > typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
                 0.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
 
             var negativeMoneyFlow = IndicatorsBasic.BufferedLambda(
                 prev => typicalPrice[0] < typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
                 0.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
 
-            return postiveMoneyFlow.SMA(n)
+            return postiveMoneyFlow
+                .SMA(n, cacheId)
                 .Divide(
-                    postiveMoneyFlow.SMA(n)
-                    .Add(negativeMoneyFlow.SMA(n)))
-                .Multiply(100.0);
+                    postiveMoneyFlow
+                        .SMA(n, cacheId)
+                        .Add(
+                            negativeMoneyFlow
+                                .SMA(n, cacheId),
+                            cacheId),
+                    cacheId)
+                .Multiply(100.0, cacheId);
         }
         #endregion
 

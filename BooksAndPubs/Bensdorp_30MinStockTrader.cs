@@ -111,7 +111,7 @@ namespace BooksAndPubs
                         i => new
                         {
                             sma150 = i.Close.SMA(SMA_DAYS),
-                            adx7 = i.AverageDirectionalMovement(7),
+                            adx7 = i.ADX(7),
                             atr10 = i.AverageTrueRange(10),
                             rsi3 = i.Close.RSI(3),
                         });

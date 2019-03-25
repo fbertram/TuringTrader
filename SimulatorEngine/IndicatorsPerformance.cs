@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -37,16 +38,24 @@ namespace TuringTrader.Simulator
         /// <param name="riskFreeRate"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static ITimeSeries<double> SharpeRatio(this ITimeSeries<double> series, ITimeSeries<double> riskFreeRate, int n)
+        public static ITimeSeries<double> SharpeRatio(this ITimeSeries<double> series, ITimeSeries<double> riskFreeRate, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            var excessReturn = series.Return()
-                .Subtract(riskFreeRate.Return());
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), riskFreeRate.GetHashCode(), n);
+
+            var excessReturn = series
+                .Return(cacheId)
+                .Subtract(riskFreeRate
+                        .Return(cacheId),
+                    cacheId);
 
             return excessReturn
-                .EMA(n)
+                .EMA(n, cacheId)
                 .Divide(excessReturn
-                    .FastStandardDeviation(n)
-                    .Max(IndicatorsBasic.Const(1e-10)));
+                        .FastStandardDeviation(n, cacheId)
+                        .Max(IndicatorsBasic.Const(1e-10, cacheId), cacheId),
+                    cacheId);
         }
         #endregion
 
@@ -57,12 +66,21 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length of observation window</param>
         /// <returns>drawdown as time series</returns>
-        public static ITimeSeries<double> Drawdown(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Drawdown(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return IndicatorsBasic.Const(1.0)
-                .Subtract(series
-                    .Divide(series
-                        .Highest(n)));
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            // TODO: rewrite this, using buffered lambda, see MaxDrawdown
+            return IndicatorsBasic.Const(1.0, cacheId)
+                .Subtract(
+                    series
+                        .Divide(
+                            series
+                                .Highest(n, cacheId),
+                            cacheId),
+                    cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> MaxDrawdown(this ITimeSeries<double> series, int n)
@@ -72,9 +90,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length of observation window</param>
         /// <returns>maximum drawdown as time series</returns>
-        public static ITimeSeries<double> MaxDrawdown(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> MaxDrawdown(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-#if true
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (p) =>
                 {
@@ -88,13 +109,7 @@ namespace TuringTrader.Simulator
                     return maxDrawdown;
                 },
                 0.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
-#else
-            // NOTE: the total length of observation is 2x n
-            return series
-                .Drawdown(n)
-                .Highest(n);
-#endif
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> ReturnOnMaxDrawdown(this ITimeSeries<double> series, int n)
@@ -104,8 +119,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length of observation window</param>
         /// <returns>RoMaD</returns>
-        public static ITimeSeries<double> ReturnOnMaxDrawdown(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> ReturnOnMaxDrawdown(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (p) =>
                 {
@@ -114,7 +133,7 @@ namespace TuringTrader.Simulator
                     return ret / Math.Max(1e-3, dd);
                 },
                 0.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
     }

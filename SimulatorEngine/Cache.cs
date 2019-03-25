@@ -19,6 +19,8 @@
 // please note that indicators require caching to
 // be enabled
 
+//#define DEBUG_STACK
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -38,9 +40,15 @@ namespace TuringTrader.Simulator
         #region internal data
         private const int MODIFIER = 31;
         private const int SEED = 487;
+
+        private int keyCallStack;
+        private int keyParameters;
+#if DEBUG_STACK
+        private string callStack;
+#endif
         #endregion
         #region internal helpers
-        private static int AddId(int current, int item)
+        private static int CombineId(int current, int item)
         {
             // this is unchecked, as an arithmetic
             // overflow will occur here
@@ -57,7 +65,7 @@ namespace TuringTrader.Simulator
 
             int id = SEED;
             for (int i = 0; i < numFrames; i++)
-                id = AddId(id, stackTrace.GetFrame(i).GetNativeOffset());
+                id = CombineId(id, stackTrace.GetFrame(i).GetNativeOffset());
 
             return id;
         }
@@ -74,76 +82,34 @@ namespace TuringTrader.Simulator
         /// </summary>
         public int Key
         {
-            get;
-            private set;
+            get
+            {
+                return CombineId(keyCallStack, keyParameters);
+            }
         }
         #endregion
 
-        #region static public CacheId NewFromStackTraceParameters(params int[] parameterIds)
-        /// <summary>
-        /// Create cryptographic key to uniquely identify auto-magically 
-        /// created indicator functors.
-        /// This overload considers the stack trace, as well as parameter IDs.
-        /// </summary>
-        /// <param name="parameterIds">list of integer parameter ids</param>
-        /// <returns>cache id</returns>
-        static public CacheId NewFromStackTraceParameters(params int[] parameterIds)
+        #region public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
+        public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
         {
-            var key = StackTraceId();
+            //--- call stack key
+#if true
+            keyCallStack = parentId != null ? parentId.keyCallStack : SEED;
+            keyCallStack = CombineId(keyCallStack, memberName.GetHashCode());
+            keyCallStack = CombineId(keyCallStack, lineNumber);
+#else
+            keyCallStack = StackTraceId();
+#endif
 
-            foreach (var i in parameterIds)
-                key = AddId(key, i);
+#if DEBUG_STACK
+            callStack = parentId?.callStack ?? "";
+            callStack += string.Format("/{0} ({1})", memberName, lineNumber);
+#endif
 
-            return new CacheId
-            {
-                Key = key,
-            };
-        }
-        #endregion
-        #region static public CacheId NewFromParameters(params int[] parameterIds)
-        /// <summary>
-        /// Create cryptographic key to uniquely identify auto-magically 
-        /// created indicator functors.
-        /// This overload only considers the parameter IDs, and does not include
-        /// the stack trace.
-        /// </summary>
-        /// <param name="id">existing cache id</param>
-        /// <param name="parameterIds">list of integer parameter ids</param>
-        /// <returns>cache id</returns>
-        static public CacheId NewFromParameters(params int[] parameterIds)
-        {
-            var key = SEED;
-
-            foreach (var i in parameterIds)
-                key = AddId(key, i);
-
-            return new CacheId
-            {
-                Key = key,
-            };
-        }
-        #endregion
-        #region static public CacheId NewFromIdParameters(CacheId id, params int[] parameterIds)
-        /// <summary>
-        /// Create cryptographic key to uniquely identify auto-magically 
-        /// created indicator functors.
-        /// This overload start with an existing cache id, and 
-        /// adds a number of parameter IDs.
-        /// </summary>
-        /// <param name="id">existing cache id</param>
-        /// <param name="parameterIds">list of integer parameter ids</param>
-        /// <returns>cache id</returns>
-        static public CacheId NewFromIdParameters(CacheId id, params int[] parameterIds)
-        {
-            var key = id.Key;
-
-            foreach (var i in parameterIds)
-                key = AddId(key, i);
-
-            return new CacheId
-            {
-                Key = key,
-            };
+            //--- parameter key
+            keyParameters = parentId != null ? parentId.keyParameters : SEED;
+            foreach (var id in parameterIds)
+                keyParameters = CombineId(keyParameters, id);
         }
         #endregion
     }

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -36,9 +37,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">averaging length</param>
         /// <returns>CCI time series</returns>
-        public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
+        public static ITimeSeries<double> CCI(this Instrument series, int n = 20,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.TypicalPrice().CCI(n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series
+                .TypicalPrice(cacheId)
+                .CCI(n, cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20)
@@ -49,18 +56,29 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>CCI time series</returns>
-        public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20)
+        public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    ITimeSeries<double> delta = series.Subtract(series.SMA(n));
-                    ITimeSeries<double> meanDeviation = delta.AbsValue().SMA(n);
+                    ITimeSeries<double> delta = series
+                        .Subtract(
+                            series
+                                .SMA(n, cacheId),
+                            cacheId);
+
+                    ITimeSeries<double> meanDeviation = delta
+                        .AbsValue(cacheId)
+                        .SMA(n, cacheId);
 
                     return delta[0] / Math.Max(1e-10, 0.015 * meanDeviation[0]);
                 },
                 0.5,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
 
@@ -73,8 +91,12 @@ namespace TuringTrader.Simulator
         /// <param name="r">smoothing period for momentum</param>
         /// <param name="s">smoothing period for smoothed momentum</param>
         /// <returns>TSI time series</returns>
-        public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13)
+        public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), r, s);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -84,7 +106,7 @@ namespace TuringTrader.Simulator
                     return 100.0 * numerator / denominator;
                 },
                 0.5,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), r, s));
+                cacheId);
         }
         #endregion
 
@@ -96,19 +118,21 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">smoothing period</param>
         /// <returns>RSI time series</returns>
-        public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
+        public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
 
             double avgUp = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, series.Return()[t]),
-                    CacheId.NewFromIdParameters(cacheId, 100))
-                .EMA(n, CacheId.NewFromIdParameters(cacheId, 150))[0];
+                    cacheId)
+                .EMA(n, cacheId)[0];
 
             double avgDown = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, -series.Return()[t]),
-                    CacheId.NewFromIdParameters(cacheId, 200))
-                .EMA(n, CacheId.NewFromIdParameters(cacheId, 250))[0];
+                    cacheId)
+                .EMA(n, cacheId)[0];
 
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
@@ -117,7 +141,7 @@ namespace TuringTrader.Simulator
                     return 100.0 - 100.0 / (1 + rs);
                 },
                 50.0,
-                CacheId.NewFromIdParameters(cacheId, 300));
+                cacheId);
         }
         #endregion
 
@@ -129,8 +153,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">period</param>
         /// <returns>Williams %R as time series</returns>
-        public static ITimeSeries<double> WilliamsPercentR(this Instrument series, int n = 10)
+        public static ITimeSeries<double> WilliamsPercentR(this Instrument series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -144,7 +172,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
@@ -155,8 +183,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">period</param>
         /// <returns>Williams %R as time series</returns>
-        public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
+        public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -170,7 +202,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
+                cacheId);
         }
         #endregion
 
@@ -182,9 +214,11 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">oscillator period</param>
         /// <returns>Stochastic Oscillator as time series</returns>
-        public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
+        public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
 
             var container = Cache<StochasticOscillatorResult>.GetData(
                     cacheId,
@@ -205,7 +239,8 @@ namespace TuringTrader.Simulator
                 50.0,
                 cacheId);
 
-            container.PercentD = container.PercentK.SMA(3);
+            container.PercentD = container.PercentK
+                .SMA(3, cacheId);
 
             return container;
         }
@@ -218,9 +253,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">oscillator period</param>
         /// <returns>Stochastic Oscillator as time series</returns>
-        public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
+        public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
 
             var container = Cache<StochasticOscillatorResult>.GetData(
                     cacheId,
@@ -241,7 +279,8 @@ namespace TuringTrader.Simulator
                 50.0,
                 cacheId);
 
-            container.PercentD = container.PercentK.SMA(3);
+            container.PercentD = container.PercentK
+                .SMA(3, cacheId);
 
             return container;
         }
@@ -270,9 +309,17 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
         /// <returns>regression momentum as time series</returns>
-        public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21)
+        public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.Divide(series.Delay(n)).Log().Divide(n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n.GetHashCode());
+
+            return series
+                .Divide(series
+                        .Delay(n, cacheId))
+                .Log(cacheId)
+                .Divide(n, cacheId);
         }
         #endregion
 
@@ -283,10 +330,14 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
         /// <returns>regression parameters as time series</returns>
-        public static _Regression LinRegression(this ITimeSeries<double> series, int n)
+        public static _Regression LinRegression(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             var functor = Cache<LinRegressionFunctor>.GetData(
-                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), n),
+                    cacheId,
                     () => new LinRegressionFunctor(series, n));
 
             functor.Calc();
@@ -368,25 +419,31 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
         /// <returns>regression parameters as time series</returns>
-        public static _Regression LogRegression(this ITimeSeries<double> series, int n)
+        public static _Regression LogRegression(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.Log().LinRegression(n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series
+                .Log(cacheId)
+                .LinRegression(n, cacheId);
         }
         #endregion
 
-        #region public static TimeSeries<double> AverageDirectionalMovement(this Instrument series, int n = 14)
+        #region public static TimeSeries<double> ADX(this Instrument series, int n = 14)
         /// <summary>
-        /// Calculate Average Directional Movement Index (ADX)
+        /// Calculate Average Directional Movement Index.
         /// <see href="https://en.wikipedia.org/wiki/Average_directional_movement_index"/>
         /// </summary>
         /// <param name="series">input OHLC time series</param>
         /// <param name="n">smoothing length</param>
         /// <returns>ADX time series</returns>
-        public static ITimeSeries<double> AverageDirectionalMovement(this Instrument series, int n = 14)
+        public static ITimeSeries<double> ADX(this Instrument series, int n = 14,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            // OPTIMIZATION: minimize # of stack traces by re-using 
-            // the basic cache id as much as possible
-            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
 
             var upMove = Math.Max(0.0, series.High[0] - series.High[1]);
             var downMove = Math.Max(0.0, series.Low[1] - series.Low[0]);
@@ -394,24 +451,24 @@ namespace TuringTrader.Simulator
             var plusDM = IndicatorsBasic.BufferedLambda(
                 prev => upMove > downMove ? upMove : 0.0,
                 0.0,
-                CacheId.NewFromIdParameters(cacheId, 100));
+                cacheId);
 
             var minusDM = IndicatorsBasic.BufferedLambda(
                 prev => downMove > upMove ? downMove : 0.0,
                 0.0,
-                CacheId.NewFromIdParameters(cacheId, 200));
+                cacheId);
 
             //var atr = series.AverageTrueRange(n);
 
             // +DI = 100 * Smoothed+DM / ATR
             var plusDI = plusDM
-                .EMA(n, CacheId.NewFromIdParameters(cacheId, 300));
+                .EMA(n, cacheId);
                 //.Divide(atr)
                 //.Multiply(100.0);
 
             // -DI = 100 * Smoothed-DM / ATR
             var minusDI = minusDM
-                .EMA(n, CacheId.NewFromIdParameters(cacheId, 400));
+                .EMA(n, cacheId);
                 //.Divide(atr)
                 //.Multiply(100.0);
 
@@ -419,11 +476,11 @@ namespace TuringTrader.Simulator
             var DX = IndicatorsBasic.BufferedLambda(
                 prev => 100.0 * Math.Abs(plusDI[0] - minusDI[0]) / (plusDI[0] + minusDI[0]),
                 0.0,
-                CacheId.NewFromIdParameters(cacheId, 500));
+                cacheId);
 
             // ADX = (13 * ADX[1] + DX) / 14
             var ADX = DX
-                .EMA(n, CacheId.NewFromIdParameters(cacheId, 600));
+                .EMA(n, cacheId);
                 //.Multiply(100.0);
 
             return ADX;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -38,11 +39,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 + time series #2</returns>
-        public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2, 
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] + series2[t],
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
@@ -52,11 +57,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series + constant value</returns>
-        public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series[t] + constValue,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
         
@@ -67,11 +76,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 - time series #2</returns>
-        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] - series2[t],
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
@@ -81,11 +94,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series - constant value</returns>
-        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series[t] - constValue,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
 
@@ -96,11 +113,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 * time series #2</returns>
-        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] * series2[t],
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
@@ -110,11 +131,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series * constant value</returns>
-        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series[t] * constValue,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
 
@@ -125,11 +150,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 / time series #2</returns>
-        public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] / (series2[t] == 0 ? 1e-25 : series2[t]),
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
@@ -139,11 +168,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series / constant value</returns>
-        public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => series[t] / constValue,
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
 
@@ -154,11 +187,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 + time series #2</returns>
-        public static ITimeSeries<double> Max(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Max(this ITimeSeries<double> series1, ITimeSeries<double> series2,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => Math.Max(series1[t], series2[t]),
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue)
@@ -168,11 +205,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series + constant value</returns>
-        public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => Math.Max(series[t], constValue),
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
 
@@ -183,11 +224,15 @@ namespace TuringTrader.Simulator
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 + time series #2</returns>
-        public static ITimeSeries<double> Min(this ITimeSeries<double> series1, ITimeSeries<double> series2)
+        public static ITimeSeries<double> Min(this ITimeSeries<double> series1, ITimeSeries<double> series2,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series1.GetHashCode(), series2.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => Math.Min(series1[t], series2[t]),
-                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue)
@@ -197,11 +242,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
         /// <returns>time series + constant value</returns>
-        public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue)
+        public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), constValue.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => Math.Min(series[t], constValue),
-                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
+                cacheId);
         }
         #endregion
     }

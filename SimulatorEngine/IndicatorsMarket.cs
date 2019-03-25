@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -34,11 +35,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="market">enumerable of instruments making up market</param>
         /// <returns>benchmark time series</returns>
-        public static ITimeSeries<double> Benchmark(this IEnumerable<Instrument> market)
+        public static ITimeSeries<double> Benchmark(this IEnumerable<Instrument> market,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             // TODO: need to figure out, if we want to include the market in the calcualtion
             //       of the cache id. for now, we decided to _not_ include the market,
             //       as instruments included might change, for the _same_ market
+            var cacheId = new CacheId(parentId, memberName, lineNumber
+                );
+
             return IndicatorsBasic.BufferedLambda(
                 (p) =>
                 {
@@ -47,7 +52,7 @@ namespace TuringTrader.Simulator
                     return p * Math.Exp(todaysLogReturn);
                 },
                 1.0,
-                CacheId.NewFromStackTraceParameters(0));
+                cacheId);
         }
         #endregion
 
@@ -62,11 +67,16 @@ namespace TuringTrader.Simulator
         /// <param name="benchmark">benchmark time series</param>
         /// <param name="n">length of observation window</param>
         /// <returns>container w/ CAPM parameters</returns>
-        public static _CAPM CAPM(this Instrument series, Instrument benchmark, int n)
+        public static _CAPM CAPM(this Instrument series, Instrument benchmark, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series.Close.CAPM(
                 benchmark.Close,
-                n);
+                n,
+                cacheId);
         }
         #endregion
         #region public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
@@ -80,10 +90,14 @@ namespace TuringTrader.Simulator
         /// <param name="benchmark">benchmark time series</param>
         /// <param name="n">length of observation window</param>
         /// <returns>container w/ CAPM parameters</returns>
-        public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
+        public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), benchmark.GetHashCode(), n);
+
             var functor = Cache<CAPMFunctor>.GetData(
-                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), benchmark.GetHashCode(), n),
+                    cacheId,
                     () => new CAPMFunctor(series, benchmark, n));
 
             functor.Calc();
