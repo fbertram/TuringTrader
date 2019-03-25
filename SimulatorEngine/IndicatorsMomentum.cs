@@ -98,22 +98,26 @@ namespace TuringTrader.Simulator
         /// <returns>RSI time series</returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
+            var cacheId = new CacheId(series.GetHashCode(), n);
+
+            double avgUp = IndicatorsBasic.Lambda(
+                    (t) => Math.Max(0.0, series.Return()[t]),
+                    new CacheId(cacheId, 100))
+                .EMA(n)[0];
+
+            double avgDown = IndicatorsBasic.Lambda(
+                    (t) => Math.Max(0.0, -series.Return()[t]),
+                    new CacheId(cacheId, 200))
+                .EMA(n)[0];
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    double avgUp = IndicatorsBasic.Lambda(
-                        (t) => Math.Max(0.0, series.Return()[t]),
-                        new CacheId(series.GetHashCode(), n)).EMA(n)[0];
-
-                    double avgDown = IndicatorsBasic.Lambda(
-                        (t) => Math.Max(0.0, -series.Return()[t]),
-                        new CacheId(series.GetHashCode(), n)).EMA(n)[0];
-
                     double rs = avgUp / Math.Max(1e-10, avgDown);
                     return 100.0 - 100.0 / (1 + rs);
                 },
                 50.0,
-                new CacheId(series.GetHashCode(), n));
+                new CacheId(cacheId, 300));
         }
         #endregion
 
@@ -366,19 +370,20 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public static _ADX AverageDirectionalMovement(this Instrument series, int n = 14)
+        #region public static TimeSeries<double> AverageDirectionalMovement(this Instrument series, int n = 14)
         /// <summary>
         /// Calculate Average Directional Movement Index (ADX)
         /// <see href="https://en.wikipedia.org/wiki/Average_directional_movement_index"/>
         /// </summary>
         /// <param name="series">input OHLC time series</param>
         /// <param name="n">smoothing length</param>
-        /// <returns></returns>
-        public static _ADX AverageDirectionalMovement(this Instrument series, int n = 14)
+        /// <returns>ADX time series</returns>
+        public static ITimeSeries<double> AverageDirectionalMovement(this Instrument series, int n = 14)
         {
-            var container = Cache<_ADX>.GetData(
-                    new CacheId(series.GetHashCode(), n),
-                    () => new _ADX());
+            // we use the same cache id here, as creating a cache id is expensive
+            // we add a paramter to it, in order to make sure there are no 
+            // conflicts here.
+            var cacheId = new CacheId(series.GetHashCode(), n);
 
             var upMove = Math.Max(0.0, series.High[0] - series.High[1]);
             var downMove = Math.Max(0.0, series.Low[1] - series.Low[0]);
@@ -386,60 +391,39 @@ namespace TuringTrader.Simulator
             var plusDM = IndicatorsBasic.BufferedLambda(
                 prev => upMove > downMove ? upMove : 0.0,
                 0.0,
-                new CacheId(series.GetHashCode(), n));
+                new CacheId(cacheId, 100));
 
             var minusDM = IndicatorsBasic.BufferedLambda(
                 prev => downMove > upMove ? downMove : 0.0,
                 0.0,
-                new CacheId(series.GetHashCode(), n));
+                new CacheId(cacheId, 200));
 
-            var atr = series.AverageTrueRange(n);
+            //var atr = series.AverageTrueRange(n);
 
             // +DI = 100 * Smoothed+DM / ATR
-            container.PlusDI = plusDM
-                .EMA(n)
-                .Divide(atr)
-                .Multiply(100.0);
+            var plusDI = plusDM
+                .EMA(n);
+                //.Divide(atr)
+                //.Multiply(100.0);
 
             // -DI = 100 * Smoothed-DM / ATR
-            container.MinusDI = minusDM
-                .EMA(n)
-                .Divide(atr)
-                .Multiply(100.0);
+            var minusDI = minusDM
+                .EMA(n);
+                //.Divide(atr)
+                //.Multiply(100.0);
 
             // DX = Abs(+DI - -DI) / (+DI + -DI)
-            container.DX = container.PlusDI.Subtract(container.MinusDI).AbsValue()
-                .Divide(container.PlusDI.Add(container.MinusDI));
+            var DX = IndicatorsBasic.BufferedLambda(
+                prev => 100.0 * Math.Abs(plusDI[0] - minusDI[0]) / (plusDI[0] + minusDI[0]),
+                0.0,
+                new CacheId(cacheId, 300));
 
             // ADX = (13 * ADX[1] + DX) / 14
-            container.ADX = container.DX
-                .EMA(n)
-                .Multiply(100.0);
+            var ADX = DX
+                .EMA(n);
+                //.Multiply(100.0);
 
-            return container;
-        }
-
-        /// <summary>
-        /// Container holding ADX indicator results.
-        /// </summary>
-        public class _ADX
-        {
-            /// <summary>
-            /// +DI time series
-            /// </summary>
-            public ITimeSeries<double> PlusDI;
-            /// <summary>
-            /// -DI time series
-            /// </summary>
-            public ITimeSeries<double> MinusDI;
-            /// <summary>
-            /// DX time series
-            /// </summary>
-            public ITimeSeries<double> DX;
-            /// <summary>
-            /// ADX time series
-            /// </summary>
-            public ITimeSeries<double> ADX;
+            return ADX;
         }
         #endregion
     }

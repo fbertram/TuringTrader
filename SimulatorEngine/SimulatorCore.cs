@@ -272,7 +272,7 @@ namespace TuringTrader.Simulator
             };
         }
         #endregion
-        #region protected void CloneSimSetup()
+        /*#region protected void CloneSimSetup()
         /// <summary>
         /// Clone simulator core setup: simulator time frame, data sources,
         /// commission settings.
@@ -288,7 +288,7 @@ namespace TuringTrader.Simulator
             foreach (DataSource dataSource in copyFrom._dataSources)
                 AddDataSource(dataSource);
         }
-        #endregion
+        #endregion*/
         #region public string Name
         /// <summary>
         /// Return class type name. This method will return the name of the

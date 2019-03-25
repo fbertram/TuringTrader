@@ -45,8 +45,7 @@ namespace TuringTrader.Simulator
             // however, we might not need to hash the lambda, as it is reasonably safe to assume
             // that for a different lambda, the call stack would also be different
             var functor = Cache<FunctorLambda>.GetData(
-                    // TODO: try to eliminate nested calls to Cache.UniqueId
-                    new CacheId(lambda.GetHashCode(), identifier.Key),
+                    new CacheId(identifier, lambda.GetHashCode()),
                     () => new FunctorLambda(lambda));
 
             return functor;
@@ -88,7 +87,7 @@ namespace TuringTrader.Simulator
             // however, we might not need to hash the lambda, as it is reasonably safe to assume
             // that for a different lambda, the call stack would also be different
             var timeSeries = Cache<TimeSeries<double>>.GetData(
-                new CacheId(lambda.GetHashCode(), identifier.Key),
+                new CacheId(identifier, lambda.GetHashCode()),
                 () => new TimeSeries<double>());
 
             double prevValue = timeSeries.BarsAvailable >= 1

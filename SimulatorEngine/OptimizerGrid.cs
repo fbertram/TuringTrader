@@ -77,12 +77,7 @@ namespace TuringTrader.Simulator
         private Algorithm RunIteration()
         {
             // create algorithm instance to run
-            Type algoType = _masterInstance.GetType();
-            Algorithm instanceToRun = (Algorithm)Activator.CreateInstance(algoType);
-
-            // apply optimizer values to new instance
-            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
-                instanceToRun.OptimizerParams[parameter.Name].Value = parameter.Value;
+            Algorithm instanceToRun = _masterInstance.Clone();
 
             // mark this as an optimizer run
             instanceToRun.IsOptimizing = true;

@@ -35,26 +35,31 @@ namespace TuringTrader.Simulator
     /// </summary>
     public class CacheId
     {
+        #region internal data
+        private const int MODIFIER = 31;
+        private const int SEED = 487;
+        #endregion
         #region internal helpers
-        private void CalcKey(IEnumerable<int> parameterIds)
+        private static int AddId(int current, int item)
         {
-            // on top of the parameter ids, we also need to uniquely identify the call stack
-            // currently, we use only the native offset for this
-            // do we need to use the method name as well?
-            IEnumerable<int> stackFrames = new System.Diagnostics.StackTrace().GetFrames()
-                .Select(f => f.GetNativeOffset().GetHashCode());
-
-            var subIds = parameterIds
-                .Concat(stackFrames);
-
-            // see https://stackoverflow.com/questions/7278136/create-hash-value-on-a-list
-            const int seed = 487;
-            const int modifier = 31;
+            // this is unchecked, as an arithmetic
+            // overflow will occur here
             unchecked
             {
-                Key = subIds
-                    .Aggregate(seed, (current, item) => (current * modifier) + item);
+                return current * MODIFIER + item;
             }
+        }
+
+        private static int StackTraceId()
+        {
+            var stackTrace = new System.Diagnostics.StackTrace(2, false); // skip 2 frames
+            var numFrames = stackTrace.FrameCount;
+
+            int id = SEED;
+            for (int i = 0; i < numFrames; i++)
+                id = AddId(id, stackTrace.GetFrame(i).GetNativeOffset());
+
+            return id;
         }
         #endregion
 
@@ -79,7 +84,10 @@ namespace TuringTrader.Simulator
         /// <returns>unique id</returns>
         public CacheId(IEnumerable<int> parameterIds)
         {
-            CalcKey(parameterIds);
+            Key = StackTraceId();
+
+            foreach (var p in parameterIds)
+                Key = AddId(Key, p);
         }
         #endregion
         #region public CacheId(params int[] parameterIds)
@@ -92,11 +100,27 @@ namespace TuringTrader.Simulator
         /// <returns>unique id</returns>
         public CacheId(params int[] parameterIds)
         {
-            CalcKey(parameterIds.AsEnumerable());
+            Key = StackTraceId();
+
+            foreach (var p in parameterIds)
+                Key = AddId(Key, p);
         }
         #endregion
-    }
+        #region public CacheId(CacheId existing, int parameterId)
+        /// <summary>
+        /// Create unique cryptographic key from a existing key, and 
+        /// a single additional parameter id. This ID is used to uniquely identify 
+        /// auto-magically created indicator functors.
+        /// </summary>
+        /// <param name="existing">existing cache id</param>
+        /// <param name="parameterId">additional paramter id</param>
+        public CacheId(CacheId existing, int parameterId)
+        {
+            Key = AddId(existing.Key, parameterId);
+        }
 
+        #endregion
+    }
     #endregion
 
     /// <summary>

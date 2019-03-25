@@ -49,6 +49,29 @@ namespace TuringTrader.Simulator
             GlobalSettings.MostRecentAlgorithm = Name;
         }
         #endregion
+        #region public Algorithm Clone()
+        /// <summary>
+        /// Clone algorithm, including all optimizer parameters
+        /// </summary>
+        /// <returns>new algorithm instance</returns>
+        public Algorithm Clone()
+        {
+            Type algoType = GetType();
+            Algorithm clonedInstance = (Algorithm)Activator.CreateInstance(algoType);
+
+            // apply optimizer values to new instance
+            foreach (OptimizerParam parameter in OptimizerParams.Values)
+            {
+                clonedInstance.OptimizerParams[parameter.Name].IsEnabled = parameter.IsEnabled;
+                clonedInstance.OptimizerParams[parameter.Name].Step = parameter.Start;
+                clonedInstance.OptimizerParams[parameter.Name].End = parameter.End;
+                clonedInstance.OptimizerParams[parameter.Name].Step = parameter.Step;
+                clonedInstance.OptimizerParams[parameter.Name].Value = parameter.Value;
+            }
+
+            return clonedInstance;
+        }
+        #endregion
 
         #region override public void Run()
         /// <summary>

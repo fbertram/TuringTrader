@@ -38,7 +38,8 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n)
         {
             return IndicatorsBasic.BufferedLambda(
-                v => Enumerable.Range(0, n).Sum(t => series[t]),
+                v => Enumerable.Range(0, n)
+                        .Sum(t => series[t]),
                 series[0],
                 new CacheId(series.GetHashCode(), n));
         }
@@ -53,37 +54,11 @@ namespace TuringTrader.Simulator
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
         {
-#if true
-            return series
-                .Sum(n)
-                .Divide((double)n);
-#else
-
-            // TODO: rewrite this using Linq, see WMA implementation
             return IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    double sum = series[0];
-                    int num = 1;
-
-                    try
-                    {
-                        for (int t = 1; t < n; t++)
-                        {
-                            sum += series[t];
-                            num++;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // we get here when we access bars too far in the past
-                    }
-
-                    return sum / num;
-                },
+                v => Enumerable.Range(0, n)
+                        .Sum(t => series[t]) / n,
                 series[0],
-                series.GetHashCode(), n);
-#endif
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
@@ -98,11 +73,8 @@ namespace TuringTrader.Simulator
         {
             double sum = n / 2.0 * (n + 1.0);
             return IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    return Enumerable.Range(0, n - 1)
-                        .Sum(t => (n - t) / sum * series[t]);
-                },
+                (v) => Enumerable.Range(0, n - 1)
+                        .Sum(t => (n - t) / sum * series[t]),
                 series[0],
                 new CacheId(series.GetHashCode(), n));
         }
@@ -117,17 +89,16 @@ namespace TuringTrader.Simulator
         /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
         {
-            int N = Math.Max(1, n);
+            double alpha = 2.0 / (Math.Max(1, n) + 1);
 
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    double alpha = 2.0 / (N + 1);
                     double r = alpha * (series[0] - v) + v;
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                new CacheId(series.GetHashCode(), N));
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
@@ -143,19 +114,18 @@ namespace TuringTrader.Simulator
         /// <returns>envelope time series</returns>
         public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
         {
-            int N = Math.Max(1, n);
+            double alpha = 2.0 / (Math.Max(1, n) + 1);
 
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    double alpha = 2.0 / (N + 1);
                     double r = series[0] >= v
                         ? series[0]
                         : alpha * (series[0] - v) + v;
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                new CacheId(series.GetHashCode(), N));
+                new CacheId(series.GetHashCode(), n));
         }
         #endregion
 
