@@ -41,7 +41,7 @@ namespace TuringTrader.Simulator
                 v => Enumerable.Range(0, n)
                         .Sum(t => series[t]),
                 series[0],
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n)
@@ -58,7 +58,7 @@ namespace TuringTrader.Simulator
                 v => Enumerable.Range(0, n)
                         .Sum(t => series[t]) / n,
                 series[0],
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n)
@@ -76,7 +76,7 @@ namespace TuringTrader.Simulator
                 (v) => Enumerable.Range(0, n - 1)
                         .Sum(t => (n - t) / sum * series[t]),
                 series[0],
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n)
@@ -98,7 +98,7 @@ namespace TuringTrader.Simulator
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n)
@@ -125,7 +125,7 @@ namespace TuringTrader.Simulator
                     return double.IsNaN(r) ? 0.0 : r;
                 },
                 series[0],
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
 
@@ -251,7 +251,7 @@ namespace TuringTrader.Simulator
                     }
                 },
                 series[0],
-                new CacheId(series.GetHashCode(), erPeriod, fastEma, slowEma));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), erPeriod, fastEma, slowEma));
         }
         #endregion
 
@@ -268,7 +268,7 @@ namespace TuringTrader.Simulator
         public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9)
         {
             var container = Cache<_MACD>.GetData(
-                    new CacheId(series.GetHashCode(), fast, slow, signal),
+                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), fast, slow, signal),
                     () => new _MACD());
 
             container.Fast = series.EMA(fast);

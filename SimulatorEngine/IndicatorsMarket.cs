@@ -47,7 +47,7 @@ namespace TuringTrader.Simulator
                     return p * Math.Exp(todaysLogReturn);
                 },
                 1.0,
-                new CacheId(0));
+                CacheId.NewFromStackTraceParameters(0));
         }
         #endregion
 
@@ -83,7 +83,7 @@ namespace TuringTrader.Simulator
         public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n)
         {
             var functor = Cache<CAPMFunctor>.GetData(
-                    new CacheId(series.GetHashCode(), benchmark.GetHashCode(), n),
+                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), benchmark.GetHashCode(), n),
                     () => new CAPMFunctor(series, benchmark, n));
 
             functor.Calc();

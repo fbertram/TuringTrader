@@ -42,7 +42,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] + series2[t],
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue)
@@ -56,7 +56,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series[t] + constValue,
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
         
@@ -71,7 +71,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] - series2[t],
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue)
@@ -85,7 +85,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series[t] - constValue,
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
 
@@ -100,7 +100,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] * series2[t],
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue)
@@ -114,7 +114,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series[t] * constValue,
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
 
@@ -129,7 +129,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series1[t] / (series2[t] == 0 ? 1e-25 : series2[t]),
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue)
@@ -143,7 +143,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => series[t] / constValue,
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
 
@@ -158,7 +158,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Max(series1[t], series2[t]),
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue)
@@ -172,7 +172,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Max(series[t], constValue),
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
 
@@ -187,7 +187,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Min(series1[t], series2[t]),
-                new CacheId(series1.GetHashCode(), series2.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series1.GetHashCode(), series2.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue)
@@ -201,7 +201,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => Math.Min(series[t], constValue),
-                new CacheId(series.GetHashCode(), constValue.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), constValue.GetHashCode()));
         }
         #endregion
     }

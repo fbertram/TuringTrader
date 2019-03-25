@@ -39,7 +39,7 @@ namespace TuringTrader.Simulator
         {
             return IndicatorsBasic.Lambda(
                 (t) => (series.High[t] + series.Low[t] + series.Close[t]) / 3.0,
-                new CacheId(series.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> CLV(this Instrument series)
@@ -54,7 +54,7 @@ namespace TuringTrader.Simulator
             return IndicatorsBasic.Lambda(
                 (t) => ((series.Close[t] - series.Low[t]) - (series.High[t] - series.Close[t])) 
                     / (series.High[t] - series.Low[t]),
-                new CacheId(series.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
         }
         #endregion
     }

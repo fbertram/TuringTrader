@@ -40,7 +40,7 @@ namespace TuringTrader.Simulator
             return IndicatorsBasic.BufferedLambda(
                 (v) => v + series.Volume[0] * series.CLV()[0],
                 0.0,
-                new CacheId(series.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
         }
         #endregion
         #region public static ITimeSeries<double> ChaikinOscillator(this Instrument series)
@@ -74,7 +74,7 @@ namespace TuringTrader.Simulator
                         ? prev + series.Volume[0]
                         : prev - series.Volume[0],
                 0,
-                new CacheId(series.GetHashCode()));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode()));
         }
         #endregion
 
@@ -93,12 +93,12 @@ namespace TuringTrader.Simulator
             var postiveMoneyFlow = IndicatorsBasic.BufferedLambda(
                 prev => typicalPrice[0] > typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
                 0.0,
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
 
             var negativeMoneyFlow = IndicatorsBasic.BufferedLambda(
                 prev => typicalPrice[0] < typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
                 0.0,
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
 
             return postiveMoneyFlow.SMA(n)
                 .Divide(

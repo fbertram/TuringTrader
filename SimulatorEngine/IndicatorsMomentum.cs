@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
                     return delta[0] / Math.Max(1e-10, 0.015 * meanDeviation[0]);
                 },
                 0.5,
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
 
@@ -84,7 +84,7 @@ namespace TuringTrader.Simulator
                     return 100.0 * numerator / denominator;
                 },
                 0.5,
-                new CacheId(series.GetHashCode(), r, s));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), r, s));
         }
         #endregion
 
@@ -98,16 +98,16 @@ namespace TuringTrader.Simulator
         /// <returns>RSI time series</returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14)
         {
-            var cacheId = new CacheId(series.GetHashCode(), n);
+            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
 
             double avgUp = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, series.Return()[t]),
-                    new CacheId(cacheId, 100))
+                    CacheId.NewFromIdParameters(cacheId, 100))
                 .EMA(n)[0];
 
             double avgDown = IndicatorsBasic.Lambda(
                     (t) => Math.Max(0.0, -series.Return()[t]),
-                    new CacheId(cacheId, 200))
+                    CacheId.NewFromIdParameters(cacheId, 200))
                 .EMA(n)[0];
 
             return IndicatorsBasic.BufferedLambda(
@@ -117,7 +117,7 @@ namespace TuringTrader.Simulator
                     return 100.0 - 100.0 / (1 + rs);
                 },
                 50.0,
-                new CacheId(cacheId, 300));
+                CacheId.NewFromIdParameters(cacheId, 300));
         }
         #endregion
 
@@ -144,7 +144,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
         #region public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10)
@@ -170,7 +170,7 @@ namespace TuringTrader.Simulator
                         : -50.0;
                 },
                 -50.0,
-                new CacheId(series.GetHashCode(), n));
+                CacheId.NewFromStackTraceParameters(series.GetHashCode(), n));
         }
         #endregion
 
@@ -184,8 +184,10 @@ namespace TuringTrader.Simulator
         /// <returns>Stochastic Oscillator as time series</returns>
         public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14)
         {
+            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+
             var container = Cache<StochasticOscillatorResult>.GetData(
-                    new CacheId(series.GetHashCode(), n),
+                    cacheId,
                     () => new StochasticOscillatorResult());
 
             container.PercentK = IndicatorsBasic.BufferedLambda(
@@ -201,7 +203,7 @@ namespace TuringTrader.Simulator
                         : 50.0;
                 },
                 50.0,
-                new CacheId(series.GetHashCode(), n));
+                cacheId);
 
             container.PercentD = container.PercentK.SMA(3);
 
@@ -218,8 +220,10 @@ namespace TuringTrader.Simulator
         /// <returns>Stochastic Oscillator as time series</returns>
         public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14)
         {
+            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
+
             var container = Cache<StochasticOscillatorResult>.GetData(
-                    new CacheId(series.GetHashCode(), n),
+                    cacheId,
                     () => new StochasticOscillatorResult());
 
             container.PercentK = IndicatorsBasic.BufferedLambda(
@@ -235,7 +239,7 @@ namespace TuringTrader.Simulator
                         : 50.0;
                 },
                 50.0,
-                new CacheId(series.GetHashCode(), n));
+                cacheId);
 
             container.PercentD = container.PercentK.SMA(3);
 
@@ -282,7 +286,7 @@ namespace TuringTrader.Simulator
         public static _Regression LinRegression(this ITimeSeries<double> series, int n)
         {
             var functor = Cache<LinRegressionFunctor>.GetData(
-                    new CacheId(series.GetHashCode(), n),
+                    CacheId.NewFromStackTraceParameters(series.GetHashCode(), n),
                     () => new LinRegressionFunctor(series, n));
 
             functor.Calc();
@@ -383,7 +387,7 @@ namespace TuringTrader.Simulator
             // we use the same cache id here, as creating a cache id is expensive
             // we add a paramter to it, in order to make sure there are no 
             // conflicts here.
-            var cacheId = new CacheId(series.GetHashCode(), n);
+            var cacheId = CacheId.NewFromStackTraceParameters(series.GetHashCode(), n);
 
             var upMove = Math.Max(0.0, series.High[0] - series.High[1]);
             var downMove = Math.Max(0.0, series.Low[1] - series.Low[0]);
@@ -391,12 +395,12 @@ namespace TuringTrader.Simulator
             var plusDM = IndicatorsBasic.BufferedLambda(
                 prev => upMove > downMove ? upMove : 0.0,
                 0.0,
-                new CacheId(cacheId, 100));
+                CacheId.NewFromIdParameters(cacheId, 100));
 
             var minusDM = IndicatorsBasic.BufferedLambda(
                 prev => downMove > upMove ? downMove : 0.0,
                 0.0,
-                new CacheId(cacheId, 200));
+                CacheId.NewFromIdParameters(cacheId, 200));
 
             //var atr = series.AverageTrueRange(n);
 
@@ -416,7 +420,7 @@ namespace TuringTrader.Simulator
             var DX = IndicatorsBasic.BufferedLambda(
                 prev => 100.0 * Math.Abs(plusDI[0] - minusDI[0]) / (plusDI[0] + minusDI[0]),
                 0.0,
-                new CacheId(cacheId, 300));
+                CacheId.NewFromIdParameters(cacheId, 300));
 
             // ADX = (13 * ADX[1] + DX) / 14
             var ADX = DX

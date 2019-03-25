@@ -111,7 +111,7 @@ namespace BooksAndPubs
                         i => new
                         {
                             sma150 = i.Close.SMA(SMA_DAYS),
-                            adx7 = i.AverageDirectionalMovement(7).ADX,
+                            adx7 = i.AverageDirectionalMovement(7),
                             atr10 = i.AverageTrueRange(10),
                             rsi3 = i.Close.RSI(3),
                         });
@@ -204,7 +204,7 @@ namespace BooksAndPubs
                 //----- output
 
                 // plot to chart
-                _plotter.SelectChart(Name, "date");
+                _plotter.SelectChart(Name + " " + OptimizerParamsAsString, "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("nav", NetAssetValue[0]);
                 _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);

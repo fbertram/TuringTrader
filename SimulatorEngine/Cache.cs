@@ -61,6 +61,11 @@ namespace TuringTrader.Simulator
 
             return id;
         }
+
+        private CacheId()
+        {
+
+        }
         #endregion
 
         #region public int Key
@@ -74,51 +79,72 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public CacheId(IEnumerable<int> parameterIds)
+        #region static public CacheId NewFromStackTraceParameters(params int[] parameterIds)
         /// <summary>
-        /// Create unique cryptographic key from a list of integer parameters, as
-        /// well as the current stack trace. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
+        /// Create cryptographic key to uniquely identify auto-magically 
+        /// created indicator functors.
+        /// This overload considers the stack trace, as well as parameter IDs.
         /// </summary>
-        /// <param name="parameterIds">list of integer parameters</param>
-        /// <returns>unique id</returns>
-        public CacheId(IEnumerable<int> parameterIds)
+        /// <param name="parameterIds">list of integer parameter ids</param>
+        /// <returns>cache id</returns>
+        static public CacheId NewFromStackTraceParameters(params int[] parameterIds)
         {
-            Key = StackTraceId();
+            var key = StackTraceId();
 
-            foreach (var p in parameterIds)
-                Key = AddId(Key, p);
+            foreach (var i in parameterIds)
+                key = AddId(key, i);
+
+            return new CacheId
+            {
+                Key = key,
+            };
         }
         #endregion
-        #region public CacheId(params int[] parameterIds)
+        #region static public CacheId NewFromParameters(params int[] parameterIds)
         /// <summary>
-        /// Create unique cryptographic key from a list of integer parameters, as
-        /// well as the current stack trace. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
+        /// Create cryptographic key to uniquely identify auto-magically 
+        /// created indicator functors.
+        /// This overload only considers the parameter IDs, and does not include
+        /// the stack trace.
         /// </summary>
-        /// <param name="parameterIds">list of integer parameters</param>
-        /// <returns>unique id</returns>
-        public CacheId(params int[] parameterIds)
+        /// <param name="id">existing cache id</param>
+        /// <param name="parameterIds">list of integer parameter ids</param>
+        /// <returns>cache id</returns>
+        static public CacheId NewFromParameters(params int[] parameterIds)
         {
-            Key = StackTraceId();
+            var key = SEED;
 
-            foreach (var p in parameterIds)
-                Key = AddId(Key, p);
+            foreach (var i in parameterIds)
+                key = AddId(key, i);
+
+            return new CacheId
+            {
+                Key = key,
+            };
         }
         #endregion
-        #region public CacheId(CacheId existing, int parameterId)
+        #region static public CacheId NewFromIdParameters(CacheId id, params int[] parameterIds)
         /// <summary>
-        /// Create unique cryptographic key from a existing key, and 
-        /// a single additional parameter id. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
+        /// Create cryptographic key to uniquely identify auto-magically 
+        /// created indicator functors.
+        /// This overload start with an existing cache id, and 
+        /// adds a number of parameter IDs.
         /// </summary>
-        /// <param name="existing">existing cache id</param>
-        /// <param name="parameterId">additional paramter id</param>
-        public CacheId(CacheId existing, int parameterId)
+        /// <param name="id">existing cache id</param>
+        /// <param name="parameterIds">list of integer parameter ids</param>
+        /// <returns>cache id</returns>
+        static public CacheId NewFromIdParameters(CacheId id, params int[] parameterIds)
         {
-            Key = AddId(existing.Key, parameterId);
-        }
+            var key = id.Key;
 
+            foreach (var i in parameterIds)
+                key = AddId(key, i);
+
+            return new CacheId
+            {
+                Key = key,
+            };
+        }
         #endregion
     }
     #endregion
