@@ -1,5 +1,5 @@
 name=Vanguard FTSE Europe ETF
-dataPath=Data\VGK.ETF
+dataPath=Data\VGK.etf
 ticker=VGK
 date={1:MM/dd/yyyy}
 time=16:00

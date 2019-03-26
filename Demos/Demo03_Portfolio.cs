@@ -33,7 +33,7 @@ namespace TuringTrader.Demos
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private double _initialSpx = 0.0;
-        private readonly string _spx = "^SPX.index";
+        private readonly string _spx = "$SPX.index";
         private readonly List<string> _universe = new List<string>()
         {
             "XLY.etf", "XLV.etf", "XLK.etf",

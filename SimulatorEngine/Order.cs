@@ -50,9 +50,14 @@ namespace TuringTrader.Simulator
         stockInactiveClose,
 
         /// <summary>
-        /// execute stop order during next bar
+        /// execute stop order on next bar
         /// </summary>
         stopNextBar,
+
+        /// <summary>
+        /// execute limit order on next bar
+        /// </summary>
+        limitNextBar,
 
         /// <summary>
         /// deposit/ withdraw cash
@@ -94,6 +99,11 @@ namespace TuringTrader.Simulator
         /// time stamp of queuing this order
         /// </summary>
         public DateTime QueueTime;
+
+        /// <summary>
+        /// exec condition
+        /// </summary>
+        public Func<Instrument, bool> Condition = null;
     }
 }
 

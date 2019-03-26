@@ -1,5 +1,5 @@
 name=Amazon.com
-dataPath=Data\AMZN.Stock
+dataPath=Data\AMZN.stock
 ticker=AMZN
 date={1:MM/dd/yyyy}
 time=16:00

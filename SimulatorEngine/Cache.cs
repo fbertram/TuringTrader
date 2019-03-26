@@ -19,6 +19,8 @@
 // please note that indicators require caching to
 // be enabled
 
+//#define DEBUG_STACK
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -29,54 +31,92 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator
 {
+    #region public class CacheId
     /// <summary>
-    /// Cache support class.
+    /// Unique ID to identify cache objects.
     /// </summary>
-    public static class Cache
+    public class CacheId
     {
-        #region static public int UniqueId(IEnumerable<int> parameterIds)
-        /// <summary>
-        /// Create unique cryptographic key from a list of integer parameters, as
-        /// well as the current stack trace. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
-        /// </summary>
-        /// <param name="parameterIds">list of integer parameters</param>
-        /// <returns>unique id</returns>
-        static public int UniqueId(IEnumerable<int> parameterIds)
+        #region internal data
+        private const int MODIFIER = 31;
+        private const int SEED = 487;
+
+        private int keyCallStack;
+        private int keyParameters;
+#if DEBUG_STACK
+        private string callStack;
+#endif
+        #endregion
+        #region internal helpers
+        private static int CombineId(int current, int item)
         {
-            // on top of the parameter ids, we also need to uniquely identify the call stack
-            // currently, we use only the native offset for this
-            // do we need to use the method name as well?
-            IEnumerable<int> stackFrames = new System.Diagnostics.StackTrace().GetFrames()
-                .Select(f => f.GetNativeOffset().GetHashCode());
-
-            var subIds = parameterIds
-                .Concat(stackFrames);
-
-            // see https://stackoverflow.com/questions/7278136/create-hash-value-on-a-list
-            const int seed = 487;
-            const int modifier = 31;
+            // this is unchecked, as an arithmetic
+            // overflow will occur here
             unchecked
             {
-                return subIds
-                    .Aggregate(seed, (current, item) => (current * modifier) + item);
+                return current * MODIFIER + item;
+            }
+        }
+
+        private static int StackTraceId()
+        {
+            var stackTrace = new System.Diagnostics.StackTrace(2, false); // skip 2 frames
+            var numFrames = stackTrace.FrameCount;
+
+            int id = SEED;
+            for (int i = 0; i < numFrames; i++)
+                id = CombineId(id, stackTrace.GetFrame(i).GetNativeOffset());
+
+            return id;
+        }
+
+        private CacheId()
+        {
+
+        }
+        #endregion
+
+        #region public int Key
+        /// <summary>
+        /// Cryptographic key
+        /// </summary>
+        public int Key
+        {
+            get
+            {
+                return CombineId(keyCallStack, keyParameters);
             }
         }
         #endregion
-        #region static public int UniqueId(params int[] parameterIds)
-        /// <summary>
-        /// Create unique cryptographic key from a list of integer parameters, as
-        /// well as the current stack trace. This ID is used to uniquely identify 
-        /// auto-magically created indicator functors.
-        /// </summary>
-        /// <param name="parameterIds">list of integer parameters</param>
-        /// <returns>unique id</returns>
-        static public int UniqueId(params int[] parameterIds)
+
+        #region public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
+        public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
         {
-            return UniqueId(parameterIds.AsEnumerable());
+            //--- call stack key
+#if true
+            keyCallStack = parentId != null ? parentId.keyCallStack : SEED;
+            keyCallStack = CombineId(keyCallStack, memberName.GetHashCode());
+            keyCallStack = CombineId(keyCallStack, lineNumber);
+#else
+            // this is safer, as we don't need to keep track of the stack trace
+            // however, this is also really slow, especially when running
+            // indicator-rich algorithms in the optimizer
+            keyCallStack = StackTraceId();
+#endif
+
+#if DEBUG_STACK
+            callStack = parentId?.callStack ?? "";
+            callStack += string.Format("/{0} ({1})", memberName, lineNumber);
+#endif
+
+            //--- parameter key
+            keyParameters = parentId != null ? parentId.keyParameters : SEED;
+            foreach (var id in parameterIds)
+                keyParameters = CombineId(keyParameters, id);
         }
         #endregion
     }
+    #endregion
 
     /// <summary>
     /// Cache template class. The cache is at the core of TuringTrader's
@@ -88,23 +128,26 @@ namespace TuringTrader.Simulator
     /// <typeparam name="T">type of cache</typeparam>
     public static class Cache<T>
     {
+
         #region internal data
         private static Dictionary<int, T> _cache = new Dictionary<int, T>();
-        private static object _lockCache = new object();
         #endregion
-        #region static public T GetData(int key, Func<T> initialRetrieval)
+        #region static public T GetData(CacheId key, Func<T> initialRetrieval)
         /// <summary>
         /// Retrieve data from cache.
         /// </summary>
-        /// <param name="key">unique ID of data</param>
+        /// <param name="id">unique ID of data</param>
         /// <param name="initialRetrieval">lambda to retrieve data not found in cache</param>
         /// <returns>cached data</returns>
-        static public T GetData(int key, Func<T> initialRetrieval)
+        static public T GetData(CacheId id, Func<T> initialRetrieval)
         {
 #if DISABLE_CACHE
             return initialRetrieval();
 #else
-            lock(_lockCache)
+            int key = id.Key;
+
+            //lock (_lockCache)
+            lock(_cache)
             {
                 if (!_cache.ContainsKey(key))
                     _cache[key] = initialRetrieval();

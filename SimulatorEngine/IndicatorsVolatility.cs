@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -35,8 +36,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
         /// <returns>standard deviation as time series</returns>
-        public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n = 10)
+        public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 
             // TODO: (1) rewrite using Linq. See WMA implementation
@@ -69,7 +74,7 @@ namespace TuringTrader.Simulator
                     return Math.Sqrt(Math.Max(0.0, variance));
                 },
                 0.0,
-                series.GetHashCode(), n);
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n)
@@ -80,10 +85,14 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
         /// <returns>variance as time series</returns>
-        public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n = 10)
+        public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             var functor = Cache<FunctorStandardDeviation>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    cacheId,
                     () => new FunctorStandardDeviation(series, n));
 
             functor.Calc();
@@ -140,10 +149,14 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
         /// <returns>variance as time series</returns>
-        public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10)
+        public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             var container = Cache<SemiDeviationResult>.GetData(
-                    Cache.UniqueId(series.GetHashCode(), n),
+                    cacheId,
                     () => new SemiDeviationResult());
 
             container.Average = series.SMA(n);
@@ -160,7 +173,7 @@ namespace TuringTrader.Simulator
                         return Math.Sqrt(downSeries
                             .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
                 }, 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+               cacheId);
 
             container.Upside = IndicatorsBasic.BufferedLambda(
                 v =>
@@ -174,7 +187,7 @@ namespace TuringTrader.Simulator
                         return Math.Sqrt(upSeries
                             .Average(t => Math.Pow(series[t] - container.Average[0], 2.0)));
                 }, 0.0,
-                Cache.UniqueId(series.GetHashCode(), n));
+                cacheId);
 
             return container;
         }
@@ -208,9 +221,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
         /// <returns>volatility as time series</returns>
-        public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n = 10)
+        public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.LogReturn().StandardDeviation(n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series
+                .LogReturn(cacheId)
+                .StandardDeviation(n, cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
@@ -220,8 +239,12 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">length of calculation window</param>
         /// <returns>volatility as time series</returns>
-        public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
@@ -231,7 +254,7 @@ namespace TuringTrader.Simulator
                     return 0.80 * Math.Sqrt(1.0 / n) * Math.Log(hi / lo);
                 },
                 0.0,
-                series.GetHashCode(), n);
+                cacheId);
         }
         #endregion
 
@@ -241,9 +264,14 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">optional parent cache id</param>
         /// <returns>True Range as time series</returns>
-        public static ITimeSeries<double> TrueRange(this Instrument series)
+        public static ITimeSeries<double> TrueRange(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) =>
                 {
@@ -251,7 +279,7 @@ namespace TuringTrader.Simulator
                     double low = Math.Min(series[0].Low, series[1].Close);
                     return high - low;
                 },
-                series.GetHashCode());
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
@@ -262,9 +290,15 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
         /// <returns>ATR time series</returns>
-        public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n)
+        public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.TrueRange().SMA(n);
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series
+                .TrueRange(cacheId)
+                .SMA(n, cacheId);
         }
         #endregion
 

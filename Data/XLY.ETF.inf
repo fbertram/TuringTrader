@@ -1,5 +1,5 @@
 name=Consumer Discretionary Select Sector SPDR ETF
-dataPath=Data\XLY.ETF
+dataPath=Data\XLY.etf
 ticker=XLY
 date={1:MM/dd/yyyy}
 time=16:00

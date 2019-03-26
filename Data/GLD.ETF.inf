@@ -1,5 +1,5 @@
 name=SPDR Gold Trust ETF
-dataPath=Data\GLD.ETF
+dataPath=Data\GLD.etf
 ticker=GLD
 date={1:MM/dd/yyyy}
 time=16:00

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -35,11 +36,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input instrument</param>
         /// <returns>typical price as time series</returns>
-        public static ITimeSeries<double> TypicalPrice(this Instrument series)
+        public static ITimeSeries<double> TypicalPrice(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => (series.High[t] + series.Low[t] + series.Close[t]) / 3.0,
-                series.GetHashCode());
+                cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> CLV(this Instrument series)
@@ -49,12 +54,16 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <returns>CLV as time series</returns>
-        public static ITimeSeries<double> CLV(this Instrument series)
+        public static ITimeSeries<double> CLV(this Instrument series,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode());
+
             return IndicatorsBasic.Lambda(
                 (t) => ((series.Close[t] - series.Low[t]) - (series.High[t] - series.Close[t])) 
                     / (series.High[t] - series.Low[t]),
-                series.GetHashCode());
+                cacheId);
         }
         #endregion
     }

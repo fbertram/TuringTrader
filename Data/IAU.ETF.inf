@@ -1,5 +1,5 @@
 name=iShares Gold Trust ETF
-dataPath=Data\IAU.ETF
+dataPath=Data\IAU.etf
 ticker=IAU
 date={1}
 time=16:00

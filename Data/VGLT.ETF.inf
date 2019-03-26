@@ -1,5 +1,5 @@
 name=Vanguard Long-Term Govt. ETF
-dataPath=Data\VGLT.ETF
+dataPath=Data\VGLT.etf
 ticker=VGLT
 date={1}
 time=16:00

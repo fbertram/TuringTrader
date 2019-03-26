@@ -47,8 +47,7 @@ namespace SimulatorEngine.Tests
                 stimulus.Value = testVectors[row, 0];
                 ITimeSeries<double> response =
                     TuringTrader.Simulator.IndicatorsBasic.Lambda(
-                        (t) => t + stimulus[0],
-                        0);
+                        (t) => t + stimulus[0]);
                 //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
 
                 for (int col = 1; col <= testVectors.GetUpperBound(1); col++)
@@ -90,8 +89,7 @@ namespace SimulatorEngine.Tests
                 ITimeSeries<double> response = 
                     TuringTrader.Simulator.IndicatorsBasic.BufferedLambda(
                         (p) => p + stimulus[0],
-                        0.0,
-                        0);
+                        0.0);
                 //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
 
                 for (int col = 1; col <= testVectors.GetUpperBound(1); col++)

@@ -1,5 +1,5 @@
 name=Vanguard REIT ETF
-dataPath=Data\VNQ.ETF
+dataPath=Data\VNQ.etf
 ticker=VNQ
 date={1}
 time=16:00

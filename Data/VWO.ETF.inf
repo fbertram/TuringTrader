@@ -1,5 +1,5 @@
 name=Vanguard MSCI Emerging Markets ETF
-dataPath=Data\VWO.ETF
+dataPath=Data\VWO.etf
 ticker=VWO
 date={1}
 time=16:00

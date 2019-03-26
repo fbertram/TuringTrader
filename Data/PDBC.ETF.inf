@@ -1,5 +1,5 @@
 name=Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF
-dataPath=Data\PDBC.ETF
+dataPath=Data\PDBC.etf
 ticker=PDBC
 date={1}
 time=16:00

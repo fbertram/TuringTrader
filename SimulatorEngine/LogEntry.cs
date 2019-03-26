@@ -25,7 +25,7 @@ namespace TuringTrader.Simulator
 {
 
     /// <summary>
-    /// Entry to trading log.
+    /// Entry to order log.
     /// </summary>
     public class LogEntry
     {

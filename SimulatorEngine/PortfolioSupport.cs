@@ -85,37 +85,85 @@ namespace TuringTrader.Simulator
                 private List<List<int>> _f;
                 #endregion
                 #region internal helpers
+                #region private void DumpTestVectors()
+                private void DumpTestVectors()
+                {
+#if true
+                    Output.WriteLine("double[] mean = {");
+                    for (int i = 0; i < _mean.Count; i++)
+                        Output.WriteLine("    {0:E15}, ", _mean[i]);
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[,] covar = {");
+                    for (int i = 0; i < _covar.RowCount; i++)
+                    {
+                        Output.Write("    { ");
+                        for (int j = 0; j < _covar.ColumnCount; j++)
+                        {
+                            Output.Write("{0:E15}, ", _covar[i, j]);
+                        }
+                        Output.WriteLine("},");
+                    }
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[] lbound = {");
+                    for (int i = 0; i < _lb.Count; i++)
+                        Output.WriteLine("    {0:E15},", _lb[i]);
+                    Output.WriteLine("};");
+
+                    Output.WriteLine("double[] ubound = {");
+                    for (int i = 0; i < _lb.Count; i++)
+                        Output.WriteLine("    {0:E15},", _ub[i]);
+                    Output.WriteLine("};");
+#endif
+                }
+                #endregion
                 #region private void Solve()
                 private void Solve()
                 {
                     // compute the turning points, free sets and weights
 
                     var f_w = InitAlgo();
+
                     var f = f_w.Item1;
                     var w = f_w.Item2;
+
+                    if (f == null)
+                    {
+                        // InitAlgo failed. The weights returned are 
+                        // still the best possible solution.
+                        for (int i = 0; i < 2; i++)
+                        {
+                            _w.Add(w.Clone());
+                            _l.Add(null);
+                            _g.Add(null);
+                            _f.Add(null);
+                        }
+                        return;
+                    }
 
                     _w.Add(w.Clone());
                     _l.Add(null);
                     _g.Add(null);
                     _f.Add(new List<int>(f));
 
-                    //
-                    double? l_in = null;
-                    double? l_out = null;
-                    int i_in = 0;
-                    int i_out = 0;
-                    double? bi_in = null;
                     Matrix<double> covarF = null;
                     Matrix<double> covarF_inv = null;
                     Matrix<double> covarFB = null;
                     Vector<double> meanF = null;
                     Vector<double> wB = null;
 
+                    int iter = 0;
                     while (true)
                     {
+                        iter++;
+
                         //----------
                         // #1) case a) Bound one free weight
-                        l_in = null;
+                        double l_in = -1.0;
+                        int i_in = 0;
+                        double bi_in = 0.0;
+
                         if (f.Count > 1)
                         {
                             var m = GetMatrices(f);
@@ -124,12 +172,15 @@ namespace TuringTrader.Simulator
                             meanF = m.Item3;
                             wB = m.Item4;
 
+                            covarF_inv = covarF.Inverse();
+
                             int j = 0;
                             foreach (var i in f)
                             {
                                 var l_bi = ComputeLambda(covarF_inv, covarFB, meanF, wB, j, new List<double> { _lb[i], _ub[i] });
                                 var l = l_bi.Item1;
                                 var bi = l_bi.Item2;
+
                                 if (l > l_in)
                                 {
                                     l_in = l;
@@ -142,28 +193,30 @@ namespace TuringTrader.Simulator
 
                         //----------
                         // #2) case b): Free one bounded weight
-                        l_out = null;
+                        double l_out = -1.0;
+                        int i_out = 0;
+
                         if (f.Count() < _mean.Count())
                         {
                             List<int> b = GetB(f);
 
                             foreach (int i in b)
                             {
-                                List<int> f2 = new List<int>(f)
-                                {
-                                    i
-                                };
-                                var m = GetMatrices(f2);
+                                var fi = new List<int>(f) { i };
+                                var m = GetMatrices(fi);
                                 covarF = m.Item1;
                                 covarFB = m.Item2;
                                 meanF = m.Item3;
                                 wB = m.Item4;
+
                                 covarF_inv = covarF.Inverse();
-                                var ll = ComputeLambda(covarF_inv, covarFB, meanF, wB, meanF.Count - 1, new List<double> { _w.Last()[i] });
+
+                                var ll = ComputeLambda(covarF_inv, covarFB, meanF, wB, fi.FindIndex(v => v == i), new List<double> { _w.Last()[i] });
                                 var l = ll.Item1;
                                 var bi = ll.Item2;
+
                                 if ((_l.Last() == null || l < _l.Last())
-                                && (l_out == null || l > l_out))
+                                && (l > l_out))
                                 {
                                     l_out = l;
                                     i_out = i;
@@ -171,9 +224,28 @@ namespace TuringTrader.Simulator
                             }
                         }
 
-                        if ((l_in == null || l_in < 0.0)
-                        && (l_out == null || l_out < 0.0))
+#if true
+                        // FIXME: sometimes method doesn't converge. It is unclear why
+                        // that is, and it seems the issue can't be reproduced in the
+                        // testbench. Probably, the numerical resolution of the test
+                        // vectors dumped by the code below, is not sufficient to do so.
+                        // It was observed that lambdas have been going in circles,
+                        // while it seems they should be monotonically falling?
+                        // For now, we just abort the method here.
+                        bool noConvergence = _w.Count > 50 * _mean.Count; 
+#else
+                        bool noConvergence = false;
+#endif
+
+                        if (l_in < 0.0 && l_out < 0.0
+                        || noConvergence)
                         {
+                            if (noConvergence)
+                            {
+                                Output.WriteLine("MarkowitzCLA: aborted after {0} iterations", iter);
+                                DumpTestVectors();
+                            }
+
                             //----------
                             // #3) compute minimum variance solution
                             _l.Add(0.0);
@@ -182,7 +254,9 @@ namespace TuringTrader.Simulator
                             covarFB = m.Item2;
                             meanF = m.Item3;
                             wB = m.Item4;
+
                             covarF_inv = covarF.Inverse();
+
                             meanF = Vector<double>.Build.Dense(meanF.Count, 0.0);
                         }
                         else
@@ -191,23 +265,22 @@ namespace TuringTrader.Simulator
                             // #4) decide lambda
                             if (l_in > l_out)
                             {
-                                throw new Exception("TODO: not implemented, yet");
-                                /*
-                                self.l.append(l_in)
-                                f.remove(i_in)
-                                w[i_in]=bi_in # set value at the correct boundary
-                                */
+                                _l.Add(l_in);
+                                f.Remove(i_in);
+                                w[i_in] = bi_in; // set value at the correct boundary
                             }
                             else
                             {
                                 _l.Add(l_out);
                                 f.Add(i_out);
                             }
+
                             var m = GetMatrices(f);
                             covarF = m.Item1;
                             covarFB = m.Item2;
                             meanF = m.Item3;
                             wB = m.Item4;
+
                             covarF_inv = covarF.Inverse();
                         }
 
@@ -216,11 +289,14 @@ namespace TuringTrader.Simulator
                         var wF_g = ComputeW(covarF_inv, covarFB, meanF, wB);
                         var wf = wF_g.Item1;
                         var g = wF_g.Item2;
+
                         for (var i = 0; i < f.Count; i++)
                             w[f[i]] = wf[i];
+
                         _w.Add(w.Clone());
                         _g.Add(g);
                         _f.Add(new List<int>(f));
+
                         if (_l.Last() == 0.0)
                             break;
                     }
@@ -229,6 +305,13 @@ namespace TuringTrader.Simulator
                     // #6) Purge turning points
                     PurgeNumErr(10e-10);
                     PurgeExcess();
+                    PurgeDuplicates(10e-10);
+
+                    if (_w.Count <= 1)
+                    {
+                        Output.WriteLine("MarkowitzCLA: no turning points");
+                        DumpTestVectors();
+                    }
                 }
                 #endregion
                 #region private Tuple<List<int>, Vector<double>> InitAlgo()
@@ -262,7 +345,11 @@ namespace TuringTrader.Simulator
                         }
                     }
 
-                    return null;
+                    return new Tuple<List<int>, Vector<double>>
+                    (
+                        null,
+                        w
+                    );
                 }
                 #endregion
                 #region private double ComputeBi(double c, List<double> bi)
@@ -310,8 +397,8 @@ namespace TuringTrader.Simulator
                         g);
                 }
                 #endregion
-                #region private Tuple<double?, double?> computeLambda(...)
-                private Tuple<double?, double?> ComputeLambda(
+                #region private Tuple<double, double> computeLambda(...)
+                private Tuple<double, double> ComputeLambda(
                     Matrix<double> covarF_inv, Matrix<double> covarFB,
                     Vector<double> meanF, Vector<double> wB,
                     int i, List<double> bix)
@@ -325,7 +412,7 @@ namespace TuringTrader.Simulator
                     var c = (-c1 * c2[i] + c3 * c4[i]).Single();
                     if (c == 0.0)
                     {
-                        return new Tuple<double?, double?>(null, null);
+                        return new Tuple<double, double>(0.0, 0.0);
                     }
 
                     // #2) bi
@@ -337,7 +424,7 @@ namespace TuringTrader.Simulator
                     if (wB == null)
                     {
                         // All free assets
-                        return new Tuple<double?, double?>(
+                        return new Tuple<double, double>(
                             ((c4[i] - c1 * bi) / c).Single(),
                             bi);
                     }
@@ -349,9 +436,9 @@ namespace TuringTrader.Simulator
                         var l3 = l2x.Multiply(wB);
                         var l2 = onesF.ToRowMatrix().Multiply(l3);
 
-                        return new Tuple<double?, double?>(
-                            (double?)(((1 - l1 + l2) * c4[i] - c1 * (bi + l3[i])) / c).Single(),
-                            (double?)bi);
+                        return new Tuple<double, double>(
+                            (((1 - l1 + l2) * c4[i] - c1 * (bi + l3[i])) / c).Single(),
+                            bi);
                     }
                 }
                 #endregion
@@ -409,7 +496,7 @@ namespace TuringTrader.Simulator
                         if (i == _w.Count())
                             break;
 
-                        if (_w[i].Sum() - 1.0 > tol)
+                        if (Math.Abs(_w[i].Sum() - 1.0) > tol)
                         {
                             flag = true;
                         }
@@ -454,7 +541,7 @@ namespace TuringTrader.Simulator
                         if (!repeat)
                             i++;
 
-                        if (i == _w.Count() - 1)
+                        if (i >= _w.Count() - 1)
                             break;
 
                         var w1 = _w[i];
@@ -465,7 +552,7 @@ namespace TuringTrader.Simulator
 
                         while (true)
                         {
-                            if (j == _w.Count())
+                            if (j >= _w.Count())
                                 break;
 
                             var w2 = _w[j];
@@ -473,7 +560,7 @@ namespace TuringTrader.Simulator
 
                             if (mu1 < mu2)
                             {
-                                Output.WriteLine("CLA: purgeExcess removing turning point");
+                                //Output.WriteLine("CLA: purgeExcess removing turning point");
                                 _w.RemoveAt(i);
                                 _l.RemoveAt(i);
                                 _g.RemoveAt(i);
@@ -489,6 +576,39 @@ namespace TuringTrader.Simulator
                     }
                 }
                 #endregion
+                #region private void PurgeDuplicates(double tolerance)
+                private void PurgeDuplicates(double tolerance)
+                {
+                    // added by FUB, not part ofBailey & de Prado's 
+                    // original implementation
+
+                    int i = 0;
+                    while(i < _w.Count() - 2) // last member is min variance p/f
+                    {
+                        bool isDuplicate = true;
+                        foreach (var j in Enumerable.Range(0, _w[i].Count()))
+                        {
+                            if (Math.Abs(_w[i][j] - _w[i + 1][j]) > tolerance)
+                            {
+                                isDuplicate = false;
+                                break;
+                            }
+                        }
+
+                        if (isDuplicate)
+                        {
+                            _w.RemoveAt(i);
+                            _l.RemoveAt(i);
+                            _g.RemoveAt(i);
+                            _f.RemoveAt(i);
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                }
+                #endregion
                 #region private void EvalSR()
                 private double EvalSR(double a, Vector<double> w0, Vector<double> w1)
                 {
@@ -498,8 +618,8 @@ namespace TuringTrader.Simulator
                     return CalcReturn(w) / CalcVolatility(w);
                 }
                 #endregion
-                #region private void GoldenSection()
-                private Tuple<double, double> GoldenSection(Func<double, double> obj, double a, double b, bool minimum = false)
+                #region public void GoldenSection(...)
+                public Tuple<double, double> GoldenSection(Func<double, double> obj, double a, double b, bool minimum = false)
                 {
                     double tol = 1e-9;
                     double sign = minimum ? 1.0 : -1.0;
@@ -753,10 +873,14 @@ namespace TuringTrader.Simulator
                     _instruments.Count,
                     idx => upperBoundFunc(_instruments[idx]));
 
+                int numParams = Enumerable.Range(0, _instruments.Count)
+                    .Where(i => upperBound[i] - lowerBound[i] > 0.0)
+                    .Count();
+
                 _cla = new CLA(mean, covar, lowerBound, upperBound);
             }
             #endregion
-            #region public IEnumerable<MarkowitzPortfolio> TurningPoints()
+            #region public IEnumerable<Portfolio> TurningPoints()
             /// <summary>
             /// Return all turning points for efficient frontier.
             /// </summary>
@@ -782,7 +906,7 @@ namespace TuringTrader.Simulator
             }
             #endregion
 
-            #region public IEnumerable<MarkowitzPortfolio> EfficientFrontier(int points)
+            #region public IEnumerable<Portfolio> EfficientFrontier(int points)
             /// <summary>
             /// Return efficient frontier, w/ specified # of points
             /// </summary>
@@ -812,7 +936,7 @@ namespace TuringTrader.Simulator
                 yield break;
             }
             #endregion
-            #region public MarkowitzPortfolio MaximumSharpeRatio()
+            #region public Portfolio MaximumSharpeRatio()
             /// <summary>
             /// Return portfolio w/ maximum sharpe ratio.
             /// </summary>
@@ -835,7 +959,7 @@ namespace TuringTrader.Simulator
                 return pf;
             }
             #endregion
-            #region public MarkowitzPortfolio MinimumVariance()
+            #region public Portfolio MinimumVariance()
             /// <summary>
             /// Return portfolio w/ minimum variance.
             /// </summary>
@@ -857,50 +981,134 @@ namespace TuringTrader.Simulator
                 return pf;
             }
             #endregion
-            #region public MarkowitzPortfolio DefinedRisk(double risk)
+            #region public Portfolio TargetVolatility(double targetRisk)
             /// <summary>
-            /// Return portfolio with a given risk (or less). Note that
-            /// the weights of this portfolio might not add up to 1.0.
+            /// Return portfolio with the specified risk (or less). Note that
+            /// the weights of this portfolio might not add up to 1.0:
+            /// This routine will return a portfolio on the capital allocation
+            /// line, if the target risk is lower than the risk of the
+            /// portfolio with the maximum Sharpe Ratio.
             /// </summary>
-            /// <param name="risk">risk setting</param>
+            /// <param name="targetRisk">risk setting</param>
             /// <returns>portfolio</returns>
-            public Portfolio DefinedRisk(double risk)
+            public Portfolio TargetVolatility(double targetRisk)
             {
-                // TODO: this can probably be significantly optimized
-                //       we don't need to calculate the complete EF,
-                //       instead we need to only estimate between
-                //       two turning points
+                var maxSR = MaximumSharpeRatio();
 
-                var ef = EfficientFrontier(250)
-                    .ToList();
-                var minRisk = ef.Min(pf => pf.Risk);
-                var maxRisk = ef.Max(pf => pf.Risk);
-
-                if (minRisk > risk)
+                if (targetRisk <= maxSR.Risk)
                 {
-                    // if we can't meet the risk objective,
-                    // we start with the minimum variance portfolio,
-                    // and dilute it with cash
-                    var minVar = MinimumVariance();
-                    var scaleDown = minVar.Risk / risk;
+                    //----- return diluted Max-SR portfolio
+                    var scaleDown = maxSR.Risk / targetRisk;
+
+                    var cal = new Portfolio
+                    {
+                        Return = maxSR.Return / scaleDown,
+                        Risk = targetRisk,
+                        Weights = maxSR.Weights.Keys
+                            .ToDictionary(
+                                i => i,
+                                i => maxSR.Weights[i] / scaleDown),
+                    };
+
+                    return cal;
+                }
+                else
+                {
+                    //----- desired portfolio is on the efficient frontier
+
+                    // there will always be a wlo, as we handle
+                    // low volatilities above
+                    var wlo = _cla.TurningPoints()
+                        .Select(w => new { weights = w, vol = _cla.CalcVolatility(w) })
+                        .Where(w => w.vol < targetRisk)
+                        .OrderByDescending(t => t.vol)
+                        .Select(t => t.weights)
+                        .First();
+
+                    // there might not be a whi with risk 
+                    // as high as targetRisk
+                    var whi = _cla.TurningPoints()
+                        .Select(w => new { weights = w, vol = _cla.CalcVolatility(w) })
+                        .Where(t => t.vol >= targetRisk)
+                        .OrderBy(t => t.vol)
+                        .Select(t => t.weights)
+                        .FirstOrDefault();
+
+                    Vector<double> ww = null;
+
+                    if (whi != null)
+                    {
+                        // interpolation between wlo and whi
+                        // this is not a linear interpolation, which is
+                        // why we need to use GoldenSection here
+                        var xx = _cla.GoldenSection(
+                                x =>
+                                {
+                                    var w = whi != null
+                                        ? wlo.Multiply(x).Add(whi.Multiply(1.0 - x))
+                                        : wlo;
+                                    return Math.Abs(_cla.CalcVolatility(w) - targetRisk);
+                                },
+                                0.0, 1.0,
+                                true)
+                            .Item1;
+
+                        ww = wlo.Multiply(xx).Add(whi.Multiply(1.0 - xx));
+                    }
+                    else
+                    {
+                        // no whi: simply use wlo
+                        ww = wlo;
+                    }
 
                     var pf = new Portfolio
                     {
-                        Return = minVar.Return / scaleDown,
-                        Risk = risk,
-                        Weights = minVar.Weights.Keys
-                            .ToDictionary(
-                                i => i, 
-                                i => minVar.Weights[i] / scaleDown),
+                        Return = _cla.CalcReturn(ww),
+                        Risk = _cla.CalcVolatility(ww),
+                        Weights = Enumerable.Range(0, ww.Count)
+                        .ToDictionary(
+                            idx => _instruments[idx],
+                            idx => ww[idx])
                     };
 
                     return pf;
-                }
 
-                return ef
-                    .Where(pf => pf.Risk <= risk)
-                    .OrderByDescending(pf => pf.Risk)
-                    .First();
+                    // simple but inefficient method to do this
+                    //
+                    //var ef = EfficientFrontier(250)
+                    //    .ToList();
+                    //
+                    //return ef
+                    //    .Where(pf => pf.Risk <= targetRisk)
+                    //    .OrderByDescending(pf => pf.Risk)
+                    //    .First();
+                }
+            }
+            #endregion
+
+            #region public Portfolio EvalPositions(double netAssetValue)
+            /// <summary>
+            /// Evaluate the current positions.
+            /// </summary>
+            /// <param name="netAssetValue">current net asset value</param>
+            /// <returns>portfolio</returns>
+            public Portfolio EvalPositions(double netAssetValue)
+            {
+                var w = Vector<double>.Build.Dense(
+                    _instruments.Count,
+                    idx => _instruments[idx].Position * _instruments[idx].Close[0] / netAssetValue);
+
+                var pf = new Portfolio
+                {
+                    Return = _cla.CalcReturn(w),
+                    Risk = _cla.CalcVolatility(w),
+                    Weights = Enumerable.Range(0, _instruments.Count)
+                        .ToDictionary(
+                            idx => _instruments[idx],
+                            idx => w[idx]),
+                };
+
+                return pf;
             }
             #endregion
         }
@@ -910,23 +1118,13 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Class encapsulating calculation of covariance matrix.
         /// </summary>
-        public class PortfolioCovariance
+        public class Covariance
         {
-            #region internal data
-            private readonly List<Instrument> _instruments;
-            private readonly Dictionary<Instrument, Dictionary<Instrument, double>> _covariance;
-            #endregion
+            #region internal stuff
+            private List<Instrument> _instruments;
+            private Dictionary<Instrument, Dictionary<Instrument, double>> _covariance;
 
-            #region public PortfolioCovariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
-            /// <summary>
-            /// Create new covariance object. Subsample the instrument bars, to create 
-            /// bars with a larger size, if desired.
-            /// <see href="https://en.wikipedia.org/wiki/Covariance"/>
-            /// </summary>
-            /// <param name="universe">universe of instruments</param>
-            /// <param name="numBars"># of bars to calculate</param>
-            /// <param name="barSize"># of bars between points, default = 1</param>
-            public PortfolioCovariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
+            private void calc(IEnumerable<Instrument> universe, int numBars, int barSize, Func<Instrument, ITimeSeries<double>> priceFunc)
             {
                 // save instruments, ordered by their hash code
                 // this is important, so that we can define a 
@@ -938,6 +1136,14 @@ namespace TuringTrader.Simulator
                 NumBars = numBars;
                 BarSize = barSize;
 
+                // save the price series, so that we may use indicators
+                // in the priceFunc lambda expression, without evaluating
+                // them multiple times per bar
+                Dictionary<Instrument, ITimeSeries<double>> priceSeries = universe
+                    .ToDictionary(
+                        i => i,
+                        i => priceFunc(i));
+
                 _covariance = new Dictionary<Instrument, Dictionary<Instrument, double>>();
                 for (int i1 = 0; i1 < _instruments.Count; i1++)
                 {
@@ -945,8 +1151,8 @@ namespace TuringTrader.Simulator
 
                     var series1 = Enumerable.Range(0, NumBars)
                         .Select(b => Math.Log(
-                            instrument1.Close[b * BarSize]
-                            / instrument1.Close[(b + 1) * BarSize]))
+                            priceSeries[instrument1][b * BarSize]
+                            / priceSeries[instrument1][(b + 1) * BarSize]))
                         .ToList();
                     var average1 = series1.Average();
 
@@ -960,8 +1166,8 @@ namespace TuringTrader.Simulator
 
                         var series2 = Enumerable.Range(0, NumBars)
                             .Select(b => Math.Log(
-                                instrument2.Close[b * BarSize]
-                                / instrument2.Close[(b + 1) * BarSize]))
+                                priceSeries[instrument2][b * BarSize]
+                                / priceSeries[instrument2][(b + 1) * BarSize]))
                             .ToList();
                         var average2 = series2.Average();
 
@@ -970,6 +1176,36 @@ namespace TuringTrader.Simulator
                             / (NumBars - 1.0);
                     }
                 }
+            }
+            #endregion
+
+
+            #region public PortfolioCovariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
+            /// <summary>
+            /// Create new covariance object. Subsample the instrument bars, to create 
+            /// bars with a larger size, if desired.
+            /// <see href="https://en.wikipedia.org/wiki/Covariance"/>
+            /// </summary>
+            /// <param name="universe">universe of instruments</param>
+            /// <param name="numBars"># of bars to calculate</param>
+            /// <param name="barSize"># of bars between points, default = 1</param>
+            public Covariance(IEnumerable<Instrument> universe, int numBars, int barSize = 1)
+            {
+                calc(universe, numBars, barSize, i => i.Close);
+            }
+
+            /// <summary>
+            /// Create new covariance object. Subsample the instrument bars, to create 
+            /// bars with a larger size, if desired.
+            /// <see href="https://en.wikipedia.org/wiki/Covariance"/>
+            /// </summary>
+            /// <param name="universe">universe of instruments</param>
+            /// <param name="numBars"># of bars to calculate</param>
+            /// <param name="barSize"># of bars between points, default = 1</param>
+            /// <param name="priceFunc">predicate </param>
+            public Covariance(IEnumerable<Instrument> universe, int numBars, int barSize, Func<Instrument, ITimeSeries<double>> priceFunc)
+            {
+                calc(universe, numBars, barSize, priceFunc);
             }
             #endregion
             #region public int NumBars

@@ -1,5 +1,5 @@
 name=Industrial Select Sector SPDR ETF
-dataPath=Data\XLI.ETF
+dataPath=Data\XLI.etf
 ticker=XLI
 date={1:MM/dd/yyyy}
 time=16:00

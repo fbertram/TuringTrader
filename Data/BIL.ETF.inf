@@ -1,5 +1,5 @@
 name=SPDR Barclays 1-3 Month T-Bill ETF
-dataPath=Data\BIL.ETF
+dataPath=Data\BIL.etf
 ticker=BIL
 date={1}
 time=16:00

@@ -88,7 +88,7 @@ namespace TuringTrader
             _dispatcherTimer.Start();
 
             //--- initialize algorithm selector
-            var allAlgorithms = AlgorithmLoader.GetAllAlgorithms();
+            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
 
             foreach (Type algorithm in allAlgorithms)
                 AlgoSelector.Items.Add(algorithm.Name);
@@ -182,6 +182,24 @@ namespace TuringTrader
             }
         }
         #endregion
+        #region private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
+        private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".xlsm";
+        }
+        #endregion
+        #region private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
+        private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".r";
+        }
+        #endregion
+        #region private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
+        private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalSettings.DefaultTemplateExtension = ".rmd";
+        }
+        #endregion
 
         //----- buttons
         #region private void AlgoSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -218,6 +236,13 @@ namespace TuringTrader
                 await Task.Run(() =>
                 {
                     DateTime timeStamp1 = DateTime.Now;
+
+#if true
+                    // replace current instance with a freshly cloned instance
+                    // this helps run poorly initialized algorithms
+                    var clonedAlgorithm = _currentAlgorithm.Clone();
+                    _currentAlgorithm = clonedAlgorithm;
+#endif
 
                     WriteEventHandler(
                         string.Format("running algorithm {0}", _currentAlgorithm.Name)
@@ -342,21 +367,6 @@ namespace TuringTrader
             }
         }
         #endregion
-
-        private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".xlsm";
-        }
-
-        private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".r";
-        }
-
-        private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".rmd";
-        }
     }
 }
 

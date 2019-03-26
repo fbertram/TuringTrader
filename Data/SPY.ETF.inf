@@ -1,5 +1,5 @@
 name=SPDR S&P 500 ETF
-dataPath=Data\SPY.ETF
+dataPath=Data\SPY.etf
 ticker=SPY
 date={1:MM/dd/yyyy}
 time=16:00

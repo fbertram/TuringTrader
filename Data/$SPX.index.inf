@@ -1,6 +1,6 @@
 name=S&P 500
-dataPath=Data\^SPX.Index
-ticker=^SPX
+dataPath=Data\$SPX.index
+ticker=$SPX
 date={1:MM/dd/yyyy}
 time=16:00
 open={2:F2}

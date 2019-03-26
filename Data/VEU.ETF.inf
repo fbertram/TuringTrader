@@ -1,5 +1,5 @@
 name=Vanguard FTSE All-Wld ex-US ETF
-dataPath=Data\VEU.ETF
+dataPath=Data\VEU.etf
 ticker=VEU
 date={1}
 time=16:00

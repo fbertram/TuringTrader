@@ -1,5 +1,5 @@
 name=Vanguard Total Bond Market ETF
-dataPath=Data\BND.ETF
+dataPath=Data\BND.etf
 ticker=BND
 date={1}
 time=16:00

@@ -1,5 +1,5 @@
 name=Vanguard Intermediate-Term Govt. ETF
-dataPath=Data\VGIT.ETF
+dataPath=Data\VGIT.etf
 ticker=VGIT
 date={1}
 time=16:00

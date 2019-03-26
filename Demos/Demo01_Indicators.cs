@@ -30,7 +30,7 @@ namespace TuringTrader.Demos
         #region internal data
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
-        private readonly string _instrumentNick = "^SPX.Index";
+        private readonly string _instrumentNick = "$SPX.index";
         private readonly double _offsetPrice = -1800.0;
         #endregion
 
@@ -67,7 +67,7 @@ namespace TuringTrader.Demos
 
                 // plot our data
                 _plotter.SelectChart("indicators vs time", "date");
-                _plotter.SetX(simTime);
+                _plotter.SetX(simTime.Date);
                 _plotter.Plot(instrument.Symbol, instrument.Close[0] + _offsetPrice);
                 _plotter.Plot("ema26", ema26[0] + _offsetPrice);
                 _plotter.Plot("ema12", ema12[0] + _offsetPrice);

@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -42,7 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aeromir_ParkingTrade.cs" />
+    <Compile Include="Alvarez_EtfSectorRotation.cs" />
     <Compile Include="Antonacci_DualMomentumInvesting.cs" />
+    <Compile Include="Bensdorp_30MinStockTrader.cs" />
     <Compile Include="Clenow_StocksOnTheMove.cs" />
     <Compile Include="Faber_IvyPortfolio.cs" />
     <Compile Include="Keller_CAA.cs" />

@@ -1,5 +1,5 @@
 name=Apple Inc.
-dataPath=Data\AAPL.Stock
+dataPath=Data\AAPL.stock
 ticker=AAPL
 date={1:MM/dd/yyyy}
 time=16:00

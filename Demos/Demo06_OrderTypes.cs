@@ -31,7 +31,7 @@ namespace TuringTrader.Demos
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
-        private readonly string _instrumentNick = "^SPX.Index";
+        private readonly string _instrumentNick = "$SPX.Index";
         #endregion
 
         override public void Run()
@@ -82,6 +82,19 @@ namespace TuringTrader.Demos
 
                 if (simTime.Date == DateTime.Parse("01/18/2018"))
                     instrument.Trade(-100, OrderType.stopNextBar, 2799); // triggers mid day
+
+                //===== limit order
+                if (simTime.Date == DateTime.Parse("01/19/2018"))
+                    instrument.Trade(100, OrderType.limitNextBar, 2750); // won't trigger
+
+                if (simTime.Date == DateTime.Parse("01/22/2018"))
+                    instrument.Trade(100, OrderType.limitNextBar, 2850); // triggers at open
+
+                if (simTime.Date == DateTime.Parse("01/23/2018"))
+                    instrument.Trade(-100, OrderType.limitNextBar, 2860); // won't trigger
+
+                if (simTime.Date == DateTime.Parse("01/24/2018"))
+                    instrument.Trade(-100, OrderType.limitNextBar, 2840); // triggers mid day
             }
 
             //---------- post-processing

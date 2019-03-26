@@ -132,6 +132,10 @@ namespace TuringTrader.Simulator
         /// </summary>
         symbolNorgate,
         /// <summary>
+        /// symbol for fred.stlouisfed.org
+        /// </summary>
+        symbolFred,
+        /// <summary>
         /// data source to use
         /// </summary>
         dataSource,

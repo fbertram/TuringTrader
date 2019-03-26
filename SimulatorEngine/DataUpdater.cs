@@ -127,6 +127,10 @@ namespace TuringTrader.Simulator
             && info.ContainsKey(DataSourceValue.symbolStooq))
                 return new DataUpdaterStooq(simulator, info);
 
+            if (dataUpdater.Contains("fred")
+            && info.ContainsKey(DataSourceValue.symbolFred))
+                return new DataUpdaterFred(simulator, info);
+
             return null;
         }
         #endregion

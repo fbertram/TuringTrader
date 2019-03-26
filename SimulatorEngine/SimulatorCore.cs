@@ -4,7 +4,7 @@
 // Description: Simulator engine core
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -66,6 +66,11 @@ namespace TuringTrader.Simulator
             if (SimTime[0] < StartTime)
                 return;
 
+            // conditional orders: cancel, if condition not met
+            if (ticket.Condition != null
+            && !ticket.Condition(ticket.Instrument))
+                return;
+
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
             double netAssetValue = 0.0;
@@ -118,9 +123,31 @@ namespace TuringTrader.Simulator
                         price = Math.Min(ticket.Price, execBar.Open);
                     }
                     break;
+
+                case OrderType.limitNextBar:
+                    execBar = instrument[0];
+                    netAssetValue = NetAssetValue[0];
+                    if (ticket.Quantity > 0)
+                    {
+                        if (ticket.Price < execBar.Low)
+                            return;
+
+                        price = Math.Min(ticket.Price, execBar.Open);
+                    }
+                    else
+                    {
+                        if (ticket.Price > execBar.High)
+                            return;
+
+                        price = Math.Max(ticket.Price, execBar.Open);
+                    }
+                    break;
+
+                default:
+                    throw new Exception("SimulatorCore.ExecOrder: unknown order type");
             }
 
-            // add position
+            // adjust position
             if (!Positions.ContainsKey(instrument))
                 Positions[instrument] = 0;
             Positions[instrument] += ticket.Quantity;
@@ -188,6 +215,7 @@ namespace TuringTrader.Simulator
                     Instrument = instrument,
                     Quantity = -instrument.Position,
                     Type = OrderType.stockInactiveClose,
+                    Comment = "delisted",
                 };
 
                 // force execution
@@ -238,11 +266,13 @@ namespace TuringTrader.Simulator
             // during SimTime's initialization. we assign an object
             // here, to avoid a crash in Demo05_Optimizer, which does
             // not have any bars, and does not call SimTime
-            NetAssetValue = new TimeSeries<double>();
-            NetAssetValue.Value = 0.0;
+            NetAssetValue = new TimeSeries<double>
+            {
+                Value = 0.0
+            };
         }
         #endregion
-        #region protected void CloneSimSetup()
+        /*#region protected void CloneSimSetup()
         /// <summary>
         /// Clone simulator core setup: simulator time frame, data sources,
         /// commission settings.
@@ -258,7 +288,7 @@ namespace TuringTrader.Simulator
             foreach (DataSource dataSource in copyFrom._dataSources)
                 AddDataSource(dataSource);
         }
-        #endregion
+        #endregion*/
         #region public string Name
         /// <summary>
         /// Return class type name. This method will return the name of the
@@ -353,8 +383,10 @@ namespace TuringTrader.Simulator
                 // we create a new time-series here, to make sure that
                 // any indicators depending on it, are also re-created
                 Cash = 0.0;
-                NetAssetValue = new TimeSeries<double>();
-                NetAssetValue.Value = Cash;
+                NetAssetValue = new TimeSeries<double>
+                {
+                    Value = Cash
+                };
                 NetAssetValueHighestHigh = 0.0;
                 NetAssetValueMaxDrawdown = 1e-10;
 
@@ -375,6 +407,8 @@ namespace TuringTrader.Simulator
                     SimTime.Value = _dataSources
                         .Where(i => hasData[i])
                         .Min(i => i.BarEnumerator.Current.Time);
+
+                    NextSimTime = SimTime[0] + TimeSpan.FromDays(1000); // any date far in the future
 
                     // go through all data sources
                     foreach (DataSource source in _dataSources)
@@ -401,6 +435,9 @@ namespace TuringTrader.Simulator
 
                             hasData[source] = source.BarEnumerator.MoveNext();
                         }
+
+                        if (hasData[source] && source.BarEnumerator.Current.Time < NextSimTime)
+                            NextSimTime = source.BarEnumerator.Current.Time;
                     }
 
                     // execute orders
@@ -417,9 +454,17 @@ namespace TuringTrader.Simulator
                         ExpireOption(instr);
 
                     // handle instrument de-listing
+#if false
+                    // FIXME: this code is problematic, when using monthly data,
+                    // e.g. from FRED in conjunction w/ daily bars
                     IEnumerable<Instrument> instrumentsToDelist = Instruments
                         .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
                         .ToList();
+#else
+                    IEnumerable<Instrument> instrumentsToDelist = Instruments
+                        .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
+                        .ToList();
+#endif
 
                     IEnumerable<Instrument> optionsToDelist = Instruments
                         .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
@@ -463,6 +508,16 @@ namespace TuringTrader.Simulator
         /// time stamp at index 0.
         /// </summary>
         public TimeSeries<DateTime> SimTime = new TimeSeries<DateTime>();
+        #endregion
+        #region public DateTime NextSimTime
+        /// <summary>
+        /// Next simulator time stamp
+        /// </summary>
+        public DateTime NextSimTime
+        {
+            get;
+            private set;
+        }
         #endregion
         #region protected bool IsLastBar
         /// <summary>
@@ -517,7 +572,32 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region public Instrument FindInstrument(string)
+        #region protected bool HasInstrument(string nickname)
+        /// <summary>
+        /// Check, if the we have an instrument with the given nickname
+        /// </summary>
+        /// <param name="nickname"></param>
+        /// <returns>true, if instrument exists</returns>
+        protected bool HasInstrument(string nickname)
+        {
+            return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
+        }
+        #endregion
+        #region protected bool HasInstruments(IEnumerable<string> nicknames)
+        /// <summary>
+        /// Check, if we have a list of instruments with given nicknames
+        /// </summary>
+        /// <param name="nicknames"></param>
+        /// <returns>true, if all instruments exists</returns>
+        protected bool HasInstruments(IEnumerable<string> nicknames)
+        {
+            return nicknames
+                .Aggregate(
+                    true,
+                    (prev, nick) => prev && HasInstrument(nick));
+        }
+        #endregion
+        #region protected Instrument FindInstrument(string)
         /// <summary>
         /// Find an instrument in the Instruments collection by its nickname.
         /// In case multiple instruments have the same nickname, the first
@@ -525,7 +605,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="nickname">nickname of instrument to find</param>
         /// <returns>instrument matching nickname</returns>
-        public Instrument FindInstrument(string nickname)
+        protected Instrument FindInstrument(string nickname)
         {
             string nickLower = nickname; //.ToLower();
                 
@@ -598,7 +678,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region public List<LogEntry> Log
         /// <summary>
-        /// List of trade log entries.
+        /// Simulator's order log.
         /// </summary>
         public List<LogEntry> Log = new List<LogEntry>();
         #endregion

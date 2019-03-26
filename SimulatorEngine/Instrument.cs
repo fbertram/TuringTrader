@@ -375,8 +375,9 @@ namespace TuringTrader.Simulator
         /// <param name="quantity">number of contracts to trade</param>
         /// <param name="tradeExecution">type of trade execution</param>
         /// <param name="price">optional price specifier</param>
+        /// <param name="condition">lambda, specifying exec condition</param>
         /// <returns>Order object</returns>
-        public Order Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00)
+        public Order Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00, Func<Instrument, bool> condition = null)
         {
             if (quantity != 0)
             {
@@ -386,6 +387,7 @@ namespace TuringTrader.Simulator
                     Quantity = quantity,
                     Type = tradeExecution,
                     Price = price,
+                    Condition = condition,
                 };
 
                 Simulator.QueueOrder(order);

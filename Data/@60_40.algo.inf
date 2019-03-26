@@ -1,0 +1,10 @@
+name=60/40 Portfolio
+dataPath=Data\@60_40.algo
+ticker=60/40
+date={1}
+time=16:00
+open={2}
+high={2}
+low={2}
+close={2}
+volume=0

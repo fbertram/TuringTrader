@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
-    /// Class to simulate after-tax NAV for United States.
+    /// Helper class to analyze order log.
     /// </summary>
     public class LogAnalysis
     {
@@ -35,107 +35,88 @@ namespace TuringTrader.Simulator
         public class Position
         {
             /// <summary>
+            /// position symbol
+            /// </summary>
+            public string Symbol;
+
+            /// <summary>
             /// position quantity
             /// </summary>
             public int Quantity;
 
             /// <summary>
-            /// date of purchase
+            /// order log entry for position entry
             /// </summary>
-            public DateTime BuyDate;
+            public LogEntry Entry;
 
             /// <summary>
-            /// fill price of purchae
+            /// order log entry for position exit
             /// </summary>
-            public double BuyFill;
-
-            /// <summary>
-            /// commission paid for purchase
-            /// </summary>
-            public double BuyCommission;
-
-            /// <summary>
-            /// date of liquidation
-            /// </summary>
-            public DateTime SellDate;
-
-            /// <summary>
-            /// fill price of liquidation
-            /// </summary>
-            public double SellPrice;
-
-            /// <summary>
-            /// commission paid for liquidation
-            /// </summary>
-            public double SellCommission;
+            public LogEntry Exit;
         }
         #endregion
-        #region public static Dictionary<string, List<Position>> GroupPositions(List<LogEntry> log)
+
+        #region public static List<Position> GroupPositions(List<LogEntry> log, bool lifo = true)
         /// <summary>
         /// Analyse log files and transform entries and exits into positions held.
         /// </summary>
         /// <param name="log">input log</param>
+        /// <param name="lifo">grouping method. true (default) = last in/ first out. false = first in/ first out</param>
         /// <returns>container w/ positions</returns>
-        public static Dictionary<string, List<Position>> GroupPositions(List<LogEntry> log)
+        public static List<Position> GroupPositions(List<LogEntry> log, bool lifo = true)
         {
-            Dictionary<string, List<Position>> buyTickets = new Dictionary<string, List<Position>>();
-            Dictionary<string, List<Position>> holdTickets = new Dictionary<string, List<Position>>();
+            Dictionary<string, List<Position>> entries = new Dictionary<string, List<Position>>();
+            List<Position> positions = new List<Position>();
 
-            foreach (LogEntry logEntry in log)
+            foreach (LogEntry order in log)
             {
-                switch (logEntry.Action)
+                switch (order.Action)
                 {
                     case LogEntryAction.Buy:
-                        if (!buyTickets.ContainsKey(logEntry.Symbol))
-                            buyTickets[logEntry.Symbol] = new List<Position>();
+                        if (!entries.ContainsKey(order.Symbol))
+                            entries[order.Symbol] = new List<Position>();
 
-                        buyTickets[logEntry.Symbol].Add(new Position
+                        entries[order.Symbol].Add(new Position
                         {
-                            Quantity = logEntry.OrderTicket.Quantity,
-
-                            BuyDate = logEntry.BarOfExecution.Time,
-                            BuyFill = logEntry.FillPrice,
-                            BuyCommission = logEntry.Commission,
+                            Symbol = order.Symbol,
+                            Quantity = order.OrderTicket.Quantity,
+                            Entry = order,
                         });
                         break;
 
                     case LogEntryAction.Sell:
-                        int totalQuantity = -logEntry.OrderTicket.Quantity;
+                        int totalQuantity = -order.OrderTicket.Quantity;
                         while (totalQuantity > 0)
                         {
-                            Position entry = false
-                                ? buyTickets[logEntry.Symbol].First() // FIFO
-                                : buyTickets[logEntry.Symbol].Last(); // LIFO
+                            if (!entries.ContainsKey(order.Symbol)
+                            || entries[order.Symbol].Count() == 0)
+                                throw new Exception("LogAnalysis.GroupPositions: no entry found");
 
-                            int sellFromEntry = Math.Min(totalQuantity, entry.Quantity);
+                            Position entryOrder = lifo
+                                ? entries[order.Symbol].Last()  // LIFO
+                                : entries[order.Symbol].First();// FIFO
 
-                            if (!holdTickets.ContainsKey(logEntry.Symbol))
-                                holdTickets[logEntry.Symbol] = new List<Position>();
+                            int sellFromEntry = Math.Min(totalQuantity, entryOrder.Quantity);
 
-                            holdTickets[logEntry.Symbol].Add(new Position
+                            positions.Add(new Position
                             {
+                                Symbol = order.Symbol,
                                 Quantity = sellFromEntry,
-
-                                BuyDate = entry.BuyDate,
-                                BuyFill = entry.BuyFill,
-                                BuyCommission = entry.BuyCommission,
-
-                                SellDate = logEntry.BarOfExecution.Time,
-                                SellPrice = logEntry.FillPrice,
-                                SellCommission = logEntry.Commission,
+                                Entry = entryOrder.Entry,
+                                Exit = order,
                             });
 
                             totalQuantity -= sellFromEntry;
 
-                            entry.Quantity -= sellFromEntry;
-                            if (entry.Quantity <= 0)
-                                buyTickets[logEntry.Symbol].Remove(entry);
+                            entryOrder.Quantity -= sellFromEntry;
+                            if (entryOrder.Quantity <= 0)
+                                entries[order.Symbol].Remove(entryOrder);
                         }
                         break;
                 }
             }
 
-            return holdTickets;
+            return positions;
         }
         #endregion
 

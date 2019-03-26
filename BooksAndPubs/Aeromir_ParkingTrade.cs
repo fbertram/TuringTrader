@@ -57,11 +57,11 @@ namespace TuringTrader.BooksAndPubs
         private readonly double INITIAL_CASH = 1e6;
         private readonly double COMMISSION = 0.01;
 #if FAKE_DATA
-        private readonly string UNDERLYING_NICK = "^SPX.index";
-        public string OPTION_NICK = "^SPX.fake.options";
+        private readonly string UNDERLYING_NICK = "$SPX.index";
+        public string OPTION_NICK = "$SPX.fake.options";
 #else
-        private string UNDERLYING_NICK = "^SPX.index";
-        private string OPTION_NICK = "^SPX.weekly.options";
+        private string UNDERLYING_NICK = "$SPX.index";
+        private string OPTION_NICK = "$SPX.weekly.options";
 #endif
         private readonly string DEBUG_REPORT = "SimpleReport";
 

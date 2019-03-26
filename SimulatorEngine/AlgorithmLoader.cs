@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
+// Project:     TuringTrader, simulator core
 // Name:        AlgorithmLoader
 // Description: support for dynamic loading of algorithms
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -24,13 +24,16 @@ using System.Text;
 using System.Threading.Tasks;
 #endregion
 
-namespace TuringTrader
+namespace TuringTrader.Simulator
 {
-    class AlgorithmLoader
+    /// <summary>
+    /// Helper class for dynamic algorithm instantiation.
+    /// </summary>
+    public class AlgorithmLoader
     {
         #region public static IEnumerable<Type> GetAllAlgorithms()
         private static List<Type> _allAlgorithms = null;
-        public static IEnumerable<Type> _getAllAlgorithms()
+        private static IEnumerable<Type> _getAllAlgorithms()
         {
             Assembly turingTrader = Assembly.GetExecutingAssembly();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
@@ -62,6 +65,11 @@ namespace TuringTrader
 
             yield break;
         }
+
+        /// <summary>
+        /// Return list of all known TuringTrader algorithms
+        /// </summary>
+        /// <returns>list of algorithms</returns>
         public static List<Type> GetAllAlgorithms()
         {
             if (_allAlgorithms == null || _allAlgorithms.Count == 0)
@@ -73,6 +81,11 @@ namespace TuringTrader
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)
+        /// <summary>
+        /// Instantiate TuringTrader algorithm
+        /// </summary>
+        /// <param name="algorithmName">class name</param>
+        /// <returns>algorithm instance</returns>
         public static Algorithm InstantiateAlgorithm(string algorithmName)
         {
             foreach (Type algorithmType in GetAllAlgorithms())

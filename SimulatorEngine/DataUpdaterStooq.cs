@@ -71,6 +71,7 @@ namespace TuringTrader.Simulator
 
                             string[] items = line.Split(',');
 
+                            // TODO: we should use _parseInfo here!
                             DateTime time = DateTime.Parse(items[0]).Date + DateTime.Parse("16:00").TimeOfDay;
                             double open = double.Parse(items[1]);
                             double high = double.Parse(items[2]);

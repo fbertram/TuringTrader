@@ -1,5 +1,5 @@
 name=Vanguard Extended-Duration Treas. ETF
-dataPath=Data\EDV.ETF
+dataPath=Data\EDV.etf
 ticker=EDV
 date={1}
 time=16:00

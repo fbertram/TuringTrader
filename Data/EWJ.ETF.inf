@@ -1,5 +1,5 @@
 name=iShares MSCI Japan ETF
-dataPath=Data\EWJ.ETF
+dataPath=Data\EWJ.etf
 ticker=EWJ
 date={1:MM/dd/yyyy}
 time=16:00

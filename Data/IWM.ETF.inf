@@ -1,5 +1,5 @@
 name=iShares Russell 2000 ETF
-dataPath=Data\IWM.ETF
+dataPath=Data\IWM.etf
 ticker=IWM
 date={1:MM/dd/yyyy}
 time=16:00

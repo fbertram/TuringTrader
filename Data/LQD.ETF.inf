@@ -1,5 +1,5 @@
 name=iShares iBoxx Investment Grade Corporate Bond ETF
-dataPath=Data\LQD.ETF
+dataPath=Data\LQD.etf
 ticker=LQD
 date={1:MM/dd/yyyy}
 time=16:00

@@ -1,5 +1,5 @@
 name=Vanguard Growth ETF
-dataPath=Data\VUG.ETF
+dataPath=Data\VUG.etf
 ticker=VUG
 date={1}
 time=16:00

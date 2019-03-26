@@ -77,7 +77,7 @@ namespace TuringTrader.Demos
                 if (_initialPrice == null) _initialPrice = instrument.Close[0];
 
                 _plotter.SelectChart("nav & benchmark vs time", "date");
-                _plotter.SetX(simTime);
+                _plotter.SetX(simTime.Date);
                 _plotter.Plot(instrument.Symbol, instrument.Close[0] / (double)_initialPrice);
                 _plotter.Plot("MA Crossover", NetAssetValue[0] / _initialCash);
             }
