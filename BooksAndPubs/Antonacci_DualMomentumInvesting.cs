@@ -71,7 +71,7 @@ namespace TuringTrader.BooksAndPubs
             //----- initialization
 
             StartTime = DateTime.Parse("01/01/1990");
-            EndTime = DateTime.Now - TimeSpan.FromDays(3);
+            EndTime = DateTime.Now - TimeSpan.FromDays(5);
 
             AddDataSource(BENCHMARK);
             foreach (HashSet<string> assetClass in _assetClasses)

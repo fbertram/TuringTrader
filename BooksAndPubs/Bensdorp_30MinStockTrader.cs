@@ -28,7 +28,7 @@ namespace BooksAndPubs
     /// <summary>
     /// Mean-Reversion Long Strategy
     /// </summary>
-    public abstract class Bensdorp_30MinStockTrader_MRL : Algorithm
+    public abstract class Bensdorp_30MinStockTrader_MRL_Core : Algorithm
     {
         #region inputs
         //[OptimizerParam(126, 252, 21)]
@@ -257,7 +257,7 @@ namespace BooksAndPubs
     }
 
     #region S&P 100 (OEX)
-    public class Bensdorp_30MinStockTrader_MRL_OEX : Bensdorp_30MinStockTrader_MRL
+    public class Bensdorp_30MinStockTrader_MRL_OEX : Bensdorp_30MinStockTrader_MRL_Core
     {
         protected override List<string> UNIVERSE
         {
@@ -378,7 +378,7 @@ namespace BooksAndPubs
     }
     #endregion
     #region Nasdaq 100 (NDX)
-    public class Bensdorp_30MinStockTrader_MRL_NDX : Bensdorp_30MinStockTrader_MRL
+    public class Bensdorp_30MinStockTrader_MRL_NDX : Bensdorp_30MinStockTrader_MRL_Core
     {
         protected override List<string> UNIVERSE
         {
