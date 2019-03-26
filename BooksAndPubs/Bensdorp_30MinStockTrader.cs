@@ -212,27 +212,9 @@ namespace BooksAndPubs
 
             //========== post processing ==========
 
-            // print order log
-#if false
-            _plotter.SelectChart(Name + " orders", "date");
-            foreach (LogEntry entry in Log)
-            {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                //_plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                //_plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
-            }
-#endif
-
-            // print position log
+            // print position log, grouped as LIFO
             var tradeLog = LogAnalysis
-                .GroupPositions(Log)
+                .GroupPositions(Log, true)
                 .OrderBy(i => i.Entry.BarOfExecution.Time);
 
             _plotter.SelectChart(Name + " positions", "entry date");

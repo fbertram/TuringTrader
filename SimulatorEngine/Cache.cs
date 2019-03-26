@@ -90,6 +90,13 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
+        /// <summary>
+        /// Create new cache id.
+        /// </summary>
+        /// <param name="parentId">parent cache id, or null</param>
+        /// <param name="memberName">member function name, or ""</param>
+        /// <param name="lineNumber">line number or 0</param>
+        /// <param name="parameterIds">list of parameter ids</param>
         public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
         {
             //--- call stack key

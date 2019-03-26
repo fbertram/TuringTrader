@@ -81,8 +81,6 @@ namespace TuringTrader.BooksAndPubs
             Deposit(INITIAL_FUNDS);
             CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
 
-            _plotter.Clear();
-
             //----- simulation loop
 
             foreach (DateTime simTime in SimTimes)

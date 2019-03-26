@@ -49,9 +49,6 @@ namespace TuringTrader.Demos
             // set account value
             Deposit(_initialCash);
 
-            // clear plotters
-            _plotter.Clear();
-
             //---------- simulation
 
             foreach (DateTime simTime in SimTimes)

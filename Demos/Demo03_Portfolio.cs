@@ -58,9 +58,6 @@ namespace TuringTrader.Demos
             foreach (string nickname in _universe)
                 AddDataSource(nickname);
 
-            // clear plotters
-            _plotter.Clear();
-
             //---------- simulation
 
             // loop through all bars
@@ -91,7 +88,7 @@ namespace TuringTrader.Demos
                 var holdInstruments = evalInstruments
                     .Where(e => e.romad > 0.0)
                     .OrderByDescending(e => e.romad)
-                    .Take(7)
+                    .Take(5)
                     .Select(e => e.instrument)
                     .ToList();
 

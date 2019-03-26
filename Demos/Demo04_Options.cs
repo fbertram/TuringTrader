@@ -68,11 +68,6 @@ namespace TuringTrader.Demos
             AddDataSource(_underlyingNickname);
             AddDataSource(_optionsNickname);
 
-            // clear plotters & possible relicts from previous run
-            _plotter.Clear();
-            _underlyingInstrument = null;
-            _initialUnderlyingPrice = null;
-
             //---------- simulation
 
             // loop through all bars

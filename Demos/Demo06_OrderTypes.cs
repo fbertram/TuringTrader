@@ -48,9 +48,6 @@ namespace TuringTrader.Demos
             // add instruments
             AddDataSource(_instrumentNick);
 
-            // clear plotters
-            _plotter.Clear();
-
             //---------- simulation
 
             foreach (DateTime simTime in SimTimes)

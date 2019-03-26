@@ -170,20 +170,21 @@ namespace TuringTrader.BooksAndPubs
 
             //----- post processing
 
-            // create trading log on Sheet 2
-            _plotter.SelectChart(Name + " trades", "date");
-            foreach (LogEntry entry in Log)
+            // print position log, grouped as LIFO
+            var tradeLog = LogAnalysis
+                .GroupPositions(Log, true)
+                .OrderBy(i => i.Entry.BarOfExecution.Time);
+
+            _plotter.SelectChart(Name + " positions", "entry date");
+            foreach (var trade in tradeLog)
             {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+                _plotter.SetX(trade.Entry.BarOfExecution.Time.Date);
+                _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time.Date);
+                _plotter.Plot("Symbol", trade.Symbol);
+                _plotter.Plot("Quantity", trade.Quantity);
+                _plotter.Plot("% Profit", trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
+                _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
+                //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
         }
         #endregion
