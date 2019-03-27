@@ -242,6 +242,9 @@ namespace TuringTrader
                     // this helps run poorly initialized algorithms
                     var clonedAlgorithm = _currentAlgorithm.Clone();
                     _currentAlgorithm = clonedAlgorithm;
+
+                    if (_optimizer != null)
+                        _optimizer.MasterInstance = _currentAlgorithm;
 #endif
 
                     WriteEventHandler(
@@ -314,7 +317,16 @@ namespace TuringTrader
                     _optimizer = new OptimizerGrid(_currentAlgorithm);
                     _runningOptimization = true;
 
-                    _optimizer.Run();
+                    try
+                    {
+                        _optimizer.Run();
+                    }
+                    catch (Exception exception)
+                    {
+                        WriteEventHandler(
+                            string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                            + Environment.NewLine);
+                    }
 
                     LogOutput.Dispatcher.BeginInvoke(new Action(() =>
                     {
