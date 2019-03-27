@@ -63,7 +63,7 @@ namespace TuringTrader.Simulator
             foreach (OptimizerParam parameter in OptimizerParams.Values)
             {
                 clonedInstance.OptimizerParams[parameter.Name].IsEnabled = parameter.IsEnabled;
-                clonedInstance.OptimizerParams[parameter.Name].Step = parameter.Start;
+                clonedInstance.OptimizerParams[parameter.Name].Start = parameter.Start;
                 clonedInstance.OptimizerParams[parameter.Name].End = parameter.End;
                 clonedInstance.OptimizerParams[parameter.Name].Step = parameter.Step;
                 clonedInstance.OptimizerParams[parameter.Name].Value = parameter.Value;

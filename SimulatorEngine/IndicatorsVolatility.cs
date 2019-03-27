@@ -35,6 +35,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>standard deviation as time series</returns>
         public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -84,6 +87,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>variance as time series</returns>
         public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -148,6 +154,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>variance as time series</returns>
         public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -220,6 +229,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -238,6 +250,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length of calculation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -264,7 +279,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
         /// </summary>
         /// <param name="series">input time series</param>
-        /// <param name="parentId">optional parent cache id</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>True Range as time series</returns>
         public static ITimeSeries<double> TrueRange(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -289,6 +306,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>ATR time series</returns>
         public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

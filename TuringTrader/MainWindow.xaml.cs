@@ -312,34 +312,52 @@ namespace TuringTrader
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             if (optimizerSettings.ShowDialog() == true)
             {
-                await Task.Run(() =>
+                if (OptimizerGrid.NumIterations(_currentAlgorithm) == 1)
                 {
-                    _optimizer = new OptimizerGrid(_currentAlgorithm);
-                    _runningOptimization = true;
+                    // just a single iteration, no need to run optimizer
+                    RunButton.IsEnabled = true;
+                    ReportButton.IsEnabled = false;
+                    OptimizerButton.IsEnabled = true;
+                    ResultsButton.IsEnabled = true;
+                    AlgoSelector.IsEnabled = true;
+                    _runningOptimization = false;
 
-                    try
-                    {
-                        _optimizer.Run();
-                    }
-                    catch (Exception exception)
-                    {
-                        WriteEventHandler(
-                            string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
-                            + Environment.NewLine);
-                    }
+                    UpdateParameterDisplay();
 
-                    LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+                    RunButton_Click(null, null);
+                }
+                else
+                {
+                    // run  optimizer in background
+                    await Task.Run(() =>
                     {
-                        RunButton.IsEnabled = true;
-                        ReportButton.IsEnabled = false;
-                        OptimizerButton.IsEnabled = true;
-                        ResultsButton.IsEnabled = true;
-                        AlgoSelector.IsEnabled = true;
-                        _runningOptimization = false;
+                        _optimizer = new OptimizerGrid(_currentAlgorithm);
+                        _runningOptimization = true;
 
-                        ResultsButton_Click(null, null);
-                    }));
-                });
+                        try
+                        {
+                            _optimizer.Run();
+                        }
+                        catch (Exception exception)
+                        {
+                            WriteEventHandler(
+                                string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                                + Environment.NewLine);
+                        }
+
+                        LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            RunButton.IsEnabled = true;
+                            ReportButton.IsEnabled = false;
+                            OptimizerButton.IsEnabled = true;
+                            ResultsButton.IsEnabled = true;
+                            AlgoSelector.IsEnabled = true;
+                            _runningOptimization = false;
+
+                            ResultsButton_Click(null, null);
+                        }));
+                    });
+                }
             }
             else
             {

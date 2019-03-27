@@ -35,6 +35,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Typical_price"/>
         /// </summary>
         /// <param name="series">input instrument</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>typical price as time series</returns>
         public static ITimeSeries<double> TypicalPrice(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -53,6 +56,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>CLV as time series</returns>
         public static ITimeSeries<double> CLV(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

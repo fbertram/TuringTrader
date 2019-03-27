@@ -38,6 +38,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 + time series #2</returns>
         public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2, 
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -56,6 +59,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series + constant value</returns>
         public static ITimeSeries<double> Add(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -68,12 +74,15 @@ namespace TuringTrader.Simulator
                 cacheId);
         }
         #endregion
-        
+
         #region public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2)
         /// <summary>
         /// Calculate subtraction of two time series.
         /// </summary>
         /// <param name="series1">time series #1</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <param name="series2">time series #2</param>
         /// <returns>time series #1 - time series #2</returns>
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series1, ITimeSeries<double> series2,
@@ -93,6 +102,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series - constant value</returns>
         public static ITimeSeries<double> Subtract(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -112,6 +124,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 * time series #2</returns>
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series1, ITimeSeries<double> series2,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -130,6 +145,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series * constant value</returns>
         public static ITimeSeries<double> Multiply(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -149,6 +167,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 / time series #2</returns>
         public static ITimeSeries<double> Divide(this ITimeSeries<double> series1, ITimeSeries<double> series2,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -167,6 +188,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series / constant value</returns>
         public static ITimeSeries<double> Divide(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -186,6 +210,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 + time series #2</returns>
         public static ITimeSeries<double> Max(this ITimeSeries<double> series1, ITimeSeries<double> series2,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -204,6 +231,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series + constant value</returns>
         public static ITimeSeries<double> Max(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -223,6 +253,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series1">time series #1</param>
         /// <param name="series2">time series #2</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 + time series #2</returns>
         public static ITimeSeries<double> Min(this ITimeSeries<double> series1, ITimeSeries<double> series2,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -241,6 +274,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">time series</param>
         /// <param name="constValue">constant value</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series + constant value</returns>
         public static ITimeSeries<double> Min(this ITimeSeries<double> series, double constValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

@@ -35,6 +35,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>sum time series</returns>
         public static ITimeSeries<double> Sum(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -56,7 +59,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
-        /// <param name="parentId">optional parent cache id</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>SMA time series</returns>
         public static ITimeSeries<double> SMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -78,6 +83,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>WMA time series</returns>
         public static ITimeSeries<double> WMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -100,7 +108,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
-        /// <param name="parentId">optional parent cache id</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>EMA time series</returns>
         public static ITimeSeries<double> EMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -131,6 +141,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>envelope time series</returns>
         public static ITimeSeries<double> EnvelopeDetector(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -160,6 +173,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>DEMA time series</returns>
         public static ITimeSeries<double> DEMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -184,6 +200,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>HMA time series</returns>
         public static ITimeSeries<double> HMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -214,6 +233,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>TEMA time series</returns>
         public static ITimeSeries<double> TEMA(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -246,6 +268,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="period">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>ZLEMA as time series</returns>
         public static ITimeSeries<double> ZLEMA(this ITimeSeries<double> series, int period,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -276,6 +301,9 @@ namespace TuringTrader.Simulator
         /// <param name="erPeriod">period for efficiency ratio</param>
         /// <param name="fastEma">period for fast EMA</param>
         /// <param name="slowEma">period for slow EMA</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>KAMA as time series</returns>
         public static ITimeSeries<double> KAMA(this ITimeSeries<double> series, int erPeriod = 10, int fastEma = 2, int slowEma = 30,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -322,6 +350,9 @@ namespace TuringTrader.Simulator
         /// <param name="fast">fast EMA period</param>
         /// <param name="slow">slow EMA period</param>
         /// <param name="signal">signal line period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns></returns>
         public static _MACD MACD(this ITimeSeries<double> series, int fast = 12, int slow = 26, int signal = 9,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

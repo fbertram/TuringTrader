@@ -145,7 +145,7 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region public OptimizerExhaustive(Algorithm algorithm)
+        #region public OptimizerGrid(Algorithm masterInstance)
         /// <summary>
         /// Crearte and initialize new grid optimizer instance.
         /// </summary>
@@ -156,6 +156,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public Algorithm MasterInstance
+        /// <summary>
+        /// Master instance of algorithm to optimize.
+        /// </summary>
         public Algorithm MasterInstance = null;
         #endregion
 
@@ -237,7 +240,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region public void SetParametersFromResult(OptimizerResult result)
         /// <summary>
-        /// Set algorithm parameters from optimzation result.
+        /// Set master instance to parameters from optimzation result.
         /// </summary>
         /// <param name="result">optimization result</param>
         public void SetParametersFromResult(OptimizerResult result)

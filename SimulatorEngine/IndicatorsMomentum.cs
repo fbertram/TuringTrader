@@ -36,6 +36,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>CCI time series</returns>
         public static ITimeSeries<double> CCI(this Instrument series, int n = 20,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -55,6 +58,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>CCI time series</returns>
         public static ITimeSeries<double> CCI(this ITimeSeries<double> series, int n = 20,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -90,6 +96,9 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="r">smoothing period for momentum</param>
         /// <param name="s">smoothing period for smoothed momentum</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>TSI time series</returns>
         public static ITimeSeries<double> TSI(this ITimeSeries<double> series, int r = 25, int s = 13,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -117,6 +126,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">smoothing period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>RSI time series</returns>
         public static ITimeSeries<double> RSI(this ITimeSeries<double> series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -152,6 +164,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Williams %R as time series</returns>
         public static ITimeSeries<double> WilliamsPercentR(this Instrument series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -182,6 +197,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Williams %R as time series</returns>
         public static ITimeSeries<double> WilliamsPercentR(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -213,6 +231,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">oscillator period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Stochastic Oscillator as time series</returns>
         public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -252,6 +273,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">oscillator period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Stochastic Oscillator as time series</returns>
         public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -308,6 +332,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>regression momentum as time series</returns>
         public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -329,6 +356,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>regression parameters as time series</returns>
         public static _Regression LinRegression(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -418,6 +448,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>regression parameters as time series</returns>
         public static _Regression LogRegression(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -438,6 +471,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input OHLC time series</param>
         /// <param name="n">smoothing length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>ADX time series</returns>
         public static ITimeSeries<double> ADX(this Instrument series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

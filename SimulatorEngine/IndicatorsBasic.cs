@@ -36,6 +36,8 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="lambda">lambda, taking bars back as parameter and returning time series value</param>
         /// <param name="parentId">cache id used to identify functor</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>lambda time series</returns>
         public static ITimeSeries<double> Lambda(Func<int, double> lambda,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -82,7 +84,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
         /// <param name="first">first value to return</param>
-        /// <param name="identifier">cache id used to identify functor</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>lambda time series</returns>
         public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -116,6 +120,9 @@ namespace TuringTrader.Simulator
         /// Return constant value time series.
         /// </summary>
         /// <param name="constantValue">value of time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>value as time series</returns>
         public static ITimeSeries<double> Const(double constantValue,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -134,6 +141,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="delay">delay length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>delayed time series</returns>
         public static ITimeSeries<double> Delay(this ITimeSeries<double> series, int delay,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -153,6 +163,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>highest value of past n bars</returns>
         public static ITimeSeries<double> Highest(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -174,6 +187,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>lowest value of past n bars</returns>
         public static ITimeSeries<double> Lowest(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -238,6 +254,9 @@ namespace TuringTrader.Simulator
         /// value of the time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>absolute return</returns>
         public static ITimeSeries<double> Return(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -256,6 +275,9 @@ namespace TuringTrader.Simulator
         /// of the time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>logarithm of relative return</returns>
         public static ITimeSeries<double> LogReturn(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -274,6 +296,9 @@ namespace TuringTrader.Simulator
         /// Calculate absolute value of time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>absolue value of input time series</returns>
         public static ITimeSeries<double> AbsValue(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -291,6 +316,9 @@ namespace TuringTrader.Simulator
         /// Calculate square of time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>squared input time series</returns>
         public static ITimeSeries<double> Square(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -308,6 +336,9 @@ namespace TuringTrader.Simulator
         /// Calculate square root of time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>square root time series</returns>
         public static ITimeSeries<double> Sqrt(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -325,6 +356,9 @@ namespace TuringTrader.Simulator
         /// Calculate natural logarithm of time series.
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>logarithmic time series</returns>
         public static ITimeSeries<double> Log(this ITimeSeries<double> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -343,6 +377,9 @@ namespace TuringTrader.Simulator
         /// Cast time series to double
         /// </summary>
         /// <param name="series">input series of long</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>output series of double</returns>
         public static ITimeSeries<double> ToDouble(this ITimeSeries<long> series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
