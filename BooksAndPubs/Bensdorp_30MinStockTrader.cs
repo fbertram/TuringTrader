@@ -33,18 +33,47 @@ namespace BooksAndPubs
     public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
     {
         #region inputs
-        protected abstract List<string> UNIVERSE { get; }
-        public abstract int ENTRY_DIR     { get; set; }
-        public abstract int SMA_DAYS      { get; set; }
-        public abstract int MIN_ADX       { get; set; }
-        public abstract int MIN_ATR       { get; set; }
-        public abstract int MINMAX_RSI    { get; set; }
-        public abstract int STOP_LOSS     { get; set; }
-        public abstract int PROFIT_TARGET { get; set; }
-        public abstract int MAX_CAP       { get; set; }
-        public abstract int MAX_RISK      { get; set; }
-        public abstract int MAX_ENTRIES   { get; set; }
-        public abstract int MAX_HOLD_DAYS { get; set; }
+        protected abstract List<string> UNIVERSE
+        { get; }
+
+        public abstract int ENTRY_DIR
+        { get; set; }
+
+        public abstract int SMA_DAYS
+        { get; set; }
+
+        [OptimizerParam(0, 100, 5)]
+        public abstract int MIN_ADX
+        { get; set; }
+
+        [OptimizerParam(200, 500, 50)]
+        public abstract int MIN_ATR
+        { get; set; }
+
+        [OptimizerParam(0, 100, 50)]
+        public abstract int MINMAX_RSI
+        { get; set; }
+
+        [OptimizerParam(200, 500, 50)]
+        public abstract int STOP_LOSS
+        { get; set; }
+
+        [OptimizerParam(200, 500, 50)]
+        public abstract int PROFIT_TARGET
+        { get; set; }
+
+        public abstract int MAX_CAP
+        { get; set; }
+
+        public abstract int MAX_RISK
+        { get; set; }
+
+        [OptimizerParam(1, 10, 1)]
+        public abstract int MAX_ENTRIES
+        { get; set; }
+
+        public abstract int MAX_HOLD_DAYS
+        { get; set; }
         #endregion
         #region internal data
         private static readonly string BENCHMARK = "$SPX.index";
@@ -106,20 +135,17 @@ namespace BooksAndPubs
                             rsi3 = i.Close.RSI(3),
                         });
 
-                // * daily close must be > 150-day SMA
-                // * 7-day ADX > 45
-                // * 10-day ATR % > 4 %
-                // * 3-day RSI < 30
+                // filter universe to potential candidates
                 var filtered = universe
                     .Where(i =>
-                        ENTRY_DIR > 0
-                            ? i.Close[0] > indicators[i].sma150[0] // long: above
-                            : i.Close[0] < indicators[i].sma150[0] // short: below
+                        (ENTRY_DIR > 0
+                            ? i.Close[0] > indicators[i].sma150[0]                // long: above sma
+                            : i.Close[0] > i.Close[1] && i.Close[1] > i.Close[2]) // short: 2 up-days
                         && indicators[i].adx7[0] > MIN_ADX
                         && indicators[i].atr10[0] > MIN_ATR / 10000.0
-                        && ENTRY_DIR > 0
-                            ? indicators[i].rsi3[0] < MINMAX_RSI  // long: maximum
-                            : indicators[i].rsi3[0] > MINMAX_RSI) // short: minimum
+                        && (ENTRY_DIR > 0
+                            ? indicators[i].rsi3[0] < MINMAX_RSI   // long: maximum
+                            : indicators[i].rsi3[0] > MINMAX_RSI)) // short: minimum
                     .ToList();
 
                 //----- manage existing positions
@@ -130,10 +156,12 @@ namespace BooksAndPubs
                     // time-based exit
                     if (entryParameters[pos].entryDate <= SimTime[MAX_HOLD_DAYS - 1])
                     {
-                        pos.Trade(-pos.Position).Comment = "time exit";
+                        pos.Trade(-pos.Position, OrderType.closeThisBar).Comment = "time exit";
                         numOpenPositions--;
                     }
-                    else if (pos.Close[0] >= entryParameters[pos].profitTarget)
+                    else if (ENTRY_DIR > 0 
+                        ? pos.Close[0] >= entryParameters[pos].profitTarget  // long
+                        : pos.Close[0] <= entryParameters[pos].profitTarget) // short
                     {
                         pos.Trade(-pos.Position,
                                 OrderType.openNextBar)
@@ -153,9 +181,7 @@ namespace BooksAndPubs
 
                 if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek) // open positions on Monday
                 {
-                    // each week, sort all stocks that meet that criteria by RSI
-                    // buy the 10 LOWEST RSI scores at the Monday open with 
-                    // a LIMIT order 4 % BELOW the Friday close.
+                    // sort candidates by RSI to find entries
                     var entries = ENTRY_DIR > 0
                         ? filtered // long
                             .Where(i => i.Position == 0)
@@ -203,7 +229,7 @@ namespace BooksAndPubs
                         int sharesCapLimited = (int)Math.Floor(MAX_CAP / 100.0 / MAX_ENTRIES * NetAssetValue[0] / entryParameters[i].entryPrice);
                         int targetShares = (ENTRY_DIR > 0 ? 1 : -1) * Math.Min(sharesRiskLimited, sharesCapLimited);
 
-                        // place trade as limit order
+                        // enter positions with limit order
                         i.Trade(targetShares,
                             OrderType.limitNextBar,
                             entryParameters[i].entryPrice);
@@ -247,7 +273,7 @@ namespace BooksAndPubs
                     _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
                     _plotter.Plot("Symbol", trade.Symbol);
                     _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
+                    _plotter.Plot("% Profit", (ENTRY_DIR > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
                     _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
                     //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
                 }
