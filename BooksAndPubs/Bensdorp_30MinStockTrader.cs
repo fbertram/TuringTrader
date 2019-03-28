@@ -241,7 +241,7 @@ namespace BooksAndPubs
                 if (!IsOptimizing)
                 {
                     // plot to chart
-                    _plotter.SelectChart(Name + " " + OptimizerParamsAsString, "date");
+                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("nav", NetAssetValue[0]);
                     _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
