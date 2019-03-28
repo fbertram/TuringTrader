@@ -25,11 +25,153 @@ using TuringTrader.Simulator;
 
 namespace BooksAndPubs
 {
-    //----------
-    #region MRx common core
-    /// <summary>
-    /// Mean-Reversion Strategy, common core for long and short
-    /// </summary>
+    //---------- core strategies
+    #region Weekly Rotation Core
+    public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
+    {
+        #region inputs
+        protected abstract List<string> UNIVERSE
+        { get; }
+
+        [OptimizerParam(0, 100, 5)]
+        public virtual int MAX_RSI { get; set; } = 50;
+
+        [OptimizerParam(1, 10, 1)]
+        public virtual int MAX_ENTRIES { get; set; } = 10;
+        #endregion
+        #region internal data
+        private static readonly string BENCHMARK = "$SPX.index";
+        private static readonly double INITIAL_CAPITAL = 1e6;
+
+        private Plotter _plotter = new Plotter();
+        private Instrument _benchmark;
+        #endregion
+        #region public override void Run()
+        public override void Run()
+        {
+            //========== initialization ==========
+
+            StartTime = DateTime.Parse("01/01/2008");
+            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+
+            foreach (var n in UNIVERSE)
+                AddDataSource(n);
+            AddDataSource(BENCHMARK);
+
+            Deposit(INITIAL_CAPITAL);
+            CommissionPerShare = 0.015;
+
+            //========== simulation loop ==========
+
+            foreach (var s in SimTimes)
+            {
+                //----- find instruments
+
+                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
+                var universe = Instruments
+                    .Where(i => i != _benchmark)
+                     .ToList();
+
+                //----- calculate indicators
+
+                // make sure to calculate indicators for the 
+                // full universe on every single bar
+                var indicators = universe
+                    .ToDictionary(
+                        i => i,
+                        i => new
+                        {
+                            rsi = i.Close.RSI(3),
+                            roc = i.Close.Momentum(200),
+                        });
+
+                var smaBand = _benchmark.Close.SMA(200).Multiply(0.98); // 2% below 200-day SMA
+
+                // filter universe to potential candidates
+                var filtered = universe
+                    .Where(i => _benchmark.Close[0] > smaBand[0]
+                        && indicators[i].rsi[0] < MAX_RSI)
+                    .ToList();
+
+                if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek) // open positions on Monday
+                {
+                    // sort candidates by ROC to find entries
+                    var entries = filtered
+                        .OrderByDescending(i => indicators[i].roc[0])
+                        .Take(MAX_ENTRIES)
+                        .ToList();
+
+                    foreach (var i in universe)
+                    {
+                        int targetShares = entries.Contains(i)
+                            ? (int)Math.Floor(NetAssetValue[0] / MAX_ENTRIES / i.Close[0])
+                            : 0;
+
+                        i.Trade(targetShares - i.Position);
+                    }
+                }
+
+                //----- output
+
+                if (!IsOptimizing)
+                {
+                    // plot to chart
+                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
+                    _plotter.SetX(SimTime[0]);
+                    _plotter.Plot("nav", NetAssetValue[0]);
+                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+
+                    // placeholder, to make sure positions land on sheet 2
+                    _plotter.SelectChart(Name + " positions", "entry date");
+
+                    // additional indicators
+                    _plotter.SelectChart(Name + " extra", "date");
+                    _plotter.SetX(SimTime[0]);
+                    _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                }
+            }
+
+            //========== post processing ==========
+
+            //----- print position log, grouped as LIFO
+
+            if (!IsOptimizing)
+            {
+                var tradeLog = LogAnalysis
+                    .GroupPositions(Log, true)
+                    .OrderBy(i => i.Entry.BarOfExecution.Time);
+
+                _plotter.SelectChart(Name + " positions", "entry date");
+                foreach (var trade in tradeLog)
+                {
+                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
+                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
+                    _plotter.Plot("Symbol", trade.Symbol);
+                    _plotter.Plot("Quantity", trade.Quantity);
+                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
+                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
+                }
+            }
+
+            //----- optimization objective
+
+            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
+            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
+
+            if (!IsOptimizing)
+                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+        }
+        #endregion
+        #region public override void Report()
+        public override void Report()
+        {
+            _plotter.OpenWith("SimpleReport");
+        }
+        #endregion
+    }
+    #endregion
+    #region Mean Reversion Core
     public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
     {
         #region inputs
@@ -50,7 +192,7 @@ namespace BooksAndPubs
         public abstract int MIN_ATR
         { get; set; }
 
-        [OptimizerParam(0, 100, 50)]
+        [OptimizerParam(0, 100, 5)]
         public abstract int MINMAX_RSI
         { get; set; }
 
@@ -213,9 +355,9 @@ namespace BooksAndPubs
                         entryParameters[i] = new
                         {
                             entryDate = NextSimTime,
-                            entryPrice = entryPrice,
-                            stopLoss = stopLoss,
-                            profitTarget = profitTarget,
+                            entryPrice,
+                            stopLoss,
+                            profitTarget,
                         };
 
                         // calculate target shares in two ways:
@@ -295,8 +437,7 @@ namespace BooksAndPubs
         }
         #endregion
     }
-    #endregion
-    #region MRL core
+
     public abstract class Bensdorp_30MinStockTrader_MRL_Core : Bensdorp_30MinStockTrader_MRx_Core
     {
         public override int ENTRY_DIR     { get; set; } = 1;   // 1 = long
@@ -311,8 +452,7 @@ namespace BooksAndPubs
         public override int MAX_ENTRIES   { get; set; } = 10;  // 10
         public override int MAX_HOLD_DAYS { get; set; } = 4;   // 4 days
     }
-    #endregion
-    #region MRS core
+
     public abstract class Bensdorp_30MinStockTrader_MRS_Core : Bensdorp_30MinStockTrader_MRx_Core
     {
         public override int ENTRY_DIR     { get; set; } = -1;  // -1 = short
@@ -329,7 +469,7 @@ namespace BooksAndPubs
     }
     #endregion
 
-    //----------
+    //---------- universes
     #region universes
     class Universes
     {
@@ -555,6 +695,22 @@ namespace BooksAndPubs
             "WMT.stock",
             "XOM.stock",
         };
+    }
+    #endregion
+
+    //---------- strategies
+    #region WR (NDX + OEX)
+    public class Bensdorp_30MinStockTrader_WR_NDX_OEX : Bensdorp_30MinStockTrader_WR_Core
+    {
+        protected override List<string> UNIVERSE
+        {
+            get
+            {
+                return Universes.NDX
+                    .Concat(Universes.OEX)
+                    .ToList();
+            }
+        }
     }
     #endregion
     #region MRL (NDX + OEX)
