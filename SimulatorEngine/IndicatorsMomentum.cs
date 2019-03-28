@@ -136,20 +136,21 @@ namespace TuringTrader.Simulator
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), n);
 
-            double avgUp = IndicatorsBasic.Lambda(
-                    (t) => Math.Max(0.0, series.Return()[t]),
-                    cacheId)
+            ITimeSeries<double> returns = series.Return(cacheId);
+
+            double avgUp = returns
+                .Max(0.0, cacheId)
                 .EMA(n, cacheId)[0];
 
-            double avgDown = IndicatorsBasic.Lambda(
-                    (t) => Math.Max(0.0, -series.Return()[t]),
-                    cacheId)
+            double avgDown = -returns
+                .Min(0.0, cacheId)
                 .EMA(n, cacheId)[0];
+
+            double rs = avgUp / Math.Max(1e-10, avgDown);
 
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    double rs = avgUp / Math.Max(1e-10, avgDown);
                     return 100.0 - 100.0 / (1 + rs);
                 },
                 50.0,
