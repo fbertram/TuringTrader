@@ -322,7 +322,67 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        // - Bollinger Bands
+        #region public static _BollingerBands BollingerBands(this ITimeSeries<double> series, int n = 20, double stdev = 2.0)
+        /// <summary>
+        /// Calculate Bollinger Bands, as described here:
+        /// <see href="https://traderhq.com/ultimate-guide-to-bollinger-bands/"/>.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length of calculation</param>
+        /// <param name="stdev">width of bands</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>Bollinger Band time series</returns>
+        public static _BollingerBands BollingerBands(this ITimeSeries<double> series, int n = 20, double stdev = 2.0,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n, stdev.GetHashCode());
+
+            var container = Cache<_BollingerBands>.GetData(
+                    cacheId,
+                    () => new _BollingerBands());
+
+            var stdevSeries = series.StandardDeviation(n, cacheId).Multiply(stdev, cacheId);
+
+            container.Middle = series.SMA(n, cacheId);
+            container.Upper = container.Middle.Add(stdevSeries, cacheId);
+            container.Lower = container.Middle.Subtract(stdevSeries, cacheId);
+            container.PercentB = IndicatorsBasic.BufferedLambda(
+                prev => (series[0] - container.Lower[0]) / Math.Max(1e-10, container.Upper[0] - container.Lower[0]),
+                0.0,
+                cacheId);
+
+            return container;
+        }
+
+        /// <summary>
+        /// Container for Bollinger Band result
+        /// </summary>
+        public class _BollingerBands
+        {
+            /// <summary>
+            /// middle band
+            /// </summary>
+            public ITimeSeries<double> Middle;
+
+            /// <summary>
+            /// upper band
+            /// </summary>
+            public ITimeSeries<double> Upper;
+
+            /// <summary>
+            /// lower band
+            /// </summary>
+            public ITimeSeries<double> Lower;
+
+            /// <summary>
+            /// %b
+            /// </summary>
+            public ITimeSeries<double> PercentB;
+        }
+        #endregion
     }
 }
 

@@ -471,7 +471,7 @@ namespace BooksAndPubs
 
     //---------- universes
     #region universes
-    class Universes
+    partial class Universes
     {
         public static List<string> NDX = new List<string>()
         {

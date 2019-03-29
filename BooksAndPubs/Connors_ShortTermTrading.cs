@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Connors_ShortTermTradingStrategies
+// Name:        Connors_ShortTermTrading
 // Description: Strategy, as published in Larry Connors and Cesar Alvarez book
 //              'Short Term Trading Strategies That Work'.
 // History:     2019iii28, FUB, created
