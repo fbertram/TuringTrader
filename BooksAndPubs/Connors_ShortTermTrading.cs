@@ -80,7 +80,7 @@ namespace BooksAndPubs
 
                 else if (_market.Position != 0 && buySell != 0)
                 {
-                    _market.Trade(-_market.Position);
+                    _market.Trade(-_market.Position, OrderType.closeThisBar);
                 }
 
                 //----- output
@@ -136,8 +136,8 @@ namespace BooksAndPubs
     }
     #endregion
 
-    //----- 2-period RSI
-    #region 2-period RSI under 5
+    // Chapter 9: The 2-period RSI - The Trader's Holy Grail of Indicators?
+    #region The 2-period RSI under 5 on the S&P 500
     public class Connors_ShortTermTrading_RsiUnder5 : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(0, 20, 1)]
@@ -176,7 +176,7 @@ namespace BooksAndPubs
         }
     }
     #endregion
-    #region Cumulative RSI
+    #region Cumulative RSIs Strategy
     public class Connors_ShortTermTrading_CumulativeRsi : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(1, 5, 1)]
@@ -222,8 +222,7 @@ namespace BooksAndPubs
     }
     #endregion
 
-    //----- Double 7's
-    #region Double 7's
+    #region Chapter 10: Double 7's Strategy
     public class Connors_ShortTermTrading_Double7 : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(5, 10, 1)]
@@ -261,18 +260,18 @@ namespace BooksAndPubs
     }
     #endregion
 
-    //----- 5 Strategies to time the market
-    #region 1) VIX Stretches
+    // Chapter 12: 5 Strategies to Time the Market
+    #region 1. VIX Stretches Strategy
     public class Connors_ShortTermTrading_VixStretches : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(2, 5, 1)]
-        public virtual int ENTRY_MIN_VOL_STRETCH_DAYS { get; set; } = 3;
+        public virtual int LE1_MIN_VIX_DAYS { get; set; } = 3;
 
         [OptimizerParam(1, 10, 1)]
-        public virtual int VOL_STRETCH_PCNT {get; set; } = 5;
+        public virtual int LE1_MIN_VIX_PCNT {get; set; } = 5;
 
         [OptimizerParam(50, 90, 5)]
-        public virtual int EXIT_MIN_RSI { get; set; } = 65;
+        public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
         protected override int Rules()
         {
@@ -280,33 +279,25 @@ namespace BooksAndPubs
 
             var marketSma200 = _market.Close.SMA(200);
             var marketRsi2 = _market.Close.RSI(2);
-
             var volSma10 = _volatility.Close.SMA(10);
 
-            // we cap the excess volatility at 1e-10, and 
-            // sum it up over 3 days. if sum is larger
-            // than 2.5e-10, we must have 3 or more up days
-            var volStretch = _volatility.Close
-                .Subtract(volSma10.Multiply(1.0 + VOL_STRETCH_PCNT / 100.0))
-                .Min(1e-10)
-                .Sum(ENTRY_MIN_VOL_STRETCH_DAYS);
-
+            var volStretch = Enumerable.Range(0, LE1_MIN_VIX_DAYS)
+                .Aggregate(true, (prev, idx) => prev
+                    && _volatility.Close[idx] > volSma10[idx] * (1.0 + LE1_MIN_VIX_PCNT / 100.0));
+                
             //----- enter positions
 
             if (_market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
-                && volStretch[0] > (ENTRY_MIN_VOL_STRETCH_DAYS - 0.5) * 1e-10)
-                {
+                if (_market.Close[0] > marketSma200[0] && volStretch)
                     return 1;
-                }
             }
 
             //----- exit positions
 
             else
             {
-                if (marketRsi2[0] > EXIT_MIN_RSI)
+                if (marketRsi2[0] > LX_MIN_MKT_RSI)
                     return -1;
             }
 
@@ -314,17 +305,17 @@ namespace BooksAndPubs
         }
     }
     #endregion
-    #region 2) VIX RSI
+    #region 2. VIX RSI Strategy
     public class Connors_ShortTermTrading_VixRsi : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(75, 100, 5)]
-        public virtual int ENTRY_MIN_VIX_RSI { get; set; } = 90;
+        public virtual int LE2_MIN_VIX_RSI { get; set; } = 90;
 
         [OptimizerParam(0, 50, 5)]
-        public virtual int ENTRY_MAX_MKT_RSI { get; set; } = 30;
+        public virtual int LE2_MAX_MKT_RSI { get; set; } = 30;
 
         [OptimizerParam(50, 90, 5)]
-        public virtual int EXIT_MIN_MKT_RSI { get; set; } = 65;
+        public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
         protected override int Rules()
         {
@@ -339,8 +330,8 @@ namespace BooksAndPubs
             if (_market.Position == 0)
             {
                 if (_market.Close[0] > marketSma200[0]
-                && marketRsi2[0] < ENTRY_MAX_MKT_RSI
-                && volRsi2[0] > ENTRY_MIN_VIX_RSI
+                && marketRsi2[0] < LE2_MAX_MKT_RSI
+                && volRsi2[0] > LE2_MIN_VIX_RSI
                 && _volatility.Open[0] > _volatility.Close[1])
                 {
                     return 1;
@@ -351,27 +342,25 @@ namespace BooksAndPubs
 
             else
             {
-                if (marketRsi2[0] > EXIT_MIN_MKT_RSI)
-                {
+                if (marketRsi2[0] > LX_MIN_MKT_RSI)
                     return -1;
-                }
             }
 
             return 0;
         }
     }
     #endregion
-    #region 3) TRIN
+    #region 3. The TRIN
     public class Connors_ShortTermTrading_Trin : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(45, 75, 5)]
-        public virtual int ENTRY_MAX_RSI { get; set; } = 50;
+        public virtual int LE3_MAX_MKT_RSI { get; set; } = 50;
 
         [OptimizerParam(1, 5, 1)]
-        public virtual int ENTRY_MIN_TRIN_UP_DAYS { get; set; } = 3;
+        public virtual int LE3_MIN_TRIN_UP { get; set; } = 3;
 
         [OptimizerParam(50, 90, 5)]
-        public virtual int EXIT_MIN_RSI { get; set; } = 65;
+        public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
         protected override int Rules()
         {
@@ -380,19 +369,16 @@ namespace BooksAndPubs
             var marketSma200 = _market.Close.SMA(200);
             var marketRsi2 = _market.Close.RSI(2);
 
-            // we cap the TRIN at 1.0, and sum it up
-            // over 3 days. if the sum is larger than 2.5,
-            // the TRIN must have beeen above 1.0 for 3
-            // or more days
-            var trinUpDays = _trin.Close.Min(1.0).Sum(ENTRY_MIN_TRIN_UP_DAYS);
+            var trinDaysUp = Enumerable.Range(0, LE3_MIN_TRIN_UP)
+                .Aggregate(true, (prev, idx) => prev && _trin.Close[idx] > 1.0);
 
             //----- enter positions
 
             if (_market.Position == 0)
             {
                 if (_market.Close[0] > marketSma200[0]
-                && marketRsi2[0] < ENTRY_MAX_RSI
-                && trinUpDays[0] > ENTRY_MIN_TRIN_UP_DAYS - 0.5)
+                && marketRsi2[0] < LE3_MAX_MKT_RSI
+                && trinDaysUp)
                 {
                     return 1;
                 }
@@ -402,24 +388,25 @@ namespace BooksAndPubs
 
             else
             {
-                return -1;
+                if (marketRsi2[0] > LX_MIN_MKT_RSI)
+                    return -1;
             }
 
             return 0;
         }
     }
     #endregion
-    #region 4) Cumulative RSI (one more)
+    #region 4. One More Market Timing Strategy with Cumulative RSIs
     public class Connors_ShortTermTrading_MoreCumulativeRsi : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(1, 5, 1)]
-        public virtual int RSI_CUM_DAYS { get; set; } = 2;
+        public virtual int LE4_RSI_CUM_DAYS { get; set; } = 2;
 
         [OptimizerParam(20, 80, 5)]
-        public virtual int ENTRY_MAX_CUM_RSI { get; set; } = 45;
+        public virtual int LE4_MAX_CUM_RSI { get; set; } = 45;
 
         [OptimizerParam(50, 90, 5)]
-        public virtual int EXIT_MIN_RSI { get; set; } = 65;
+        public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
         protected override int Rules()
         {
@@ -427,38 +414,33 @@ namespace BooksAndPubs
 
             var marketSma200 = _market.Close.SMA(200);
             var marketRsi3 = _market.Close.RSI(3);
-            var marketCumRsi = marketRsi3.Sum(RSI_CUM_DAYS);
+            var marketCumRsi = marketRsi3.Sum(LE4_RSI_CUM_DAYS);
 
             //----- enter positions
 
             if (_market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
-                && marketCumRsi[0] < ENTRY_MAX_CUM_RSI)
-                {
+                if (_market.Close[0] > marketSma200[0] && marketCumRsi[0] < LE4_MAX_CUM_RSI)
                     return 1;
-                }
             }
 
             //----- exit positions
 
             else
             {
-                if (marketRsi3[0] > EXIT_MIN_RSI)
-                {
+                if (marketRsi3[0] > LX_MIN_MKT_RSI)
                     return -1;
-                }
             }
 
             return 0;
         }
     }
     #endregion
-    #region 5) Short Side
+    #region 5. Trading on the Short Side - The S&P Short Strategy
     public class Connors_ShortTermTrading_ShortSide : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(2, 7, 1)]
-        public virtual int ENTRY_UP_DAYS { get; set; } = 4;
+        public virtual int LE5_MIN_MKT_UP { get; set; } = 4;
 
         protected override int Rules()
         {
@@ -470,14 +452,18 @@ namespace BooksAndPubs
             // we cap the return at 1e-10, and sum it
             // up over 4 required days. if sum is larger
             // than 3e-10, we must have 4 up days
-            var marketUpDays = _market.Close.Return().Min(1e-10).Sum(ENTRY_UP_DAYS);
+            //var marketUpDays = _market.Close.Return().Min(1e-10).Sum(LE5_MIN_MKT_UP);
+
+            var marketUpDays = Enumerable.Range(0, LE5_MIN_MKT_UP)
+                .Aggregate(true, (prev, idx) => prev 
+                    && _market.Close[idx] > _market.Close[idx + 1]);
 
             //----- enter positions
 
             if (_market.Position == 0)
             {
                 if (_market.Close[0] < marketSma200[0]
-                && marketUpDays[0] > (ENTRY_UP_DAYS - 1.0) * 1e-10)
+                && marketUpDays)
                 {
                     return -1;
                 }
