@@ -25,81 +25,23 @@ using TuringTrader.Simulator;
 
 namespace BooksAndPubs
 {
-    #region Universes
-    partial class Universes
-    {
-        public static List<string> SPX = new List<string>() { "$SPX.index" };
-        public static List<string> Connors20 = new List<string>()
-        {
-            //--- US market indices
-            "SPY.etf", // SPDR S&P 500
-            "QQQ.etf", // Invesco QQQ Trust, Series 1
-            "DIA.etf", // SPDR Dow Jones Industrial Average ETF (was Diamonds Trust, Series 1)
-            "IWM.etf", // iShares Russell 2000 Index
-            //--- US sectors
-            "XHB.etf", // SPDR S&P Homebuilders
-            "XLB.etf", // SPDR Materials
-            "XLE.etf", // SPDR Energy Select
-            "XLF.etf", // SPDR Financial Select
-            "XLI.etf", // SPDR Industrial
-            "XLV.etf", // SPDR Health Care
-            //--- countries
-            "EEM.etf", // iShares MSCI Emerging Markets Index
-            "EFA.etf", // iShares MSCI EAFE Index
-            "EWH.etf", // iShares MSCI Hong Kong Index
-            "EWJ.etf", // iShares MSCI Japan Index
-            "EWT.etf", // iShares MSCI Taiwan Index
-            "EWZ.etf", // iShares MSCI Brazil Index
-            "FXI.etf", // iShares FTSE/ Xinhua China 25 Index
-            "ILF.etf", // iShares S&P Latin America 40 Index
-            //--- hard assets
-            "GLD.etf", // SPDR Gold Trust
-            "IYR.etf", // iShares Dow Jones US Real Estate
-        };
-        public static List<string> USMarkets = new List<string>()
-        {
-            "SPY.etf", // S&P 500
-            "QQQ.etf", // Nasdaq 100
-            "DIA.etf", // Dow Jones Industrial Average
-            "IWM.etf", // Russell 2000
-        };
-        public static List<string> Sectors = new List<string>()
-        {
-            "$SPXLTR.index", // communication services
-            "$SPXDTR.index", // consumer discretionary
-            "$SPXSTR.index", // consumer staples
-            "$SPXETR.index", // energy
-            "$SPXFTR.index", // finance
-            "$SPXATR.index", // health care
-            "$SPXITR.index", // industrial
-            "$SPXTTR.index", // information technology
-            "$SPXMTR.index", // materials
-            "$SPXRTR.index", // real estate
-            "$SPXUTR.index", // utilities
-        };
-    }
-    #endregion
     #region common algorithm core
     public abstract class Connors_HighProbEtfTrading_Core : Algorithm
     {
         #region settings
-        protected virtual List<string> UNIVERSE { get; } = Universes.USMarkets;
-        protected virtual string BENCHMARK { get; } = "$SPX.index";
-
-        [OptimizerParam(10, 100, 10)]
-        public virtual int MAX_ENTRY_SIZE { get; set; } = 25;
+        protected virtual string MARKET { get; } = "$SPX.index";
 
         [OptimizerParam(0, 1, 1)]
-        public virtual int AGGRESSIVE_ON { get; set; } = 1;
+        public virtual int AGGRESSIVE_ON { get; set; } = 0;
         #endregion
         #region internal data
         private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter = new Plotter();
-        private Instrument _benchmark;
+        private Instrument _market;
         #endregion
 
-        protected abstract Order Rules(Instrument i);
+        protected abstract double Rules(Instrument i);
 
         #region public override void Run()
         public override void Run()
@@ -109,9 +51,7 @@ namespace BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990");
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
-            foreach (var n in UNIVERSE)
-                AddDataSource(n);
-            AddDataSource(BENCHMARK);
+            AddDataSource(MARKET);
 
             Deposit(INITIAL_CAPITAL);
             CommissionPerShare = 0.015;
@@ -122,44 +62,30 @@ namespace BooksAndPubs
 
             foreach (var s in SimTimes)
             {
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
-                IEnumerable<Instrument> universe = Instruments
-                    .Where(i => UNIVERSE.Contains(i.Nickname))
-                    .ToList();
+                _market = _market ?? FindInstrument(MARKET);
 
-                if (universe.Count() == 0)
-                    continue;
+                double percentToBuySell = Rules(_market);
 
-                List<Order> orders = new List<Order>();
+                //----- entries
 
-                //----- create entries/ exits
-
-                foreach (var i in universe)
+                if (_market.Position == 0 && percentToBuySell != 0.0
+                || _market.Position > 0 && percentToBuySell > 0
+                || _market.Position < 0 && percentToBuySell < 0)
                 {
-                    var newOrder = Rules(i);
+                    int sharesToBuySell = (int)(Math.Sign(percentToBuySell) * Math.Floor(
+                        Math.Abs(percentToBuySell) * NetAssetValue[0] / _market.Close[0]));
 
-                    if (newOrder != null)
-                        orders.Add(newOrder);
+                    _market.Trade(sharesToBuySell, OrderType.closeThisBar);
                 }
 
-                //----- adjust position size & submit orders
+                //----- exits
 
-                int numEntries = orders
-                    .Where(o => o.Comment != null)
-                    .Count();
-
-                double dollarsAllocated = Positions.Keys.Sum(i => Math.Abs(i.Position) * i.Close[0]);
-                double dollarsAvailable = NetAssetValue[0] - dollarsAllocated;
-                double dollarsPerEntry = Math.Max(0.0, dollarsAvailable / Math.Max(1, numEntries));
-                dollarsPerEntry = Math.Min(NetAssetValue[0] * MAX_ENTRY_SIZE / 100.0, dollarsPerEntry);
-
-                foreach (var o in orders)
+                if (_market.Position > 0 && percentToBuySell < 0
+                || _market.Position < 0 && percentToBuySell > 0)
                 {
-                    // fill in order quantity of entries
-                    if (o.Comment != null)
-                        o.Quantity = (int)Math.Floor(o.Quantity * dollarsPerEntry / o.Instrument.Close[0]);
-
-                    QueueOrder(o);
+                    // none of the algorithms attempt to gradually
+                    // exit positions, so this is good enough
+                    _market.Trade(-_market.Position, OrderType.closeThisBar);
                 }
 
                 //----- output
@@ -170,7 +96,7 @@ namespace BooksAndPubs
                     _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("nav", NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                    _plotter.Plot(_market.Symbol, _market.Close[0]);
 
                     // placeholder for 2nd sheet
                     _plotter.SelectChart(Name + " positions", "entry date");
@@ -231,7 +157,7 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             //----- calculate indicators
 
@@ -257,14 +183,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
-
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -272,13 +191,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && i.Close[0] > sma5[0])  // long
             ||       (i.Position < 0 && i.Close[0] < sma5[0])) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -290,16 +203,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -317,7 +224,7 @@ namespace BooksAndPubs
 
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             int ENTRY_MIN_RSI_SHORT = 100 - ENTRY_MAX_RSI_LONG;
             int ENTRY2_MIN_RSI_SHORT = 100 - ENTRY2_MAX_RSI_LONG;
@@ -338,13 +245,7 @@ namespace BooksAndPubs
             {
                 _numPositions[i] = 1;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -352,13 +253,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && rsi4[0] > EXIT_MIN_RSI_LONG)
             ||       (i.Position < 0 && rsi4[0] < EXIT_MAX_RSI_SHORT))
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -370,16 +265,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -398,7 +287,7 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             int ENTRY_MIN_RSI_2_SHORT = 100 - ENTRY_MAX_RSI_2_LONG;
             int ENTRY_MIN_RSI_0_SHORT = 100 - ENTRY_MAX_RSI_0_LONG;
@@ -430,13 +319,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -444,13 +327,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && rsi2[0] > EXIT_MIN_RSI_LONG)   // long
             ||       (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -462,16 +339,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -487,7 +358,7 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             int ENTRY_MIN_BB_SHORT = 100 - ENTRY_MAX_BB_LONG;
             int EXIT_MAX_BB_SHORT = 100 - EXIT_MIN_BB_LONG;
@@ -512,13 +383,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -526,13 +391,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && percentB[0] > EXIT_MIN_BB_LONG / 100.0)   // long
             ||       (i.Position < 0 && percentB[0] < EXIT_MAX_BB_SHORT / 100.0)) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -544,16 +403,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -569,7 +422,7 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             //----- calculate indicators
 
@@ -591,13 +444,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -605,13 +452,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && i.Close[0] > sma5[0])  // long
             || (i.Position < 0 && i.Close[0] < sma5[0])) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -623,16 +464,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -648,7 +483,7 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        protected override double Rules(Instrument i)
         {
             int ENTRY_MIN_RSI_SHORT = 100 - ENTRY_MAX_RSI_LONG;
             int ENTRY2_MIN_RSI_SHORT = 100 - ENTRY2_MAX_RSI_LONG;
@@ -670,13 +505,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
             }
 
             //----- exit positions
@@ -684,13 +513,7 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && i.Close[0] > sma5[0])  // long
             ||       (i.Position < 0 && i.Close[0] < sma5[0])) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
@@ -702,16 +525,10 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0 ? 1.0 : -1.0;
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
@@ -727,7 +544,9 @@ namespace BooksAndPubs
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
-        protected override Order Rules(Instrument i)
+        private readonly double[] ENTRY_SIZE = { 0.1, 0.2, 0.3, 0.4 };
+
+        protected override double Rules(Instrument i)
         {
             int ENTRY_MIN_RSI_SHORT = 100 - ENTRY_MAX_RSI_LONG;
             int EXIT_MAX_RSI_SHORT = 100 - EXIT_MIN_RSI_LONG;
@@ -748,13 +567,9 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Close[0] > sma200[0] ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Close[0] > sma200[0]
+                    ? ENTRY_SIZE[_numPositions[i] - 1]
+                    : -ENTRY_SIZE[_numPositions[i] - 1];
             }
 
             //----- exit positions
@@ -762,20 +577,14 @@ namespace BooksAndPubs
             else if ((i.Position > 0 && rsi2[0] > EXIT_MIN_RSI_LONG)   // long
             ||       (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
             {
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = -i.Position,
-                    Type = OrderType.closeThisBar,
-                    Comment = null, // don't put anything here!
-                };
+                return i.Position > 0 ? -1 : 1;
             }
 
             //----- aggressive version: increase position size
             // note that this is different from the book. instead of
             // scaling up in a 1-2-3-4 pattern, these are all equal
 
-            else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 4
+            else if (_numPositions[i] < 4
             && ((i.Position > 0 && i.Close[0] <_entryPrices[i])    // long
             ||  (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
             {
@@ -783,16 +592,12 @@ namespace BooksAndPubs
                 _numPositions[i]++;
                 _entryPrices[i] = i.Close[0]; // update entry price!
 
-                return new Order
-                {
-                    Instrument = i,
-                    Quantity = i.Position > 0 ? 1 : -1,
-                    Type = OrderType.closeThisBar,
-                    Comment = "entry", // use this to identify entry orders
-                };
+                return i.Position > 0
+                    ? ENTRY_SIZE[_numPositions[i] - 1]
+                    : -ENTRY_SIZE[_numPositions[i] - 1];
             }
 
-            return null;
+            return 0.0;
         }
     }
     #endregion
