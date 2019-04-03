@@ -68,6 +68,7 @@ namespace TuringTrader.Simulator
             Dictionary<string, List<Position>> entries = new Dictionary<string, List<Position>>();
             List<Position> positions = new List<Position>();
 
+            //----- walk through order log
             foreach (LogEntry order in log)
             {
                 if (!entries.ContainsKey(order.Symbol))
@@ -100,7 +101,8 @@ namespace TuringTrader.Simulator
 
                     //--- (partially) close existing position
                     if (order.Action == LogEntryAction.Sell && openQuantity > 0
-                    || order.Action == LogEntryAction.Buy && openQuantity < 0)
+                    || order.Action == LogEntryAction.Buy && openQuantity < 0
+                    || order.Action == LogEntryAction.Expiry)
                     {
                         if (!entries.ContainsKey(order.Symbol)
                         || entries[order.Symbol].Count() == 0)
@@ -135,7 +137,6 @@ namespace TuringTrader.Simulator
                             entries[order.Symbol].Remove(entryOrder);
                     }
                 }
-
             }
 
             return positions;

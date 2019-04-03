@@ -492,6 +492,25 @@ namespace TuringTrader.Simulator
                         yield return SimTime[0];
                 }
 
+                //----- close all positions
+#if true
+                List<Instrument> positionsToClose = Positions.Keys.ToList();
+                foreach (Instrument instrument in positionsToClose)
+                {
+                    // create order ticket
+                    Order ticket = new Order()
+                    {
+                        Instrument = instrument,
+                        Quantity = -instrument.Position,
+                        Type = OrderType.stockInactiveClose,
+                        Comment = "end of simulation",
+                    };
+
+                    // force execution
+                    ExecOrder(ticket);
+                }
+#endif
+
                 //----- attempt to free up resources
                 _instruments.Clear();
                 Positions.Clear();
