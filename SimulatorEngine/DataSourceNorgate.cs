@@ -92,7 +92,16 @@ namespace TuringTrader.Simulator
                     : 1.0;
 
                 foreach (var ohlc in norgateData)
-                    data.Add(CreateBar(ohlc, priceMultiplier));
+                {
+                    // Norgate bars only have dates, no time.
+                    // we need to make sure that we won't return bars
+                    // outside of the requested range, as otherwise
+                    // the simulator's IsLastBar will be incorrect
+                    Bar bar = CreateBar(ohlc, priceMultiplier);
+
+                    if (bar.Time >= startTime && bar.Time <= endTime)
+                        data.Add(bar);
+                }
             }
 
             private static void RunNDU()
