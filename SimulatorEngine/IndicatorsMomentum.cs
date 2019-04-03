@@ -106,14 +106,20 @@ namespace TuringTrader.Simulator
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), r, s);
 
+            ITimeSeries<double> momentum = series
+                .Return(cacheId);
+
+            double numerator = momentum
+                .EMA(r, cacheId)
+                .EMA(s, cacheId)[0];
+
+            double denominator = momentum
+                .AbsValue(cacheId)
+                .EMA(r, cacheId)
+                .EMA(s, cacheId)[0];
+
             return IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    ITimeSeries<double> momentum = series.Return();
-                    double numerator = momentum.EMA(r).EMA(s)[0];
-                    double denominator = momentum.AbsValue().EMA(r).EMA(s)[0];
-                    return 100.0 * numerator / denominator;
-                },
+                v => 100.0 * numerator / Math.Max(1e-10, denominator),
                 0.5,
                 cacheId);
         }
@@ -149,10 +155,7 @@ namespace TuringTrader.Simulator
             double rs = avgUp / Math.Max(1e-10, avgDown);
 
             return IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    return 100.0 - 100.0 / (1 + rs);
-                },
+                v => 100.0 - 100.0 / (1 + rs),
                 50.0,
                 cacheId);
         }
@@ -180,12 +183,8 @@ namespace TuringTrader.Simulator
                 {
                     double hh = series.High.Highest(n)[0];
                     double ll = series.Low.Lowest(n)[0];
-
-                    //return -100.0 * (hh - series.Close[0]) / (hh - ll);
-                    double denom = hh - ll;
-                    return denom != 0.0
-                        ? -100.0 * (hh - series.Close[0]) / denom
-                        : -50.0;
+                    double price = series.Close[0];
+                    return -100.0 * (hh - price) / Math.Max(1e-10, hh - ll);
                 },
                 -50.0,
                 cacheId);
@@ -213,12 +212,8 @@ namespace TuringTrader.Simulator
                 {
                     double hh = series.Highest(n)[0];
                     double ll = series.Lowest(n)[0];
-
-                    //return -100.0 * (hh - series[0]) / (hh - ll);
-                    double denom = hh - ll;
-                    return denom != 0.0
-                        ? -100.0 * (hh - series[0]) / denom
-                        : -50.0;
+                    double price = series[0];
+                    return -100.0 * (hh - price) / Math.Max(1e-10, hh - ll);
                 },
                 -50.0,
                 cacheId);
@@ -246,18 +241,16 @@ namespace TuringTrader.Simulator
                     cacheId,
                     () => new StochasticOscillatorResult());
 
-            container.PercentK = IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    double hh = series.High.Highest(n)[0];
-                    double ll = series.Low.Lowest(n)[0];
+            double hh = series.High
+                .Highest(n, cacheId)[0];
 
-                    //return 100.0 * (hh - series[0].Close) / (hh - ll);
-                    double denom = hh - ll;
-                    return denom != 0.0
-                        ? 100.0 * (hh - series[0].Close) / denom
-                        : 50.0;
-                },
+            double ll = series
+                .Low.Lowest(n, cacheId)[0];
+
+            double price = series.Close[0];
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                v => 100.0 * (price - ll) / Math.Max(1e-10, hh - ll),
                 50.0,
                 cacheId);
 
@@ -289,18 +282,16 @@ namespace TuringTrader.Simulator
                     cacheId,
                     () => new StochasticOscillatorResult());
 
-            container.PercentK = IndicatorsBasic.BufferedLambda(
-                (v) =>
-                {
-                    double hh = series.Highest(n)[0];
-                    double ll = series.Lowest(n)[0];
+            double hh = series
+                .Highest(n, cacheId)[0];
 
-                    //return 100.0 * (hh - series[0]) / (hh - ll);
-                    double denom = hh - ll;
-                    return denom != 0.0
-                        ? 100.0 * (hh - series[0]) / denom
-                        : 50.0;
-                },
+            double ll = series
+                .Lowest(n, cacheId)[0];
+
+            double price = series[0];
+
+            container.PercentK = IndicatorsBasic.BufferedLambda(
+                v => 100.0 * (price - ll) / Math.Max(1e-10, hh - ll),
                 50.0,
                 cacheId);
 
@@ -343,11 +334,21 @@ namespace TuringTrader.Simulator
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), n.GetHashCode());
 
+#if true
+            return IndicatorsBasic.BufferedLambda(
+                prev => Math.Log(series[0] / series[n]) / n,
+                0.0,
+                cacheId);
+#else
+            // retired 04/02/2019
             return series
                 .Divide(series
-                        .Delay(n, cacheId))
+                        .Delay(n, cacheId)
+                        .Max(1e-10, cacheId),
+                    cacheId)
                 .Log(cacheId)
                 .Divide(n, cacheId);
+#endif
         }
         #endregion
 
