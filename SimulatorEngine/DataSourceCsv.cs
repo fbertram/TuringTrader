@@ -339,7 +339,7 @@ namespace TuringTrader.Simulator
                     : startTime;
                 DateTime updateStartTime = LastTime != null
                     ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
-                    : DateTime.Parse("01/01/1990");
+                    : DateTime.Parse("01/01/1970");
 
                 // we also have two end times
                 // - the time at which we stop loading bars into memory
