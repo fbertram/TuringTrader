@@ -440,6 +440,9 @@ namespace TuringTrader.Simulator
                             NextSimTime = source.BarEnumerator.Current.Time;
                     }
 
+                    // update IsLastBar
+                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
+
                     // execute orders
                     foreach (Order order in _pendingOrders)
                         ExecOrder(order);
@@ -454,18 +457,12 @@ namespace TuringTrader.Simulator
                         ExpireOption(instr);
 
                     // handle instrument de-listing
-#if false
-                    // FIXME: this code is problematic, when using monthly data,
-                    // e.g. from FRED in conjunction w/ daily bars
-                    IEnumerable<Instrument> instrumentsToDelist = Instruments
-                        .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
-                        .ToList();
-#else
                     IEnumerable<Instrument> instrumentsToDelist = Instruments
                         .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
                         .ToList();
-#endif
 
+                    // TODO: can we combine option exiry with option de-listing?
+                    // is it required to wait for another bar before de-listing?
                     IEnumerable<Instrument> optionsToDelist = Instruments
                         .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
                         .ToList();
@@ -478,9 +475,6 @@ namespace TuringTrader.Simulator
                     ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
                     NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, filteredNAV[0]);
                     NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - filteredNAV[0] / NetAssetValueHighestHigh);
-
-                    // update IsLastBar
-                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
                     // update TradingDays
                     if (TradingDays == 0 && Positions.Count > 0 // start counter w/ 1st position
