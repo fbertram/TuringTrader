@@ -53,7 +53,6 @@ namespace TuringTrader.Simulator
                     BarOfExecution = Instruments
                         .Where(i => i.Time[0] == SimTime[0])
                         .First()[0],
-                    NetAssetValue = NetAssetValue[0],
                     FillPrice = ticket.Price,
                     Commission = 0.0,
                 };
@@ -73,13 +72,12 @@ namespace TuringTrader.Simulator
 
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
-            double netAssetValue = 0.0;
             double price = 0.00;
             switch (ticket.Type)
             {
+                //----- user transactions
                 case OrderType.closeThisBar:
                     execBar = instrument[1];
-                    netAssetValue = NetAssetValue[1];
                     if (execBar.HasBidAsk)
                         price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
                     else
@@ -88,26 +86,11 @@ namespace TuringTrader.Simulator
 
                 case OrderType.openNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     price = execBar.Open;
-                    break;
-
-                case OrderType.stockInactiveClose:
-                    execBar = instrument[0];
-                    netAssetValue = NetAssetValue[5]; // this is probably incorrect
-                    price = execBar.Close;
-                    break;
-
-                case OrderType.optionExpiryClose:
-                    // execBar = instrument[1]; // option bar
-                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
-                    netAssetValue = NetAssetValue[0];
-                    price = ticket.Price;
                     break;
 
                 case OrderType.stopNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price > execBar.High)
@@ -126,7 +109,6 @@ namespace TuringTrader.Simulator
 
                 case OrderType.limitNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price < execBar.Low)
@@ -143,32 +125,53 @@ namespace TuringTrader.Simulator
                     }
                     break;
 
+                //----- simulator-internal transactions
+
+                case OrderType.instrumentDelisted:
+                case OrderType.endOfSimFakeClose:
+                    execBar = instrument[0];
+                    price = execBar.Close;
+                    break;
+
+                case OrderType.optionExpiryClose:
+                    // execBar = instrument[1]; // option bar
+                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    price = ticket.Price;
+                    break;
+
                 default:
                     throw new Exception("SimulatorCore.ExecOrder: unknown order type");
             }
 
-            // adjust position
-            if (!Positions.ContainsKey(instrument))
-                Positions[instrument] = 0;
-            Positions[instrument] += ticket.Quantity;
-            if (Positions[instrument] == 0)
-                Positions.Remove(instrument);
+            // adjust position, unless it's the end-of-sim order
+            if (ticket.Type != OrderType.endOfSimFakeClose)
+            {
+                if (!Positions.ContainsKey(instrument))
+                    Positions[instrument] = 0;
+                Positions[instrument] += ticket.Quantity;
+                if (Positions[instrument] == 0)
+                    Positions.Remove(instrument);
+            }
 
             // determine # of shares
             int numberOfShares = instrument.IsOption
                 ? 100 * ticket.Quantity
                 : ticket.Quantity;
 
-            // determine commission (no commission on expiry)
+            // determine commission (no commission on expiry, delisting, end-of-sim)
             double commission = ticket.Type != OrderType.optionExpiryClose
-                            && ticket.Type != OrderType.stockInactiveClose
+                            && ticket.Type != OrderType.instrumentDelisted
+                            && ticket.Type != OrderType.endOfSimFakeClose
                 ? Math.Abs(numberOfShares) * CommissionPerShare
                 : 0.00;
 
-            // pay for it
-            Cash = Cash
-                - numberOfShares * price
-                - commission;
+            // pay for it, unless it's the end-of-sim order
+            if (ticket.Type != OrderType.endOfSimFakeClose)
+            {
+                Cash = Cash
+                    - numberOfShares * price
+                    - commission;
+            }
 
             // add log entry
             LogEntry log = new LogEntry()
@@ -179,7 +182,6 @@ namespace TuringTrader.Simulator
                     : LogEntryInstrument.Equity,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
-                NetAssetValue = netAssetValue,
                 FillPrice = price,
                 Commission = commission,
             };
@@ -214,7 +216,7 @@ namespace TuringTrader.Simulator
                 {
                     Instrument = instrument,
                     Quantity = -instrument.Position,
-                    Type = OrderType.stockInactiveClose,
+                    Type = OrderType.instrumentDelisted,
                     Comment = "delisted",
                 };
 
@@ -481,29 +483,30 @@ namespace TuringTrader.Simulator
                     || TradingDays > 0)
                         TradingDays++;
 
+                    // close all positions at end of simulation
+                    if (IsLastBar)
+                    {
+                        List<Instrument> positionsToClose = Positions.Keys.ToList();
+                        foreach (Instrument instrument in positionsToClose)
+                        {
+                            // create order ticket
+                            Order ticket = new Order()
+                            {
+                                Instrument = instrument,
+                                Quantity = -instrument.Position,
+                                Type = OrderType.endOfSimFakeClose,
+                                Comment = "end of simulation",
+                            };
+
+                            // force execution
+                            ExecOrder(ticket);
+                        }
+                    }
+
                     // run our algorithm here
                     if (SimTime[0] >= (DateTime)WarmupStartTime && SimTime[0] <= EndTime)
                         yield return SimTime[0];
                 }
-
-                //----- close all positions
-#if true
-                List<Instrument> positionsToClose = Positions.Keys.ToList();
-                foreach (Instrument instrument in positionsToClose)
-                {
-                    // create order ticket
-                    Order ticket = new Order()
-                    {
-                        Instrument = instrument,
-                        Quantity = -instrument.Position,
-                        Type = OrderType.stockInactiveClose,
-                        Comment = "end of simulation",
-                    };
-
-                    // force execution
-                    ExecOrder(ticket);
-                }
-#endif
 
                 //----- attempt to free up resources
                 _instruments.Clear();

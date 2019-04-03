@@ -47,11 +47,6 @@ namespace TuringTrader.Simulator
         public Bar BarOfExecution;
 
         /// <summary>
-        /// Net asset value at trade execution.
-        /// </summary>
-        public double NetAssetValue;
-
-        /// <summary>
         /// Fill price of trade.
         /// </summary>
         public double FillPrice;
@@ -76,7 +71,7 @@ namespace TuringTrader.Simulator
                         else return LogEntryAction.Deposit;
 
                     case OrderType.optionExpiryClose:
-                    case OrderType.stockInactiveClose:
+                    case OrderType.instrumentDelisted:
                         return LogEntryAction.Expiry;
 
                     default:

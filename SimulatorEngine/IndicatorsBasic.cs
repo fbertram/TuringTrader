@@ -42,6 +42,11 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> Lambda(Func<int, double> lambda,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            // NOTE:
+            // this can be instantiated without parent cache id. As we don't have any data series
+            // to go from, this will blow up when running multiple instances in the optimizer
+            // a possible idea to fix this, would be to add the thread id... food for thought.
+
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
             // there are alternatives, see here:
@@ -91,6 +96,11 @@ namespace TuringTrader.Simulator
         public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            // NOTE:
+            // this can be instantiated without parent cache id. As we don't have any data series
+            // to go from, this will blow up when running multiple instances in the optimizer
+            // a possible idea to fix this, would be to add the thread id... food for thought.
+
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
             // there are alternatives, see here:
