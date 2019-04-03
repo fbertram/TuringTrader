@@ -4,7 +4,7 @@
 // Description: main window code-behind
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -281,6 +281,15 @@ namespace TuringTrader
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
         private async void ReportButton_Click(object sender, RoutedEventArgs e)
         {
+            RunButton.IsEnabled = false;
+            ReportButton.IsEnabled = false;
+            bool saveOptimizerButton = OptimizerButton.IsEnabled;
+            OptimizerButton.IsEnabled = false;
+            bool saveResultsButton = ResultsButton.IsEnabled;
+            ResultsButton.IsEnabled = false;
+            AlgoSelector.IsEnabled = false;
+            _runningBacktest = true;
+
             if (_currentAlgorithm != null)
                 await Task.Run(() =>
                 {
@@ -294,8 +303,14 @@ namespace TuringTrader
                             string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
                             + Environment.NewLine);
                     }
-
                 });
+
+            RunButton.IsEnabled = true;
+            ReportButton.IsEnabled = true;
+            OptimizerButton.IsEnabled = saveOptimizerButton;
+            ResultsButton.IsEnabled = saveResultsButton;
+            AlgoSelector.IsEnabled = true;
+            _runningBacktest = false;
         }
         #endregion
         #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
