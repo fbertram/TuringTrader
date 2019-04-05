@@ -130,6 +130,7 @@ namespace TuringTrader.Simulator
                         });
 
                         remainingQuantity -= closeFromEntry;
+                        openQuantity += closeFromEntry;
 
                         // adjust or remove entry
                         entryOrder.Quantity += closeFromEntry;

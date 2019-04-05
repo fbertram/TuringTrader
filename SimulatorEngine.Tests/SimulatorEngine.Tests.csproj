@@ -54,6 +54,7 @@
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />
+    <Compile Include="LogAnalysis.cs" />
     <Compile Include="OptionSupport.cs" />
     <Compile Include="PortfolioSupport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
