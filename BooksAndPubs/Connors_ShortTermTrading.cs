@@ -449,11 +449,6 @@ namespace BooksAndPubs
             var marketSma200 = _market.Close.SMA(200);
             var marketSma5 = _market.Close.SMA(5);
 
-            // we cap the return at 1e-10, and sum it
-            // up over 4 required days. if sum is larger
-            // than 3e-10, we must have 4 up days
-            //var marketUpDays = _market.Close.Return().Min(1e-10).Sum(LE5_MIN_MKT_UP);
-
             var marketUpDays = Enumerable.Range(0, LE5_MIN_MKT_UP)
                 .Aggregate(true, (prev, idx) => prev 
                     && _market.Close[idx] > _market.Close[idx + 1]);

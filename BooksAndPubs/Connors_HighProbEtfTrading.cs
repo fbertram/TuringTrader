@@ -581,8 +581,6 @@ namespace BooksAndPubs
             }
 
             //----- aggressive version: increase position size
-            // note that this is different from the book. instead of
-            // scaling up in a 1-2-3-4 pattern, these are all equal
 
             else if (_numPositions[i] < 4
             && ((i.Position > 0 && i.Close[0] <_entryPrices[i])    // long
