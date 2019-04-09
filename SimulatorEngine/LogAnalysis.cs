@@ -85,7 +85,7 @@ namespace TuringTrader.Simulator
                     || order.Action == LogEntryAction.Withdrawal)
                         break;
 
-                    //--- add new position
+                    //--- add new entry
                     if (order.Action == LogEntryAction.Buy && openQuantity >= 0
                     || order.Action == LogEntryAction.Sell && openQuantity <= 0)
                     {
@@ -99,7 +99,7 @@ namespace TuringTrader.Simulator
                         remainingQuantity = 0;
                     }
 
-                    //--- (partially) close existing position
+                    //--- (partially) close entry/ create new position
                     if (order.Action == LogEntryAction.Sell && openQuantity > 0
                     || order.Action == LogEntryAction.Buy && openQuantity < 0
                     || order.Action == LogEntryAction.Expiry)
@@ -134,7 +134,7 @@ namespace TuringTrader.Simulator
 
                         // adjust or remove entry
                         entryOrder.Quantity += closeFromEntry;
-                        if (entryOrder.Quantity <= 0)
+                        if (entryOrder.Quantity == 0)
                             entries[order.Symbol].Remove(entryOrder);
                     }
                 }

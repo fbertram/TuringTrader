@@ -379,21 +379,23 @@ namespace TuringTrader.Simulator
         /// <returns>Order object</returns>
         public Order Trade(int quantity, OrderType tradeExecution = OrderType.openNextBar, double price = 0.00, Func<Instrument, bool> condition = null)
         {
-            if (quantity != 0)
-            {
-                Order order = new Order()
-                {
-                    Instrument = this,
-                    Quantity = quantity,
-                    Type = tradeExecution,
-                    Price = price,
-                    Condition = condition,
-                };
+            if (quantity == 0)
+                return null;
 
-                Simulator.QueueOrder(order);
-                return order;
-            }
-            return null;
+            if (IsOption && OptionExpiry.Date < Simulator.SimTime[0].Date)
+                return null;
+
+            Order order = new Order()
+            {
+                Instrument = this,
+                Quantity = quantity,
+                Type = tradeExecution,
+                Price = price,
+                Condition = condition,
+            };
+
+            Simulator.QueueOrder(order);
+            return order;
         }
         #endregion
         #region public int Position

@@ -206,6 +206,8 @@ namespace TuringTrader.Simulator
 
             // force execution
             ExecOrder(ticket);
+
+            _instruments.Remove(instrument.Symbol);
         }
         private void DelistInstrument(Instrument instrument)
         {
@@ -463,13 +465,7 @@ namespace TuringTrader.Simulator
                         .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
                         .ToList();
 
-                    // TODO: can we combine option exiry with option de-listing?
-                    // is it required to wait for another bar before de-listing?
-                    IEnumerable<Instrument> optionsToDelist = Instruments
-                        .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
-                        .ToList();
-
-                    foreach (Instrument instr in instrumentsToDelist.Concat(optionsToDelist))
+                    foreach (Instrument instr in instrumentsToDelist)
                         DelistInstrument(instr);
 
                     // update net asset value
