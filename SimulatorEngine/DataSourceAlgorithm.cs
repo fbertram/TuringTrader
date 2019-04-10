@@ -65,38 +65,51 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
-                DateTime t1 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceValue.nickName]));
-
                 var algoName = Info[DataSourceValue.dataSource]
                     .Split(' ')
                     .Last();
 
-                try
+                var cacheKey = new CacheId(null, "", 0,
+                    algoName.GetHashCode(),
+                    startTime.GetHashCode(),
+                    endTime.GetHashCode());
+
+                List<Bar> retrievalFunction()
                 {
-                    var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
+                    DateTime t1 = DateTime.Now;
+                    Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceValue.nickName]));
 
-                    // instantiating a new algorithm here will overwrite
-                    // the most-recent algorithm. need to reset here.
-                    GlobalSettings.MostRecentAlgorithm = Simulator.Name;
+                    List<Bar> data = new List<Bar>();
 
-                    algo.SubclassedStartTime = startTime;
-                    algo.SubclassedEndTime = endTime;
-                    algo.ParentDataSource = this;
+                    try
+                    {
+                        var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
 
-                    _data = new List<Bar>();
-                    algo.SubclassedData = _data;
+                        // instantiating a new algorithm here will overwrite
+                        // the most-recent algorithm. need to reset here.
+                        GlobalSettings.MostRecentAlgorithm = Simulator.Name;
 
-                    algo.Run();
+                        algo.SubclassedStartTime = startTime;
+                        algo.SubclassedEndTime = endTime;
+                        algo.ParentDataSource = this;
+
+                        algo.SubclassedData = data;
+
+                        algo.Run();
+                    }
+
+                    catch
+                    {
+                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoName);
+                    }
+
+                    DateTime t2 = DateTime.Now;
+                    Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                    return data;
                 }
 
-                catch
-                {
-                    throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoName);
-                }
-
-                DateTime t2 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
             }
             #endregion
         }
