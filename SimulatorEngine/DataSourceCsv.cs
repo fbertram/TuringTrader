@@ -35,8 +35,6 @@ namespace TuringTrader.Simulator
         private class DataSourceCsv : DataSource
         {
             #region internal data
-            private List<Bar> _data;
-            private IEnumerator<Bar> _barEnumerator;
             private static int _totalBarsRead = 0;
             #endregion
             #region internal helpers
@@ -413,20 +411,6 @@ namespace TuringTrader.Simulator
                     Directory.CreateDirectory(Info[DataSourceValue.dataPath]);
             }
             #endregion
-            #region override public IEnumerator<Bar> BarEnumerator
-            /// <summary>
-            /// Retrieve enumerator for this data source's bars.
-            /// </summary>
-            override public IEnumerator<Bar> BarEnumerator
-            {
-                get
-                {
-                    if (_barEnumerator == null)
-                        _barEnumerator = _data.GetEnumerator();
-                    return _barEnumerator;
-                }
-            }
-            #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
@@ -445,12 +429,12 @@ namespace TuringTrader.Simulator
                     DateTime t1 = DateTime.Now;
                     Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceValue.nickName]));
 
-                    List<Bar> data = new List<Bar>();
+                    List<Bar> bars = new List<Bar>();
 
                     if (File.Exists(Info[DataSourceValue.dataPath]))
-                        LoadFile(data, Info[DataSourceValue.dataPath], startTime, endTime);
+                        LoadFile(bars, Info[DataSourceValue.dataPath], startTime, endTime);
                     else if (Directory.Exists(Info[DataSourceValue.dataPath]))
-                        LoadDir(data, Info[DataSourceValue.dataPath], startTime, endTime);
+                        LoadDir(bars, Info[DataSourceValue.dataPath], startTime, endTime);
 
                     // this should never happen - we create an empty directory in DataSource.New
                     else
@@ -461,15 +445,17 @@ namespace TuringTrader.Simulator
 
                     if (LastTime == null
                     || LastTime < endTime)
-                        UpdateData(data, startTime, endTime);
+                        UpdateData(bars, startTime, endTime);
 
-                    return data;
+                    return bars;
                 };
 
-                _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
-                if (_data.Count == 0)
+                if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceValue.nickName]));
+
+                Data = data;
             }
             #endregion
         }

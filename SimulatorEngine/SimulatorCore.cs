@@ -185,7 +185,7 @@ namespace TuringTrader.Simulator
                 FillPrice = price,
                 Commission = commission,
             };
-            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
+            //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void ExpireOption(Instrument instrument)
@@ -367,14 +367,15 @@ namespace TuringTrader.Simulator
 
                 // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
+                Dictionary<DataSource, IEnumerator<Bar>> enumData = new Dictionary<DataSource, IEnumerator<Bar>>();
 
                 // reset all enumerators
                 foreach (DataSource source in _dataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
                     source.LoadData((DateTime)WarmupStartTime, EndTime);
-                    source.BarEnumerator.Reset();
-                    hasData[source] = source.BarEnumerator.MoveNext();
+                    enumData[source] = source.Data.GetEnumerator();
+                    hasData[source] = enumData[source].MoveNext();
                 }
 
                 // reset trade log
@@ -409,8 +410,8 @@ namespace TuringTrader.Simulator
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
                     SimTime.Value = _dataSources
-                        .Where(i => hasData[i])
-                        .Min(i => i.BarEnumerator.Current.Time);
+                        .Where(s => hasData[s])
+                        .Min(s => enumData[s].Current.Time);
 
                     NextSimTime = SimTime[0] + TimeSpan.FromDays(1000); // any date far in the future
 
@@ -419,29 +420,29 @@ namespace TuringTrader.Simulator
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
+                        while (hasData[source] && enumData[source].Current.Time == SimTime[0])
                         {
-                            if (!_instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
-                                _instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            Instrument instrument = _instruments[source.BarEnumerator.Current.Symbol];
+                            if (!_instruments.ContainsKey(enumData[source].Current.Symbol))
+                                _instruments[enumData[source].Current.Symbol] = new Instrument(this, source);
+                            Instrument instrument = _instruments[enumData[source].Current.Symbol];
 
                             // we shouldn't need to check for duplicate bars here. unfortunately, this
                             // happens with options having multiple roots. it is unclear what the best
                             // course of action is here, for now we just skip the duplicates.
                             // it seems that the duplicate issue stops 11/5/2013???
                             if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
-                                instrument.Value = source.BarEnumerator.Current;
+                                instrument.Value = enumData[source].Current;
                             else
                             {
                                 //Output.WriteLine(string.Format("{0}: {1} has duplicate bar on {2}",
                                 //        Name, source.BarEnumerator.Current.Symbol, SimTime[0]));
                             }
 
-                            hasData[source] = source.BarEnumerator.MoveNext();
+                            hasData[source] = enumData[source].MoveNext();
                         }
 
-                        if (hasData[source] && source.BarEnumerator.Current.Time < NextSimTime)
-                            NextSimTime = source.BarEnumerator.Current.Time;
+                        if (hasData[source] && enumData[source].Current.Time < NextSimTime)
+                            NextSimTime = enumData[source].Current.Time;
                     }
 
                     // update IsLastBar

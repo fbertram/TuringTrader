@@ -53,6 +53,16 @@ namespace TuringTrader.Simulator
             /// order log entry for position exit
             /// </summary>
             public LogEntry Exit;
+
+            /// <summary>
+            /// highest high between entry and exit
+            /// </summary>
+            public double HighestHigh;
+
+            /// <summary>
+            /// lowest low between entry and exit
+            /// </summary>
+            public double LowestLow;
         }
         #endregion
 
@@ -127,6 +137,14 @@ namespace TuringTrader.Simulator
                             Quantity = -closeFromEntry,
                             Entry = entryOrder.Entry,
                             Exit = order,
+                            HighestHigh = order.OrderTicket.Instrument.DataSource.Data
+                                .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
+                                    && b.Time <= order.BarOfExecution.Time)
+                                .Max(b => b.High),
+                            LowestLow = order.OrderTicket.Instrument.DataSource.Data
+                                .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
+                                    && b.Time <= order.BarOfExecution.Time)
+                                .Min(b => b.Low),
                         });
 
                         remainingQuantity -= closeFromEntry;

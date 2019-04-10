@@ -28,11 +28,6 @@ namespace TuringTrader.Simulator
     {
         private class DataSourceAlgorithm : DataSource
         {
-            #region internal data
-            private List<Bar> _data;
-            private IEnumerator<Bar> _barEnumerator;
-            #endregion
-
             //---------- API
             #region public DataSourceAlgorithm(Dictionary<DataSourceValue, string> info)
             /// <summary>
@@ -41,20 +36,6 @@ namespace TuringTrader.Simulator
             /// <param name="info">info dictionary</param>
             public DataSourceAlgorithm(Dictionary<DataSourceValue, string> info) : base(info)
             {
-            }
-            #endregion
-            #region override public IEnumerator<Bar> BarEnumerator
-            /// <summary>
-            /// Retrieve enumerator for this data source's bars.
-            /// </summary>
-            override public IEnumerator<Bar> BarEnumerator
-            {
-                get
-                {
-                    if (_barEnumerator == null)
-                        _barEnumerator = _data.GetEnumerator();
-                    return _barEnumerator;
-                }
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -84,8 +65,9 @@ namespace TuringTrader.Simulator
                     algo.SubclassedEndTime = endTime;
                     algo.ParentDataSource = this;
 
-                    _data = new List<Bar>();
-                    algo.SubclassedData = _data;
+                    List<Bar> data = new List<Bar>();
+                    Data = data;
+                    algo.SubclassedData = data;
 
                     algo.Run();
                 }
