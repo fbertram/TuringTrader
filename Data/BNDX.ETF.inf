@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=BNDX
 symbolStooq=bndx.us
 symbolYahoo=BNDX
-dataUpdater=stooq
+dataUpdater=yahoo

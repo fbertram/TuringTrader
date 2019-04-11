@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=PDBC
 symbolStooq=pdbc.us
 symbolYahoo=PDBC
-dataUpdater=stooq
+dataUpdater=yahoo

@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VGIT
 symbolStooq=vgit.us
 symbolYahoo=VGIT
-dataUpdater=stooq
+dataUpdater=yahoo

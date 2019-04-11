@@ -1,0 +1,11 @@
+dataPath=Data\{0}
+date={1:MM/dd/yyyy}
+time=16:00
+open={2:F2}
+high={3:F2}
+low={4:F2}
+close={5:F2}
+volume={6}
+symbolStooq={0}.us
+symbolYahoo={0}
+dataUpdater=yahoo
