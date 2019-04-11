@@ -51,6 +51,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataFiles.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />
