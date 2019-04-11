@@ -35,6 +35,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>standard deviation as time series</returns>
         public static ITimeSeries<double> StandardDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -84,6 +87,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>variance as time series</returns>
         public static ITimeSeries<double> FastStandardDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -148,6 +154,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">filtering length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>variance as time series</returns>
         public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -220,6 +229,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -238,6 +250,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length of calculation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>volatility as time series</returns>
         public static ITimeSeries<double> VolatilityFromRange(this ITimeSeries<double> series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -264,7 +279,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
         /// </summary>
         /// <param name="series">input time series</param>
-        /// <param name="parentId">optional parent cache id</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>True Range as time series</returns>
         public static ITimeSeries<double> TrueRange(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -289,6 +306,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">averaging length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>ATR time series</returns>
         public static ITimeSeries<double> AverageTrueRange(this Instrument series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -302,7 +322,67 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        // - Bollinger Bands
+        #region public static _BollingerBands BollingerBands(this ITimeSeries<double> series, int n = 20, double stdev = 2.0)
+        /// <summary>
+        /// Calculate Bollinger Bands, as described here:
+        /// <see href="https://traderhq.com/ultimate-guide-to-bollinger-bands/"/>.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length of calculation</param>
+        /// <param name="stdev">width of bands</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>Bollinger Band time series</returns>
+        public static _BollingerBands BollingerBands(this ITimeSeries<double> series, int n = 20, double stdev = 2.0,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n, stdev.GetHashCode());
+
+            var container = Cache<_BollingerBands>.GetData(
+                    cacheId,
+                    () => new _BollingerBands());
+
+            var stdevSeries = series.StandardDeviation(n, cacheId).Multiply(stdev, cacheId);
+
+            container.Middle = series.SMA(n, cacheId);
+            container.Upper = container.Middle.Add(stdevSeries, cacheId);
+            container.Lower = container.Middle.Subtract(stdevSeries, cacheId);
+            container.PercentB = IndicatorsBasic.BufferedLambda(
+                prev => (series[0] - container.Lower[0]) / Math.Max(1e-10, container.Upper[0] - container.Lower[0]),
+                0.0,
+                cacheId);
+
+            return container;
+        }
+
+        /// <summary>
+        /// Container for Bollinger Band result
+        /// </summary>
+        public class _BollingerBands
+        {
+            /// <summary>
+            /// middle band
+            /// </summary>
+            public ITimeSeries<double> Middle;
+
+            /// <summary>
+            /// upper band
+            /// </summary>
+            public ITimeSeries<double> Upper;
+
+            /// <summary>
+            /// lower band
+            /// </summary>
+            public ITimeSeries<double> Lower;
+
+            /// <summary>
+            /// %b
+            /// </summary>
+            public ITimeSeries<double> PercentB;
+        }
+        #endregion
     }
 }
 

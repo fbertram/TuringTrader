@@ -52,11 +52,36 @@ namespace TuringTrader.Simulator
             #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
+                throw new Exception("Stooq download currently broken, we're working on it. Use Yahoo instead.");
+
                 string url = string.Format(_urlTemplate,
                     Info[DataSourceValue.symbolStooq], startTime, endTime);
 
+#if false
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+
+                }
+#endif
+#if false
+                WebClient wc = new WebClient();
+                wc.DownloadFileAsync(new Uri(url), @"C:\Users\Felix\Desktop\stooq.txt");
+                while (wc.IsBusy) { }
+#endif
+
                 using (var client = new WebClient())
                 {
+                    //client.Headers.Add("Referer", "https://stooq.com/");
+                    //client.Headers.Add(@"User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)");
+                    //var xxx = client.DownloadData(url);
+                    client.Headers[HttpRequestHeader.UserAgent] = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
+                    client.Headers[HttpRequestHeader.Referer] = "https://stooq.com/";
+                    string page = client.DownloadString("https://stooq.com/q/d/?s=^spx");
+                    client.Headers[HttpRequestHeader.Referer] = "https://stooq.com/q/d/?s=^spx";
+                    string csv = client.DownloadString("https://stooq.com/q/d/l/?s=^spx&i=d");
                     string rawData = client.DownloadString(url);
 
                     using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(rawData)))

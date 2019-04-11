@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VIOG
 symbolStooq=viog.us
 symbolYahoo=VIOG
-dataUpdater=stooq
+dataUpdater=yahoo

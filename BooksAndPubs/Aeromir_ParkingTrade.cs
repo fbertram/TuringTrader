@@ -278,10 +278,6 @@ namespace TuringTrader.BooksAndPubs
             AddDataSource(UNDERLYING_NICK);
             AddDataSource(OPTION_NICK);
 
-            // reset strategy variables
-            _plotter.Clear();
-            _underlyingInstrument = null;
-
             //---------- simulation
 
             // loop through all bars

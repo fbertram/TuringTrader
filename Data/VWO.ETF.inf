@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VWO
 symbolStooq=vwo.us
 symbolYahoo=VWO
-dataUpdater=stooq
+dataUpdater=yahoo

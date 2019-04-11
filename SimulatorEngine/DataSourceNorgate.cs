@@ -34,8 +34,6 @@ namespace TuringTrader.Simulator
         private class DataSourceNorgate : DataSource
         {
             #region internal data
-            private List<Bar> _data;
-            private IEnumerator<Bar> _barEnumerator;
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
             #endregion
@@ -92,7 +90,16 @@ namespace TuringTrader.Simulator
                     : 1.0;
 
                 foreach (var ohlc in norgateData)
-                    data.Add(CreateBar(ohlc, priceMultiplier));
+                {
+                    // Norgate bars only have dates, no time.
+                    // we need to make sure that we won't return bars
+                    // outside of the requested range, as otherwise
+                    // the simulator's IsLastBar will be incorrect
+                    Bar bar = CreateBar(ohlc, priceMultiplier);
+
+                    if (bar.Time >= startTime && bar.Time <= endTime)
+                        data.Add(bar);
+                }
             }
 
             private static void RunNDU()
@@ -248,20 +255,6 @@ namespace TuringTrader.Simulator
                 HandleUnresovledAssemblies();
             }
             #endregion
-            #region override public IEnumerator<Bar> BarEnumerator
-            /// <summary>
-            /// Retrieve enumerator for this data source's bars.
-            /// </summary>
-            override public IEnumerator<Bar> BarEnumerator
-            {
-                get
-                {
-                    if (_barEnumerator == null)
-                        _barEnumerator = _data.GetEnumerator();
-                    return _barEnumerator;
-                }
-            }
-            #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
@@ -280,20 +273,22 @@ namespace TuringTrader.Simulator
                     DateTime t1 = DateTime.Now;
                     Output.Write(string.Format("DataSourceNorgate: loading data for {0}...", Info[DataSourceValue.nickName]));
 
-                    List<Bar> data = new List<Bar>();
+                    List<Bar> bars = new List<Bar>();
 
-                    LoadData(data, startTime, endTime);
+                    LoadData(bars, startTime, endTime);
 
                     DateTime t2 = DateTime.Now;
                     Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                    return data;
+                    return bars;
                 };
 
-                _data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
-                if (_data.Count == 0)
+                if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceValue.nickName]));
+
+                Data = data;
             }
             #endregion
         }

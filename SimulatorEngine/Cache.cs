@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -69,11 +70,6 @@ namespace TuringTrader.Simulator
 
             return id;
         }
-
-        private CacheId()
-        {
-
-        }
         #endregion
 
         #region public int Key
@@ -90,7 +86,14 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
-        public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
+        /// <summary>
+        /// Create new cache id.
+        /// </summary>
+        /// <param name="parentId">parent cache id, or null</param>
+        /// <param name="memberName">member function name, or ""</param>
+        /// <param name="lineNumber">line number or 0</param>
+        /// <param name="parameterIds">list of parameter ids</param>
+        public CacheId(CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0, params int[] parameterIds)
         {
             //--- call stack key
 #if true
@@ -113,6 +116,19 @@ namespace TuringTrader.Simulator
             keyParameters = parentId != null ? parentId.keyParameters : SEED;
             foreach (var id in parameterIds)
                 keyParameters = CombineId(keyParameters, id);
+        }
+        #endregion
+
+        #region public CacheId AddParameters(params int[] parameterIds)
+        /// <summary>
+        /// Create new cache id, based on existing cache id, plus a
+        /// number of added parameters
+        /// </summary>
+        /// <param name="parameterIds"></param>
+        /// <returns>new cache id</returns>
+        public CacheId AddParameters(params int[] parameterIds)
+        {
+            return new CacheId(this, "", 0, parameterIds);
         }
         #endregion
     }

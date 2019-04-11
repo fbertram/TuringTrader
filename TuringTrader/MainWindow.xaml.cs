@@ -4,7 +4,7 @@
 // Description: main window code-behind
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -242,6 +242,9 @@ namespace TuringTrader
                     // this helps run poorly initialized algorithms
                     var clonedAlgorithm = _currentAlgorithm.Clone();
                     _currentAlgorithm = clonedAlgorithm;
+
+                    if (_optimizer != null)
+                        _optimizer.MasterInstance = _currentAlgorithm;
 #endif
 
                     WriteEventHandler(
@@ -278,6 +281,15 @@ namespace TuringTrader
         #region private void ReportButton_Click(object sender, RoutedEventArgs e)
         private async void ReportButton_Click(object sender, RoutedEventArgs e)
         {
+            RunButton.IsEnabled = false;
+            ReportButton.IsEnabled = false;
+            bool saveOptimizerButton = OptimizerButton.IsEnabled;
+            OptimizerButton.IsEnabled = false;
+            bool saveResultsButton = ResultsButton.IsEnabled;
+            ResultsButton.IsEnabled = false;
+            AlgoSelector.IsEnabled = false;
+            _runningBacktest = true;
+
             if (_currentAlgorithm != null)
                 await Task.Run(() =>
                 {
@@ -291,8 +303,14 @@ namespace TuringTrader
                             string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
                             + Environment.NewLine);
                     }
-
                 });
+
+            RunButton.IsEnabled = true;
+            ReportButton.IsEnabled = true;
+            OptimizerButton.IsEnabled = saveOptimizerButton;
+            ResultsButton.IsEnabled = saveResultsButton;
+            AlgoSelector.IsEnabled = true;
+            _runningBacktest = false;
         }
         #endregion
         #region private async void OptimizeButton_Click(object sender, RoutedEventArgs e)
@@ -309,25 +327,52 @@ namespace TuringTrader
             var optimizerSettings = new OptimizerSettings(_currentAlgorithm);
             if (optimizerSettings.ShowDialog() == true)
             {
-                await Task.Run(() =>
+                if (OptimizerGrid.NumIterations(_currentAlgorithm) == 1)
                 {
-                    _optimizer = new OptimizerGrid(_currentAlgorithm);
-                    _runningOptimization = true;
+                    // just a single iteration, no need to run optimizer
+                    RunButton.IsEnabled = true;
+                    ReportButton.IsEnabled = false;
+                    OptimizerButton.IsEnabled = true;
+                    ResultsButton.IsEnabled = true;
+                    AlgoSelector.IsEnabled = true;
+                    _runningOptimization = false;
 
-                    _optimizer.Run();
+                    UpdateParameterDisplay();
 
-                    LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+                    RunButton_Click(null, null);
+                }
+                else
+                {
+                    // run  optimizer in background
+                    await Task.Run(() =>
                     {
-                        RunButton.IsEnabled = true;
-                        ReportButton.IsEnabled = false;
-                        OptimizerButton.IsEnabled = true;
-                        ResultsButton.IsEnabled = true;
-                        AlgoSelector.IsEnabled = true;
-                        _runningOptimization = false;
+                        _optimizer = new OptimizerGrid(_currentAlgorithm);
+                        _runningOptimization = true;
 
-                        ResultsButton_Click(null, null);
-                    }));
-                });
+                        try
+                        {
+                            _optimizer.Run();
+                        }
+                        catch (Exception exception)
+                        {
+                            WriteEventHandler(
+                                string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                                + Environment.NewLine);
+                        }
+
+                        LogOutput.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            RunButton.IsEnabled = true;
+                            ReportButton.IsEnabled = false;
+                            OptimizerButton.IsEnabled = true;
+                            ResultsButton.IsEnabled = true;
+                            AlgoSelector.IsEnabled = true;
+                            _runningOptimization = false;
+
+                            ResultsButton_Click(null, null);
+                        }));
+                    });
+                }
             }
             else
             {

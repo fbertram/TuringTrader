@@ -28,6 +28,13 @@ namespace TuringTrader.Simulator
     /// </summary>
     public enum OrderType
     {
+        //----- user transactions
+
+        /// <summary>
+        /// deposit/ withdraw cash
+        /// </summary>
+        cash,
+
         /// <summary>
         /// execute order at close of current bar
         /// </summary>
@@ -39,17 +46,6 @@ namespace TuringTrader.Simulator
         openNextBar,
 
         /// <summary>
-        /// expire option at close of current bar. this order type is
-        /// reserved for internal use by the simulator engine.
-        /// </summary>
-        optionExpiryClose,
-
-        /// <summary>
-        /// close out a position in an inactive stock
-        /// </summary>
-        stockInactiveClose,
-
-        /// <summary>
         /// execute stop order on next bar
         /// </summary>
         stopNextBar,
@@ -59,10 +55,23 @@ namespace TuringTrader.Simulator
         /// </summary>
         limitNextBar,
 
+        //----- simulator-internal transactions
+
         /// <summary>
-        /// deposit/ withdraw cash
+        /// expire option at close of current bar. this order type is
+        /// reserved for internal use by the simulator engine.
         /// </summary>
-        cash,
+        optionExpiryClose,
+
+        /// <summary>
+        /// close out a position in an inactive stock
+        /// </summary>
+        instrumentDelisted,
+
+        /// <summary>
+        /// fake close at end of simulation
+        /// </summary>
+        endOfSimFakeClose,
     };
 
     /// <summary>

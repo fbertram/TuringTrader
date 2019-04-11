@@ -34,13 +34,85 @@ namespace TuringTrader.Simulator
     public class OptimizerGrid
     {
         #region internal data
-        private Algorithm _masterInstance;
         private MTJobQueue _jobQueue = new MTJobQueue();
         private readonly object _optimizerLock = new object();
         private int _numIterationsTotal;
         private int _numIterationsCompleted;
         private double _maxFitness = -1e10;
         private DateTime _startTime;
+        #endregion
+        #region internal helpers
+        #region private void RunIteration(bool firstRun = true)
+        private Algorithm RunIteration()
+        {
+            // create algorithm instance to run
+            Algorithm instanceToRun = MasterInstance.Clone();
+
+            // mark this as an optimizer run
+            instanceToRun.IsOptimizing = true;
+
+            // create result entry
+            OptimizerResult result = new OptimizerResult();
+            foreach (OptimizerParam parameter in MasterInstance.OptimizerParams.Values)
+                result.Parameters[parameter.Name] = parameter.Value;
+            result.Fitness = null;
+            Results.Add(result);
+
+            // run algorithm with these values
+            _jobQueue.QueueJob(() =>
+            {
+                instanceToRun.Run();
+                result.NetAssetValue = instanceToRun.NetAssetValue[0];
+                result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
+                result.Fitness = instanceToRun.FitnessValue;
+                instanceToRun = null;
+                lock (_optimizerLock)
+                {
+                    _numIterationsCompleted++;
+
+                    TimeSpan t = DateTime.Now - _startTime;
+                    TimeSpan eta = TimeSpan.FromSeconds(
+                        (_numIterationsTotal - _numIterationsCompleted)
+                        * t.TotalSeconds / _numIterationsCompleted);
+                    _maxFitness = Math.Max(_maxFitness, (double)result.Fitness);
+
+                    Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
+                        _numIterationsCompleted, _numIterationsTotal, _maxFitness,
+                        Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
+                }
+            });
+
+            return instanceToRun;
+        }
+        #endregion
+        #region private void IterateLevel(int level)
+        private void IterateLevel(int level)
+        {
+            OptimizerParam parameter = MasterInstance.OptimizerParams.Values
+                    .Skip(level)
+                    .FirstOrDefault();
+
+            if (parameter != default(OptimizerParam))
+            {
+                if (parameter.IsEnabled)
+                {
+                    for (int value = parameter.Start; value <= parameter.End; value += parameter.Step)
+                    {
+                        parameter.Value = value;
+                        IterateLevel(level + 1);
+                    }
+                }
+                else
+                {
+                    IterateLevel(level + 1);
+                }
+            }
+            else
+            {
+                RunIteration();
+            }
+        }
+        #endregion
         #endregion
 
         #region public static int NumIterations(Algorithm algo)
@@ -73,88 +145,23 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region private void RunIteration(bool firstRun = true)
-        private Algorithm RunIteration()
-        {
-            // create algorithm instance to run
-            Algorithm instanceToRun = _masterInstance.Clone();
-
-            // mark this as an optimizer run
-            instanceToRun.IsOptimizing = true;
-
-            // create result entry
-            OptimizerResult result = new OptimizerResult();
-            foreach (OptimizerParam parameter in _masterInstance.OptimizerParams.Values)
-                result.Parameters[parameter.Name] = parameter.Value;
-            result.Fitness = null;
-            Results.Add(result);
-
-            // run algorithm with these values
-            _jobQueue.QueueJob(() =>
-            {
-                instanceToRun.Run();
-                result.NetAssetValue = instanceToRun.NetAssetValue[0];
-                result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
-                result.Fitness = instanceToRun.FitnessValue;
-                instanceToRun = null;
-                lock (_optimizerLock)
-                {
-                    _numIterationsCompleted++;
-
-                    TimeSpan t = DateTime.Now - _startTime;
-                    TimeSpan eta = TimeSpan.FromSeconds(
-                        (_numIterationsTotal - _numIterationsCompleted)
-                        * t.TotalSeconds / _numIterationsCompleted);
-                        _maxFitness = Math.Max(_maxFitness, (double)result.Fitness);
-
-                    Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
-                        _numIterationsCompleted, _numIterationsTotal, _maxFitness,
-                        Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
-                }
-            });
-
-            return instanceToRun;
-        }
-        #endregion
-        #region private void IterateLevel(int level)
-        private void IterateLevel(int level)
-        {
-            OptimizerParam parameter = _masterInstance.OptimizerParams.Values
-                    .Skip(level)
-                    .FirstOrDefault();
-
-            if (parameter != default(OptimizerParam))
-            {
-                if (parameter.IsEnabled)
-                {
-                    for (int value = parameter.Start; value <= parameter.End; value += parameter.Step)
-                    {
-                        parameter.Value = value;
-                        IterateLevel(level + 1);
-                    }
-                }
-                else
-                {
-                    IterateLevel(level + 1);
-                }
-            }
-            else
-            {
-                RunIteration();
-            }
-        }
-        #endregion
-
-        #region public OptimizerExhaustive(Algorithm algorithm)
+        #region public OptimizerGrid(Algorithm masterInstance)
         /// <summary>
         /// Crearte and initialize new grid optimizer instance.
         /// </summary>
-        /// <param name="algorithm">algorithm to optimize</param>
-        public OptimizerGrid(Algorithm algorithm)
+        /// <param name="masterInstance">algorithm to optimize</param>
+        public OptimizerGrid(Algorithm masterInstance)
         {
-            _masterInstance = algorithm;
+            MasterInstance = masterInstance;
         }
         #endregion
+        #region public Algorithm MasterInstance
+        /// <summary>
+        /// Master instance of algorithm to optimize.
+        /// </summary>
+        public Algorithm MasterInstance = null;
+        #endregion
+
         #region public void Run()
         /// <summary>
         /// Run optimization.
@@ -168,7 +175,7 @@ namespace TuringTrader.Simulator
 
             // figure out total number of iterations
             _numIterationsCompleted = 0;
-            _numIterationsTotal = NumIterations(_masterInstance);
+            _numIterationsTotal = NumIterations(MasterInstance);
             Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations
@@ -233,13 +240,13 @@ namespace TuringTrader.Simulator
         #endregion
         #region public void SetParametersFromResult(OptimizerResult result)
         /// <summary>
-        /// Set algorithm parameters from optimzation result.
+        /// Set master instance to parameters from optimzation result.
         /// </summary>
         /// <param name="result">optimization result</param>
         public void SetParametersFromResult(OptimizerResult result)
         {
             foreach (var parameter in result.Parameters)
-                _masterInstance.OptimizerParams[parameter.Key].Value = parameter.Value;
+                MasterInstance.OptimizerParams[parameter.Key].Value = parameter.Value;
         }
         #endregion
     }

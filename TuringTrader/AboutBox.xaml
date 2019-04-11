@@ -13,7 +13,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="10,10,10,48" TextWrapping="Wrap" Grid.ColumnSpan="3"><Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/><Run Text="Copyright (c) 2011-2018, Bertram Solutions LLC"/><LineBreak/><Run/><LineBreak/><Run Text="TuringTrader is licensed under GPL-3.0-or-later."/></TextBlock>
+        <TextBlock Margin="10,10,10,48" TextWrapping="Wrap" Grid.ColumnSpan="3"><Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/><Run Text="Copyright (c) 2011-2019, Bertram Solutions LLC"/><LineBreak/><Run/><LineBreak/><Run Text="TuringTrader is licensed under AGPL-3.0-or-later."/></TextBlock>
         <Button Content="OK" Width="75" Grid.Column="1" Margin="0,0,0,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click"/>
 
     </Grid>

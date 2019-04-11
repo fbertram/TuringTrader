@@ -78,34 +78,51 @@ namespace TuringTrader.Simulator
                 {
                     string rawData = client.DownloadString(url);
 
+                    if (rawData.Length < 100)
+                        throw new Exception("DataUpdaterYahoo: no data received");
+
                     JObject jsonData = JObject.Parse(rawData);
 
+                    double convertToDouble(JToken x)
+                    {
+                        return x.Type == JTokenType.Null
+                            ? 0.0 // Yahoo does this do us!
+                            : Convert.ToDouble(x);
+                    }
+
+                    Int64 convertToInt64(JToken x)
+                    {
+                        return x.Type == JTokenType.Null
+                            ? 0
+                            : Convert.ToInt64(x);
+                    }
+
                     IEnumerator<Int64> timeStamp = jsonData["chart"]["result"][0]["timestamp"]
-                        .Select(x => Convert.ToInt64(x))
+                        .Select(x => convertToInt64(x))
                         .GetEnumerator();
 
                     IEnumerator<double> open = jsonData["chart"]["result"][0]["indicators"]["quote"][0]["open"]
-                        .Select(x => Convert.ToDouble(x))
+                        .Select(x => convertToDouble(x))
                         .GetEnumerator();
 
                     IEnumerator<double> high = jsonData["chart"]["result"][0]["indicators"]["quote"][0]["high"]
-                        .Select(x => Convert.ToDouble(x))
+                        .Select(x => convertToDouble(x))
                         .GetEnumerator();
 
                     IEnumerator<double> low = jsonData["chart"]["result"][0]["indicators"]["quote"][0]["low"]
-                        .Select(x => Convert.ToDouble(x))
+                        .Select(x => convertToDouble(x))
                         .GetEnumerator();
 
                     IEnumerator<double> close = jsonData["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-                        .Select(x => Convert.ToDouble(x))
+                        .Select(x => convertToDouble(x))
                         .GetEnumerator();
 
                     IEnumerator<double> adjClose = jsonData["chart"]["result"][0]["indicators"]["adjclose"][0]["adjclose"]
-                        .Select(x => Convert.ToDouble(x))
+                        .Select(x => convertToDouble(x))
                         .GetEnumerator();
 
                     IEnumerator<Int64> volume = jsonData["chart"]["result"][0]["indicators"]["quote"][0]["volume"]
-                        .Select(x => Convert.ToInt64(x))
+                        .Select(x => convertToInt64(x))
                         .GetEnumerator();
 
                     double priceMultiplier = Info.ContainsKey(DataSourceValue.dataUpdaterPriceMultiplier)

@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VCLT
 symbolStooq=vclt.us
 symbolYahoo=VCLT
-dataUpdater=stooq
+dataUpdater=yahoo

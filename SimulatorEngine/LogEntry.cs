@@ -30,8 +30,8 @@ namespace TuringTrader.Simulator
     public class LogEntry
     {
         /// <summary>
-        /// Symbol traded. This is required, as the Instrument is cleared from
-        /// the OrderTicket field to preserve memory.
+        /// Symbol traded. This is a shortcut, same as using
+        /// Order.Instrument.Symbol
         /// </summary>
         public string Symbol;
 
@@ -45,11 +45,6 @@ namespace TuringTrader.Simulator
         /// Bar of trade execution.
         /// </summary>
         public Bar BarOfExecution;
-
-        /// <summary>
-        /// Net asset value at trade execution.
-        /// </summary>
-        public double NetAssetValue;
 
         /// <summary>
         /// Fill price of trade.
@@ -76,7 +71,7 @@ namespace TuringTrader.Simulator
                         else return LogEntryAction.Deposit;
 
                     case OrderType.optionExpiryClose:
-                    case OrderType.stockInactiveClose:
+                    case OrderType.instrumentDelisted:
                         return LogEntryAction.Expiry;
 
                     default:

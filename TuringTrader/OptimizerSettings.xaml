@@ -22,8 +22,9 @@
                   AutoGenerateColumns="False" 
                   TargetUpdated="ParamGrid_TargetUpdated">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" Width="*"/>
                 <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Value" Binding="{Binding Value,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                <DataGridCheckBoxColumn Header="Optimize" Binding="{Binding IsEnabled,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" Width="*"/>
                 <DataGridTextColumn Header="Start" Binding="{Binding Start,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                 <DataGridTextColumn Header="End" Binding="{Binding End,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                 <DataGridTextColumn Header="Step" Binding="{Binding Step,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}" Width="*"/>

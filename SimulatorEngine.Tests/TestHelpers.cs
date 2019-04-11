@@ -29,22 +29,9 @@ namespace SimulatorEngine.Tests
     #region class DataSourceFromBars
     class DataSourceFromBars : DataSource
     {
-        private List<Bar> _bars;
-        private IEnumerator<Bar> _enum = null;
-
         public DataSourceFromBars(List<Bar> bars, Dictionary<DataSourceValue, string> infos) : base(infos)
         {
-            _bars = bars;
-        }
-
-        public override IEnumerator<Bar> BarEnumerator
-        {
-            get
-            {
-                if (_enum == null)
-                    _enum = _bars.GetEnumerator();
-                return _enum;
-            }
+            Data = bars;
         }
 
         public override void LoadData(DateTime startTime, DateTime endTime)

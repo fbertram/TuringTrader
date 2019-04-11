@@ -27,10 +27,6 @@ namespace TuringTrader.Simulator
     {
         private class DataSourceConstantYield : DataSource
         {
-            #region internal data
-            private List<Bar> _data;
-            private IEnumerator<Bar> _barEnumerator;
-            #endregion
             #region internal helpers
             private class SimConstantYield : SimulatorCore
             {
@@ -98,20 +94,6 @@ namespace TuringTrader.Simulator
             {
             }
             #endregion
-            #region override public IEnumerator<Bar> BarEnumerator
-            /// <summary>
-            /// Retrieve enumerator for this data source's bars.
-            /// </summary>
-            override public IEnumerator<Bar> BarEnumerator
-            {
-                get
-                {
-                    if (_barEnumerator == null)
-                        _barEnumerator = _data.GetEnumerator();
-                    return _barEnumerator;
-                }
-            }
-            #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
@@ -123,8 +105,9 @@ namespace TuringTrader.Simulator
                 DateTime t1 = DateTime.Now;
                 Output.WriteLine(string.Format("DataSourceConstantYield: generating data for {0}...", Info[DataSourceValue.nickName]));
 
-                _data = new List<Bar>();
-                LoadData(_data, startTime, endTime);
+                List<Bar> data = new List<Bar>();
+                LoadData(data, startTime, endTime);
+                Data = data;
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format("DataSourceConstantYield: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));

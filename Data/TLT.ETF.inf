@@ -10,4 +10,4 @@ close={5:F2}
 volume={6}
 symbolYahoo=TLT
 symbolStooq=tlt.us
-dataUpdater=stooq
+dataUpdater=yahoo

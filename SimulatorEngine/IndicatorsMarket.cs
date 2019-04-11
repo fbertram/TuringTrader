@@ -34,6 +34,9 @@ namespace TuringTrader.Simulator
         /// Calculate equally-weighted market benchmark.
         /// </summary>
         /// <param name="market">enumerable of instruments making up market</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>benchmark time series</returns>
         public static ITimeSeries<double> Benchmark(this IEnumerable<Instrument> market,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -66,6 +69,9 @@ namespace TuringTrader.Simulator
         /// <param name="series">input instrument</param>
         /// <param name="benchmark">benchmark time series</param>
         /// <param name="n">length of observation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>container w/ CAPM parameters</returns>
         public static _CAPM CAPM(this Instrument series, Instrument benchmark, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -89,6 +95,9 @@ namespace TuringTrader.Simulator
         /// <param name="series">input time series</param>
         /// <param name="benchmark">benchmark time series</param>
         /// <param name="n">length of observation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>container w/ CAPM parameters</returns>
         public static _CAPM CAPM(this ITimeSeries<double> series, ITimeSeries<double> benchmark, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)

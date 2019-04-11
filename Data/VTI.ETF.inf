@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VTI
 symbolStooq=vti.us
 symbolYahoo=VTI
-dataUpdater=stooq
+dataUpdater=yahoo

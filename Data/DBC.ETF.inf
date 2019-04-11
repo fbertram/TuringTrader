@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=DBC
 symbolStooq=dbc.us
 symbolYahoo=DBC
-dataUpdater=stooq
+dataUpdater=yahoo

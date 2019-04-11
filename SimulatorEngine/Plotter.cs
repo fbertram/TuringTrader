@@ -101,27 +101,15 @@ namespace TuringTrader.Simulator
             int rows = AllData.Keys
                 .Select(item => AllData[item].Count)
                 .Max();
+
             if (rows < 1)
             {
                 Clear();
                 return;
             }
 
-            //
-            // https://stackoverflow.com/questions/38542748/visual-c-sharp-setting-multiple-cells-at-once-with-excel-interop
-            // https://stackoverflow.com/questions/4811664/set-cell-value-using-excel-interop
-            // also: Application.ScreenUpdating = false, calculation to manual
-            // https://support.microsoft.com/en-us/help/302096/how-to-automate-excel-by-using-visual-c-to-fill-or-to-obtain-data-in-a
-            // https://social.msdn.microsoft.com/Forums/lync/en-US/2e33b8e5-c9fd-42a1-8d67-3d61d2cedc1c/how-to-call-excel-macros-programmatically-in-c?forum=exceldev
-
-            //var excel = new Excel.ApplicationClass();
-            var excel = new Excel.Application()
-            /*{
-                Visible = true,
-            }*/;
-
+            var excel = new Excel.Application();
             var wbooks = excel.Workbooks;
-            //var wbook = wbooks.Open(pathToExcelFile);
             var wbook = wbooks.Add(pathToExcelTemplate); // create new w/ file as template
             Thread.Sleep(500); // FIXME: prevents Excel from crashing
 
@@ -130,14 +118,18 @@ namespace TuringTrader.Simulator
             {
                 string plot = plots[i];
                 string tmpFile = Path.GetTempFileName();
-                SaveAsCsv(tmpFile, plot);
 
-                //excel.GetType().InvokeMember("Run",
-                //    System.Reflection.BindingFlags.Default | System.Reflection.BindingFlags.InvokeMethod,
-                //    null,
-                //    excel,
-                //    new Object[]{string.Format("{0}!UPDATE_LOGGER", Path.GetFileName(pathToExcelFile)),
-                //                        tmpFile, plots.Count, i});
+                SaveAsCsv(
+                    tmpFile, 
+                    plot, 
+                    o =>
+                    {
+                        if (o.GetType() == typeof(DateTime))
+                            return string.Format("{0:MM/dd/yyyy}", (DateTime)o);
+
+                        return o.ToString();
+                    });
+
                 excel.Run("UPDATE_LOGGER", tmpFile, plots.Count, i, plot);
                 Thread.Sleep(500); // FIXME: prevents Excel from crashing
             }
@@ -149,8 +141,8 @@ namespace TuringTrader.Simulator
 
 #endif
 #if false
-            // BUGBUG: it seems that Excel is leaving a zombie process behind,
-            // after the workbook is closed.
+            // BUGBUG: it seems that Excel is occasionally leaving 
+            // a zombie process behind, after the workbook is closed.
 
             void releaseObject(object obj)
             {

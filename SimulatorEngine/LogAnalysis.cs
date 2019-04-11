@@ -4,7 +4,7 @@
 // Description: Analysis of simulation logs.
 // History:     2019ii04, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -53,6 +53,16 @@ namespace TuringTrader.Simulator
             /// order log entry for position exit
             /// </summary>
             public LogEntry Exit;
+
+            /// <summary>
+            /// highest high between entry and exit
+            /// </summary>
+            public double HighestHigh;
+
+            /// <summary>
+            /// lowest low between entry and exit
+            /// </summary>
+            public double LowestLow;
         }
         #endregion
 
@@ -68,111 +78,93 @@ namespace TuringTrader.Simulator
             Dictionary<string, List<Position>> entries = new Dictionary<string, List<Position>>();
             List<Position> positions = new List<Position>();
 
+            //----- walk through order log
             foreach (LogEntry order in log)
             {
-                switch (order.Action)
-                {
-                    case LogEntryAction.Buy:
-                        if (!entries.ContainsKey(order.Symbol))
-                            entries[order.Symbol] = new List<Position>();
+                if (!entries.ContainsKey(order.Symbol))
+                    entries[order.Symbol] = new List<Position>();
 
+                int openQuantity = entries[order.Symbol]
+                    .Sum(i => i.Quantity);
+                int remainingQuantity = order.OrderTicket.Quantity;
+
+                while (remainingQuantity != 0)
+                {
+                    //--- ignore
+                    if (order.Action == LogEntryAction.Deposit
+                    || order.Action == LogEntryAction.Withdrawal)
+                        break;
+
+                    //--- add new entry
+                    if (order.Action == LogEntryAction.Buy && openQuantity >= 0
+                    || order.Action == LogEntryAction.Sell && openQuantity <= 0)
+                    {
                         entries[order.Symbol].Add(new Position
                         {
                             Symbol = order.Symbol,
                             Quantity = order.OrderTicket.Quantity,
                             Entry = order,
                         });
-                        break;
 
-                    case LogEntryAction.Sell:
-                        int totalQuantity = -order.OrderTicket.Quantity;
-                        while (totalQuantity > 0)
+                        remainingQuantity = 0;
+                    }
+
+                    //--- (partially) close entry/ create new position
+                    if (order.Action == LogEntryAction.Sell && openQuantity > 0
+                    || order.Action == LogEntryAction.Buy && openQuantity < 0
+                    || order.Action == LogEntryAction.Expiry)
+                    {
+                        if (!entries.ContainsKey(order.Symbol)
+                        || entries[order.Symbol].Count() == 0)
                         {
-                            if (!entries.ContainsKey(order.Symbol)
-                            || entries[order.Symbol].Count() == 0)
-                                throw new Exception("LogAnalysis.GroupPositions: no entry found");
-
-                            Position entryOrder = lifo
-                                ? entries[order.Symbol].Last()  // LIFO
-                                : entries[order.Symbol].First();// FIFO
-
-                            int sellFromEntry = Math.Min(totalQuantity, entryOrder.Quantity);
-
-                            positions.Add(new Position
-                            {
-                                Symbol = order.Symbol,
-                                Quantity = sellFromEntry,
-                                Entry = entryOrder.Entry,
-                                Exit = order,
-                            });
-
-                            totalQuantity -= sellFromEntry;
-
-                            entryOrder.Quantity -= sellFromEntry;
-                            if (entryOrder.Quantity <= 0)
-                                entries[order.Symbol].Remove(entryOrder);
+                            throw new Exception(
+                                string.Format("LogAnalysis.GroupPositions: no matching entry found for symbol {0}", 
+                                    order.Symbol));
                         }
-                        break;
+
+                        Position entryOrder = lifo
+                            ? entries[order.Symbol].Last()   // LIFO
+                            : entries[order.Symbol].First(); // FIFO
+
+                        // create a new position
+                        int closeFromEntry = remainingQuantity < 0
+                            ? -Math.Min(Math.Abs(remainingQuantity), entryOrder.Quantity) // close long
+                            : Math.Min(remainingQuantity, Math.Abs(entryOrder.Quantity)); // close short
+
+                        positions.Add(new Position
+                        {
+                            Symbol = order.Symbol,
+                            Quantity = -closeFromEntry,
+                            Entry = entryOrder.Entry,
+                            Exit = order,
+                            HighestHigh = order.OrderTicket.Instrument == null
+                                ? 0.0
+                                : order.OrderTicket.Instrument.DataSource.Data
+                                    .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
+                                        && b.Time <= order.BarOfExecution.Time)
+                                    .Max(b => b.High),
+                            LowestLow = order.OrderTicket.Instrument == null
+                                ? 0.0
+                                : order.OrderTicket.Instrument.DataSource.Data
+                                    .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
+                                        && b.Time <= order.BarOfExecution.Time)
+                                    .Min(b => b.Low),
+                        });
+
+                        remainingQuantity -= closeFromEntry;
+                        openQuantity += closeFromEntry;
+
+                        // adjust or remove entry
+                        entryOrder.Quantity += closeFromEntry;
+                        if (entryOrder.Quantity == 0)
+                            entries[order.Symbol].Remove(entryOrder);
+                    }
                 }
             }
 
             return positions;
         }
         #endregion
-
-#if false
-        public static void Run(Algorithm algo, Action<ITimeSeries<DateTime>, ITimeSeries<double>> report)
-        {
-            _afterTaxSimulator afterTaxSim = new _afterTaxSimulator(algo, report);
-            afterTaxSim.Run();
-        }
-
-        private class _afterTaxSimulator : SimulatorCore
-        {
-            private Algorithm _algo;
-            private Action<ITimeSeries<DateTime>, ITimeSeries<double>> _report;
-
-
-            public _afterTaxSimulator(Algorithm algo, Action<ITimeSeries<DateTime>, ITimeSeries<double>> report)
-            {
-                _algo = algo;
-                _report = report;
-            }
-
-            override public void Run()
-            {
-                //----- re-run simulation
-
-                // copy simulation setup from parent
-                CloneSimSetup(_algo);
-
-                List<LogEntry>.Enumerator logEnum = _algo.Log.GetEnumerator();
-
-                bool hasTransactions = logEnum.MoveNext();
-                if (!hasTransactions)
-                    return;
-
-                foreach (DateTime simTime in SimTimes)
-                {
-                    // QueueTime might be default(DateTime) for initial deposit
-                    while (hasTransactions && logEnum.Current.OrderTicket.QueueTime <= SimTime[0])
-                    {
-                        LogEntry transaction = logEnum.Current;
-                        Order order = transaction.OrderTicket;
-                        order.Instrument = order.Type != OrderType.cash
-                            ? Instruments.Where(i => i.Symbol == transaction.Symbol).First()
-                            : null;
-
-                        QueueOrder(order);
-
-                        hasTransactions = logEnum.MoveNext();
-                    }
-
-                    _report(SimTime, NetAssetValue);
-                }
-            }
-        }
-#endif
     }
 }
 

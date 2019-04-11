@@ -163,15 +163,16 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        //----- abstract methods to be implemented by derived classes
-        #region abstract public IEnumerator<Bar> BarEnumerator
+        //----- fields to fill/ methods to override by actual implementation
+        #region public IEnumerable<Bar> Data
         /// <summary>
-        /// Enumerator for bars.
+        /// Enumerable with Bar data.
         /// </summary>
-        abstract public IEnumerator<Bar> BarEnumerator
+        public IEnumerable<Bar> Data
         {
             get;
-        }
+            protected set;
+        } = null;
         #endregion
         #region abstract public void LoadData(DateTime startTime, DateTime endTime)
         /// <summary>

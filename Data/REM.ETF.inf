@@ -10,4 +10,4 @@ close={5:F2}
 volume={6}
 symbolYahoo=REM
 symbolStooq=rem.us
-dataUpdater=stooq
+dataUpdater=yahoo

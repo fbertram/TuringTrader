@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VEA
 symbolStooq=vea.us
 symbolYahoo=VEA
-dataUpdater=stooq
+dataUpdater=yahoo

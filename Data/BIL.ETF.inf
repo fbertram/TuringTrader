@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=BIL
 symbolStooq=bil.us
 symbolYahoo=BIL
-dataUpdater=stooq
+dataUpdater=yahoo

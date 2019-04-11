@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=EDV
 symbolStooq=edv.us
 symbolYahoo=EDV
-dataUpdater=stooq
+dataUpdater=yahoo

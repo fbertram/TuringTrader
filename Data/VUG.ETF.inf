@@ -11,4 +11,4 @@ volume={6}
 symbolIqfeed=VUG
 symbolStooq=vug.us
 symbolYahoo=VUG
-dataUpdater=stooq
+dataUpdater=yahoo

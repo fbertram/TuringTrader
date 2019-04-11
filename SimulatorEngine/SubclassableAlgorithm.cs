@@ -27,7 +27,7 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Base class for sub-classable algorithm
     /// </summary>
-    public class SubclassableAlgorithm : Algorithm
+    public abstract class SubclassableAlgorithm : Algorithm
     {
         /// <summary>
         /// Simulation start time, when sub-classed

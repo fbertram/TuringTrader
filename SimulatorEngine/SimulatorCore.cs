@@ -53,7 +53,6 @@ namespace TuringTrader.Simulator
                     BarOfExecution = Instruments
                         .Where(i => i.Time[0] == SimTime[0])
                         .First()[0],
-                    NetAssetValue = NetAssetValue[0],
                     FillPrice = ticket.Price,
                     Commission = 0.0,
                 };
@@ -73,13 +72,12 @@ namespace TuringTrader.Simulator
 
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
-            double netAssetValue = 0.0;
             double price = 0.00;
             switch (ticket.Type)
             {
+                //----- user transactions
                 case OrderType.closeThisBar:
                     execBar = instrument[1];
-                    netAssetValue = NetAssetValue[1];
                     if (execBar.HasBidAsk)
                         price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
                     else
@@ -88,26 +86,11 @@ namespace TuringTrader.Simulator
 
                 case OrderType.openNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     price = execBar.Open;
-                    break;
-
-                case OrderType.stockInactiveClose:
-                    execBar = instrument[0];
-                    netAssetValue = NetAssetValue[5]; // this is probably incorrect
-                    price = execBar.Close;
-                    break;
-
-                case OrderType.optionExpiryClose:
-                    // execBar = instrument[1]; // option bar
-                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
-                    netAssetValue = NetAssetValue[0];
-                    price = ticket.Price;
                     break;
 
                 case OrderType.stopNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price > execBar.High)
@@ -126,7 +109,6 @@ namespace TuringTrader.Simulator
 
                 case OrderType.limitNextBar:
                     execBar = instrument[0];
-                    netAssetValue = NetAssetValue[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price < execBar.Low)
@@ -143,32 +125,53 @@ namespace TuringTrader.Simulator
                     }
                     break;
 
+                //----- simulator-internal transactions
+
+                case OrderType.instrumentDelisted:
+                case OrderType.endOfSimFakeClose:
+                    execBar = instrument[0];
+                    price = execBar.Close;
+                    break;
+
+                case OrderType.optionExpiryClose:
+                    // execBar = instrument[1]; // option bar
+                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    price = ticket.Price;
+                    break;
+
                 default:
                     throw new Exception("SimulatorCore.ExecOrder: unknown order type");
             }
 
-            // adjust position
-            if (!Positions.ContainsKey(instrument))
-                Positions[instrument] = 0;
-            Positions[instrument] += ticket.Quantity;
-            if (Positions[instrument] == 0)
-                Positions.Remove(instrument);
+            // adjust position, unless it's the end-of-sim order
+            if (ticket.Type != OrderType.endOfSimFakeClose)
+            {
+                if (!Positions.ContainsKey(instrument))
+                    Positions[instrument] = 0;
+                Positions[instrument] += ticket.Quantity;
+                if (Positions[instrument] == 0)
+                    Positions.Remove(instrument);
+            }
 
             // determine # of shares
             int numberOfShares = instrument.IsOption
                 ? 100 * ticket.Quantity
                 : ticket.Quantity;
 
-            // determine commission (no commission on expiry)
+            // determine commission (no commission on expiry, delisting, end-of-sim)
             double commission = ticket.Type != OrderType.optionExpiryClose
-                            && ticket.Type != OrderType.stockInactiveClose
+                            && ticket.Type != OrderType.instrumentDelisted
+                            && ticket.Type != OrderType.endOfSimFakeClose
                 ? Math.Abs(numberOfShares) * CommissionPerShare
                 : 0.00;
 
-            // pay for it
-            Cash = Cash
-                - numberOfShares * price
-                - commission;
+            // pay for it, unless it's the end-of-sim order
+            if (ticket.Type != OrderType.endOfSimFakeClose)
+            {
+                Cash = Cash
+                    - numberOfShares * price
+                    - commission;
+            }
 
             // add log entry
             LogEntry log = new LogEntry()
@@ -179,11 +182,10 @@ namespace TuringTrader.Simulator
                     : LogEntryInstrument.Equity,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
-                NetAssetValue = netAssetValue,
                 FillPrice = price,
                 Commission = commission,
             };
-            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
+            //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void ExpireOption(Instrument instrument)
@@ -204,6 +206,8 @@ namespace TuringTrader.Simulator
 
             // force execution
             ExecOrder(ticket);
+
+            _instruments.Remove(instrument.Symbol);
         }
         private void DelistInstrument(Instrument instrument)
         {
@@ -214,7 +218,7 @@ namespace TuringTrader.Simulator
                 {
                     Instrument = instrument,
                     Quantity = -instrument.Position,
-                    Type = OrderType.stockInactiveClose,
+                    Type = OrderType.instrumentDelisted,
                     Comment = "delisted",
                 };
 
@@ -363,14 +367,15 @@ namespace TuringTrader.Simulator
 
                 // save the status of our enumerators here
                 Dictionary<DataSource, bool> hasData = new Dictionary<DataSource, bool>();
+                Dictionary<DataSource, IEnumerator<Bar>> enumData = new Dictionary<DataSource, IEnumerator<Bar>>();
 
                 // reset all enumerators
                 foreach (DataSource source in _dataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
                     source.LoadData((DateTime)WarmupStartTime, EndTime);
-                    source.BarEnumerator.Reset();
-                    hasData[source] = source.BarEnumerator.MoveNext();
+                    enumData[source] = source.Data.GetEnumerator();
+                    hasData[source] = enumData[source].MoveNext();
                 }
 
                 // reset trade log
@@ -405,8 +410,8 @@ namespace TuringTrader.Simulator
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
                     SimTime.Value = _dataSources
-                        .Where(i => hasData[i])
-                        .Min(i => i.BarEnumerator.Current.Time);
+                        .Where(s => hasData[s])
+                        .Min(s => enumData[s].Current.Time);
 
                     NextSimTime = SimTime[0] + TimeSpan.FromDays(1000); // any date far in the future
 
@@ -415,30 +420,33 @@ namespace TuringTrader.Simulator
                     {
                         // while timestamp is current, keep adding bars
                         // options have multiple bars with identical timestamps!
-                        while (hasData[source] && source.BarEnumerator.Current.Time == SimTime[0])
+                        while (hasData[source] && enumData[source].Current.Time == SimTime[0])
                         {
-                            if (!_instruments.ContainsKey(source.BarEnumerator.Current.Symbol))
-                                _instruments[source.BarEnumerator.Current.Symbol] = new Instrument(this, source);
-                            Instrument instrument = _instruments[source.BarEnumerator.Current.Symbol];
+                            if (!_instruments.ContainsKey(enumData[source].Current.Symbol))
+                                _instruments[enumData[source].Current.Symbol] = new Instrument(this, source);
+                            Instrument instrument = _instruments[enumData[source].Current.Symbol];
 
                             // we shouldn't need to check for duplicate bars here. unfortunately, this
                             // happens with options having multiple roots. it is unclear what the best
                             // course of action is here, for now we just skip the duplicates.
                             // it seems that the duplicate issue stops 11/5/2013???
                             if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
-                                instrument.Value = source.BarEnumerator.Current;
+                                instrument.Value = enumData[source].Current;
                             else
                             {
                                 //Output.WriteLine(string.Format("{0}: {1} has duplicate bar on {2}",
                                 //        Name, source.BarEnumerator.Current.Symbol, SimTime[0]));
                             }
 
-                            hasData[source] = source.BarEnumerator.MoveNext();
+                            hasData[source] = enumData[source].MoveNext();
                         }
 
-                        if (hasData[source] && source.BarEnumerator.Current.Time < NextSimTime)
-                            NextSimTime = source.BarEnumerator.Current.Time;
+                        if (hasData[source] && enumData[source].Current.Time < NextSimTime)
+                            NextSimTime = enumData[source].Current.Time;
                     }
+
+                    // update IsLastBar
+                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
                     // execute orders
                     foreach (Order order in _pendingOrders)
@@ -454,23 +462,11 @@ namespace TuringTrader.Simulator
                         ExpireOption(instr);
 
                     // handle instrument de-listing
-#if false
-                    // FIXME: this code is problematic, when using monthly data,
-                    // e.g. from FRED in conjunction w/ daily bars
-                    IEnumerable<Instrument> instrumentsToDelist = Instruments
-                        .Where(i => !i.IsOption && i.Time[0] < SimTime[5])
-                        .ToList();
-#else
                     IEnumerable<Instrument> instrumentsToDelist = Instruments
                         .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
                         .ToList();
-#endif
 
-                    IEnumerable<Instrument> optionsToDelist = Instruments
-                        .Where(i => i.IsOption && i.OptionExpiry < SimTime[1])
-                        .ToList();
-
-                    foreach (Instrument instr in instrumentsToDelist.Concat(optionsToDelist))
+                    foreach (Instrument instr in instrumentsToDelist)
                         DelistInstrument(instr);
 
                     // update net asset value
@@ -479,13 +475,30 @@ namespace TuringTrader.Simulator
                     NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, filteredNAV[0]);
                     NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - filteredNAV[0] / NetAssetValueHighestHigh);
 
-                    // update IsLastBar
-                    IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
-
                     // update TradingDays
                     if (TradingDays == 0 && Positions.Count > 0 // start counter w/ 1st position
                     || TradingDays > 0)
                         TradingDays++;
+
+                    // close all positions at end of simulation
+                    if (IsLastBar)
+                    {
+                        List<Instrument> positionsToClose = Positions.Keys.ToList();
+                        foreach (Instrument instrument in positionsToClose)
+                        {
+                            // create order ticket
+                            Order ticket = new Order()
+                            {
+                                Instrument = instrument,
+                                Quantity = -instrument.Position,
+                                Type = OrderType.endOfSimFakeClose,
+                                Comment = "end of simulation",
+                            };
+
+                            // force execution
+                            ExecOrder(ticket);
+                        }
+                    }
 
                     // run our algorithm here
                     if (SimTime[0] >= (DateTime)WarmupStartTime && SimTime[0] <= EndTime)

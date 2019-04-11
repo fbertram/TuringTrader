@@ -48,6 +48,8 @@
     <Compile Include="Antonacci_DualMomentumInvesting.cs" />
     <Compile Include="Bensdorp_30MinStockTrader.cs" />
     <Compile Include="Clenow_StocksOnTheMove.cs" />
+    <Compile Include="Connors_HighProbEtfTrading.cs" />
+    <Compile Include="Connors_ShortTermTrading.cs" />
     <Compile Include="Faber_IvyPortfolio.cs" />
     <Compile Include="Keller_CAA.cs" />
     <Compile Include="Keller_DAA.cs" />

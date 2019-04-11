@@ -35,6 +35,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>accumulation/ distribution index as time series</returns>
         public static ITimeSeries<double> AccumulationDistributionIndex(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -54,6 +57,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>accumulation/ distribution index as time series</returns>
         public static ITimeSeries<double> ChaikinOscillator(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -78,6 +84,9 @@ namespace TuringTrader.Simulator
         /// <see href="https://en.wikipedia.org/wiki/On-balance_volume"/>
         /// </summary>
         /// <param name="series">input time series</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>OBV time series</returns>
         public static ITimeSeries<double> OnBalanceVolume(this Instrument series,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
@@ -101,6 +110,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">calculation period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>MFI time series</returns>
         public static ITimeSeries<double> MoneyFlowIndex(this Instrument series, int n,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
