@@ -4,7 +4,7 @@
 // Description: Global settings for simulator engine
 // History:     2018x09, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -141,16 +141,20 @@ namespace TuringTrader.Simulator
                 string subKey = "SOFTWARE\\R-core\\R";
                 RegistryKey key = Registry.LocalMachine.OpenSubKey(subKey);
 
-                // this key is used, when there is more than one R installation
-                string defaultRLocation = (string)key.GetValue("InstallPath");
-                if (defaultRLocation != null) return defaultRLocation;
-
-                // if there is only one, we need to look through the sub-keys
-                foreach (var rInstall in key.GetSubKeyNames())
+                if (key != null)
                 {
-                    RegistryKey rInstallKey = key.OpenSubKey(rInstall);
-                    string rInstallLocation = (string)rInstallKey.GetValue("InstallPath");
-                    if (rInstallLocation != null) return rInstallLocation;
+
+                    // this key is used, when there is more than one R installation
+                    string defaultRLocation = (string)key.GetValue("InstallPath");
+                    if (defaultRLocation != null) return defaultRLocation;
+
+                    // if there is only one, we need to look through the sub-keys
+                    foreach (var rInstall in key.GetSubKeyNames())
+                    {
+                        RegistryKey rInstallKey = key.OpenSubKey(rInstall);
+                        string rInstallLocation = (string)rInstallKey.GetValue("InstallPath");
+                        if (rInstallLocation != null) return rInstallLocation;
+                    }
                 }
 
                 throw new KeyNotFoundException("GlobalSettings: no R install found");
