@@ -138,12 +138,14 @@ namespace TuringTrader.Simulator
                             Entry = entryOrder.Entry,
                             Exit = order,
                             HighestHigh = order.OrderTicket.Instrument == null
+                            || order.OrderTicket.Instrument.IsOption
                                 ? 0.0
                                 : order.OrderTicket.Instrument.DataSource.Data
                                     .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
                                         && b.Time <= order.BarOfExecution.Time)
                                     .Max(b => b.High),
-                            LowestLow = order.OrderTicket.Instrument == null
+                            LowestLow = order.OrderTicket.Instrument == null 
+                            || order.OrderTicket.Instrument.IsOption
                                 ? 0.0
                                 : order.OrderTicket.Instrument.DataSource.Data
                                     .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
