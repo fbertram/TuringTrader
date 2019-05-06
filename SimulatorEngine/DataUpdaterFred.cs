@@ -133,26 +133,13 @@ namespace TuringTrader.Simulator
                                 DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.date], items)).Date
                                 + DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.time], items)).TimeOfDay;
 
-#if true
-                            // FIXME: this is incomplete. we need to make sure
-                            // our bars align with market data. coercing them to the
-                            // monday to friday range is not enough.
-                            if (timestamp.DayOfWeek == DayOfWeek.Saturday)
-                                timestamp += TimeSpan.FromDays(2);
-
-                            if (timestamp.DayOfWeek == DayOfWeek.Sunday)
-                                timestamp += TimeSpan.FromDays(1);
-#endif
-
                             var close = double.Parse(string.Format(PARSE_INFO[DataSourceValue.close], items));
 
                             var bar = Bar.NewOHLC(
                                 Info[DataSourceValue.ticker], timestamp,
                                 close, close, close, close, default(long));
 
-                            if (bar.Time >= startTime
-                            && bar.Time <= endTime)
-                                rawBars.Add(bar);
+                            rawBars.Add(bar);
                         }
                     }
                 } // using (var client = new WebClient())

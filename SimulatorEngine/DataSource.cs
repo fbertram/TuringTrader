@@ -235,6 +235,7 @@ namespace TuringTrader.Simulator
                     { DataSourceValue.nickName, "{0}" },
                     { DataSourceValue.name, "{0}" },
                     { DataSourceValue.ticker, "{0}" },
+                    { DataSourceValue.dataSource, "csv" },
                     // csv file defaults, {0} will be filled with nickname
                     { DataSourceValue.dataPath, "Data\\{0}" },
                     { DataSourceValue.date, "{1:MM/dd/yyyy}" },
@@ -246,6 +247,7 @@ namespace TuringTrader.Simulator
                     { DataSourceValue.volume, "{6}" },
                     // symbol mapping, {0} will be filled with ticker
                     { DataSourceValue.symbolYahoo,  "{0}"},
+                    { DataSourceValue.symbolFred,  "{0}"},
                     { DataSourceValue.symbolNorgate,  "{0}"},
                     { DataSourceValue.symbolIqfeed,  "{0}"},
                     { DataSourceValue.symbolStooq,  "{0}"},
@@ -314,10 +316,10 @@ namespace TuringTrader.Simulator
         /// <returns>data source object</returns>
         static public DataSource New(string nickname)
         {
-            //----- start with the default settings
-            Dictionary<DataSourceValue, string> infos = GetDefaultInfo(nickname);
+            //===== load from .inf file
+            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
+            infos[DataSourceValue.nickName] = nickname;
 
-            //----- merge settings from .inf file
             string infoPathName = Path.Combine(DataPath, nickname + ".inf");
             if (File.Exists(infoPathName))
             {
@@ -325,22 +327,94 @@ namespace TuringTrader.Simulator
                 LoadInfoFile(nickname, infos);
             }
 
-            //----- determine data source to use
-            string dataSource = "";
-
-            //if (nickname.Contains("@")) // @ is not a good idea. maybe a slash?
-            //{
-            //    string[] tmp = nickname.Split('@');
-            //    nickname = tmp[0];
-            //    dataSource = tmp[1].ToLower();
-            //}
-            //else 
-            if (infos.ContainsKey(DataSourceValue.dataSource))
+            //===== optional: fill data source from nickname
+            // example: "algorithm:SUB_60_40"
+            if (nickname.Contains(":"))
             {
-                dataSource = infos[DataSourceValue.dataSource].ToLower();
+                string[] tmp = nickname.Split(':');
+                string ds = tmp[0];
+
+
+                if (ds.Contains("algorithm"))
+                {
+                    // example: "algorithm SUB_60_40"
+                    ds += " " + tmp[1];
+                }
+
+                infos[DataSourceValue.dataSource] = ds;
             }
 
-            //----- instantiate data source
+            //===== fill in defaults, as required
+            Dictionary<DataSourceValue, string> defaults = GetDefaultInfo(nickname);
+
+            void fillDefault(DataSourceValue value)
+            {
+                if (!infos.ContainsKey(value))
+                    infos[value] = defaults[value];
+            }
+
+            //--- name , ticker, data source
+            fillDefault(DataSourceValue.name);
+            fillDefault(DataSourceValue.ticker);
+
+            //--- data source
+            // any mapping field (other than time) implies
+            // that the data source is csv
+            if (!infos.ContainsKey(DataSourceValue.dataSource)
+            && (infos.ContainsKey(DataSourceValue.date)
+                || infos.ContainsKey(DataSourceValue.open)
+                || infos.ContainsKey(DataSourceValue.high)
+                || infos.ContainsKey(DataSourceValue.low)
+                || infos.ContainsKey(DataSourceValue.close)
+                || infos.ContainsKey(DataSourceValue.volume)
+                || infos.ContainsKey(DataSourceValue.bid)
+                || infos.ContainsKey(DataSourceValue.ask)
+                || infos.ContainsKey(DataSourceValue.bidSize)
+                || infos.ContainsKey(DataSourceValue.askSize)))
+            {
+                infos[DataSourceValue.dataSource] = "csv";
+            }
+            else
+            {
+                fillDefault(DataSourceValue.dataSource);
+            }
+
+            //--- parse info
+            fillDefault(DataSourceValue.time);
+
+            // if the data source is csv, and none of the mapping
+            // fields are set, we use a default mapping
+            if (infos[DataSourceValue.dataSource].ToLower().Contains("csv")
+            && !infos.ContainsKey(DataSourceValue.date)
+            && !infos.ContainsKey(DataSourceValue.open)
+            && !infos.ContainsKey(DataSourceValue.high)
+            && !infos.ContainsKey(DataSourceValue.low)
+            && !infos.ContainsKey(DataSourceValue.close)
+            && !infos.ContainsKey(DataSourceValue.volume)
+            && !infos.ContainsKey(DataSourceValue.bid)
+            && !infos.ContainsKey(DataSourceValue.ask)
+            && !infos.ContainsKey(DataSourceValue.bidSize)
+            && !infos.ContainsKey(DataSourceValue.askSize))
+            {
+                infos[DataSourceValue.date] = defaults[DataSourceValue.date];
+                infos[DataSourceValue.open] = defaults[DataSourceValue.open];
+                infos[DataSourceValue.high] = defaults[DataSourceValue.high];
+                infos[DataSourceValue.low] = defaults[DataSourceValue.low];
+                infos[DataSourceValue.close] = defaults[DataSourceValue.close];
+                infos[DataSourceValue.volume] = defaults[DataSourceValue.volume];
+            }
+
+            //--- symbol mapping
+            fillDefault(DataSourceValue.symbolNorgate);
+            fillDefault(DataSourceValue.symbolStooq);
+            fillDefault(DataSourceValue.symbolYahoo);
+            fillDefault(DataSourceValue.symbolFred);
+            fillDefault(DataSourceValue.symbolIqfeed);
+            fillDefault(DataSourceValue.symbolInteractiveBrokers);
+
+            //===== instantiate data source
+            string dataSource = infos[DataSourceValue.dataSource].ToLower();
+
             if (dataSource.Contains("norgate"))
             {
                 return new DataSourceNorgate(infos);
@@ -357,10 +431,12 @@ namespace TuringTrader.Simulator
             {
                 return new DataSourceAlgorithm(infos);
             }
-            else
+            else if (dataSource.Contains("csv"))
             {
                 return new DataSourceCsv(infos);
             }
+
+            throw new Exception("DataSource: can't instantiate data source");
         }
         #endregion
     }
