@@ -38,6 +38,12 @@ namespace TuringTrader.Simulator
             private static DateTime _lastNDURun = default(DateTime);
             #endregion
             #region internal helpers
+            private void SetName()
+            {
+                // no proper name given, try to retrieve from Norgate
+                string ticker = Info[DataSourceValue.symbolNorgate];
+                Info[DataSourceValue.name] = NDU.Api.GetSecurityName(ticker);
+            }
             private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
             {
                 DateTime barTime = norgate.Date.Date
@@ -253,6 +259,12 @@ namespace TuringTrader.Simulator
             {
                 // make sure Norgate api is properly loaded
                 HandleUnresovledAssemblies();
+
+                if (info[DataSourceValue.name] == info[DataSourceValue.nickName])
+                {
+                    // no proper name given, try to retrieve from Norgate
+                    SetName();
+                }
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)

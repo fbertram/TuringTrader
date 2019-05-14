@@ -6,7 +6,7 @@
 //              http://www.optimalmomentum.com/
 // History:     2018xi22, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -30,7 +30,8 @@ namespace TuringTrader.BooksAndPubs
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
-        private readonly string BENCHMARK = "@60_40.algo";
+        private readonly string BENCHMARK = "@60_40";
+        private Instrument _benchmark = null;
         private Plotter _plotter = new Plotter();
         #endregion
         #region instruments
@@ -38,29 +39,29 @@ namespace TuringTrader.BooksAndPubs
         {
             //--- equity
             new HashSet<string> {
-                "VTI.ETF",   // Vanguard Total Stock Market Index ETF
-                "VEU.ETF",   // Vanguard FTSE All World ex US ETF
+                "VTI",   // Vanguard Total Stock Market Index ETF
+                "VEU",   // Vanguard FTSE All World ex US ETF
                 // could use SPY/ EFA here
-                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
+                "SHY",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- credit
             new HashSet<string> {
-                "HYG.ETF",   // iShares iBoxx High Yield Corporate Bond ETF
+                "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
                 //"CIU.ETF" => changed to IGIB in 06/2018
-                "IGIB.ETF",  // iShares Intermediate-Term Corporate Bond ETF
-                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
+                "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
+                "SHY",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- real estate
             new HashSet<string> {
-                "VNQ.ETF",   // Vanguard Real Estate Index ETF
-                "REM.ETF",   // iShares Mortgage Real Estate ETF
-                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
+                "VNQ",   // Vanguard Real Estate Index ETF
+                "REM",   // iShares Mortgage Real Estate ETF
+                "SHY",   // iShares 1-3 Year Treasury Bond ETF
             },
             //--- economic stress
             new HashSet<string> {
-                "GLD.ETF",   // SPDR Gold Shares ETF
-                "TLT.ETF",   // iShares 20+ Year Treasury Bond ETF
-                "SHY.etf",   // iShares 1-3 Year Treasury Bond ETF
+                "GLD",   // SPDR Gold Shares ETF
+                "TLT",   // iShares 20+ Year Treasury Bond ETF
+                "SHY",   // iShares 1-3 Year Treasury Bond ETF
             },
         };
         #endregion
@@ -148,12 +149,14 @@ namespace TuringTrader.BooksAndPubs
                 }
 
                 // create plots on Sheet 1
+                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
+
                 if (TradingDays > 0)
                 {
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
                 }
             }
 

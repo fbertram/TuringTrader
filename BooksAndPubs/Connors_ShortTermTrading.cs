@@ -14,6 +14,8 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+//#define INCLUDE_TRIN_STRATEGY
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -29,10 +31,11 @@ namespace BooksAndPubs
     public abstract class Connors_ShortTermTrading_Core : Algorithm
     {
         #region internal data
-        private static readonly string MARKET = "$SPX.index";
-        private static readonly string VOLATILITY = "$VIX.index";
-        private static readonly string TRIN = "#SPXTRIN.index";
-
+        private static readonly string MARKET = "$SPX";
+        private static readonly string VOLATILITY = "$VIX";
+#if INCLUDE_TRIN_STRATEGY
+        private static readonly string TRIN = "#SPXTRIN";
+#endif
         private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter = new Plotter();
@@ -53,7 +56,9 @@ namespace BooksAndPubs
 
             AddDataSource(MARKET);
             AddDataSource(VOLATILITY);
+#if INCLUDE_TRIN_STRATEGY
             AddDataSource(TRIN);
+#endif
 
             Deposit(INITIAL_CAPITAL);
             CommissionPerShare = 0.015;
@@ -64,7 +69,9 @@ namespace BooksAndPubs
             {
                 _market = _market ?? FindInstrument(MARKET);
                 _volatility = _volatility ?? FindInstrument(VOLATILITY);
+#if INCLUDE_TRIN_STRATEGY
                 _trin = _trin ?? FindInstrument(TRIN);
+#endif
 
                 int buySell = Rules();
 
@@ -351,6 +358,7 @@ namespace BooksAndPubs
     }
     #endregion
     #region 3. The TRIN
+#if INCLUDE_TRIN_STRATEGY
     public class Connors_ShortTermTrading_Trin : Connors_ShortTermTrading_Core
     {
         [OptimizerParam(45, 75, 5)]
@@ -395,6 +403,7 @@ namespace BooksAndPubs
             return 0;
         }
     }
+#endif
     #endregion
     #region 4. One More Market Timing Strategy with Cumulative RSIs
     public class Connors_ShortTermTrading_MoreCumulativeRsi : Connors_ShortTermTrading_Core

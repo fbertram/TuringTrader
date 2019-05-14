@@ -30,7 +30,7 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private class SimConstantYield : SimulatorCore
             {
-                private static readonly string UNDERLYING_NICK = "^SPX.index";
+                private static readonly string UNDERLYING_NICK = "$SPX.index";
 
                 private List<Bar> _data;
                 private readonly DateTime _startTime;

@@ -79,7 +79,7 @@ namespace TuringTrader.Simulator
             get
             {
                 object value = GetRegistryValue("SimulatorEngine", "HomePath");
-                if (value == null) return null;
+                if (value == null) return "";
                 return value.ToString();
             }
             set
@@ -112,6 +112,19 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public string CachePath
+        /// <summary>
+        /// Property to store path to simulator's cache directory.
+        /// </summary>
+        static public string CachePath
+        {
+            get
+            {
+                return Path.Combine(HomePath, "Cache");
+            }
+        }
+        #endregion
+
         #region static public string MostRecentAlgorithm
         /// <summary>
         /// Property returing the name of the most-recently run algorithm.
@@ -195,6 +208,37 @@ namespace TuringTrader.Simulator
             set
             {
                 _adjustQuotes = value;
+            }
+        }
+        #endregion
+
+        #region static public string DefaultDataSource
+        static public string DefaultDataSource
+        {
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "DefaultDataSource");
+                if (value == null) return "Tiingo";
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("SimulatorEngine", "DefaultDataSource", value);
+            }
+        }
+        #endregion
+        #region static public string TiingoApiKey
+        static public string TiingoApiKey
+        {
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "TiingoApiKey");
+                if (value == null) return "";
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("SimulatorEngine", "TiingoApiKey", value);
             }
         }
         #endregion

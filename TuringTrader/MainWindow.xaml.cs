@@ -75,11 +75,18 @@ namespace TuringTrader
         {
             InitializeComponent();
 
-            //--- set data location
+            //--- settings sanity check
             string path = GlobalSettings.HomePath;
-            if (path == null)
+            if (!Directory.Exists(path))
             {
-                MenuDataLocation_Click(null, null);
+                MessageBox.Show("Please set TuringTrader's home folder");
+                MenuEditSettings_Click(null, null);
+            }
+
+            if (GlobalSettings.DefaultDataSource == "Tiingo" && GlobalSettings.TiingoApiKey.Length < 10)
+            {
+                MessageBox.Show("Please set Tiingo API key");
+                MenuEditSettings_Click(null, null);
             }
 
             //--- set timer event
@@ -167,37 +174,11 @@ namespace TuringTrader
             aboutBox.ShowDialog();
         }
         #endregion
-        #region private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
-        private void MenuDataLocation_Click(object sender, RoutedEventArgs e)
+        #region private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
+        private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
         {
-            FolderBrowserDialog folderDialog = new FolderBrowserDialog()
-            {
-                Title = "Select TuringTrader Home Location"
-            };
-
-            bool? result = folderDialog.ShowDialog();
-            if (result == true)
-            {
-                GlobalSettings.HomePath = folderDialog.SelectedPath;
-            }
-        }
-        #endregion
-        #region private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
-        private void MenuDefaultExtensionXlsm_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".xlsm";
-        }
-        #endregion
-        #region private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
-        private void MenuDefaultExtensionR_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".r";
-        }
-        #endregion
-        #region private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
-        private void MenuDefaultExtensionRmd_Click(object sender, RoutedEventArgs e)
-        {
-            GlobalSettings.DefaultTemplateExtension = ".rmd";
+            var settingsDialog = new Settings();
+            settingsDialog.ShowDialog();
         }
         #endregion
 

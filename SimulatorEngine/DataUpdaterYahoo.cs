@@ -33,7 +33,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         private class DataUpdaterYahoo : DataUpdater
         {
-            #region internal data & helpers
+            #region internal data
             // URL discovered with MultiCharts' QuoteManager
             private static readonly string _urlTemplate = @"http://l1-query.finance.yahoo.com/v8/finance/chart/{0}?interval=1d&period1={1}&period2={2}";
             #endregion

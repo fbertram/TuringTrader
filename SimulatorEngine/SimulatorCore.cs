@@ -72,12 +72,14 @@ namespace TuringTrader.Simulator
 
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
+            DateTime execTime = default(DateTime);
             double price = 0.00;
             switch (ticket.Type)
             {
                 //----- user transactions
                 case OrderType.closeThisBar:
                     execBar = instrument[1];
+                    execTime = SimTime[1];
                     if (execBar.HasBidAsk)
                         price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
                     else
@@ -86,11 +88,13 @@ namespace TuringTrader.Simulator
 
                 case OrderType.openNextBar:
                     execBar = instrument[0];
+                    execTime = SimTime[0];
                     price = execBar.Open;
                     break;
 
                 case OrderType.stopNextBar:
                     execBar = instrument[0];
+                    execTime = SimTime[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price > execBar.High)
@@ -109,6 +113,7 @@ namespace TuringTrader.Simulator
 
                 case OrderType.limitNextBar:
                     execBar = instrument[0];
+                    execTime = SimTime[0];
                     if (ticket.Quantity > 0)
                     {
                         if (ticket.Price < execBar.Low)
@@ -130,18 +135,26 @@ namespace TuringTrader.Simulator
                 case OrderType.instrumentDelisted:
                 case OrderType.endOfSimFakeClose:
                     execBar = instrument[0];
+                    execTime = SimTime[0];
                     price = execBar.Close;
                     break;
 
                 case OrderType.optionExpiryClose:
                     // execBar = instrument[1]; // option bar
                     execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    execTime = SimTime[1];
                     price = ticket.Price;
                     break;
 
                 default:
                     throw new Exception("SimulatorCore.ExecOrder: unknown order type");
             }
+
+#if false
+            if (execBar.Time != execTime)
+                Output.WriteLine("WARNING: {0}: bar time mismatch. expected {1:MM/dd/yyyy}, found {2:MM/dd/yyyy}", 
+                    instrument.Symbol, execTime, execBar.Time);
+#endif
 
             // adjust position, unless it's the end-of-sim order
             if (ticket.Type != OrderType.endOfSimFakeClose)

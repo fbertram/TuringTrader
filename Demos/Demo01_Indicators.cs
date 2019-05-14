@@ -30,7 +30,7 @@ namespace TuringTrader.Demos
         #region internal data
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
-        private readonly string _instrumentNick = "$SPX.index";
+        private readonly string _instrumentNick = "$SPX";
         private readonly double _offsetPrice = -1800.0;
         #endregion
 

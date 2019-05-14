@@ -93,6 +93,7 @@
     <Compile Include="AlgorithmLoader.cs" />
     <Compile Include="DataSourceAlgorithm.cs" />
     <Compile Include="DataSourceConstantYield.cs" />
+    <Compile Include="DataSourceTiingo.cs" />
     <Compile Include="DataUpdaterFred.cs" />
     <Compile Include="LogAnalysis.cs" />
     <Compile Include="Algorithm.cs" />

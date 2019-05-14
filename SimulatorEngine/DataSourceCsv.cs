@@ -399,10 +399,7 @@ namespace TuringTrader.Simulator
                 // expand relative paths, if required
                 if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
                 && !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
-                {
-                    Info[DataSourceValue.dataPath] = string.Format(@"{0}\{1}",
-                        Info[DataSourceValue.infoPath], Info[DataSourceValue.dataPath]);
-                }
+                    Info[DataSourceValue.dataPath] = Path.Combine(DataPath, Info[DataSourceValue.dataPath]);
 
                 // dataPath should be either a file name, or a directory
                 // if it's neither, try to create a directory

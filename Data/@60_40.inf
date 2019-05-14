@@ -1,5 +1,5 @@
 name=60/40 Portfolio
-dataPath=Data\@60_40.algo
+dataPath=Data\@60_40
 ticker=60/40
 date={1}
 time=16:00

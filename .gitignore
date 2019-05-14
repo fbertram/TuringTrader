@@ -256,4 +256,6 @@ Help/media/
 Help/scripts/
 Help/styles/
 Help/toc/
-Data/Data/
+Cache/
+Data/Data/$SPX/
+Data/Data/$VIX/

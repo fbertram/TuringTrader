@@ -27,18 +27,18 @@ namespace BooksAndPubs
     {
         private static readonly string[] UNIVERSE =
         {
-            "XLY.etf", // consumer discretionary
-            "XLP.etf", // consumer staples
-            "XLE.etf", // energy
-            "XLF.etf", // financials
-            "XLV.etf", // health care
-            "XLI.etf", // industrials
-            "XLB.etf", // materials
-            "XLK.etf", // technology
-            "XLU.etf", // utilities
+            "XLY", // consumer discretionary
+            "XLP", // consumer staples
+            "XLE", // energy
+            "XLF", // financials
+            "XLV", // health care
+            "XLI", // industrials
+            "XLB", // materials
+            "XLK", // technology
+            "XLU", // utilities
         };
-        private static readonly string SAFE_INSTRUMENT = "TLT.etf"; // 20+ year treasury bonds
-        private static readonly string BENCHMARK = "$SPX.index"; // S&P 500
+        private static readonly string SAFE_INSTRUMENT = "TLT"; // 20+ year treasury bonds
+        private static readonly string BENCHMARK = "$SPX"; // S&P 500
         private static readonly int RANK1_DAYS = 252;
         private static readonly int RANK2_DAYS = 126;
 

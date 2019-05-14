@@ -190,6 +190,116 @@ namespace TuringTrader.Simulator
     /// </summary>
     public partial class DataSourceCollection
     {
+        #region internal helpers
+        private static void LoadInfoFile(string infoPathName, Dictionary<DataSourceValue, string> infos)
+        {
+            string[] lines = File.ReadAllLines(infoPathName);
+            foreach (string line in lines)
+            {
+                int idx = line.IndexOf('=');
+
+                try
+                {
+                    DataSourceValue key = (DataSourceValue)
+                        Enum.Parse(typeof(DataSourceValue), line.Substring(0, idx), true);
+
+                    string value = line.Substring(idx + 1);
+
+                    infos[key] = value;
+                }
+                catch (Exception)
+                {
+                    throw new Exception(string.Format("error parsing data source info {0}: line '{1}", infoPathName, line));
+                }
+            }
+        }
+
+        private static Dictionary<DataSourceValue, string> _defaultInfo = null;
+        /// <summary>
+        /// Datasource default info container.
+        /// </summary>
+        private static Dictionary<DataSourceValue, string> GetDefaultInfo(Dictionary<DataSourceValue, string> infos)
+        {
+            string nickname = infos[DataSourceValue.nickName];
+            string ticker = infos.ContainsKey(DataSourceValue.ticker)
+                ? infos[DataSourceValue.ticker]
+                : infos[DataSourceValue.nickName];
+
+            //--- load defaults file, create copy
+            if (_defaultInfo == null)
+            {
+                _defaultInfo = new Dictionary<DataSourceValue, string>()
+                {
+                    // general info
+                    { DataSourceValue.nickName, "{0}" },
+                    { DataSourceValue.name, "{0}" },
+                    { DataSourceValue.ticker, "{0}" },
+                    //{ DataSourceValue.dataSource, "csv" },
+                    { DataSourceValue.dataSource, GlobalSettings.DefaultDataSource },
+                    // csv file defaults
+                    { DataSourceValue.dataPath, "Data\\{0}" },
+                    { DataSourceValue.date, "{1:MM/dd/yyyy}" },
+                    { DataSourceValue.time, "16:00"},
+                    { DataSourceValue.open, "{2:F2}" },
+                    { DataSourceValue.high, "{3:F2}" },
+                    { DataSourceValue.low, "{4:F2}" },
+                    { DataSourceValue.close, "{5:F2}" },
+                    { DataSourceValue.volume, "{6}" },
+                    // symbol mapping
+                    { DataSourceValue.symbolYahoo, "{0}"},
+                    { DataSourceValue.symbolFred, "{0}"},
+                    { DataSourceValue.symbolNorgate, "{0}"},
+                    { DataSourceValue.symbolIqfeed, "{0}"},
+                    { DataSourceValue.symbolStooq, "{0}"},
+                    { DataSourceValue.symbolTiingo, "{0}"},
+                    { DataSourceValue.symbolInteractiveBrokers, "{0}"},
+                };
+
+                string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
+
+                if (File.Exists(infoPathName))
+                    LoadInfoFile(infoPathName, _defaultInfo);
+            }
+
+            var defaultInfo = new Dictionary<DataSourceValue, string>(_defaultInfo);
+
+            //--- fill in nickname, as required
+            List<DataSourceValue> updateWithNickname = new List<DataSourceValue>
+            {
+                DataSourceValue.nickName,
+                DataSourceValue.name,
+                DataSourceValue.dataPath,
+            };
+
+            foreach (var field in updateWithNickname)
+            {
+                defaultInfo[field] = string.Format(_defaultInfo[field], nickname);
+            }
+
+            //--- fill in ticker, as required
+            List<DataSourceValue> updateWithTicker = new List<DataSourceValue>
+            {
+                DataSourceValue.ticker,
+                DataSourceValue.symbolYahoo,
+                DataSourceValue.symbolNorgate,
+                DataSourceValue.symbolIqfeed,
+                DataSourceValue.symbolStooq,
+                DataSourceValue.symbolInteractiveBrokers,
+                DataSourceValue.symbolFred,
+                DataSourceValue.symbolTiingo,
+            };
+
+            foreach (var field in updateWithTicker)
+            {
+                defaultInfo[field] = string.Format(_defaultInfo[field], ticker);
+            }
+
+            return defaultInfo;
+        }
+
+
+        #endregion
+
         #region private static string DataPath
         /// <summary>
         /// Path to data base.
@@ -208,68 +318,131 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="nickname">nickname</param>
         /// <returns>data source object</returns>
-        static public DataSource New(string nickname)
+        static public DataSource New(string nicknameParam)
         {
-            // check for info file
-            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
+            //===== setup info structure
+            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
 
-            if (!File.Exists(infoPathName))
-                throw new Exception("failed to locate data source info for " + nickname);
-
-            // create info structure
-            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>
+            //===== load from .inf file
+            if (!nicknameParam.Contains(":"))
             {
-                { DataSourceValue.nickName, nickname },
-                { DataSourceValue.infoPath, DataPath },
-                { DataSourceValue.ticker, nickname },   // default value, expected to be overwritten
-            };
+                infos[DataSourceValue.nickName] = nicknameParam;
+                string infoPathName = Path.Combine(DataPath, nicknameParam + ".inf");
 
-            // load info file
-            string[] lines = File.ReadAllLines(infoPathName);
-            foreach (string line in lines)
-            {
-                int idx = line.IndexOf('=');
-
-                try
+                if (File.Exists(infoPathName))
                 {
-                    DataSourceValue key = (DataSourceValue)
-                        Enum.Parse(typeof(DataSourceValue), line.Substring(0, idx), true);
-
-                    string value = line.Substring(idx + 1);
-
-                    infos[key] = value;
-                }
-                catch (Exception)
-                {
-                    throw new Exception(string.Format("error parsing data source info for {0}: line '{1}", nickname, line));
+                    LoadInfoFile(infoPathName, infos);
+                    infos[DataSourceValue.infoPath] = infoPathName;
                 }
             }
 
-            // instantiate data source
-            if (infos.ContainsKey(DataSourceValue.dataSource)
-            && infos[DataSourceValue.dataSource].ToLower().Contains("norgate"))
+            //===== optional: data source specified as part of nickname
+            else
             {
-                return new DataSourceNorgate(infos);
+                string[] tmp = nicknameParam.Split(':');
+
+                infos[DataSourceValue.dataSource] = nicknameParam; // TODO: do we need to use a substring here?
+                infos[DataSourceValue.nickName] = tmp[1];
             }
-            else if (infos.ContainsKey(DataSourceValue.dataSource)
-            && infos[DataSourceValue.dataSource].ToLower().Contains("fakeoptions"))
+
+            //===== fill in defaults, as required
+            Dictionary<DataSourceValue, string> defaults = GetDefaultInfo(infos);
+
+            void defaultIfUndefined(DataSourceValue value)
             {
-                return new DataSourceFakeOptions(infos);
+                if (!infos.ContainsKey(value))
+                    infos[value] = defaults[value];
             }
-            else if (infos.ContainsKey(DataSourceValue.dataSource)
-            && infos[DataSourceValue.dataSource].ToLower().Contains("constantyield"))
+
+            //--- name, ticker
+            defaultIfUndefined(DataSourceValue.name);
+            defaultIfUndefined(DataSourceValue.ticker);
+
+            //--- data source
+            // any mapping field (other than time) implies
+            // that the data source is csv
+            if (!infos.ContainsKey(DataSourceValue.dataSource)
+            && (infos.ContainsKey(DataSourceValue.date)
+                || infos.ContainsKey(DataSourceValue.open)
+                || infos.ContainsKey(DataSourceValue.high)
+                || infos.ContainsKey(DataSourceValue.low)
+                || infos.ContainsKey(DataSourceValue.close)
+                || infos.ContainsKey(DataSourceValue.volume)
+                || infos.ContainsKey(DataSourceValue.bid)
+                || infos.ContainsKey(DataSourceValue.ask)
+                || infos.ContainsKey(DataSourceValue.bidSize)
+                || infos.ContainsKey(DataSourceValue.askSize)))
             {
-                return new DataSourceConstantYield(infos);
-            }
-            else if (infos.ContainsKey(DataSourceValue.dataSource)
-            && infos[DataSourceValue.dataSource].ToLower().Contains("algorithm"))
-            {
-                return new DataSourceAlgorithm(infos);
+                infos[DataSourceValue.dataSource] = "csv";
             }
             else
             {
+                defaultIfUndefined(DataSourceValue.dataSource);
+            }
+
+            //--- parse info
+            defaultIfUndefined(DataSourceValue.time);
+
+            // if the data source is csv, and none of the mapping
+            // fields are set, we use a default mapping
+            if (infos[DataSourceValue.dataSource].ToLower().Contains("csv")
+            && !infos.ContainsKey(DataSourceValue.date)
+            && !infos.ContainsKey(DataSourceValue.open)
+            && !infos.ContainsKey(DataSourceValue.high)
+            && !infos.ContainsKey(DataSourceValue.low)
+            && !infos.ContainsKey(DataSourceValue.close)
+            && !infos.ContainsKey(DataSourceValue.volume)
+            && !infos.ContainsKey(DataSourceValue.bid)
+            && !infos.ContainsKey(DataSourceValue.ask)
+            && !infos.ContainsKey(DataSourceValue.bidSize)
+            && !infos.ContainsKey(DataSourceValue.askSize))
+            {
+                infos[DataSourceValue.date] = defaults[DataSourceValue.date];
+                infos[DataSourceValue.open] = defaults[DataSourceValue.open];
+                infos[DataSourceValue.high] = defaults[DataSourceValue.high];
+                infos[DataSourceValue.low] = defaults[DataSourceValue.low];
+                infos[DataSourceValue.close] = defaults[DataSourceValue.close];
+                infos[DataSourceValue.volume] = defaults[DataSourceValue.volume];
+            }
+
+            //--- symbol mapping
+            defaultIfUndefined(DataSourceValue.symbolNorgate);
+            defaultIfUndefined(DataSourceValue.symbolStooq);
+            defaultIfUndefined(DataSourceValue.symbolYahoo);
+            defaultIfUndefined(DataSourceValue.symbolFred);
+            defaultIfUndefined(DataSourceValue.symbolIqfeed);
+            defaultIfUndefined(DataSourceValue.symbolTiingo);
+            defaultIfUndefined(DataSourceValue.symbolInteractiveBrokers);
+
+            //===== instantiate data source
+            string dataSource = infos[DataSourceValue.dataSource].ToLower();
+
+            if (dataSource.Contains("norgate"))
+            {
+                return new DataSourceNorgate(infos);
+            }
+            else if (dataSource.Contains("tiingo"))
+            {
+                return new DataSourceTiingo(infos);
+            }
+            else if (dataSource.Contains("fakeoptions"))
+            {
+                return new DataSourceFakeOptions(infos);
+            }
+            else if (dataSource.Contains("constantyield"))
+            {
+                return new DataSourceConstantYield(infos);
+            }
+            else if (dataSource.Contains("algorithm"))
+            {
+                return new DataSourceAlgorithm(infos);
+            }
+            else if (dataSource.Contains("csv"))
+            {
                 return new DataSourceCsv(infos);
             }
+
+            throw new Exception("DataSource: can't instantiate data source");
         }
         #endregion
     }

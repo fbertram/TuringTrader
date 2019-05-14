@@ -136,6 +136,10 @@ namespace TuringTrader.Simulator
         /// </summary>
         symbolFred,
         /// <summary>
+        /// symbol for Tiingo
+        /// </summary>
+        symbolTiingo,
+        /// <summary>
         /// data source to use
         /// </summary>
         dataSource,

@@ -78,6 +78,8 @@ namespace NorgateData.DataAccess
         public static AdjustmentType SetAdjustmentType { get; set; }
         public static PaddingType SetPaddingType { get; set; }
         public static OperationResult GetData(string symbol, out List<RecOHLC> result, DateTime fromDate, DateTime toDate) { result = null; return null; }
+        public static string GetSecurityName(Int32 symbol) { return default(string); }
+        public static string GetSecurityName(string symbol) { return default(string); }
     }
 }
 

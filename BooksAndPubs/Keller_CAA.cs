@@ -7,7 +7,7 @@
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2606884
 // History:     2019iii07, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -31,7 +31,8 @@ namespace BooksAndPubs
     {
         #region internal data
         //private readonly string BENCHMARK = "^SPX.index";
-        private readonly string BENCHMARK = "@60_40.algo";
+        private readonly string BENCHMARK = "@60_40";
+        private Instrument _benchmark = null;
         private Plotter _plotter = new Plotter();
 
         protected double TVOL;
@@ -114,10 +115,11 @@ namespace BooksAndPubs
                     }
                 }
 
+                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 _plotter.SelectChart(Name, "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot("NAV", NetAssetValue[0]);
-                _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+                _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
 
                 _plotter.SelectChart(Name + " holdings", "date");
                 _plotter.SetX(SimTime[0]);
@@ -161,18 +163,18 @@ namespace BooksAndPubs
         {
             RISKY_ASSETS = new List<string>
             {
-                "SPY.etf", // S&P 500
-                "EFA.etf", // EAFE
-                "EEM.etf", // Emerging Markets
-                "QQQ.etf", // US Technology Sector
-                "EWJ.etf", // Japanese Equities
-                "HYG.etf", // High Yield Bonds
+                "SPY", // S&P 500
+                "EFA", // EAFE
+                "EEM", // Emerging Markets
+                "QQQ", // US Technology Sector
+                "EWJ", // Japanese Equities
+                "HYG", // High Yield Bonds
             };
 
             SAFE_ASSETS = new List<string>
             {
-                "IEF.etf", // 10-Year Treasuries
-                "BIL.etf", // T-Bills
+                "IEF", // 10-Year Treasuries
+                "BIL", // T-Bills
             };
         }
     }

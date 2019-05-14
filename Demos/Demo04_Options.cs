@@ -35,7 +35,7 @@ namespace TuringTrader.Demos
         #region internal data
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
-        private readonly string _underlyingNickname = "$SPX.index";
+        private readonly string _underlyingNickname = "$SPX";
 #if USE_FAKE_QUOTES
         private readonly string _optionsNickname = "$SPX.fake.options";
 #else
