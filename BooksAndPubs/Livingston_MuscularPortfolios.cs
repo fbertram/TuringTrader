@@ -6,7 +6,7 @@
 //               https://muscularportfolios.com/
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -30,7 +30,8 @@ namespace TuringTrader.BooksAndPubs
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
-        private readonly string BENCHMARK = "@60_40.algo";
+        private readonly string BENCHMARK = "@60_40";
+        private Instrument _benchmark = null;
         private Plotter _plotter = new Plotter();
 
         protected HashSet<string> _etfMenu = null;
@@ -68,6 +69,8 @@ namespace TuringTrader.BooksAndPubs
 
                 if (instrumentsMissing)
                     continue;
+
+                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 // find our trading instruments
                 var instruments = Instruments
@@ -118,7 +121,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
 
                     // create holdings on Sheet 2
                     _plotter.SelectChart(Name + " holdings", "date");
@@ -167,34 +170,34 @@ namespace TuringTrader.BooksAndPubs
                 // until 2014, making this hard to simulate
 
                 //--- equities
-                "VONE.etf", // Vanguard Russell 1000 ETF
-                "VIOO.etf", // Vanguard Small-Cap 600 ETF
-                "VEA.etf",  // Vanguard FTSE Developed Markets ETF
-                "VWO.etf",  // Vanguard FTSE Emerging Markets ETF
+                "VONE", // Vanguard Russell 1000 ETF
+                "VIOO", // Vanguard Small-Cap 600 ETF
+                "VEA",  // Vanguard FTSE Developed Markets ETF
+                "VWO",  // Vanguard FTSE Emerging Markets ETF
                 //--- hard assets
-                "VNQ.etf",  // Vanguard Real Estate ETF
-                "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF
-                "IAU.etf",  // iShares Gold Trust
+                "VNQ",  // Vanguard Real Estate ETF
+                "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
+                "IAU",  // iShares Gold Trust
                 //--- fixed-income
-                "VGLT.etf", // Vanguard Long-Term Govt. Bond ETF
-                "SHV.etf",  // iShares Short-Term Treasury ETF
+                "VGLT", // Vanguard Long-Term Govt. Bond ETF
+                "SHV",  // iShares Short-Term Treasury ETF
     #else
                 // the book mentions that CXO is using different ETFs
                 // we use these, to simulate back to 2007
             
                 //--- equities
-                "SPY.etf", // SPDR S&P 500 Trust ETF
-                "IWM.etf", // iShares Russell 2000 ETF
-                "EFA.etf", // iShares MSCI EAFE ETF
-                "EEM.etf", // iShares MSCI Emerging Markets ETF
+                "SPY", // SPDR S&P 500 Trust ETF
+                "IWM", // iShares Russell 2000 ETF
+                "EFA", // iShares MSCI EAFE ETF
+                "EEM", // iShares MSCI Emerging Markets ETF
                 //--- hard assets
-                "VNQ.etf", // Vanguard Real Estate ETF
-                "DBC.etf", // Invesco DB Commodity Index Tracking ETF
-                "GLD.etf", // SPDR Gold Shares ETF
+                "VNQ", // Vanguard Real Estate ETF
+                "DBC", // Invesco DB Commodity Index Tracking ETF
+                "GLD", // SPDR Gold Shares ETF
                 //--- fixed income
-                "TLT.etf", // iShares 20+ Year Treasury Bond ETF
+                "TLT", // iShares 20+ Year Treasury Bond ETF
                 // Cash... substituted by T-Bill, to make strategy work
-                "BIL.etf"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+                "BIL"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
     #endif
             };
         }
@@ -217,21 +220,21 @@ namespace TuringTrader.BooksAndPubs
                 // simulation period, leading to skewed results
 
                 //--- equities
-                "VTV.etf",  // Vanguard Value Index ETF
-                "VUG.etf",  // Vanguard Growth Index ETF
-                "VIOV.etf", // Vanguard S&P Small-Cap 600 Value Index ETF
-                "VIOG.etf", // Vanguard S&P Small-Cap 600 Growth Index ETF
-                "VEA.etf",  // Vanguard Developed Markets Index ETF
-                "VWO.etf",  // Vanguard Emerging Market Stock Index ETF
+                "VTV",  // Vanguard Value Index ETF
+                "VUG",  // Vanguard Growth Index ETF
+                "VIOV", // Vanguard S&P Small-Cap 600 Value Index ETF
+                "VIOG", // Vanguard S&P Small-Cap 600 Growth Index ETF
+                "VEA",  // Vanguard Developed Markets Index ETF
+                "VWO",  // Vanguard Emerging Market Stock Index ETF
                 //--- hard assets
-                "VNQ.etf",  // Vanguard Real Estate Index ETF
-                "PDBC.etf", // Invesco Optimum Yield Diversified Commodity Strategy ETF
-                "IAU.etf",  // iShares Gold ETF
+                "VNQ",  // Vanguard Real Estate Index ETF
+                "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
+                "IAU",  // iShares Gold ETF
                 //--- fixed-income
-                "EDV.etf",  // Vanguard Extended Duration ETF
-                "VGIT.etf", // Vanguard Intermediate-Term Treasury Index ETF
-                "VCLT.etf", // Vanguard Long-Term Corporate Bond Index ETF
-                "BNDX.etf", // Vanguard Total International Bond Index ETF
+                "EDV",  // Vanguard Extended Duration ETF
+                "VGIT", // Vanguard Intermediate-Term Treasury Index ETF
+                "VCLT", // Vanguard Long-Term Corporate Bond Index ETF
+                "BNDX", // Vanguard Total International Bond Index ETF
             };
         }
 

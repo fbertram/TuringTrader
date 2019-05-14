@@ -7,7 +7,7 @@
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3212862
 // History:     2019ii18, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -31,7 +31,8 @@ namespace BooksAndPubs
     {
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
-        private readonly string BENCHMARK = "@60_40.algo";
+        private readonly string BENCHMARK = "@60_40";
+        private Instrument _benchmark = null;
         private Plotter _plotter = new Plotter();
 
         protected List<string> riskyUniverse = null;
@@ -80,6 +81,8 @@ namespace BooksAndPubs
 
                 if (instrumentsMissing)
                     continue;
+
+                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 // find T top risky assets
                 IEnumerable<Instrument> topInstruments = Instruments
@@ -135,7 +138,7 @@ namespace BooksAndPubs
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(FindInstrument(BENCHMARK).Symbol, FindInstrument(BENCHMARK).Close[0]);
+                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
 
                     // holdings on Sheet 2
                     _plotter.SelectChart(Name + " holdings", "date");
@@ -192,23 +195,23 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                "SPY.etf", // SPDR S&P 500 ETF
-                "VEA.etf", // Vanguard FTSE Developed Markets ETF
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf", // Vanguard Total Bond Market ETF
+                "SPY", // SPDR S&P 500 ETF
+                "VEA", // Vanguard FTSE Developed Markets ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND", // Vanguard Total Bond Market ETF
             };
 
             cashUniverse = new List<string>
             {
-                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                "SHY", // iShares 1-3 Year Treasury Bond ETF
+                "IEF", // iShares 7-10 Year Treasury Bond ETF
+                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf"  // Vanguard Total Bond Market ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 2; // (risky) top parameter
@@ -223,25 +226,25 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                    "SPY.etf", // SPDR S&P 500 ETF
-                    "VEA.etf", // Vanguard FTSE Developed Markets ETF
-                    "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                    "LQD.etf", // iShares iBoxx Investment Grade Corporate Bond ETF
-                    "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-                    "HYG.etf"  // iShares iBoxx High Yield Corporate Bond ETF
+                    "SPY", // SPDR S&P 500 ETF
+                    "VEA", // Vanguard FTSE Developed Markets ETF
+                    "VWO", // Vanguard FTSE Emerging Markets ETF
+                    "LQD", // iShares iBoxx Investment Grade Corporate Bond ETF
+                    "TLT", // iShares 20+ Year Treasury Bond ETF
+                    "HYG"  // iShares iBoxx High Yield Corporate Bond ETF
             };
 
             cashUniverse = new List<string>
             {
-                    "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-                    "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                    "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                    "SHY", // iShares 1-3 Year Treasury Bond ETF
+                    "IEF", // iShares 7-10 Year Treasury Bond ETF
+                    "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                    "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                    "BND.etf"  // Vanguard Total Bond Market ETF
+                    "VWO", // Vanguard FTSE Emerging Markets ETF
+                    "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 6; // (risky) top parameter
@@ -256,31 +259,31 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                "SPY.etf", // SPDR S&P 500 ETF
-                "IWM.etf", // iShares Russell 2000 ETF
-                "QQQ.etf", // Invesco Nasdaq-100 ETF
-                "VGK.etf", // Vanguard FTSE Europe ETF
-                "EWJ.etf", // iShares MSCI Japan ETF
-                "VWO.etf", // Vanguard MSCI Emerging Markets ETF
-                "VNQ.etf", // Vanguard Real Estate ETF
-                "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
-                "GLD.etf", // SPDR Gold Trust ETF
-                "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-                "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
-                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                "SPY", // SPDR S&P 500 ETF
+                "IWM", // iShares Russell 2000 ETF
+                "QQQ", // Invesco Nasdaq-100 ETF
+                "VGK", // Vanguard FTSE Europe ETF
+                "EWJ", // iShares MSCI Japan ETF
+                "VWO", // Vanguard MSCI Emerging Markets ETF
+                "VNQ", // Vanguard Real Estate ETF
+                "GSG", // iShares S&P GSCI Commodity-Indexed Trust
+                "GLD", // SPDR Gold Trust ETF
+                "TLT", // iShares 20+ Year Treasury Bond ETF
+                "HYG", // iShares iBoxx High Yield Corporate Bond ETF
+                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             cashUniverse = new List<string>
             {
-                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                "SHY", // iShares 1-3 Year Treasury Bond ETF
+                "IEF", // iShares 7-10 Year Treasury Bond ETF
+                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf"  // Vanguard Total Bond Market ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 6; // (risky) top parameter
@@ -296,23 +299,23 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                "SPY.etf", // SPDR S&P 500 ETF
-                "VEA.etf", // Vanguard FTSE Developed Markets ETF
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf", // Vanguard Total Bond Market ETF
+                "SPY", // SPDR S&P 500 ETF
+                "VEA", // Vanguard FTSE Developed Markets ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND", // Vanguard Total Bond Market ETF
             };
 
             cashUniverse = new List<string>
             {
-                "SHV.etf", // iShares Short Treasury Bond ETF
-                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
+                "SHV", // iShares Short Treasury Bond ETF
+                "IEF", // iShares 7-10 Year Treasury Bond ETF
+                "UST"  // ProShares Ultra 7-10 Year Treasury ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf"  // Vanguard Total Bond Market ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 4; // (risky) top parameter
@@ -327,31 +330,31 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                "SPY.etf", // SPDR S&P 500 ETF
-                "IWM.etf", // iShares Russell 2000 ETF
-                "QQQ.etf", // Invesco Nasdaq-100 ETF
-                "VGK.etf", // Vanguard FTSE Europe ETF
-                "EWJ.etf", // iShares MSCI Japan ETF
-                "VWO.etf", // Vanguard MSCI Emerging Markets ETF
-                "VNQ.etf", // Vanguard Real Estate ETF
-                "GSG.etf", // iShares S&P GSCI Commodity-Indexed Trust
-                "GLD.etf", // SPDR Gold Trust ETF
-                "TLT.etf", // iShares 20+ Year Treasury Bond ETF
-                "HYG.etf", // iShares iBoxx High Yield Corporate Bond ETF
-                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                "SPY", // SPDR S&P 500 ETF
+                "IWM", // iShares Russell 2000 ETF
+                "QQQ", // Invesco Nasdaq-100 ETF
+                "VGK", // Vanguard FTSE Europe ETF
+                "EWJ", // iShares MSCI Japan ETF
+                "VWO", // Vanguard MSCI Emerging Markets ETF
+                "VNQ", // Vanguard Real Estate ETF
+                "GSG", // iShares S&P GSCI Commodity-Indexed Trust
+                "GLD", // SPDR Gold Trust ETF
+                "TLT", // iShares 20+ Year Treasury Bond ETF
+                "HYG", // iShares iBoxx High Yield Corporate Bond ETF
+                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             cashUniverse = new List<string>
             {
-                "SHY.etf", // iShares 1-3 Year Treasury Bond ETF
-                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                "LQD.etf"  // iShares iBoxx Investment Grade Corporate Bond ETF
+                "SHY", // iShares 1-3 Year Treasury Bond ETF
+                "IEF", // iShares 7-10 Year Treasury Bond ETF
+                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf"  // Vanguard Total Bond Market ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 2; // (risky) top parameter
@@ -366,20 +369,20 @@ namespace BooksAndPubs
         {
             riskyUniverse = new List<string>
             {
-                "SPY.etf", // SPDR S&P 500 ETF
+                "SPY", // SPDR S&P 500 ETF
             };
 
             cashUniverse = new List<string>
             {
-                "SHV.etf", // iShares Short Treasury Bond ETF
-                "IEF.etf", // iShares 7-10 Year Treasury Bond ETF
-                "UST.etf"  // ProShares Ultra 7-10 Year Treasury ETF
+                "SHV", // iShares Short Treasury Bond ETF
+                "IEF", // iShares 7-10 Year Treasury Bond ETF
+                "UST"  // ProShares Ultra 7-10 Year Treasury ETF
             };
 
             protectiveUniverse = new List<string>
             {
-                "VWO.etf", // Vanguard FTSE Emerging Markets ETF
-                "BND.etf"  // Vanguard Total Bond Market ETF
+                "VWO", // Vanguard FTSE Emerging Markets ETF
+                "BND"  // Vanguard Total Bond Market ETF
             };
 
             T = 1; // (risky) top parameter

@@ -191,14 +191,8 @@ namespace TuringTrader.Simulator
     public partial class DataSourceCollection
     {
         #region internal helpers
-        private static void LoadInfoFile(string nickname, Dictionary<DataSourceValue, string> infos)
+        private static void LoadInfoFile(string infoPathName, Dictionary<DataSourceValue, string> infos)
         {
-            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
-
-            if (!File.Exists(infoPathName))
-                //throw new Exception("failed to locate data source info for " + nickname);
-                return;
-
             string[] lines = File.ReadAllLines(infoPathName);
             foreach (string line in lines)
             {
@@ -215,7 +209,7 @@ namespace TuringTrader.Simulator
                 }
                 catch (Exception)
                 {
-                    throw new Exception(string.Format("error parsing data source info for {0}: line '{1}", nickname, line));
+                    throw new Exception(string.Format("error parsing data source info {0}: line '{1}", infoPathName, line));
                 }
             }
         }
@@ -224,8 +218,13 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Datasource default info container.
         /// </summary>
-        private static Dictionary<DataSourceValue, string> GetDefaultInfo(string nickname)
+        private static Dictionary<DataSourceValue, string> GetDefaultInfo(Dictionary<DataSourceValue, string> infos)
         {
+            string nickname = infos[DataSourceValue.nickName];
+            string ticker = infos.ContainsKey(DataSourceValue.ticker)
+                ? infos[DataSourceValue.ticker]
+                : infos[DataSourceValue.nickName];
+
             //--- load defaults file, create copy
             if (_defaultInfo == null)
             {
@@ -235,8 +234,9 @@ namespace TuringTrader.Simulator
                     { DataSourceValue.nickName, "{0}" },
                     { DataSourceValue.name, "{0}" },
                     { DataSourceValue.ticker, "{0}" },
-                    { DataSourceValue.dataSource, "csv" },
-                    // csv file defaults, {0} will be filled with nickname
+                    //{ DataSourceValue.dataSource, "csv" },
+                    { DataSourceValue.dataSource, GlobalSettings.DefaultDataSource },
+                    // csv file defaults
                     { DataSourceValue.dataPath, "Data\\{0}" },
                     { DataSourceValue.date, "{1:MM/dd/yyyy}" },
                     { DataSourceValue.time, "16:00"},
@@ -245,49 +245,53 @@ namespace TuringTrader.Simulator
                     { DataSourceValue.low, "{4:F2}" },
                     { DataSourceValue.close, "{5:F2}" },
                     { DataSourceValue.volume, "{6}" },
-                    // symbol mapping, {0} will be filled with ticker
-                    { DataSourceValue.symbolYahoo,  "{0}"},
-                    { DataSourceValue.symbolFred,  "{0}"},
-                    { DataSourceValue.symbolNorgate,  "{0}"},
-                    { DataSourceValue.symbolIqfeed,  "{0}"},
-                    { DataSourceValue.symbolStooq,  "{0}"},
-                    { DataSourceValue.symbolInteractiveBrokers,  "{0}"},
+                    // symbol mapping
+                    { DataSourceValue.symbolYahoo, "{0}"},
+                    { DataSourceValue.symbolFred, "{0}"},
+                    { DataSourceValue.symbolNorgate, "{0}"},
+                    { DataSourceValue.symbolIqfeed, "{0}"},
+                    { DataSourceValue.symbolStooq, "{0}"},
+                    { DataSourceValue.symbolTiingo, "{0}"},
+                    { DataSourceValue.symbolInteractiveBrokers, "{0}"},
                 };
 
-                LoadInfoFile("_defaults_", _defaultInfo);
+                string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
+
+                if (File.Exists(infoPathName))
+                    LoadInfoFile(infoPathName, _defaultInfo);
             }
 
             var defaultInfo = new Dictionary<DataSourceValue, string>(_defaultInfo);
 
-            //--- update some fields with nickname
+            //--- fill in nickname, as required
             List<DataSourceValue> updateWithNickname = new List<DataSourceValue>
             {
-                DataSourceValue.name,
                 DataSourceValue.nickName,
-                DataSourceValue.ticker,
+                DataSourceValue.name,
                 DataSourceValue.dataPath,
             };
-
 
             foreach (var field in updateWithNickname)
             {
                 defaultInfo[field] = string.Format(_defaultInfo[field], nickname);
             }
 
-            //--- update some fields with ticker
+            //--- fill in ticker, as required
             List<DataSourceValue> updateWithTicker = new List<DataSourceValue>
             {
+                DataSourceValue.ticker,
                 DataSourceValue.symbolYahoo,
                 DataSourceValue.symbolNorgate,
                 DataSourceValue.symbolIqfeed,
                 DataSourceValue.symbolStooq,
                 DataSourceValue.symbolInteractiveBrokers,
+                DataSourceValue.symbolFred,
+                DataSourceValue.symbolTiingo,
             };
-
 
             foreach (var field in updateWithTicker)
             {
-                defaultInfo[field] = string.Format(_defaultInfo[field], defaultInfo[DataSourceValue.ticker]);
+                defaultInfo[field] = string.Format(_defaultInfo[field], ticker);
             }
 
             return defaultInfo;
@@ -314,48 +318,45 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="nickname">nickname</param>
         /// <returns>data source object</returns>
-        static public DataSource New(string nickname)
+        static public DataSource New(string nicknameParam)
         {
-            //===== load from .inf file
+            //===== setup info structure
             Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
-            infos[DataSourceValue.nickName] = nickname;
 
-            string infoPathName = Path.Combine(DataPath, nickname + ".inf");
-            if (File.Exists(infoPathName))
+            //===== load from .inf file
+            if (!nicknameParam.Contains(":"))
             {
-                infos[DataSourceValue.infoPath] = DataPath;
-                LoadInfoFile(nickname, infos);
+                infos[DataSourceValue.nickName] = nicknameParam;
+                string infoPathName = Path.Combine(DataPath, nicknameParam + ".inf");
+
+                if (File.Exists(infoPathName))
+                {
+                    LoadInfoFile(infoPathName, infos);
+                    infos[DataSourceValue.infoPath] = infoPathName;
+                }
             }
 
-            //===== optional: fill data source from nickname
-            // example: "algorithm:SUB_60_40"
-            if (nickname.Contains(":"))
+            //===== optional: data source specified as part of nickname
+            else
             {
-                string[] tmp = nickname.Split(':');
-                string ds = tmp[0];
+                string[] tmp = nicknameParam.Split(':');
 
-
-                if (ds.Contains("algorithm"))
-                {
-                    // example: "algorithm SUB_60_40"
-                    ds += " " + tmp[1];
-                }
-
-                infos[DataSourceValue.dataSource] = ds;
+                infos[DataSourceValue.dataSource] = nicknameParam; // TODO: do we need to use a substring here?
+                infos[DataSourceValue.nickName] = tmp[1];
             }
 
             //===== fill in defaults, as required
-            Dictionary<DataSourceValue, string> defaults = GetDefaultInfo(nickname);
+            Dictionary<DataSourceValue, string> defaults = GetDefaultInfo(infos);
 
-            void fillDefault(DataSourceValue value)
+            void defaultIfUndefined(DataSourceValue value)
             {
                 if (!infos.ContainsKey(value))
                     infos[value] = defaults[value];
             }
 
-            //--- name , ticker, data source
-            fillDefault(DataSourceValue.name);
-            fillDefault(DataSourceValue.ticker);
+            //--- name, ticker
+            defaultIfUndefined(DataSourceValue.name);
+            defaultIfUndefined(DataSourceValue.ticker);
 
             //--- data source
             // any mapping field (other than time) implies
@@ -376,11 +377,11 @@ namespace TuringTrader.Simulator
             }
             else
             {
-                fillDefault(DataSourceValue.dataSource);
+                defaultIfUndefined(DataSourceValue.dataSource);
             }
 
             //--- parse info
-            fillDefault(DataSourceValue.time);
+            defaultIfUndefined(DataSourceValue.time);
 
             // if the data source is csv, and none of the mapping
             // fields are set, we use a default mapping
@@ -405,12 +406,13 @@ namespace TuringTrader.Simulator
             }
 
             //--- symbol mapping
-            fillDefault(DataSourceValue.symbolNorgate);
-            fillDefault(DataSourceValue.symbolStooq);
-            fillDefault(DataSourceValue.symbolYahoo);
-            fillDefault(DataSourceValue.symbolFred);
-            fillDefault(DataSourceValue.symbolIqfeed);
-            fillDefault(DataSourceValue.symbolInteractiveBrokers);
+            defaultIfUndefined(DataSourceValue.symbolNorgate);
+            defaultIfUndefined(DataSourceValue.symbolStooq);
+            defaultIfUndefined(DataSourceValue.symbolYahoo);
+            defaultIfUndefined(DataSourceValue.symbolFred);
+            defaultIfUndefined(DataSourceValue.symbolIqfeed);
+            defaultIfUndefined(DataSourceValue.symbolTiingo);
+            defaultIfUndefined(DataSourceValue.symbolInteractiveBrokers);
 
             //===== instantiate data source
             string dataSource = infos[DataSourceValue.dataSource].ToLower();
@@ -418,6 +420,10 @@ namespace TuringTrader.Simulator
             if (dataSource.Contains("norgate"))
             {
                 return new DataSourceNorgate(infos);
+            }
+            else if (dataSource.Contains("tiingo"))
+            {
+                return new DataSourceTiingo(infos);
             }
             else if (dataSource.Contains("fakeoptions"))
             {

@@ -29,7 +29,7 @@ namespace BooksAndPubs
     public abstract class Connors_HighProbEtfTrading_Core : Algorithm
     {
         #region settings
-        protected virtual string MARKET { get; } = "$SPX.index";
+        protected virtual string MARKET { get; } = "$SPX";
 
         [OptimizerParam(0, 1, 1)]
         public virtual int AGGRESSIVE_ON { get; set; } = 0;

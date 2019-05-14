@@ -31,8 +31,8 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private class SimFakeOptions : SimulatorCore
             {
-                private static readonly string UNDERLYING_NICK = "$SPX.index";
-                private static readonly string VOLATILITY_NICK = "$VIX.index";
+                private static readonly string UNDERLYING_NICK = "$SPX";
+                private static readonly string VOLATILITY_NICK = "$VIX";
 
                 private List<Bar> _data;
                 private DateTime _startTime;

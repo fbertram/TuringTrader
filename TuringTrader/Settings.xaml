@@ -1,0 +1,44 @@
+﻿<Window x:Class="TuringTrader.Settings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TuringTrader"
+        mc:Ignorable="d"
+        Title="Settings" Height="303.511" Width="500"
+        ResizeMode="NoResize">
+    <Grid Name="settingsGrid">
+        <Button Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" RenderTransformOrigin="-0.036,0.899" HorizontalAlignment="Right" Width="75" Click="OkButton_Click"/>
+        <TabControl Height="219" Margin="10,10,10,0" VerticalAlignment="Top">
+            <TabItem Header="General">
+                <Grid Background="#FFE5E5E5">
+                    <Label Content="Home Path:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,15,0,0"/>
+                    <Label Name ="LabelHomePath" Content="{Binding HomePath}" HorizontalAlignment="Left" Margin="160,15,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <Button Content="..." Margin="0,18,10,0" VerticalAlignment="Top" Click="HomePathButton_Click" HorizontalAlignment="Right" Width="30" RenderTransformOrigin="1.101,0.406"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Data Sources">
+                <Grid Background="#FFE5E5E5">
+                    <Label Content="Default Data Source:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultDataSource}" Grid.Column="1">
+                        <ComboBoxItem>Tiingo</ComboBoxItem>
+                        <ComboBoxItem>Norgate</ComboBoxItem>
+                    </ComboBox>
+                    <Label Content="Tiingo API Key:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,41,0,0" RenderTransformOrigin="0.455,-0.285"/>
+                    <TextBox Name="TextTiingoApiKey" Height="23" Margin="180,45,10,0" TextWrapping="Wrap" Text="{Binding TiingoApiKey}" VerticalAlignment="Top"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Report Output">
+                <Grid Background="#FFE5E5E5">
+                    <Label Content="Default Template Extension:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0" Grid.ColumnSpan="3"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultTemplateExtension}" Grid.Column="2">
+                        <ComboBoxItem Name ="xlsm">.xlsm</ComboBoxItem>
+                        <ComboBoxItem Name ="r">.r</ComboBoxItem>
+                        <ComboBoxItem Name ="rmd">.rmd</ComboBoxItem>
+                    </ComboBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>

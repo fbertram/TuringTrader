@@ -31,7 +31,7 @@ namespace TuringTrader.Demos
         private Plotter _plotter = new Plotter();
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
-        private readonly string _instrumentNick = "$SPX.Index";
+        private readonly string _instrumentNick = "$SPX";
         #endregion
 
         override public void Run()

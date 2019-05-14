@@ -32,7 +32,7 @@ namespace TuringTrader.Demos
         private readonly string _template = "SimpleChart";
         private readonly double _initialCash = 100000.00;
         private double? _initialPrice = null;
-        private readonly string _instrumentNick = "AAPL.Stock";
+        private readonly string _instrumentNick = "AAPL";
         #endregion
 
         override public void Run()
