@@ -17,12 +17,13 @@
                     <Button Content="..." Margin="0,18,10,0" VerticalAlignment="Top" Click="HomePathButton_Click" HorizontalAlignment="Right" Width="30" RenderTransformOrigin="1.101,0.406"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Data Sources">
+            <TabItem Header="Data Feeds">
                 <Grid Background="#FFE5E5E5">
-                    <Label Content="Default Data Source:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0"/>
+                    <Label Content="Default Data Feed:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0"/>
                     <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultDataSource}" Grid.Column="1">
                         <ComboBoxItem>Tiingo</ComboBoxItem>
                         <ComboBoxItem>Norgate</ComboBoxItem>
+                        <ComboBoxItem>FRED</ComboBoxItem>
                     </ComboBox>
                     <Label Content="Tiingo API Key:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,41,0,0" RenderTransformOrigin="0.455,-0.285"/>
                     <TextBox Name="TextTiingoApiKey" Height="23" Margin="180,45,10,0" TextWrapping="Wrap" Text="{Binding TiingoApiKey}" VerticalAlignment="Top"/>

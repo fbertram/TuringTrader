@@ -232,7 +232,7 @@ namespace TuringTrader.Simulator
                     FirstTime = DateTime.Parse((string)jsonData["startDate"]);
                     LastTime = DateTime.Parse((string)jsonData["endDate"]);
                 }
-                catch (Exception e)
+                catch (Exception /*e*/)
                 {
                     throw new Exception(
                         string.Format("DataSourceTiingo: failed to load meta for {0}",

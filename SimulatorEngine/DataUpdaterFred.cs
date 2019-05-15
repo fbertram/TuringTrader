@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 // https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=USSLIND&scale=left&cosd=1982-01-01&coed=2018-12-01&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Monthly&fam=avg&fgst=lin&fgsnd=2009-06-01&line_index=1&transformation=lin&vintage_date=2019-03-22&revision_date=2019-03-22&nd=1982-01-01
@@ -75,7 +73,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Data updater for fred.stlouisfed.org
         /// </summary>
-        private class DataUpdaterFred :DataUpdater
+        private class DataUpdaterFred : DataUpdater
         {
             #region internal data & helpers
             // URL can be retrieved by manually downloading from FRED website
@@ -129,7 +127,7 @@ namespace TuringTrader.Simulator
 
                             string[] items = (Info[DataSourceValue.ticker] + "," + line).Split(',');
 
-                            var timestamp = 
+                            var timestamp =
                                 DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.date], items)).Date
                                 + DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.time], items)).TimeOfDay;
 
@@ -148,10 +146,6 @@ namespace TuringTrader.Simulator
                 var alignedBars = new List<Bar>();
                 var align = new AlignWithMarket(startTime, endTime, rawBars, alignedBars);
                 align.Run();
-
-                // instantiating a new algorithm here will overwrite
-                // the most-recent algorithm. need to reset here.
-                GlobalSettings.MostRecentAlgorithm = Simulator.Name;
 
                 return alignedBars;
             }

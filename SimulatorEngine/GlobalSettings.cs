@@ -208,21 +208,21 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region static public string DefaultDataSource
+        #region static public string DefaultDataFeed
         /// <summary>
-        /// default data source
+        /// default data feed
         /// </summary>
-        static public string DefaultDataSource
+        static public string DefaultDataFeed
         {
             get
             {
-                object value = GetRegistryValue("SimulatorEngine", "DefaultDataSource");
+                object value = GetRegistryValue("SimulatorEngine", "DefaultDataFeed");
                 if (value == null) return "Tiingo";
                 return value.ToString();
             }
             set
             {
-                SetRegistryValue("SimulatorEngine", "DefaultDataSource", value);
+                SetRegistryValue("SimulatorEngine", "DefaultDataFeed", value);
             }
         }
         #endregion

@@ -236,7 +236,7 @@ namespace TuringTrader.Simulator
                     { DataSourceValue.name, "{0}" },
                     { DataSourceValue.ticker, "{0}" },
                     //{ DataSourceValue.dataSource, "csv" },
-                    { DataSourceValue.dataSource, GlobalSettings.DefaultDataSource },
+                    { DataSourceValue.dataSource, GlobalSettings.DefaultDataFeed },
                     // csv file defaults
                     { DataSourceValue.dataPath, "Data\\{0}" },
                     { DataSourceValue.date, "{1:MM/dd/yyyy}" },

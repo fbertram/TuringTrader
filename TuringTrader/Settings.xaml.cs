@@ -13,20 +13,8 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Avalon.Windows.Dialogs;
+using System.Windows;
 using TuringTrader.Simulator;
 
 namespace TuringTrader
@@ -68,11 +56,11 @@ namespace TuringTrader
             {
                 get
                 {
-                    return GlobalSettings.DefaultDataSource;
+                    return GlobalSettings.DefaultDataFeed;
                 }
                 set
                 {
-                    GlobalSettings.DefaultDataSource = value;
+                    GlobalSettings.DefaultDataFeed = value;
                 }
             }
 

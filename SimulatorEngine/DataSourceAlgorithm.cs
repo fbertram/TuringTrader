@@ -17,9 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -63,10 +60,6 @@ namespace TuringTrader.Simulator
                         Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceValue.nickName]));
 
                         var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
-
-                        // instantiating a new algorithm here will overwrite
-                        // the most-recent algorithm. need to reset here.
-                        GlobalSettings.MostRecentAlgorithm = Simulator.Name;
 
                         algo.SubclassedStartTime = startTime;
                         algo.SubclassedEndTime = endTime;

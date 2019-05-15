@@ -17,10 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -45,8 +41,6 @@ namespace TuringTrader.Simulator
             OptimizerParams = new Dictionary<string, OptimizerParam>();
             foreach (OptimizerParam param in OptimizerParam.GetParams(this))
                 OptimizerParams[param.Name] = param;
-
-            GlobalSettings.MostRecentAlgorithm = Name;
         }
         #endregion
         #region public Algorithm Clone()
