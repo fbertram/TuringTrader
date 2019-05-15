@@ -39,6 +39,10 @@ namespace TuringTrader.Simulator
         /// </summary>
         nickName,
         /// <summary>
+        /// nickname, w/o data source prefix
+        /// </summary>
+        nickName2,
+        /// <summary>
         /// full descriptive name
         /// </summary>
         name,

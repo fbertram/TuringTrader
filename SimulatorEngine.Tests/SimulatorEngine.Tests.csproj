@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataFiles.cs" />
+    <Compile Include="DataSourceFred.cs" />
     <Compile Include="DataSourceTiingo.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />

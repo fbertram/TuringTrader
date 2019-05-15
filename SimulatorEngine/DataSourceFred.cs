@@ -1,8 +1,11 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
-// Name:        DataSourceTiingo
-// Description: Data source for Tiingo EOD Data.
-// History:     2019v09, FUB, created
+// Name:        DataSourceFred
+// Description: Data source for FRED Data 
+//              find FRED here: https://fred.stlouisfed.org/
+//              see documentation here:
+//              https://research.stlouisfed.org/docs/api/fred/
+// History:     2019v15, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
@@ -25,25 +28,21 @@ namespace TuringTrader.Simulator
 {
     public partial class DataSourceCollection
     {
-        private class DataSourceTiingo : DataSource
+        private class DataSourceFred : DataSource
         {
             #region internal helpers
-            private string _apiToken
+            private string _apiKey
             {
                 get
                 {
-                    return GlobalSettings.TiingoApiKey;
+                    return "967bc3160a70e6f8a501f4e3a3516fdc";
                 }
             }
 
-            private string ConvertSymbol(string ticker)
-            {
-                return ticker.Replace('.', '-');
-            }
-            private JObject GetMeta()
+            private JObject GetSeries()
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
-                string metaCache = Path.Combine(cachePath, "tiingo_meta");
+                string metaCache = Path.Combine(cachePath, "fred_meta");
 
                 bool writeToDisk = false;
                 string rawMeta = null;
@@ -57,7 +56,13 @@ namespace TuringTrader.Simulator
                     if (rawMeta.Length < 10)
                         return false;
 
-                    if (jsonMeta["name"].Type == JTokenType.Null)
+                    //if (jsonMeta["seriess"].Type == JTokenType.Null)
+                    //    return false;
+
+                    //if (jsonMeta["seriess"][0].Type == JTokenType.Null)
+                    //    return false;
+
+                    if (jsonMeta["seriess"][0]["title"].Type == JTokenType.Null)
                         return false;
 
                     return true;
@@ -75,11 +80,14 @@ namespace TuringTrader.Simulator
                 //--- 2) if failed, try to retrieve from web
                 if (!validMeta())
                 {
-                    Output.WriteLine("DataSourceTiingo: retrieving meta for {0}", Info[DataSourceValue.nickName]);
+                    Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceValue.nickName]);
 
-                    string url = string.Format("https://api.tiingo.com/tiingo/daily/{0}?token={1}",
-                        ConvertSymbol(Info[DataSourceValue.symbolTiingo]),
-                        _apiToken);
+                    string url = string.Format(
+                        "https://api.stlouisfed.org/fred/series"
+                            + "?series_id={0}"
+                            + "&api_key={1}&file_type=json",
+                        Info[DataSourceValue.symbolFred],
+                        _apiKey);
 
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
@@ -103,35 +111,35 @@ namespace TuringTrader.Simulator
 
                 return jsonMeta;
             }
-            private JArray GetPrices(DateTime startTime, DateTime endTime)
+            private JObject GetData(DateTime startTime, DateTime endTime)
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
-                string timeStamps = Path.Combine(cachePath, "tiingo_timestamps");
-                string priceCache = Path.Combine(cachePath, "tiingo_prices");
+                string timeStamps = Path.Combine(cachePath, "fred_timestamps");
+                string dataCache = Path.Combine(cachePath, "fred_data");
 
-                string rawPricesFromDisk = null;
-                string rawPrices = null;
-                JArray jsonPrices = null;
+                string rawDataFromDisk = null;
+                string rawData = null;
+                JObject jsonData = null;
 
-                bool validPrices()
+                bool validData()
                 {
-                    if (rawPrices == null)
+                    if (rawData == null)
                         return false;
 
-                    if (rawPrices.Length < 25)
+                    if (rawData.Length < 25)
                         return false;
 
-                    if (!jsonPrices.HasValues)
+                    if (!jsonData["observations"].HasValues)
                         return false;
 
                     return true;
                 }
 
                 //--- 1) try to read raw json from disk
-                if (File.Exists(timeStamps) && File.Exists(priceCache))
+                if (File.Exists(timeStamps) && File.Exists(dataCache))
                 {
-                    using (BinaryReader pc = new BinaryReader(File.Open(priceCache, FileMode.Open)))
-                        rawPricesFromDisk = pc.ReadString();
+                    using (BinaryReader pc = new BinaryReader(File.Open(dataCache, FileMode.Open)))
+                        rawDataFromDisk = pc.ReadString();
 
                     using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
                     {
@@ -139,14 +147,14 @@ namespace TuringTrader.Simulator
                         DateTime cacheEndTime = new DateTime(ts.ReadInt64());
 
                         if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
-                            rawPrices = rawPricesFromDisk;
+                            rawData = rawDataFromDisk;
 
-                        jsonPrices = JArray.Parse(rawPrices);
+                        jsonData = JObject.Parse(rawData);
                     }
                 }
 
                 //--- 2) if failed, try to retrieve from web
-                if (!validPrices())
+                if (!validData())
                 {
 #if true
                     // always request whole range here, to make
@@ -164,21 +172,21 @@ namespace TuringTrader.Simulator
 #endif
 
                     string url = string.Format(
-                        "https://api.tiingo.com/tiingo/daily/{0}/prices"
-                        + "?startDate={1:yyyy}-{1:MM}-{1:dd}"
-                        + "&endDate={2:yyyy}-{2:MM}-{2:dd}"
-                        + "&format=json"
-                        + "&resampleFreq=daily"
-                        + "&token={3}",
-                        ConvertSymbol(Info[DataSourceValue.symbolTiingo]),
+                        "https://api.stlouisfed.org/fred/series/observations"
+                            + "?series_id={0}"
+                            + "&api_key={1}"
+                            + "&file_type=json"
+                            + "&observation_start={2:yyyy}-{2:MM}-{2:dd}"
+                            + "&observation_end={3:yyyy}-{3:MM}-{3:dd}",
+                        Info[DataSourceValue.symbolFred],
+                        _apiKey,
                         startTime,
-                        endTime,
-                        _apiToken);
+                        endTime);
 
                     using (var client = new WebClient())
-                        rawPrices = client.DownloadString(url);
+                        rawData = client.DownloadString(url);
 
-                    jsonPrices = JArray.Parse(rawPrices);
+                    jsonData = JObject.Parse(rawData);
                 }
 
                 //--- 3) if failed, try to fall back to data from disk
@@ -187,22 +195,22 @@ namespace TuringTrader.Simulator
                 // however, in case we can't load from web, e.g. because 
                 // we don't have internet connectivity, it's still better 
                 // to go with what we have cached before
-                if (!validPrices() && rawPricesFromDisk != null)
+                if (!validData() && rawDataFromDisk != null)
                 {
-                    rawPrices = rawPricesFromDisk;
-                    jsonPrices = JArray.Parse(rawPrices);
+                    rawData = rawDataFromDisk;
+                    jsonData = JObject.Parse(rawData);
                 }
 
                 //--- 4) if failed, return
-                if (!validPrices())
+                if (!validData())
                     return null;
 
                 //--- 5) write to disk
-                if (rawPricesFromDisk == null)
+                if (rawDataFromDisk == null)
                 {
                     Directory.CreateDirectory(cachePath);
-                    using (BinaryWriter pc = new BinaryWriter(File.Open(priceCache, FileMode.Create)))
-                        pc.Write(rawPrices);
+                    using (BinaryWriter pc = new BinaryWriter(File.Open(dataCache, FileMode.Create)))
+                        pc.Write(rawData);
 
                     using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
                     {
@@ -211,31 +219,31 @@ namespace TuringTrader.Simulator
                     }
                 }
 
-                return jsonPrices;
+                return jsonData;
             }
             #endregion
 
             //---------- API
             #region public DataSourceTiingo(Dictionary<DataSourceValue, string> info)
             /// <summary>
-            /// Create and initialize new data source for Tiingo Data.
+            /// Create and initialize new data source for FRED Data.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceTiingo(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceFred(Dictionary<DataSourceValue, string> info) : base(info)
             {
                 try
                 {
-                    JObject jsonData = GetMeta();
+                    JObject jsonData = GetSeries();
 
-                    Info[DataSourceValue.name] = (string)jsonData["name"];
+                    Info[DataSourceValue.name] = (string)jsonData["seriess"][0]["title"];
 
-                    FirstTime = DateTime.Parse((string)jsonData["startDate"]);
-                    LastTime = DateTime.Parse((string)jsonData["endDate"]);
+                    FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"]);
+                    LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"]);
                 }
-                catch (Exception e)
+                catch (Exception /*e*/)
                 {
                     throw new Exception(
-                        string.Format("DataSourceTiingo: failed to load meta for {0}",
+                        string.Format("DataSourceFred: failed to load meta for {0}",
                             Info[DataSourceValue.nickName]));
                 }
             }
@@ -264,12 +272,12 @@ namespace TuringTrader.Simulator
                     List<Bar> retrievalFunction()
                     {
                         DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceTiingo: loading data for {0}...", Info[DataSourceValue.nickName]));
+                        Output.Write(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceValue.nickName]));
 
-                        List<Bar> bars = new List<Bar>();
+                        List<Bar> rawBars = new List<Bar>();
 
-                        JArray jsonData = GetPrices(startTime, endTime);
-                        var e = jsonData.GetEnumerator();
+                        JObject jsonData = GetData(startTime, endTime);
+                        var e = ((JArray)jsonData["observations"]).GetEnumerator();
 
                         while (e.MoveNext())
                         {
@@ -278,24 +286,25 @@ namespace TuringTrader.Simulator
                             DateTime date = DateTime.Parse((string)bar["date"]).Date
                                 + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
 
-                            double open = (double)bar["adjOpen"];
-                            double high = (double)bar["adjHigh"];
-                            double low = (double)bar["adjLow"];
-                            double close = (double)bar["adjClose"];
-                            long volume = (long)bar["adjVolume"];
+                            double open = (double)bar["value"];
+                            double high = (double)bar["value"];
+                            double low = (double)bar["value"];
+                            double close = (double)bar["value"];
+                            long volume = 0;
 
-                            if (date >= startTime && date <= endTime)
-                                bars.Add(Bar.NewOHLC(
-                                    Info[DataSourceValue.ticker],
-                                    date,
-                                    open, high, low, close,
-                                    volume));
+                            rawBars.Add(Bar.NewOHLC(
+                                Info[DataSourceValue.ticker],
+                                date,
+                                open, high, low, close,
+                                volume));
                         }
+
+                        List<Bar> alignedBars = DataSourceHelper.AlignWithMarket(rawBars, startTime, endTime);
 
                         DateTime t2 = DateTime.Now;
                         Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                        return bars;
+                        return alignedBars;
                     };
 
                     Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction); ;
@@ -304,12 +313,12 @@ namespace TuringTrader.Simulator
                 catch (Exception e)
                 {
                     throw new Exception(
-                        string.Format("DataSourceTiingo: failed to load quotes for {0}, {1}",
+                        string.Format("DataSourceFred: failed to load quotes for {0}, {1}",
                             Info[DataSourceValue.nickName], e.Message));
                 }
 
                 if ((Data as List<Bar>).Count == 0)
-                    throw new Exception(string.Format("DataSourceTiingo: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceFred: no data for {0}", Info[DataSourceValue.nickName]));
 
             }
             #endregion

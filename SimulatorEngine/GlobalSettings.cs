@@ -15,13 +15,9 @@
 
 #region Libraries
 using Microsoft.Win32;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -213,6 +209,9 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region static public string DefaultDataSource
+        /// <summary>
+        /// default data source
+        /// </summary>
         static public string DefaultDataSource
         {
             get
@@ -228,6 +227,9 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region static public string TiingoApiKey
+        /// <summary>
+        ///  Tiingo API key
+        /// </summary>
         static public string TiingoApiKey
         {
             get
