@@ -699,6 +699,17 @@ namespace TuringTrader.Simulator
                     return Math.Sqrt(variance);
                 }
                 #endregion
+                #region public bool CheckValidity(Vector<double> w)
+                public bool CheckValidity(Vector<double> w)
+                {
+                    for (int i = 0; i < w.Count; i++)
+                    {
+                        if (w[i] < _lb[i] || w[i] > _ub[i])
+                            return false;
+                    }
+                    return true;
+                }
+                #endregion
 
                 //--- APIs to return efficient frontier
                 #region public IEnumerable<Vector<double>> TurningPoints()
@@ -815,6 +826,10 @@ namespace TuringTrader.Simulator
                 /// Instrument weights
                 /// </summary>
                 public Dictionary<Instrument, double> Weights;
+                /// <summary>
+                /// Weights meeting constraints
+                /// </summary>
+                public bool IsValid = true;
 
                 /// <summary>
                 /// Convert portfolio to human-readable string.
@@ -1106,6 +1121,7 @@ namespace TuringTrader.Simulator
                         .ToDictionary(
                             idx => _instruments[idx],
                             idx => w[idx]),
+                    IsValid = _cla.CheckValidity(w),
                 };
 
                 return pf;
