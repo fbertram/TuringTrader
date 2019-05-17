@@ -244,6 +244,24 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public string QuandlApiKey
+        /// <summary>
+        ///  Tiingo API key
+        /// </summary>
+        static public string QuandlApiKey
+        {
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "QuandlApiKey");
+                if (value == null) return "";
+                return value.ToString();
+            }
+            set
+            {
+                SetRegistryValue("SimulatorEngine", "QuandlApiKey", value);
+            }
+        }
+        #endregion
 
         #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
         /// <summary>

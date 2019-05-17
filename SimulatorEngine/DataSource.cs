@@ -452,7 +452,7 @@ namespace TuringTrader.Simulator
             {
                 return new DataSourceConstantYield(infos);
             }
-            else if (dataSource.Contains("algorithm"))
+            else if (dataSource.Contains("algo"))
             {
                 return new DataSourceAlgorithm(infos);
             }

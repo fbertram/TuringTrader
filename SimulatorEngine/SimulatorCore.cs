@@ -17,10 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -312,7 +308,7 @@ namespace TuringTrader.Simulator
         /// derived class, typically a proprietary algorithm derived from
         /// Algorithm.
         /// </summary>
-        public string Name
+        public virtual string Name
         {
             get
             {
@@ -634,7 +630,7 @@ namespace TuringTrader.Simulator
         protected Instrument FindInstrument(string nickname)
         {
             string nickLower = nickname; //.ToLower();
-                
+
             try
             {
                 return _instruments.Values

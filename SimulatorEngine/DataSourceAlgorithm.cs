@@ -25,6 +25,10 @@ namespace TuringTrader.Simulator
     {
         private class DataSourceAlgorithm : DataSource
         {
+            #region internal data
+            private readonly string _algoName;
+            #endregion
+
             //---------- API
             #region public DataSourceAlgorithm(Dictionary<DataSourceValue, string> info)
             /// <summary>
@@ -33,6 +37,13 @@ namespace TuringTrader.Simulator
             /// <param name="info">info dictionary</param>
             public DataSourceAlgorithm(Dictionary<DataSourceValue, string> info) : base(info)
             {
+                _algoName = Info[DataSourceValue.dataSource]
+                    .Split(':')
+                    .Last();
+
+                var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
+
+                Info[DataSourceValue.name] = algo.Name;
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -43,12 +54,8 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
-                var algoName = Info[DataSourceValue.dataSource]
-                    .Split(' ')
-                    .Last();
-
                 var cacheKey = new CacheId(null, "", 0,
-                    algoName.GetHashCode(),
+                    _algoName.GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());
 
@@ -59,7 +66,7 @@ namespace TuringTrader.Simulator
                         DateTime t1 = DateTime.Now;
                         Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceValue.nickName]));
 
-                        var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
+                        var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
 
                         algo.SubclassedStartTime = startTime;
                         algo.SubclassedEndTime = endTime;
@@ -77,7 +84,7 @@ namespace TuringTrader.Simulator
 
                     catch
                     {
-                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoName);
+                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + _algoName);
                     }
                 }
 
