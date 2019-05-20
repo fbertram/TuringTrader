@@ -50,19 +50,46 @@ namespace TuringTrader.Simulator
         public DataSource ParentDataSource = null;
 
         /// <summary>
-        /// Copy current simulator status to sub-class Bar
+        /// True, if algorithm is sub-classed
         /// </summary>
-        protected void CreateSubclassedBar()
+        public bool IsSubclassed
+        {
+            get
+            {
+                return SubclassedData != null;
+            }
+        }
+
+        /// <summary>
+        /// Add sub-classed bar: net asset value
+        /// </summary>
+        protected void AddSubclassedBar()
+        {
+            AddSubclassedBar(NetAssetValue[0]);
+        }
+
+        /// <summary>
+        /// Add sub-classed bar: arbitrary value
+        /// </summary>
+        /// <param name="value">value to copy bar's OHLC</param>
+        protected void AddSubclassedBar(double value)
+        {
+            Bar bar = Bar.NewOHLC(
+                ParentDataSource.Info[DataSourceValue.ticker],
+                SimTime[0],
+                value, value, value, value, 0);
+
+            AddSubclassedBar(bar);
+        }
+
+        /// <summary>
+        /// Add sub-classed bar: pre-constructed bar
+        /// </summary>
+        /// <param name="bar">bar to add</param>
+        protected void AddSubclassedBar(Bar bar)
         {
             if (SubclassedData != null)
-            {
-                SubclassedData.Add(new Bar(
-                    ParentDataSource.Info[DataSourceValue.ticker],
-                    SimTime[0],
-                    NetAssetValue[0], NetAssetValue[0], NetAssetValue[0], NetAssetValue[0], 0, true,
-                    default(double), default(double), default(long), default(long), false,
-                    default(DateTime), default(double), false));
-            }
+                SubclassedData.Add(bar);
         }
     }
 }

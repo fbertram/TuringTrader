@@ -51,6 +51,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BondSupport.cs" />
     <Compile Include="DataFiles.cs" />
     <Compile Include="DataSourceFred.cs" />
     <Compile Include="DataSourceTiingo.cs" />

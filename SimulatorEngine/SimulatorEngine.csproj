@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgorithmLoader.cs" />
+    <Compile Include="BondSupport.cs" />
     <Compile Include="DataSourceAlgorithm.cs" />
     <Compile Include="DataSourceConstantYield.cs" />
     <Compile Include="DataSourceFred.cs" />
