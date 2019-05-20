@@ -286,17 +286,26 @@ namespace TuringTrader.Simulator
                             DateTime date = DateTime.Parse((string)bar["date"]).Date
                                 + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
 
-                            double open = (double)bar["value"];
-                            double high = (double)bar["value"];
-                            double low = (double)bar["value"];
-                            double close = (double)bar["value"];
-                            long volume = 0;
+                            string valueString = (string)bar["value"];
+                            double value;
+                            try
+                            {
+                                value = double.Parse(valueString);
+                            }
+                            catch
+                            {
+                                // when we get here, this was probably a missing value,
+                                // which FRED substitutes with "."
+                                // we ignore and move on, AlignWithMarket will take
+                                // care of the issue gracefully
+                                continue;
+                            }
 
                             rawBars.Add(Bar.NewOHLC(
                                 Info[DataSourceValue.ticker],
                                 date,
-                                open, high, low, close,
-                                volume));
+                                value, value, value, value,
+                                0));
                         }
 
                         List<Bar> alignedBars = DataSourceHelper.AlignWithMarket(rawBars, startTime, endTime);

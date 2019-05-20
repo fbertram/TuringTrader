@@ -74,12 +74,15 @@ namespace TuringTrader.Simulator
         /// <param name="value">value to copy bar's OHLC</param>
         protected void AddSubclassedBar(double value)
         {
-            Bar bar = Bar.NewOHLC(
-                ParentDataSource.Info[DataSourceValue.ticker],
-                SimTime[0],
-                value, value, value, value, 0);
+            if (ParentDataSource != null)
+            {
+                Bar bar = Bar.NewOHLC(
+                    ParentDataSource.Info[DataSourceValue.ticker],
+                    SimTime[0],
+                    value, value, value, value, 0);
 
-            AddSubclassedBar(bar);
+                AddSubclassedBar(bar);
+            }
         }
 
         /// <summary>
