@@ -43,6 +43,9 @@ namespace TuringTrader.Simulator
 
                 var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
 
+                if (algo == null)
+                    throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", _algoName));
+
                 Info[DataSourceValue.name] = algo.Name;
             }
             #endregion
