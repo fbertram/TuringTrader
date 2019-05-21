@@ -128,6 +128,14 @@ namespace TuringTrader.Simulator
             return 0.0;
         }
 #endif
+        /// <summary>
+        /// Calculate bond price.
+        /// </summary>
+        /// <param name="faceValue">bond's face (par) value</param>
+        /// <param name="couponPerPeriod">coupon payment per period</param>
+        /// <param name="yieldPerPeriod">yield per period</param>
+        /// <param name="numPeriods"># of periods until maturity</param>
+        /// <returns>bond price</returns>
         public static double Price(double faceValue, double couponPerPeriod, double yieldPerPeriod, double numPeriods)
         {
             // repayment of principal at maturity
