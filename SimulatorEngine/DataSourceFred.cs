@@ -33,10 +33,9 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private string _apiKey
             {
-                get
-                {
-                    return "967bc3160a70e6f8a501f4e3a3516fdc";
-                }
+                // this API key is registered with FRED 
+                // by Bertram Solutions for use with TuringTrader
+                get => "967bc3160a70e6f8a501f4e3a3516fdc";
             }
 
             private JObject GetSeries()
@@ -316,7 +315,11 @@ namespace TuringTrader.Simulator
                         return alignedBars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction); ;
+                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+
+                    // FIXME: this is far from ideal. We want to make sure that retired
+                    //        series are not extended indefinitely
+                    LastTime = (Data as List<Bar>).FindLast(b => true).Time;
                 }
 
                 catch (Exception e)
@@ -328,7 +331,6 @@ namespace TuringTrader.Simulator
 
                 if ((Data as List<Bar>).Count == 0)
                     throw new Exception(string.Format("DataSourceFred: no data for {0}", Info[DataSourceValue.nickName]));
-
             }
             #endregion
         }
