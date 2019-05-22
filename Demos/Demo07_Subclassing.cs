@@ -25,7 +25,10 @@ using TuringTrader.Simulator;
 namespace Demos
 {
     #region Demo07_Subclassing_Child
-    public class Demo07_Subclassing_Child : SubclassableAlgorithm
+    // note how this class is not declared public
+    // because of this, the class will not show up in TuringTrader's
+    // algorithm selector, but it can still be instantiated
+    class Demo07_Subclassing_Child : SubclassableAlgorithm
     {
         private static readonly string SPX = "$SPX";
         private Plotter _plotter = new Plotter();

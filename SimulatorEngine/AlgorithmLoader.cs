@@ -31,7 +31,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public class AlgorithmLoader
     {
-        #region public static IEnumerable<Type> GetAllAlgorithms()
+        #region public static List<Type> GetAllAlgorithms()
         private static List<Type> _allAlgorithms = null;
         private static IEnumerable<Type> _getAllAlgorithms()
         {
@@ -57,7 +57,7 @@ namespace TuringTrader.Simulator
                 foreach (Type type in types)
                 {
                     if (!type.IsAbstract 
-                    && type.IsPublic
+                    //&& type.IsPublic
                     && type.IsSubclassOf(typeof(Algorithm)))
                         yield return type;
                 }
@@ -69,15 +69,20 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Return list of all known TuringTrader algorithms
         /// </summary>
+        /// <param name="publicOnly">if true, only return public classes</param>
         /// <returns>list of algorithms</returns>
-        public static List<Type> GetAllAlgorithms()
+        public static List<Type> GetAllAlgorithms(bool publicOnly = true)
         {
             if (_allAlgorithms == null || _allAlgorithms.Count == 0)
                 _allAlgorithms = _getAllAlgorithms()
                     .OrderBy(t => t.Name)
                     .ToList();
 
-            return _allAlgorithms;
+            return publicOnly
+                ? _allAlgorithms
+                    .Where(t => t.IsPublic == true)
+                    .ToList()
+                : _allAlgorithms;
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)
@@ -88,7 +93,7 @@ namespace TuringTrader.Simulator
         /// <returns>algorithm instance</returns>
         public static Algorithm InstantiateAlgorithm(string algorithmName)
         {
-            foreach (Type algorithmType in GetAllAlgorithms())
+            foreach (Type algorithmType in GetAllAlgorithms(false))
                 if (algorithmType.Name == algorithmName)
                     return (Algorithm)Activator.CreateInstance(algorithmType);
 
