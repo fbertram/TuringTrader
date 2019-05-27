@@ -161,10 +161,6 @@
       <Project>{3155c4aa-828f-4528-adbb-b34e2e3d1c9c}</Project>
       <Name>BooksAndPubs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Demos\Demos.csproj">
-      <Project>{2e5c8dfa-b485-431a-9f54-d1473fff8b65}</Project>
-      <Name>Demos</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SimulatorEngine\SimulatorEngine.csproj">
       <Project>{5D08F12A-F6BE-4D9F-ADBE-014E261A6D51}</Project>
       <Name>SimulatorEngine</Name>

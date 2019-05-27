@@ -14,16 +14,13 @@
 //==============================================================================
 
 #region Libraries
-using TuringTrader.Simulator;
+using Microsoft.CSharp;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -66,12 +63,39 @@ namespace TuringTrader.Simulator
     public class AlgorithmLoader
     {
         #region internal helpers
-        private static readonly List<AlgorithmInfo> _allAlgorithms =
-                        _initAllAlgorithms()
+        private static readonly List<AlgorithmInfo> _staticAlgorithms =
+                        _enumStaticAlgorithms()
                             .OrderBy(a => a.Name)
                             .ToList();
+        private static Assembly _currentSourceAssembly = null;
 
-        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Dll()
+        private static IEnumerable<AlgorithmInfo> _enumAssyAlgorithms(Assembly assembly)
+        {
+            Type[] types = assembly.GetTypes();
+            object[] titleAttributes = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+            string title = titleAttributes.Count() > 0
+                ? (titleAttributes[0] as AssemblyTitleAttribute).Title
+                : "n/a";
+
+            foreach (Type type in types)
+            {
+                if (!type.IsAbstract
+                && type.IsSubclassOf(typeof(Algorithm)))
+                {
+                    yield return new AlgorithmInfo
+                    {
+                        Name = type.Name,
+                        IsPublic = type.IsPublic,
+                        DllType = type,
+                        DisplayPath = new List<string>() { title },
+                    };
+                }
+            }
+
+            yield break;
+        }
+
+        private static IEnumerable<AlgorithmInfo> _enumDllAlgorithms()
         {
             Assembly turingTrader = Assembly.GetExecutingAssembly();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
@@ -81,40 +105,25 @@ namespace TuringTrader.Simulator
 
             foreach (FileInfo file in files)
             {
-                Type[] types;
-                string title;
+                Assembly assembly = null;
 
                 try
                 {
-                    Assembly assembly = Assembly.LoadFrom(file.FullName);
-                    types = assembly.GetTypes();
-                    title = (assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute).Title;
+                    assembly = Assembly.LoadFrom(file.FullName);
                 }
                 catch
                 {
                     continue;
                 }
 
-                foreach (Type type in types)
-                {
-                    if (!type.IsAbstract
-                    && type.IsSubclassOf(typeof(Algorithm)))
-                    {
-                        yield return new AlgorithmInfo
-                        {
-                            Name = type.Name,
-                            IsPublic = type.IsPublic,
-                            DllType = type,
-                            DisplayPath = new List<string>() { title },
-                        };
-                    }
-                }
+                foreach (var type in _enumAssyAlgorithms(assembly))
+                    yield return type;
             }
 
             yield break;
         }
 
-        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Source(string path, List<string> displayPath)
+        private static IEnumerable<AlgorithmInfo> _enumSourceAlgorithms(string path, List<string> displayPath)
         {
             if (!Directory.Exists(path))
                 yield break;
@@ -140,19 +149,19 @@ namespace TuringTrader.Simulator
                 List<string> newDisplayPath = new List<string>(displayPath);
                 newDisplayPath.Add(dir.Name);
 
-                foreach (var a in _initAllAlgorithms_Source(dir.FullName, newDisplayPath))
+                foreach (var a in _enumSourceAlgorithms(dir.FullName, newDisplayPath))
                     yield return a;
             }
 
             yield break;
         }
 
-        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms()
+        private static IEnumerable<AlgorithmInfo> _enumStaticAlgorithms()
         {
-            foreach (var algorithm in _initAllAlgorithms_Dll())
+            foreach (var algorithm in _enumDllAlgorithms())
                 yield return algorithm;
 
-            foreach (var algorithm in _initAllAlgorithms_Source(GlobalSettings.AlgorithmPath, new List<string>()))
+            foreach (var algorithm in _enumSourceAlgorithms(GlobalSettings.AlgorithmPath, new List<string>()))
                 yield return algorithm;
 
             yield break;
@@ -167,11 +176,22 @@ namespace TuringTrader.Simulator
         /// <returns>list of algorithms</returns>
         public static List<AlgorithmInfo> GetAllAlgorithms(bool publicOnly = true)
         {
+            var allAlgorithms = new List<AlgorithmInfo>(_staticAlgorithms);
+
+            if (_currentSourceAssembly != null)
+            {
+                var sourceAlgorithms = _enumAssyAlgorithms(_currentSourceAssembly);
+
+                allAlgorithms = allAlgorithms
+                    .Concat(sourceAlgorithms)
+                    .ToList();
+            }
+
             return publicOnly
-                ? _allAlgorithms
+                ? allAlgorithms
                     .Where(t => t.IsPublic == true)
                     .ToList()
-                : _allAlgorithms;
+                : allAlgorithms;
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)
@@ -182,7 +202,8 @@ namespace TuringTrader.Simulator
         /// <returns>algorithm instance</returns>
         public static Algorithm InstantiateAlgorithm(string algorithmName)
         {
-            List<AlgorithmInfo> matchingAlgorithms = _allAlgorithms
+            List<AlgorithmInfo> allAlgorithms = GetAllAlgorithms(false);
+            List<AlgorithmInfo> matchingAlgorithms = allAlgorithms
                 .Where(a => a.Name == algorithmName)
                 .ToList();
 
@@ -223,6 +244,9 @@ namespace TuringTrader.Simulator
                     cp.ReferencedAssemblies.Add("System.Core.dll");
                     cp.ReferencedAssemblies.Add("System.Data.dll");
                     cp.GenerateInMemory = true;
+                    cp.TreatWarningsAsErrors = false;
+                    //cp.CompilerOptions = "/optimize /langversion:5"; // 7, 7.1, 7.2, 7.3, Latest
+                    //cp.WarningLevel = 3;
                     //cp.GenerateExecutable = false;
                     //cp.IncludeDebugInformation = true;
 
@@ -234,33 +258,31 @@ namespace TuringTrader.Simulator
                         string errorMessages = "";
                         cr.Errors.Cast<CompilerError>()
                             .ToList()
-                            .ForEach(error => errorMessages += error.ErrorText + "\r\n");
+                            .ForEach(error => errorMessages += "Line " + error.Line + ": " + error.ErrorText + "\r\n");
 
                         Output.WriteLine(errorMessages);
                         return null;
                         //throw new Exception("AlgorithmLoader: failed to compile");
                     }
 
-                    var types = cr.CompiledAssembly.GetTypes();
-                    var algorithms = types
-                        .Where(t => !t.IsAbstract
-                            && t.IsPublic
-                            && t.IsSubclassOf(typeof(Algorithm)))
+                    _currentSourceAssembly = cr.CompiledAssembly;
+                    var publicAlgorithms = _enumAssyAlgorithms(cr.CompiledAssembly)
+                        .Where(t => t.IsPublic)
                         .ToList();
 
-                    if (algorithms.Count == 0)
+                    if (publicAlgorithms.Count == 0)
                     {
                         Output.WriteLine("AlgorithmLoader: no algorithm found");
                         return null;
                     }
 
-                    if (algorithms.Count > 1)
+                    if (publicAlgorithms.Count > 1)
                     {
                         Output.WriteLine("AlgorithmLoader: multiple algorithms found");
                         return null;
                     }
 
-                    var algo = (Algorithm)Activator.CreateInstance(algorithms.First());
+                    var algo = InstantiateAlgorithm(publicAlgorithms[0]);
 
                     if (algo != null)
                         Output.WriteLine("AlgorithmLoader: success!");

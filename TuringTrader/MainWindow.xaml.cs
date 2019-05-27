@@ -92,6 +92,7 @@ namespace TuringTrader
         #endregion
         #region internal data
         private Algorithm _currentAlgorithm = null;
+        private AlgorithmInfo _currentAlgorithmInfo = null;
         private OptimizerGrid _optimizer = null;
         private bool _runningBacktest = false;
         private bool _runningOptimization = false;
@@ -125,9 +126,11 @@ namespace TuringTrader
             ClearLog();
 
             _currentAlgorithm = null;
+            _currentAlgorithmInfo = null;
             _optimizer = null;
 
             RunButton.IsEnabled = false;
+            EditButton.IsEnabled = false;
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = false;
             ResultsButton.IsEnabled = false;
@@ -141,6 +144,7 @@ namespace TuringTrader
             if (matchedAlgorithms.Count == 1)
             {
                 AlgorithmInfo algoInfo = matchedAlgorithms.First();
+                _currentAlgorithmInfo = algoInfo;
 
                 GlobalSettings.MostRecentAlgorithm = algoLookupName;
 
@@ -148,6 +152,8 @@ namespace TuringTrader
             }
 
             UpdateParameterDisplay();
+
+            EditButton.IsEnabled = _currentAlgorithmInfo != null && _currentAlgorithmInfo.SourcePath != null;
 
             if (_currentAlgorithm != null)
             {
@@ -327,6 +333,12 @@ namespace TuringTrader
         #endregion
 
         //----- buttons
+        #region private void EditButton_Click(object sender, RoutedEventArgs e)
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(_currentAlgorithmInfo.SourcePath);
+        }
+        #endregion
         #region private async void RunButton_Click(object sender, RoutedEventArgs e)
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {

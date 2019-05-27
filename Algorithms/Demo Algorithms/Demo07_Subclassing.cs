@@ -15,10 +15,6 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TuringTrader.Simulator;
 #endregion
 
@@ -33,7 +29,14 @@ namespace Demos
         private static readonly string SPX = "$SPX";
         private Plotter _plotter = new Plotter();
 
-        public override string Name => "Demo 07 child algorithm";
+        //public override string Name => "Demo 07 child algorithm"; // not supported by dynamic compiler, yet
+        /*public override string Name
+        {
+            get
+            {
+                return "Demo 07 child algorithm";
+            }
+        }*/
 
         public override void Run()
         {
