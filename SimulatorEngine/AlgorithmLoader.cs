@@ -100,6 +100,21 @@ namespace TuringTrader.Simulator
             return null;
         }
         #endregion
+        #region
+        /// <summary>
+        /// Instantiate TuringTrader algorithm
+        /// </summary>
+        /// <param name="algorithmType">class type</param>
+        /// <returns>algorithm instance</returns>
+        public static Algorithm InstantiateAlgorithm(Type algorithmType)
+        {
+            foreach (Type algo in GetAllAlgorithms(false))
+                if (algo == algorithmType)
+                    return (Algorithm)Activator.CreateInstance(algo);
+
+            return null;
+        }
+        #endregion
     }
 }
 
