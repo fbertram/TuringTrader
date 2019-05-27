@@ -112,16 +112,23 @@ namespace TuringTrader
             _messageUpdate = "";
             LogOutput.Text = "";
         }
-        private void SelectAlgo(string algo)
+        private string AlgoPathLookupName(IEnumerable<string> dp) => dp.Aggregate("/", (p, n) => p + n + "/");
+        private string AlgoLookupName(AlgorithmInfo a) => AlgoPathLookupName(a.DisplayPath.Concat(new List<string>() { a.Name }));
+        private void SelectAlgo(string algoLookupName)
         {
             var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
 
-            if (algo != default(string)
-            && allAlgorithms.Where(t => t.Name == algo).Count() > 0)
-            {
-                GlobalSettings.MostRecentAlgorithm = algo;
+            var matchedAlgorithms = allAlgorithms
+                .Where(t => AlgoLookupName(t) == algoLookupName)
+                .ToList();
 
-                _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algo);
+            if (matchedAlgorithms.Count == 1)
+            {
+                AlgorithmInfo algoInfo = matchedAlgorithms.First();
+
+                GlobalSettings.MostRecentAlgorithm = algoLookupName;
+
+                _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algoInfo);
                 _optimizer = null;
 
                 UpdateParameterDisplay();
@@ -132,7 +139,7 @@ namespace TuringTrader
                 OptimizerButton.IsEnabled = _currentAlgorithm.OptimizerParams.Count > 0;
                 ResultsButton.IsEnabled = false;
 
-                Algo.Text = "Algorithm: " + algo;
+                Algo.Text = "Algorithm: " + algoInfo.Name;
             }
             else
             {
@@ -174,19 +181,17 @@ namespace TuringTrader
             var map = new Dictionary<string, ObservableCollection<MenuItemViewModel>>();
             map["/"] = MenuItems;
 
-            string makeLookup(IEnumerable<string> dp) => dp.Aggregate("/", (p, n) => p + n + "/");
-
             // 1) create sub-menu structure
             foreach (var algo in allAlgorithms)
             {
-                string algoPath = makeLookup(algo.DisplayPath);
+                string algoPath = AlgoPathLookupName(algo.DisplayPath);
 
                 if (!map.ContainsKey(algoPath))
                 {
                     for (int i = 1; i <= algo.DisplayPath.Count; i++)
                     {
-                        var parentPath = makeLookup(algo.DisplayPath.Take(i - 1));
-                        var newPath = makeLookup(algo.DisplayPath.Take(i));
+                        var parentPath = AlgoPathLookupName(algo.DisplayPath.Take(i - 1));
+                        var newPath = AlgoPathLookupName(algo.DisplayPath.Take(i));
 
                         var newEntry = new MenuItemViewModel
                         {
@@ -206,7 +211,7 @@ namespace TuringTrader
             // 2) add individual entries
             foreach (var algo in allAlgorithms)
             {
-                var parent = map[makeLookup(algo.DisplayPath)];
+                var parent = map[AlgoPathLookupName(algo.DisplayPath)];
                 var newEntry = new MenuItemViewModel
                 {
                     Header = algo.Name,
@@ -302,9 +307,7 @@ namespace TuringTrader
             var commandParam = menuItem.CommandParameter;
             var algoType = commandParam as AlgorithmInfo;
 
-            string algorithmName = algoType.Name;
-
-            SelectAlgo(algorithmName);
+            SelectAlgo(AlgoLookupName(algoType));
         }
         #endregion
 
