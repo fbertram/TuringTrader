@@ -102,6 +102,12 @@ namespace TuringTrader
         #region internal helpers
         private void UpdateParameterDisplay()
         {
+            if (_currentAlgorithm == null)
+            {
+                AlgoParameters.Text = "Parameters: n/a";
+                return;
+            }
+
             AlgoParameters.Text = "Parameters: "
                 + (_currentAlgorithm.OptimizerParams.Count > 0
                     ? _currentAlgorithm.OptimizerParamsAsString
@@ -116,6 +122,16 @@ namespace TuringTrader
         private string AlgoLookupName(AlgorithmInfo a) => AlgoPathLookupName(a.DisplayPath.Concat(new List<string>() { a.Name }));
         private void SelectAlgo(string algoLookupName)
         {
+            ClearLog();
+
+            _currentAlgorithm = null;
+            _optimizer = null;
+
+            RunButton.IsEnabled = false;
+            ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = false;
+            ResultsButton.IsEnabled = false;
+
             var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
 
             var matchedAlgorithms = allAlgorithms
@@ -129,17 +145,18 @@ namespace TuringTrader
                 GlobalSettings.MostRecentAlgorithm = algoLookupName;
 
                 _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algoInfo);
-                _optimizer = null;
+            }
 
-                UpdateParameterDisplay();
-                ClearLog();
+            UpdateParameterDisplay();
 
+            if (_currentAlgorithm != null)
+            {
                 RunButton.IsEnabled = true;
                 ReportButton.IsEnabled = false;
                 OptimizerButton.IsEnabled = _currentAlgorithm.OptimizerParams.Count > 0;
                 ResultsButton.IsEnabled = false;
 
-                Algo.Text = "Algorithm: " + algoInfo.Name;
+                Algo.Text = "Algorithm: " + _currentAlgorithm.Name; // this may be different than class name
             }
             else
             {
@@ -172,6 +189,9 @@ namespace TuringTrader
             _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
             _dispatcherTimer.Start();
+
+            //--- redirect log output
+            Output.WriteEvent += WriteEventHandler;
 
             //--- populate algorithm sub-menu
             var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
@@ -224,11 +244,6 @@ namespace TuringTrader
             //--- attempt to recover most-recent algo
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
             SelectAlgo(mostRecentAlgorithm);
-#if true
-#endif
-
-            //--- redirect log output
-            Output.WriteEvent += WriteEventHandler;
         }
         #endregion
 

@@ -22,6 +22,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -64,7 +66,7 @@ namespace TuringTrader.Simulator
     public class AlgorithmLoader
     {
         #region internal helpers
-        private static readonly List<AlgorithmInfo> _allAlgorithms = 
+        private static readonly List<AlgorithmInfo> _allAlgorithms =
                         _initAllAlgorithms()
                             .OrderBy(a => a.Name)
                             .ToList();
@@ -203,11 +205,68 @@ namespace TuringTrader.Simulator
         {
             if (algorithmInfo.DllType != null)
             {
+                // instantiate from DLL
                 return (Algorithm)Activator.CreateInstance(algorithmInfo.DllType);
             }
             else
             {
-                return null;
+                // compile and instantiate from memory
+                Output.WriteLine("AlgorithmLoader: compiling {0}", algorithmInfo.SourcePath);
+
+                using (var sr = new StreamReader(algorithmInfo.SourcePath))
+                {
+                    string source = sr.ReadToEnd();
+
+                    CompilerParameters cp = new CompilerParameters();
+                    cp.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+                    cp.ReferencedAssemblies.Add("System.dll");
+                    cp.ReferencedAssemblies.Add("System.Core.dll");
+                    cp.ReferencedAssemblies.Add("System.Data.dll");
+                    cp.GenerateInMemory = true;
+                    //cp.GenerateExecutable = false;
+                    //cp.IncludeDebugInformation = true;
+
+                    CSharpCodeProvider provider = new CSharpCodeProvider();
+                    CompilerResults cr = provider.CompileAssemblyFromSource(cp, source);
+
+                    if (cr.Errors.HasErrors)
+                    {
+                        string errorMessages = "";
+                        cr.Errors.Cast<CompilerError>()
+                            .ToList()
+                            .ForEach(error => errorMessages += error.ErrorText + "\r\n");
+
+                        Output.WriteLine(errorMessages);
+                        return null;
+                        //throw new Exception("AlgorithmLoader: failed to compile");
+                    }
+
+                    var types = cr.CompiledAssembly.GetTypes();
+                    var algorithms = types
+                        .Where(t => !t.IsAbstract
+                            && t.IsPublic
+                            && t.IsSubclassOf(typeof(Algorithm)))
+                        .ToList();
+
+                    if (algorithms.Count == 0)
+                    {
+                        Output.WriteLine("AlgorithmLoader: no algorithm found");
+                        return null;
+                    }
+
+                    if (algorithms.Count > 1)
+                    {
+                        Output.WriteLine("AlgorithmLoader: multiple algorithms found");
+                        return null;
+                    }
+
+                    var algo = (Algorithm)Activator.CreateInstance(algorithms.First());
+
+                    if (algo != null)
+                        Output.WriteLine("AlgorithmLoader: success!");
+
+                    return algo;
+                }
             }
         }
         #endregion
