@@ -166,41 +166,57 @@ namespace TuringTrader
             _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
             _dispatcherTimer.Start();
 
-            //--- initialize algorithm selector
+            //--- populate algorithm sub-menu
             var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
 
             MenuItems = new ObservableCollection<MenuItemViewModel>();
 
-            // populate Algorithm sub-menu
-            var allAssemblies = allAlgorithms
-                            .Select(t => t.DisplayPath)
-                            .Distinct()
-                            .ToList();
+            var map = new Dictionary<string, ObservableCollection<MenuItemViewModel>>();
+            map["/"] = MenuItems;
 
-            foreach (var assy in allAssemblies)
+            string makeLookup(IEnumerable<string> dp) => dp.Aggregate("/", (p, n) => p + n + "/");
+
+            // 1) create sub-menu structure
+            foreach (var algo in allAlgorithms)
             {
-                var dllMenu = new MenuItemViewModel() { Header = assy };
+                string algoPath = makeLookup(algo.DisplayPath);
 
-                var dllAlgorithms = allAlgorithms
-                    .Where(t => t.DisplayPath == assy)
-                    .ToList();
-
-                dllMenu.MenuItems = new ObservableCollection<MenuItemViewModel>();
-
-                foreach (var algo in dllAlgorithms)
+                if (!map.ContainsKey(algoPath))
                 {
-                    var algoEntry = new MenuItemViewModel()
+                    for (int i = 1; i <= algo.DisplayPath.Count; i++)
                     {
-                        Header = "_" + algo.Name,
-                        CommandParameter = algo,   // store info to aid instantiation here
-                    };
-                    dllMenu.MenuItems.Add(algoEntry);
-                }
+                        var parentPath = makeLookup(algo.DisplayPath.Take(i - 1));
+                        var newPath = makeLookup(algo.DisplayPath.Take(i));
 
-                MenuItems.Add(dllMenu);
+                        var newEntry = new MenuItemViewModel
+                        {
+                            Header = algo.DisplayPath[i - 1],
+                            MenuItems = new ObservableCollection<MenuItemViewModel>(),
+                        };
+
+                        if (!map.ContainsKey(newPath))
+                        {
+                            map[newPath] = newEntry.MenuItems;
+                            map[parentPath].Add(newEntry);
+                        }
+                    }
+                }
             }
 
-            // attempt to recover most-recent algo
+            // 2) add individual entries
+            foreach (var algo in allAlgorithms)
+            {
+                var parent = map[makeLookup(algo.DisplayPath)];
+                var newEntry = new MenuItemViewModel
+                {
+                    Header = algo.Name,
+                    CommandParameter = algo,
+                };
+
+                parent.Add(newEntry);
+            }
+
+            //--- attempt to recover most-recent algo
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
             SelectAlgo(mostRecentAlgorithm);
 #if true

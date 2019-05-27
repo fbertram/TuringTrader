@@ -41,7 +41,7 @@ namespace TuringTrader.Simulator
         /// Path, as displayed in Algorithm menu. This is either a relative path 
         /// to the source file containing the algorithm, or the DLL title property
         /// </summary>
-        public string DisplayPath;
+        public List<string> DisplayPath;
         /// <summary>
         /// True, if algorithm is public. This field is only properly initialized
         /// for algorithm contained in DLLs. For algorithms contained in source
@@ -103,7 +103,7 @@ namespace TuringTrader.Simulator
                             Name = type.Name,
                             IsPublic = type.IsPublic,
                             DllType = type,
-                            DisplayPath = title,
+                            DisplayPath = new List<string>() { title },
                         };
                     }
                 }
@@ -112,7 +112,7 @@ namespace TuringTrader.Simulator
             yield break;
         }
 
-        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Source(string path, string displayPath)
+        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Source(string path, List<string> displayPath)
         {
             if (!Directory.Exists(path))
                 yield break;
@@ -135,7 +135,10 @@ namespace TuringTrader.Simulator
 
             foreach (DirectoryInfo dir in dirs)
             {
-                foreach (var a in _initAllAlgorithms_Source(dir.FullName, displayPath + ":" + dir.Name))
+                List<string> newDisplayPath = new List<string>(displayPath);
+                newDisplayPath.Add(dir.Name);
+
+                foreach (var a in _initAllAlgorithms_Source(dir.FullName, newDisplayPath))
                     yield return a;
             }
 
@@ -147,7 +150,7 @@ namespace TuringTrader.Simulator
             foreach (var algorithm in _initAllAlgorithms_Dll())
                 yield return algorithm;
 
-            foreach (var algorithm in _initAllAlgorithms_Source(GlobalSettings.AlgorithmPath, ""))
+            foreach (var algorithm in _initAllAlgorithms_Source(GlobalSettings.AlgorithmPath, new List<string>()))
                 yield return algorithm;
 
             yield break;
