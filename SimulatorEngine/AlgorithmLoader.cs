@@ -69,10 +69,8 @@ namespace TuringTrader.Simulator
                             .OrderBy(a => a.Name)
                             .ToList();
 
-        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms()
+        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Dll()
         {
-            //===== search for algorithms in DLLs
-
             Assembly turingTrader = Assembly.GetExecutingAssembly();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
             FileInfo[] files = dirInfo.GetFiles("*.dll");
@@ -111,7 +109,46 @@ namespace TuringTrader.Simulator
                 }
             }
 
-            //===== search for algorithms in source files
+            yield break;
+        }
+
+        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms_Source(string path, string displayPath)
+        {
+            if (!Directory.Exists(path))
+                yield break;
+
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles("*.cs");
+
+            foreach (FileInfo file in files)
+            {
+                yield return new AlgorithmInfo
+                {
+                    Name = file.Name,
+                    DisplayPath = displayPath,
+                    IsPublic = true,
+                    SourcePath = file.FullName,
+                };
+            }
+
+            DirectoryInfo[] dirs = dirInfo.GetDirectories();
+
+            foreach (DirectoryInfo dir in dirs)
+            {
+                foreach (var a in _initAllAlgorithms_Source(dir.FullName, displayPath + ":" + dir.Name))
+                    yield return a;
+            }
+
+            yield break;
+        }
+
+        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms()
+        {
+            foreach (var algorithm in _initAllAlgorithms_Dll())
+                yield return algorithm;
+
+            foreach (var algorithm in _initAllAlgorithms_Source(GlobalSettings.AlgorithmPath, ""))
+                yield return algorithm;
 
             yield break;
         }

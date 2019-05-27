@@ -120,6 +120,18 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public string AlgorithmPath
+        /// <summary>
+        /// Property to store path to simulator's algorithm directory.
+        /// </summary>
+        static public string AlgorithmPath
+        {
+            get
+            {
+                return Path.Combine(HomePath, "Algorithms");
+            }
+        }
+        #endregion
 
         #region static public string MostRecentAlgorithm
         /// <summary>
