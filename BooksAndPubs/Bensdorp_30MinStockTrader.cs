@@ -728,7 +728,7 @@ namespace BooksAndPubs
     }
     #endregion
     #region MRS (NDX + OEX)
-    public class Bensdorp_30MinStockTrader_SRL_NDX_OEX : Bensdorp_30MinStockTrader_MRS_Core
+    public class Bensdorp_30MinStockTrader_MRS_NDX_OEX : Bensdorp_30MinStockTrader_MRS_Core
     {
         protected override List<string> UNIVERSE
         {
