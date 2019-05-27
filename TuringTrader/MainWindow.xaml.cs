@@ -173,18 +173,16 @@ namespace TuringTrader
 
             // populate Algorithm sub-menu
             var allAssemblies = allAlgorithms
-                            .Select(t => t.Assembly)
+                            .Select(t => t.DisplayPath)
                             .Distinct()
                             .ToList();
 
             foreach (var assy in allAssemblies)
             {
-                string title = (assy.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute).Title;
-
-                var dllMenu = new MenuItemViewModel() { Header = title };
+                var dllMenu = new MenuItemViewModel() { Header = assy };
 
                 var dllAlgorithms = allAlgorithms
-                    .Where(t => t.Assembly == assy)
+                    .Where(t => t.DisplayPath == assy)
                     .ToList();
 
                 dllMenu.MenuItems = new ObservableCollection<MenuItemViewModel>();
@@ -194,7 +192,7 @@ namespace TuringTrader
                     var algoEntry = new MenuItemViewModel()
                     {
                         Header = "_" + algo.Name,
-                        CommandParameter = algo,
+                        CommandParameter = algo,   // store info to aid instantiation here
                     };
                     dllMenu.MenuItems.Add(algoEntry);
                 }
@@ -286,7 +284,7 @@ namespace TuringTrader
         {
             var menuItem = (MenuItem)e.OriginalSource;
             var commandParam = menuItem.CommandParameter;
-            var algoType = commandParam as Type;
+            var algoType = commandParam as AlgorithmInfo;
 
             string algorithmName = algoType.Name;
 

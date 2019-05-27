@@ -27,14 +27,52 @@ using System.Threading.Tasks;
 namespace TuringTrader.Simulator
 {
     /// <summary>
+    /// Container for algorithm info
+    /// </summary>
+    public class AlgorithmInfo
+    {
+        /// <summary>
+        /// Name of algorithm. This is either the class name, in case the
+        /// algorithm is contained in a DLL, or the file name w/o path, in
+        /// case the algorithm is provided as source code.
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// Path, as displayed in Algorithm menu. This is either a relative path 
+        /// to the source file containing the algorithm, or the DLL title property
+        /// </summary>
+        public string DisplayPath;
+        /// <summary>
+        /// True, if algorithm is public. This field is only properly initialized
+        /// for algorithm contained in DLLs. For algorithms contained in source
+        /// files, it is always true.
+        /// </summary>
+        public bool IsPublic;
+        /// <summary>
+        /// Algorithm Type, in case algorithm is contained in DLL
+        /// </summary>
+        public Type DllType;
+        /// <summary>
+        /// Algorithm source path, in case algorithm is contained in C# source file
+        /// </summary>
+        public string SourcePath;
+    }
+
+    /// <summary>
     /// Helper class for dynamic algorithm instantiation.
     /// </summary>
     public class AlgorithmLoader
     {
-        #region public static List<Type> GetAllAlgorithms()
-        private static List<Type> _allAlgorithms = null;
-        private static IEnumerable<Type> _getAllAlgorithms()
+        #region internal helpers
+        private static readonly List<AlgorithmInfo> _allAlgorithms = 
+                        _initAllAlgorithms()
+                            .OrderBy(a => a.Name)
+                            .ToList();
+
+        private static IEnumerable<AlgorithmInfo> _initAllAlgorithms()
         {
+            //===== search for algorithms in DLLs
+
             Assembly turingTrader = Assembly.GetExecutingAssembly();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
             FileInfo[] files = dirInfo.GetFiles("*.dll");
@@ -44,10 +82,13 @@ namespace TuringTrader.Simulator
             foreach (FileInfo file in files)
             {
                 Type[] types;
+                string title;
+
                 try
                 {
                     Assembly assembly = Assembly.LoadFrom(file.FullName);
                     types = assembly.GetTypes();
+                    title = (assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute).Title;
                 }
                 catch
                 {
@@ -56,28 +97,34 @@ namespace TuringTrader.Simulator
 
                 foreach (Type type in types)
                 {
-                    if (!type.IsAbstract 
-                    //&& type.IsPublic
+                    if (!type.IsAbstract
                     && type.IsSubclassOf(typeof(Algorithm)))
-                        yield return type;
+                    {
+                        yield return new AlgorithmInfo
+                        {
+                            Name = type.Name,
+                            IsPublic = type.IsPublic,
+                            DllType = type,
+                            DisplayPath = title,
+                        };
+                    }
                 }
             }
 
+            //===== search for algorithms in source files
+
             yield break;
         }
+        #endregion
 
+        #region public static List<Type> GetAllAlgorithms()
         /// <summary>
         /// Return list of all known TuringTrader algorithms
         /// </summary>
         /// <param name="publicOnly">if true, only return public classes</param>
         /// <returns>list of algorithms</returns>
-        public static List<Type> GetAllAlgorithms(bool publicOnly = true)
+        public static List<AlgorithmInfo> GetAllAlgorithms(bool publicOnly = true)
         {
-            if (_allAlgorithms == null || _allAlgorithms.Count == 0)
-                _allAlgorithms = _getAllAlgorithms()
-                    .OrderBy(t => t.Name)
-                    .ToList();
-
             return publicOnly
                 ? _allAlgorithms
                     .Where(t => t.IsPublic == true)
@@ -93,26 +140,35 @@ namespace TuringTrader.Simulator
         /// <returns>algorithm instance</returns>
         public static Algorithm InstantiateAlgorithm(string algorithmName)
         {
-            foreach (Type algorithmType in GetAllAlgorithms(false))
-                if (algorithmType.Name == algorithmName)
-                    return (Algorithm)Activator.CreateInstance(algorithmType);
+            List<AlgorithmInfo> matchingAlgorithms = _allAlgorithms
+                .Where(a => a.Name == algorithmName)
+                .ToList();
 
-            return null;
+            if (matchingAlgorithms.Count > 1)
+                throw new Exception(string.Format("AlgorithmLoader: algorithm {0} is ambiguous", algorithmName));
+
+            if (matchingAlgorithms.Count < 1)
+                throw new Exception(string.Format("AlgorithmLoader: algorithm {0} not found", algorithmName));
+
+            return InstantiateAlgorithm(matchingAlgorithms.First());
         }
         #endregion
-        #region
+        #region public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
         /// <summary>
         /// Instantiate TuringTrader algorithm
         /// </summary>
-        /// <param name="algorithmType">class type</param>
+        /// <param name="algorithmInfo">algorithm info</param>
         /// <returns>algorithm instance</returns>
-        public static Algorithm InstantiateAlgorithm(Type algorithmType)
+        public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
         {
-            foreach (Type algo in GetAllAlgorithms(false))
-                if (algo == algorithmType)
-                    return (Algorithm)Activator.CreateInstance(algo);
-
-            return null;
+            if (algorithmInfo.DllType != null)
+            {
+                return (Algorithm)Activator.CreateInstance(algorithmInfo.DllType);
+            }
+            else
+            {
+                return null;
+            }
         }
         #endregion
     }
