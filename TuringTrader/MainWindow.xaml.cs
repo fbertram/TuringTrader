@@ -130,7 +130,7 @@ namespace TuringTrader
             _optimizer = null;
 
             RunButton.IsEnabled = false;
-            EditButton.IsEnabled = false;
+            MenuEditAlgorithm.IsEnabled = false;
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = false;
             ResultsButton.IsEnabled = false;
@@ -153,7 +153,7 @@ namespace TuringTrader
 
             UpdateParameterDisplay();
 
-            EditButton.IsEnabled = _currentAlgorithmInfo != null && _currentAlgorithmInfo.SourcePath != null;
+            MenuEditAlgorithm.IsEnabled = _currentAlgorithmInfo != null && _currentAlgorithmInfo.SourcePath != null;
 
             if (_currentAlgorithm != null)
             {
@@ -240,7 +240,7 @@ namespace TuringTrader
                 var parent = map[AlgoPathLookupName(algo.DisplayPath)];
                 var newEntry = new MenuItemViewModel
                 {
-                    Header = algo.Name,
+                    Header = "_" + algo.Name,
                     CommandParameter = algo,
                 };
 
@@ -321,6 +321,12 @@ namespace TuringTrader
             settingsDialog.ShowDialog();
         }
         #endregion
+        #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
+        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(_currentAlgorithmInfo.SourcePath);
+        }
+        #endregion
         #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
         private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
         {
@@ -333,12 +339,6 @@ namespace TuringTrader
         #endregion
 
         //----- buttons
-        #region private void EditButton_Click(object sender, RoutedEventArgs e)
-        private void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(_currentAlgorithmInfo.SourcePath);
-        }
-        #endregion
         #region private async void RunButton_Click(object sender, RoutedEventArgs e)
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {

@@ -17,6 +17,7 @@
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="Settings..." Click="MenuEditSettings_Click"/>
+                <MenuItem x:Name="MenuEditAlgorithm" Header="Algorithm Source..." Click="MenuEditAlgorithm_Click"/>
             </MenuItem>
             <MenuItem x:Name="AlgoMenu" Header="_Algorithm" ItemsSource="{Binding MenuItems}" Click="MenuAlgorithm_Click">
                 <MenuItem.ItemContainerStyle>
@@ -35,7 +36,6 @@
         <TextBlock x:Name="AlgoParameters" Margin="10,60,214,0" TextWrapping="Wrap" Text="Parameters" VerticalAlignment="Top" Height="20"/>
         <Button x:Name="ResultsButton" Content="Opt Results" Margin="0,58,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
         <ProgressBar x:Name="Progress" Margin="10,0,10,10" Visibility="Hidden" Height="8" VerticalAlignment="Bottom"/>
-        <TextBlock x:Name="Algo" Text="Algorithm" Margin="10,32,322,0" VerticalAlignment="Top"/>
-        <Button x:Name="EditButton" Content="Edit" Margin="0,30,214,0" VerticalAlignment="Top" IsEnabled="False" Click="EditButton_Click" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
+        <TextBlock x:Name="Algo" Text="Algorithm" Margin="10,32,214,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>
