@@ -15,14 +15,11 @@
 
 #region libraries
 using Microsoft.CSharp;
-using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -49,6 +46,7 @@ namespace TuringTrader.Simulator
                 source = sr.ReadToEnd();
 
             // code provider
+            // TODO: figure out how to compile for C# 7
             var options = new Dictionary<string, string> { { "CompilerVersion", "v4.0" } };
             CSharpCodeProvider provider = new CSharpCodeProvider(options);
 

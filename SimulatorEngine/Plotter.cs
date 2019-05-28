@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
 // Name:        Plotter
-// Description: logging class to connect w/ CSV Files, Excel, R
+// Description: logging class to connect w/ CSV Files, Excel, R, C#
 // History:     2017xii08, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2018, Bertram Solutions LLC
@@ -29,12 +29,10 @@
 
 #region libraries
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -123,8 +121,8 @@ namespace TuringTrader.Simulator
                 string tmpFile = Path.GetTempFileName();
 
                 SaveAsCsv(
-                    tmpFile, 
-                    plot, 
+                    tmpFile,
+                    plot,
                     o =>
                     {
                         if (o.GetType() == typeof(DateTime))
@@ -235,7 +233,7 @@ namespace TuringTrader.Simulator
 
                     return value;
                 }*/
-                
+
                 // R needs:
                 // - path seperators to be forward slashes
                 // - blanks removed from arguments
@@ -288,33 +286,38 @@ namespace TuringTrader.Simulator
 #if ENABLE_CSHARP
         private void OpenWithCSharp(string pathToCSharpTemplate)
         {
-            // The calling thread must be STA, because many UI components require this.
-            // https://stackoverflow.com/questions/2329978/the-calling-thread-must-be-sta-because-many-ui-components-require-this
-
             void uiThread()
             {
-#if false
-                var template = new SimpleChart();
-#else
+                //----- dynamic compile
                 var assy = DynamicCompile.CompileSource(pathToCSharpTemplate);
 
                 if (assy == null)
+                {
                     Output.WriteLine("Plotter: can't compile template {0}", pathToCSharpTemplate);
+                    return;
+                }
 
+                //----- instantiate template
                 var templateType = assy.GetTypes()
                     .Where(t => t.IsSubclassOf(typeof(ReportTemplate)))
                     .FirstOrDefault();
 
                 if (templateType == null)
-                    Output.WriteLine("Plotter: load template {0}", pathToCSharpTemplate);
+                {
+                    Output.WriteLine("Plotter: can't load template {0}", pathToCSharpTemplate);
+                    return;
+                }
 
                 ReportTemplate template = (ReportTemplate)Activator.CreateInstance(templateType);
-#endif
                 template.PlotData = AllData;
 
+                //----- open dialog
                 var report = new Report(template);
                 report.ShowDialog();
             }
+
+            // The calling thread must be STA, because many UI components require this.
+            // https://stackoverflow.com/questions/2329978/the-calling-thread-must-be-sta-because-many-ui-components-require-this
 
             Thread thread = new Thread(uiThread);
             thread.SetApartmentState(ApartmentState.STA);
@@ -513,7 +516,7 @@ namespace TuringTrader.Simulator
                 }
             }
         }
-#endregion
+        #endregion
     }
 }
 
