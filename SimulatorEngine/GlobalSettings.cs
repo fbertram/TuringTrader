@@ -191,7 +191,7 @@ namespace TuringTrader.Simulator
             get
             {
                 object value = GetRegistryValue("SimulatorEngine", "DefaultTemplateExtension");
-                if (value == null) return ".r";
+                if (value == null) return ".cs";
                 return value.ToString();
             }
             set

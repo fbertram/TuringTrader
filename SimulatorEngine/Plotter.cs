@@ -4,7 +4,7 @@
 // Description: logging class to connect w/ CSV Files, Excel, R
 // History:     2017xii08, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -23,6 +23,9 @@
 // tested successfully with Excel 2016 via Office 365
 // add global assembly references to the following DLLs
 // - Microsoft.Office.Interop.Excel.dll
+
+#define ENABLE_CSHARP
+// To disable C#, comment the line above.
 
 #region libraries
 using System;
@@ -170,7 +173,7 @@ namespace TuringTrader.Simulator
 #else // ENABLE_EXCEL
 			public void OpenWithExcel(string pathToExcelFile = @"C:\ProgramData\TS Support\MultiCharts .NET64\__FUB_Research.xlsm")
 			{
-				Output.WriteLine("Logger: OpenWithExcel bypassed w/ ENABLE_EXCEL switch");
+				Output.WriteLine("Plotter: OpenWithExcel bypassed w/ ENABLE_EXCEL switch");
 			}
 #endif // ENABLE_EXCEL
         #endregion
@@ -277,7 +280,52 @@ namespace TuringTrader.Simulator
 #else
         private void OpenWithRscript(string pathToRscriptTemplate)
         {
-				Output.WriteLine("Logger: OpenWithRscript bypassed w/ ENABLE_R switch");
+				Output.WriteLine("Plotter: OpenWithRscript bypassed w/ ENABLE_R switch");
+        }
+#endif
+        #endregion
+        #region private void OpenWithCSharp(string pathToCSharpTemplate)
+#if ENABLE_CSHARP
+        private void OpenWithCSharp(string pathToCSharpTemplate)
+        {
+            // The calling thread must be STA, because many UI components require this.
+            // https://stackoverflow.com/questions/2329978/the-calling-thread-must-be-sta-because-many-ui-components-require-this
+
+            void uiThread()
+            {
+#if false
+                var template = new SimpleChart();
+#else
+                var assy = DynamicCompile.CompileSource(pathToCSharpTemplate);
+
+                if (assy == null)
+                    Output.WriteLine("Plotter: can't compile template {0}", pathToCSharpTemplate);
+
+                var templateType = assy.GetTypes()
+                    .Where(t => t.IsSubclassOf(typeof(ReportTemplate)))
+                    .FirstOrDefault();
+
+                if (templateType == null)
+                    Output.WriteLine("Plotter: load template {0}", pathToCSharpTemplate);
+
+                ReportTemplate template = (ReportTemplate)Activator.CreateInstance(templateType);
+#endif
+                template.PlotData = AllData;
+
+                var report = new Report(template);
+                report.ShowDialog();
+            }
+
+            Thread thread = new Thread(uiThread);
+            thread.SetApartmentState(ApartmentState.STA);
+
+            thread.Start();
+            thread.Join();
+        }
+#else
+        private void OpenWithCSharp(string pathToCSharpTemplate)
+        {
+				Output.WriteLine("Plotter: OpenWithCSharp bypassed w/ ENABLE_CSHARP switch");
         }
 #endif
         #endregion
@@ -427,7 +475,11 @@ namespace TuringTrader.Simulator
             if (!File.Exists(fullPath))
                 throw new Exception(string.Format("Logger: template {0} not found", fullPath));
 
-            if (extension.Equals(".xlsm"))
+            if (extension.Equals(".cs"))
+            {
+                OpenWithCSharp(fullPath);
+            }
+            else if (extension.Equals(".xlsm"))
             {
                 OpenWithExcel(fullPath);
             }

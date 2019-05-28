@@ -232,65 +232,33 @@ namespace TuringTrader.Simulator
             else
             {
                 // compile and instantiate from memory
-                Output.WriteLine("AlgorithmLoader: compiling {0}", algorithmInfo.SourcePath);
+                _currentSourceAssembly = DynamicCompile.CompileSource(algorithmInfo.SourcePath);
 
-                using (var sr = new StreamReader(algorithmInfo.SourcePath))
+                if (_currentSourceAssembly == null)
+                    return null;
+
+                var publicAlgorithms = _enumAssyAlgorithms(_currentSourceAssembly)
+                    .Where(t => t.IsPublic)
+                    .ToList();
+
+                if (publicAlgorithms.Count == 0)
                 {
-                    var options = new Dictionary<string, string> { { "CompilerVersion", "v4.0" } };
-                    CSharpCodeProvider provider = new CSharpCodeProvider(options);
-
-                    CompilerParameters cp = new CompilerParameters();
-                    cp.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
-                    cp.ReferencedAssemblies.Add("System.dll");
-                    cp.ReferencedAssemblies.Add("System.Core.dll");
-                    cp.ReferencedAssemblies.Add("System.Data.dll");
-                    cp.GenerateInMemory = true;
-                    cp.TreatWarningsAsErrors = false;
-                    //cp.CompilerOptions = "/optimize /langversion:5"; // 7, 7.1, 7.2, 7.3, Latest
-                    //cp.WarningLevel = 3;
-                    //cp.GenerateExecutable = false;
-                    //cp.IncludeDebugInformation = true;
-
-                    string source = sr.ReadToEnd();
-
-                    CompilerResults cr = provider.CompileAssemblyFromSource(cp, source);
-
-                    if (cr.Errors.HasErrors)
-                    {
-                        string errorMessages = "";
-                        cr.Errors.Cast<CompilerError>()
-                            .ToList()
-                            .ForEach(error => errorMessages += "Line " + error.Line + ": " + error.ErrorText + "\r\n");
-
-                        Output.WriteLine(errorMessages);
-                        return null;
-                        //throw new Exception("AlgorithmLoader: failed to compile");
-                    }
-
-                    _currentSourceAssembly = cr.CompiledAssembly;
-                    var publicAlgorithms = _enumAssyAlgorithms(cr.CompiledAssembly)
-                        .Where(t => t.IsPublic)
-                        .ToList();
-
-                    if (publicAlgorithms.Count == 0)
-                    {
-                        Output.WriteLine("AlgorithmLoader: no algorithm found");
-                        return null;
-                    }
-
-                    if (publicAlgorithms.Count > 1)
-                    {
-                        Output.WriteLine("AlgorithmLoader: multiple algorithms found");
-                        return null;
-                    }
-
-                    var algo = InstantiateAlgorithm(publicAlgorithms[0]);
-
-                    if (algo != null)
-                        Output.WriteLine("AlgorithmLoader: success!");
-
-                    return algo;
+                    Output.WriteLine("AlgorithmLoader: no algorithm found");
+                    return null;
                 }
+
+                if (publicAlgorithms.Count > 1)
+                {
+                    Output.WriteLine("AlgorithmLoader: multiple algorithms found");
+                    return null;
+                }
+
+                var algo = InstantiateAlgorithm(publicAlgorithms.First());
+
+                if (algo != null)
+                    Output.WriteLine("AlgorithmLoader: success!");
+
+                return algo;
             }
         }
         #endregion

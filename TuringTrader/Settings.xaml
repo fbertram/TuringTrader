@@ -33,6 +33,7 @@
                 <Grid Background="#FFE5E5E5">
                     <Label Content="Default Template Extension:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0" Grid.ColumnSpan="3"/>
                     <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultTemplateExtension}" Grid.Column="2">
+                        <ComboBoxItem Name ="cs">.cs</ComboBoxItem>
                         <ComboBoxItem Name ="xlsm">.xlsm</ComboBoxItem>
                         <ComboBoxItem Name ="r">.r</ComboBoxItem>
                         <ComboBoxItem Name ="rmd">.rmd</ComboBoxItem>
