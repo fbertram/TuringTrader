@@ -236,7 +236,8 @@ namespace TuringTrader.Simulator
 
                 using (var sr = new StreamReader(algorithmInfo.SourcePath))
                 {
-                    string source = sr.ReadToEnd();
+                    var options = new Dictionary<string, string> { { "CompilerVersion", "v4.0" } };
+                    CSharpCodeProvider provider = new CSharpCodeProvider(options);
 
                     CompilerParameters cp = new CompilerParameters();
                     cp.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
@@ -250,7 +251,8 @@ namespace TuringTrader.Simulator
                     //cp.GenerateExecutable = false;
                     //cp.IncludeDebugInformation = true;
 
-                    CSharpCodeProvider provider = new CSharpCodeProvider();
+                    string source = sr.ReadToEnd();
+
                     CompilerResults cr = provider.CompileAssemblyFromSource(cp, source);
 
                     if (cr.Errors.HasErrors)
