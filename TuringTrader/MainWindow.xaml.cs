@@ -101,6 +101,127 @@ namespace TuringTrader
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
         #endregion
         #region internal helpers
+        private void Initialize_Once(object sender, EventArgs e)
+        {
+            _dispatcherTimer.Tick -= Initialize_Once;
+
+            CheckSettings();
+            PopulateAlgorithmMenu();
+            LoadMostRecentAlgorithm();
+        }
+        private void CheckSettings()
+        {
+            //===== check home path
+            string path = GlobalSettings.HomePath;
+
+            if (path.Length == 0)
+            {
+                // create folder in user's documents
+                string homePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    "TuringTrader");
+
+                if (!Directory.Exists(homePath))
+                    Directory.CreateDirectory(homePath);
+
+                GlobalSettings.HomePath = homePath;
+
+                // copy files from install directory
+
+                string homeTemplate = Path.Combine(
+                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                    "Home");
+
+                void copyFolderFiles(string srcPath, string dstPath)
+                {
+                    DirectoryInfo src = new DirectoryInfo(srcPath);
+
+                    FileInfo[] srcFiles = src.GetFiles();
+                    foreach (FileInfo srcFile in srcFiles)
+                    {
+                        File.Copy(srcFile.FullName, Path.Combine(dstPath, srcFile.Name));
+                    }
+
+                    DirectoryInfo[] srcDirs = src.GetDirectories();
+                    foreach (DirectoryInfo srcDir in srcDirs)
+                    {
+                        string dstDir = Path.Combine(dstPath, srcDir.Name);
+                        Directory.CreateDirectory(dstDir);
+                        copyFolderFiles(srcDir.FullName, dstDir);
+                    }
+                }
+
+                if (Directory.Exists(homeTemplate))
+                    copyFolderFiles(homeTemplate, homePath);
+            }
+            else if (!Directory.Exists(path))
+            {
+                MessageBox.Show("Please set TuringTrader's home folder");
+                MenuEditSettings_Click(null, null);
+            }
+
+            //===== check Tiingo API key
+            if (GlobalSettings.DefaultDataFeed == "Tiingo" && GlobalSettings.TiingoApiKey.Length < 10)
+            {
+                MessageBox.Show("Please set Tiingo API key");
+                MenuEditSettings_Click(null, null);
+            }
+        }
+        private void PopulateAlgorithmMenu()
+        {
+            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
+
+            // NOTE: this is done in the MainWindow constructor
+            //MenuItems = new ObservableCollection<MenuItemViewModel>();
+
+            var map = new Dictionary<string, ObservableCollection<MenuItemViewModel>>();
+            map["/"] = MenuItems;
+
+            // 1) create sub-menu structure
+            foreach (var algo in allAlgorithms)
+            {
+                string algoPath = AlgoPathLookupName(algo.DisplayPath);
+
+                if (!map.ContainsKey(algoPath))
+                {
+                    for (int i = 1; i <= algo.DisplayPath.Count; i++)
+                    {
+                        var parentPath = AlgoPathLookupName(algo.DisplayPath.Take(i - 1));
+                        var newPath = AlgoPathLookupName(algo.DisplayPath.Take(i));
+
+                        var newEntry = new MenuItemViewModel
+                        {
+                            Header = algo.DisplayPath[i - 1],
+                            MenuItems = new ObservableCollection<MenuItemViewModel>(),
+                        };
+
+                        if (!map.ContainsKey(newPath))
+                        {
+                            map[newPath] = newEntry.MenuItems;
+                            map[parentPath].Add(newEntry);
+                        }
+                    }
+                }
+            }
+
+            // 2) add individual entries
+            foreach (var algo in allAlgorithms)
+            {
+                var parent = map[AlgoPathLookupName(algo.DisplayPath)];
+                var newEntry = new MenuItemViewModel
+                {
+                    Header = "_" + algo.Name,
+                    CommandParameter = algo,
+                };
+
+                parent.Add(newEntry);
+            }
+        }
+        private void LoadMostRecentAlgorithm()
+        {
+            string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
+            SelectAlgo(mostRecentAlgorithm);
+        }
         private void UpdateParameterDisplay()
         {
             if (_currentAlgorithm == null)
@@ -177,79 +298,16 @@ namespace TuringTrader
             InitializeComponent();
             DataContext = this;
 
-            //--- settings sanity check
-            string path = GlobalSettings.HomePath;
-            if (!Directory.Exists(path))
-            {
-                MessageBox.Show("Please set TuringTrader's home folder");
-                MenuEditSettings_Click(null, null);
-            }
-
-            if (GlobalSettings.DefaultDataFeed == "Tiingo" && GlobalSettings.TiingoApiKey.Length < 10)
-            {
-                MessageBox.Show("Please set Tiingo API key");
-                MenuEditSettings_Click(null, null);
-            }
-
-            //--- set timer event
-            _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
-            _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
-            _dispatcherTimer.Start();
+            MenuItems = new ObservableCollection<MenuItemViewModel>();
 
             //--- redirect log output
             Output.WriteEvent += WriteEventHandler;
 
-            //--- populate algorithm sub-menu
-            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
-
-            MenuItems = new ObservableCollection<MenuItemViewModel>();
-
-            var map = new Dictionary<string, ObservableCollection<MenuItemViewModel>>();
-            map["/"] = MenuItems;
-
-            // 1) create sub-menu structure
-            foreach (var algo in allAlgorithms)
-            {
-                string algoPath = AlgoPathLookupName(algo.DisplayPath);
-
-                if (!map.ContainsKey(algoPath))
-                {
-                    for (int i = 1; i <= algo.DisplayPath.Count; i++)
-                    {
-                        var parentPath = AlgoPathLookupName(algo.DisplayPath.Take(i - 1));
-                        var newPath = AlgoPathLookupName(algo.DisplayPath.Take(i));
-
-                        var newEntry = new MenuItemViewModel
-                        {
-                            Header = algo.DisplayPath[i - 1],
-                            MenuItems = new ObservableCollection<MenuItemViewModel>(),
-                        };
-
-                        if (!map.ContainsKey(newPath))
-                        {
-                            map[newPath] = newEntry.MenuItems;
-                            map[parentPath].Add(newEntry);
-                        }
-                    }
-                }
-            }
-
-            // 2) add individual entries
-            foreach (var algo in allAlgorithms)
-            {
-                var parent = map[AlgoPathLookupName(algo.DisplayPath)];
-                var newEntry = new MenuItemViewModel
-                {
-                    Header = "_" + algo.Name,
-                    CommandParameter = algo,
-                };
-
-                parent.Add(newEntry);
-            }
-
-            //--- attempt to recover most-recent algo
-            string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
-            SelectAlgo(mostRecentAlgorithm);
+            //--- set timer event
+            _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
+            _dispatcherTimer.Tick += new EventHandler(Initialize_Once);
+            _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
+            _dispatcherTimer.Start();
         }
         #endregion
 
@@ -307,13 +365,6 @@ namespace TuringTrader
             Application.Current.Shutdown();
         }
         #endregion
-        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutBox = new AboutBox();
-            aboutBox.ShowDialog();
-        }
-        #endregion
         #region private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
         private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -335,6 +386,24 @@ namespace TuringTrader
             var algoType = commandParam as AlgorithmInfo;
 
             SelectAlgo(AlgoLookupName(algoType));
+        }
+        #endregion
+        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
+        }
+        #endregion
+        #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        {
+            string helpFile = Path.Combine(
+                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                "TuringTrader.chm");
+
+            if (File.Exists(helpFile))
+                System.Diagnostics.Process.Start(helpFile);
         }
         #endregion
 

@@ -27,9 +27,24 @@ namespace TuringTrader.Simulator
 {
     public partial class DataUpdaterCollection
     {
+#if true
         private class DataUpdaterStooq : DataUpdater
         {
-            #region internal data
+            public override string Name => "IQFeed";
+
+            public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            {
+
+            }
+            override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
+            {
+                throw new Exception("Stooq download currently broken, we're working on it. Use Tiingo instead.");
+            }
+        }
+#else
+        private class DataUpdaterStooq : DataUpdater
+        {
+        #region internal data
             private static readonly string _urlTemplate = @"https://stooq.com/q/d/l/?s={0}&d1={1:yyyy}{1:MM}{1:dd}&d2={2:yyyy}{2:MM}{2:dd}&i=d";
             private static readonly Dictionary<DataSourceValue, string> _parseInfo = new Dictionary<DataSourceValue, string>()
             {
@@ -41,18 +56,18 @@ namespace TuringTrader.Simulator
                 { DataSourceValue.close,    "{5}" },
                 { DataSourceValue.volume,   "{6}" }
             };
-            #endregion
+        #endregion
 
-            #region public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        #region public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {
             }
-            #endregion
+        #endregion
 
-            #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
-                throw new Exception("Stooq download currently broken, we're working on it. Use Yahoo instead.");
+                throw new Exception("Stooq download currently broken, we're working on it. Use Tiingo instead.");
 
                 string url = string.Format(_urlTemplate,
                     Info[DataSourceValue.symbolStooq], startTime, endTime);
@@ -119,9 +134,9 @@ namespace TuringTrader.Simulator
                     }
                 }
             }
-            #endregion
+        #endregion
 
-            #region public override string Name
+        #region public override string Name
             public override string Name
             {
                 get
@@ -129,8 +144,9 @@ namespace TuringTrader.Simulator
                     return "Stooq";
                 }
             }
-            #endregion
+        #endregion
         }
+#endif
     }
 }
 

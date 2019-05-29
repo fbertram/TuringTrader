@@ -29,23 +29,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IQFeed.CSharpApiClient;
-using IQFeed.CSharpApiClient.Lookup;
-using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
-using IQFeed.CSharpApiClient.Lookup.Chains.Equities;
-using IQFeed.CSharpApiClient.Streaming.Level1;
+//using IQFeed.CSharpApiClient;
+//using IQFeed.CSharpApiClient.Lookup;
+//using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
+//using IQFeed.CSharpApiClient.Lookup.Chains.Equities;
+//using IQFeed.CSharpApiClient.Streaming.Level1;
 using Microsoft.Win32;
-using IQFeed.CSharpApiClient.Streaming.Level1.Messages;
-using IQFeed.CSharpApiClient.Lookup.Chains;
+//using IQFeed.CSharpApiClient.Streaming.Level1.Messages;
+//using IQFeed.CSharpApiClient.Lookup.Chains;
 #endregion
 
 namespace TuringTrader.Simulator
 {
     public partial class DataUpdaterCollection
     {
+#if true
         private class DataUpdaterIQFeed : DataUpdater
         {
-            #region internal helpers
+            public override string Name => "IQFeed";
+
+            public DataUpdaterIQFeed(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            {
+
+            }
+            override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
+            {
+                throw new Exception("IQFeed download currently broken, we're working on it. Use Tiingo instead.");
+            }
+        }
+#else
+        private class DataUpdaterIQFeed : DataUpdater
+        {
+        #region internal helpers
             private string _username
             {
                 get
@@ -72,15 +87,15 @@ namespace TuringTrader.Simulator
                     }
                 }
             }
-            #endregion
+        #endregion
 
-            #region public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
+        #region public DataUpdaterIQFeed(Dictionary<DataSourceValue, string> info) : base(info)
             public DataUpdaterIQFeed(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {
             }
-            #endregion
+        #endregion
 
-            #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
                 // create clients for IQFeed
@@ -198,9 +213,9 @@ namespace TuringTrader.Simulator
 
                 yield break;
             }
-            #endregion
+        #endregion
 
-            #region public override string Name
+        #region public override string Name
             public override string Name
             {
                 get
@@ -208,8 +223,9 @@ namespace TuringTrader.Simulator
                     return "IQFeed";
                 }
             }
-            #endregion
+        #endregion
         }
+#endif
     }
 }
 

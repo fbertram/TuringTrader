@@ -29,6 +29,7 @@
                 </MenuItem.ItemContainerStyle>
             </MenuItem>
             <MenuItem Header="_Help">
+                <MenuItem Header="_View Help File" Click="MenuHelpView_Click"/>
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>

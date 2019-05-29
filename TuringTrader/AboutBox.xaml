@@ -5,16 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="About TuringTrader" Height="183.553" Width="309.308"
+        Title="About TuringTrader" Height="329.558" Width="338.308"
         ResizeMode="NoResize">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Margin="10,10,10,48" TextWrapping="Wrap" Grid.ColumnSpan="3"><Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/><Run Text="Copyright (c) 2011-2019, Bertram Solutions LLC"/><LineBreak/><Run Text="TuringTrader is licensed under AGPL-3.0-or-later."/><LineBreak/><Run/><LineBreak/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/"><Run Text="https://www.turingtrader.org"/></Hyperlink><LineBreak/></TextBlock>
-        <Button Content="OK" Width="75" Grid.Column="1" Margin="0,0,0,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click"/>
+        <TextBlock Margin="10" TextWrapping="Wrap">
+            <Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/>
+            <Run Text="Copyright © 2011-2019, "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://bertram.solutions/">
+                <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/>            
+            <Run Text="TuringTrader is licensed under"/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0.html">
+                <Run Text="AGPL-3.0-or-later"/></Hyperlink><Run Text="."/><LineBreak/>
+            <Run/><LineBreak/>
+            <Run Text="For news, updates, and more information regarding the project, please visit "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
+                <Run Text="www.turingtrader.org"/></Hyperlink><Run Text="."/><LineBreak/>
+            <Run/><LineBreak/>
+            <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
+                <Run Text="AvalonLibrary (WPF Contrib)"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/IQFeed.CSharpApiClient/">
+                <Run Text="IQFeed.CSharpApiClient"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/MathNet.Numerics">
+                <Run Text="Math.NET Numerics"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/Newtonsoft.Json/">
+                <Run Text="Newtonsoft.Json (Json.NET)"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/OxyPlot.Wpf">
+                <Run Text="OxyPlot.Wpf"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://interactivebrokers.github.io/tws-api/">
+                <Run Text="TWS API"/></Hyperlink><LineBreak/>
+        </TextBlock>
+        <Button Content="OK" Width="75" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click" HorizontalAlignment="Right"/>
 
     </Grid>
 </Window>
