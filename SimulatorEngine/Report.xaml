@@ -6,7 +6,7 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:TuringTrader.Simulator"
         mc:Ignorable="d" 
-        Height="450" Width="800">
+        Height="700" Width="1000">
     <Grid>
         <oxy:PlotView Name="Chart" Margin="10,37,10,10"/>
         <ComboBox Name="ChartSelect" Margin="10,10,10,0" VerticalAlignment="Top" ItemsSource="{Binding AvailableCharts}" SelectedValue="{Binding SelectedChart}"/>

@@ -61,7 +61,7 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                if (_selectedChart == null)
+                if (_selectedChart == null && AvailableCharts.Count() > 0)
                     SelectedChart = AvailableCharts.First();
 
                 return _selectedChart;
