@@ -464,6 +464,9 @@ namespace TuringTrader.Simulator
         /// <param name="pathToTemplateFile">path to template file</param>
         public void OpenWith(string pathToTemplateFile)
         {
+            if (AllData.Keys.Count == 0)
+                throw new Exception("Plotter: no data to plot");
+
             string fullPath = Path.IsPathRooted(pathToTemplateFile)
                 ? pathToTemplateFile
                 : Path.Combine(GlobalSettings.TemplatePath, pathToTemplateFile);
@@ -476,7 +479,7 @@ namespace TuringTrader.Simulator
             }
 
             if (!File.Exists(fullPath))
-                throw new Exception(string.Format("Logger: template {0} not found", fullPath));
+                throw new Exception(string.Format("Plotter: template {0} not found", fullPath));
 
             if (extension.Equals(".cs"))
             {
