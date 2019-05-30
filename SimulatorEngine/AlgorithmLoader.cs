@@ -95,10 +95,9 @@ namespace TuringTrader.Simulator
             yield break;
         }
 
-        private static IEnumerable<AlgorithmInfo> _enumDllAlgorithms()
+        private static IEnumerable<AlgorithmInfo> _enumDllAlgorithms(string dllPath)
         {
-            Assembly turingTrader = Assembly.GetExecutingAssembly();
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(turingTrader.Location));
+            DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
             FileInfo[] files = dirInfo.GetFiles("*.dll");
 
             // see https://msdn.microsoft.com/en-us/library/ms972968.aspx
@@ -158,8 +157,14 @@ namespace TuringTrader.Simulator
 
         private static IEnumerable<AlgorithmInfo> _enumStaticAlgorithms()
         {
-            foreach (var algorithm in _enumDllAlgorithms())
+            string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            foreach (var algorithm in _enumDllAlgorithms(exePath))
                 yield return algorithm;
+
+#if true
+            foreach (var algorithm in _enumDllAlgorithms(GlobalSettings.AlgorithmPath))
+                yield return algorithm;
+#endif
 
             foreach (var algorithm in _enumSourceAlgorithms(GlobalSettings.AlgorithmPath, new List<string>()))
                 yield return algorithm;
