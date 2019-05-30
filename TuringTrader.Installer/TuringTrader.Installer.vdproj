@@ -33,6 +33,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_0771FFA256AB465E888A971285660384"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_0786FE5C13ADDAEEF941158ECF88A614"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
         "MsmSig" = "8:_UNDEFINED"
@@ -171,6 +177,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_264F3513F5B74E418614D30474F0E039"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_266FC00E0E81BCF8C6A1D24DD40F2A30"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
         "MsmSig" = "8:_UNDEFINED"
@@ -237,6 +249,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_2F88305A3E7D486F89D417CE5D4BE388"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_3123B4FACEF65332C127EC53BB378C89"
         "OwnerKey" = "8:_673DD4A059EF827FB12BFE77F0C33F85"
         "MsmSig" = "8:_UNDEFINED"
@@ -281,6 +299,12 @@
         {
         "MsmKey" = "8:_40C9C12B65483582FE5EFC2C148FF8FA"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_41467CF726664BD780807EDEDA926308"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -333,6 +357,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4C27AE218BFA45AE82508FF5EBC036F9"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4C724DB063BB4FC3AA8EEE3D7CE1CA28"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -341,6 +371,12 @@
         {
         "MsmKey" = "8:_4C7AF8CE7D9A26A314F164E12BED35FE"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4EEBBEF091054601B097D7CB41053B22"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -441,6 +477,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_62E8DD7900984E12A8AA7B28F0083977"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_64A9BAA4FA2B83C1E0D2407CE54E9D57"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
         "MsmSig" = "8:_UNDEFINED"
@@ -471,6 +513,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_715176A5C421496D92131AAB71B5BD4C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7197ED748F304632A49BBEFD7192BF6C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -491,6 +539,12 @@
         {
         "MsmKey" = "8:_7329C48AC2D5910E1C228468FC863802"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_74302229DE904859AE2328849F8B557F"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -520,6 +574,12 @@
         "Entry"
         {
         "MsmKey" = "8:_7CF36E57CBE14F17A9A200F25A268701"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7F709FD61F4041A28181AFDF75F5261B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -699,12 +759,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_A4265CF8C148117A977881F94930E006"
-        "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_A820A43414DD4728A4B121E96788EB20"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -713,6 +767,12 @@
         {
         "MsmKey" = "8:_A9802D637BC99EBFE8756BC28EFC686C"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_AA3BC38A08CE489FBEB2048B9FC158C8"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -759,6 +819,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B78A955850594F069AD065281926A9B0"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_B7ABD365712BB3D8FAB1D55BB62659B4"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
         "MsmSig" = "8:_UNDEFINED"
@@ -784,12 +850,6 @@
         "Entry"
         {
         "MsmKey" = "8:_BB9173F4A6208960276AE6309F10174C"
-        "OwnerKey" = "8:_A4265CF8C148117A977881F94930E006"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_BB9173F4A6208960276AE6309F10174C"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -803,6 +863,12 @@
         {
         "MsmKey" = "8:_BEC96323BD640B2E716D4FA344160770"
         "OwnerKey" = "8:_B42FD9DF216A4F329A7AD067EAFEBFCE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_BF8319096FBD4AAD8876F5C026DD230F"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -981,8 +1047,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_461F87E6CDDECDB0F9C2F632DC0BC1B9"
+        "MsmKey" = "8:_FDF42814F6934FF8B3AC4612ECE3D8E5"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FE1BD4C06C3E412594E4036B05704F43"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -994,13 +1066,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B7ABD365712BB3D8FAB1D55BB62659B4"
+        "OwnerKey" = "8:_7F709FD61F4041A28181AFDF75F5261B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A4265CF8C148117A977881F94930E006"
+        "OwnerKey" = "8:_B7ABD365712BB3D8FAB1D55BB62659B4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1765,6 +1837,12 @@
         "OwnerKey" = "8:_0F1D7924A69D2F06DC7D62C9D2E06BBB"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_461F87E6CDDECDB0F9C2F632DC0BC1B9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -1790,6 +1868,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -1932,6 +2018,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0771FFA256AB465E888A971285660384"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Aeromir_ParkingTrade.cs"
+            "TargetName" = "8:Aeromir_ParkingTrade.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_0786FE5C13ADDAEEF941158ECF88A614"
@@ -2521,6 +2627,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_264F3513F5B74E418614D30474F0E039"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Dalio_AllWeatherPortfolio.cs"
+            "TargetName" = "8:Dalio_AllWeatherPortfolio.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_266FC00E0E81BCF8C6A1D24DD40F2A30"
             {
             "AssemblyRegister" = "3:1"
@@ -2820,6 +2946,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2F88305A3E7D486F89D417CE5D4BE388"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Faber_IvyPortfolio.cs"
+            "TargetName" = "8:Faber_IvyPortfolio.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3123B4FACEF65332C127EC53BB378C89"
             {
             "AssemblyRegister" = "3:1"
@@ -3044,6 +3190,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_41467CF726664BD780807EDEDA926308"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Livingston_MuscularPortfolios.cs"
+            "TargetName" = "8:Livingston_MuscularPortfolios.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_42A21A2BC5BEB375B0F2F4C215E39FA4"
@@ -3283,6 +3449,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4C27AE218BFA45AE82508FF5EBC036F9"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Alvarez_EtfSectorRotation.cs"
+            "TargetName" = "8:Alvarez_EtfSectorRotation.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4C724DB063BB4FC3AA8EEE3D7CE1CA28"
             {
             "SourcePath" = "8:..\\Algorithms\\Demo Algorithms\\Demo07_Subclassing.cs"
@@ -3332,6 +3518,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4EEBBEF091054601B097D7CB41053B22"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Clenow_StocksOnTheMove.cs"
+            "TargetName" = "8:Clenow_StocksOnTheMove.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4FD6784564C2213A8126D0E02EE44071"
@@ -3799,6 +4005,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_62E8DD7900984E12A8AA7B28F0083977"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Bensdorp_30MinStockTrader.cs"
+            "TargetName" = "8:Bensdorp_30MinStockTrader.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_64A9BAA4FA2B83C1E0D2407CE54E9D57"
             {
             "AssemblyRegister" = "3:1"
@@ -3879,6 +4105,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_715176A5C421496D92131AAB71B5BD4C"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Keller_DAA.cs"
+            "TargetName" = "8:Keller_DAA.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7197ED748F304632A49BBEFD7192BF6C"
@@ -3994,6 +4240,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_74302229DE904859AE2328849F8B557F"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Antonacci_DualMomentumInvesting.cs"
+            "TargetName" = "8:Antonacci_DualMomentumInvesting.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7568F5BB76C813B8265DDC0919CB9611"
             {
             "AssemblyRegister" = "3:1"
@@ -4093,6 +4359,37 @@
             "TargetName" = "8:60_40.csv"
             "Tag" = "8:"
             "Folder" = "8:_B40216457C9941E8AAEC9EF4C54CADE7"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7F709FD61F4041A28181AFDF75F5261B"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:BooksAndPubs, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64"
+                "ScatterAssemblies"
+                {
+                    "_7F709FD61F4041A28181AFDF75F5261B"
+                    {
+                    "Name" = "8:BooksAndPubs.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\Algorithms\\BooksAndPubs.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_8892C64F58714E97B93FC2A757D55FFC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -4984,37 +5281,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_A4265CF8C148117A977881F94930E006"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:BooksAndPubs, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64"
-                "ScatterAssemblies"
-                {
-                    "_A4265CF8C148117A977881F94930E006"
-                    {
-                    "Name" = "8:BooksAndPubs.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:BooksAndPubs.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D963B90924EC4FEF8143758CF3B18EF4"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A820A43414DD4728A4B121E96788EB20"
             {
             "SourcePath" = "8:..\\Templates\\SimpleChart.Rmd"
@@ -5064,6 +5330,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AA3BC38A08CE489FBEB2048B9FC158C8"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\BooksAndPubs.csproj"
+            "TargetName" = "8:BooksAndPubs.csproj"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AB82CF9428176CFAB1A4ED799E3233CC"
@@ -5239,6 +5525,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B78A955850594F069AD065281926A9B0"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Keller_CAA.cs"
+            "TargetName" = "8:Keller_CAA.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B7ABD365712BB3D8FAB1D55BB62659B4"
@@ -5456,6 +5762,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BF8319096FBD4AAD8876F5C026DD230F"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Properties\\AssemblyInfo.cs"
+            "TargetName" = "8:AssemblyInfo.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_734B73CACD264E15911BD8C70C7BE612"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C226DE7EBC8E44B6BC5D9CDF5185D984"
@@ -6293,6 +6619,46 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FDF42814F6934FF8B3AC4612ECE3D8E5"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Connors_HighProbEtfTrading.cs"
+            "TargetName" = "8:Connors_HighProbEtfTrading.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FE1BD4C06C3E412594E4036B05704F43"
+            {
+            "SourcePath" = "8:..\\BooksAndPubs\\Connors_ShortTermTrading.cs"
+            "TargetName" = "8:Connors_ShortTermTrading.cs"
+            "Tag" = "8:"
+            "Folder" = "8:_BA9C3378EDF542ECB49876D2855FBFB0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -6395,6 +6761,28 @@
                                     }
                                 }
                             }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_BA9C3378EDF542ECB49876D2855FBFB0"
+                            {
+                            "Name" = "8:BooksAndPubs"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_1809091C91044D1DA632C093A9121FCC"
+                                "Folders"
+                                {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_734B73CACD264E15911BD8C70C7BE612"
+                                    {
+                                    "Name" = "8:Properties"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_5F40A29B62C24F80890B3702DC1BE4A2"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -6427,7 +6815,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TuringTrader"
         "ProductCode" = "8:{C3F4E817-F4D1-435B-B62A-D411FD8E04A4}"
-        "PackageCode" = "8:{CA469F05-24E1-462A-8860-493520EAB8CE}"
+        "PackageCode" = "8:{40BD42B4-C934-4162-827A-1A6ED7BE397C}"
         "UpgradeCode" = "8:{2A40C149-879D-4F2B-B338-33D867AD6F9F}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -6962,7 +7350,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B42FD9DF216A4F329A7AD067EAFEBFCE"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\TuringTrader\\obj\\Release\\TuringTrader.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D963B90924EC4FEF8143758CF3B18EF4"
