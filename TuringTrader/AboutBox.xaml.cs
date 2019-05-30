@@ -39,6 +39,11 @@ namespace TuringTrader
         public AboutBox()
         {
             InitializeComponent();
+
+            string version = GitInfo.Version
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
+            Version.Text = version;
         }
 
         private void AboutBox_Click(object sender, RoutedEventArgs e)

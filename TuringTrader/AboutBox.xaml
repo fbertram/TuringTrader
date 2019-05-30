@@ -8,8 +8,7 @@
         Title="About TuringTrader" Height="329.558" Width="338.308"
         ResizeMode="NoResize">
     <Grid>
-        <TextBlock Margin="10" TextWrapping="Wrap">
-            <Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/>
+        <TextBlock Margin="10,31,10,10" TextWrapping="Wrap">
             <Run Text="Copyright © 2011-2019, "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://bertram.solutions/">
                 <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/>            
@@ -36,6 +35,10 @@
                 <Run Text="TWS API"/></Hyperlink><LineBreak/>
         </TextBlock>
         <Button Content="OK" Width="75" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click" HorizontalAlignment="Right"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Run FontWeight="Bold" Text="TuringTrader"/>
+        </TextBlock>
+        <TextBlock Name="Version" HorizontalAlignment="Left" Margin="116,10,0,0" TextWrapping="Wrap" Text="Version" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

@@ -83,6 +83,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GitVersion.cs" />
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
@@ -177,4 +178,10 @@
     <Resource Include="favicon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)
+echo public static class GitInfo { public static string Version = @^" &gt; GitVersion.cs
+git describe &gt;&gt; GitVersion.cs
+echo ^"; } &gt;&gt; GitVersion.cs</PreBuildEvent>
+  </PropertyGroup>
 </Project>
