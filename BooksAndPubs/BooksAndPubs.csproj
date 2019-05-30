@@ -64,4 +64,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)..\Algorithms\$(TargetFileName)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

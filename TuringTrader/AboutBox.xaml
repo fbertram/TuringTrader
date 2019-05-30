@@ -38,7 +38,9 @@
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
             <Run FontWeight="Bold" Text="TuringTrader"/>
         </TextBlock>
-        <TextBlock Name="Version" HorizontalAlignment="Left" Margin="116,10,0,0" TextWrapping="Wrap" Text="Version" VerticalAlignment="Top"/>
-
+        <TextBlock HorizontalAlignment="Left" Margin="116,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigateGit" NavigateUri="https://bitbucket.org/fbertram/fub_tradingsimulator/commits/">
+                <Run Name="Version" Text="Git Version"/></Hyperlink>
+        </TextBlock>
     </Grid>
 </Window>

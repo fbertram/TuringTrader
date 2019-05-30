@@ -36,14 +36,17 @@ namespace TuringTrader
     /// </summary>
     public partial class AboutBox : Window
     {
+        private string _gitVersion => GitInfo.Version
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty)
+                .Replace(" ", string.Empty);
+
         public AboutBox()
         {
             InitializeComponent();
 
-            string version = GitInfo.Version
-                .Replace("\r", string.Empty)
-                .Replace("\n", string.Empty);
-            Version.Text = version;
+            string version = 
+            Version.Text = _gitVersion;
         }
 
         private void AboutBox_Click(object sender, RoutedEventArgs e)
@@ -55,6 +58,18 @@ namespace TuringTrader
                                                System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
+        }
+
+        private void Hyperlink_RequestNavigateGit(object sender,
+                                               System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/all
+            // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/f1f13fb
+
+            string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
+            string commitUrl = e.Uri.AbsoluteUri + gitCommit;
+
+            System.Diagnostics.Process.Start(commitUrl);
         }
     }
 }
