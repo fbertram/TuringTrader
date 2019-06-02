@@ -6,19 +6,16 @@
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
         Title="Optimizer Settings"
-        Height="450" Width="800"
-        ResizeMode="NoResize">
+        Height="450" Width="800" MinWidth="400" MinHeight="300"
+        ResizeMode="CanResize">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="RunButton" Content="Optimize" HorizontalAlignment="Right" Margin="0,0,0,10" Width="75" Grid.Column="1" Height="20" VerticalAlignment="Bottom" Click="RunButton_Click"/>
+        <Button x:Name="RunButton" Content="Optimize" HorizontalAlignment="Right" Margin="0,0,10,10" Width="75" Height="20" VerticalAlignment="Bottom" Click="RunButton_Click" Grid.Column="1"/>
         <DataGrid x:Name="ParamGrid" 
                   ItemsSource="{Binding}" 
                   Margin="10,10,10,51" 
-                  Grid.ColumnSpan="3" 
+                  Grid.ColumnSpan="2" 
                   AutoGenerateColumns="False" 
                   TargetUpdated="ParamGrid_TargetUpdated">
             <DataGrid.Columns>
@@ -30,6 +27,6 @@
                 <DataGridTextColumn Header="Step" Binding="{Binding Step,NotifyOnTargetUpdated=True,UpdateSourceTrigger=PropertyChanged}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
-        <TextBlock x:Name="NumIterations" HorizontalAlignment="Left" Margin="10,391,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="162"/>
+        <TextBlock x:Name="NumIterations" HorizontalAlignment="Left" Margin="10,0,0,12" TextWrapping="Wrap" Text="Num Iterations" Width="162" Grid.ColumnSpan="2" Height="16" VerticalAlignment="Bottom"/>
     </Grid>
 </Window>

@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="TuringTrader" Height="450" Width="800"
+        Title="TuringTrader" Height="450" Width="800" MinWidth="400" MinHeight="300"
         ResizeMode="CanResize">
     <Grid>
-        <Button x:Name="RunButton" Content="Run" Margin="0,30,111,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="RunButton" Content="Run" Margin="0,30,99,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
         <Button x:Name="ReportButton" Content="Report" Margin="0,30,10,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" HorizontalAlignment="Right" Width="75"/>
         <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged"/>
         <Menu x:Name="MenuBar" Height="23" VerticalAlignment="Top">
@@ -33,7 +33,7 @@
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Button x:Name="OptimizerButton" Content="Optimize" Margin="0,58,111,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="OptimizerButton" Content="Optimize" Margin="0,58,99,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
         <TextBlock x:Name="AlgoParameters" Margin="10,60,214,0" TextWrapping="Wrap" Text="Parameters" VerticalAlignment="Top" Height="20"/>
         <Button x:Name="ResultsButton" Content="Opt Results" Margin="0,58,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
         <ProgressBar x:Name="Progress" Margin="10,0,10,10" Visibility="Hidden" Height="8" VerticalAlignment="Bottom"/>
