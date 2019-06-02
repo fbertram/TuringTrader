@@ -18,8 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -178,7 +177,7 @@ namespace BooksAndPubs
             //----- enter positions
 
             if ((i.Position == 0 && i.Close[0] > sma200[0] && down3) // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && up3))  // short
+            || (i.Position == 0 && i.Close[0] < sma200[0] && up3))  // short
             {
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
@@ -189,7 +188,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && i.Close[0] > sma5[0])  // long
-            ||       (i.Position < 0 && i.Close[0] < sma5[0])) // short
+            || (i.Position < 0 && i.Close[0] < sma5[0])) // short
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -198,7 +197,7 @@ namespace BooksAndPubs
 
             else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 2
             && ((i.Position > 0 && i.Close[0] < _entryPrices[i])   // long
-            ||  (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
+            || (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
             {
                 // make sure we increase position size only once
                 _numPositions[i]++;
@@ -241,7 +240,7 @@ namespace BooksAndPubs
             //----- enter positions
 
             if ((i.Position == 0 && i.Close[0] > sma200[0] && rsi4[0] < ENTRY_MAX_RSI_LONG)   // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && rsi4[0] > ENTRY_MIN_RSI_SHORT)) // short
+            || (i.Position == 0 && i.Close[0] < sma200[0] && rsi4[0] > ENTRY_MIN_RSI_SHORT)) // short
             {
                 _numPositions[i] = 1;
 
@@ -251,7 +250,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && rsi4[0] > EXIT_MIN_RSI_LONG)
-            ||       (i.Position < 0 && rsi4[0] < EXIT_MAX_RSI_SHORT))
+            || (i.Position < 0 && rsi4[0] < EXIT_MAX_RSI_SHORT))
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -260,7 +259,7 @@ namespace BooksAndPubs
 
             else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 2
             && ((i.Position > 0 && rsi4[0] < ENTRY2_MAX_RSI_LONG)    // long
-            ||  (i.Position < 0 && rsi4[0] > ENTRY2_MIN_RSI_SHORT))) // short
+            || (i.Position < 0 && rsi4[0] > ENTRY2_MIN_RSI_SHORT))) // short
             {
                 // make sure we increase position size only once
                 _numPositions[i]++;
@@ -314,7 +313,7 @@ namespace BooksAndPubs
             //----- enter positions
 
             if ((i.Position == 0 && i.Close[0] > sma200[0] && rsiDown) // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && rsiUp))  // short
+            || (i.Position == 0 && i.Close[0] < sma200[0] && rsiUp))  // short
             {
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
@@ -325,7 +324,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && rsi2[0] > EXIT_MIN_RSI_LONG)   // long
-            ||       (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
+            || (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -334,7 +333,7 @@ namespace BooksAndPubs
 
             else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 2
             && ((i.Position > 0 && i.Close[0] < _entryPrices[i])   // long
-            ||  (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
+            || (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
             {
                 // make sure we increase position size only once
                 _numPositions[i]++;
@@ -378,7 +377,7 @@ namespace BooksAndPubs
             //----- enter positions
 
             if ((i.Position == 0 && i.Close[0] > sma200[0] && bLo)  // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && bHi)) // short
+            || (i.Position == 0 && i.Close[0] < sma200[0] && bHi)) // short
             {
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
@@ -389,7 +388,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && percentB[0] > EXIT_MIN_BB_LONG / 100.0)   // long
-            ||       (i.Position < 0 && percentB[0] < EXIT_MAX_BB_SHORT / 100.0)) // short
+            || (i.Position < 0 && percentB[0] < EXIT_MAX_BB_SHORT / 100.0)) // short
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -398,7 +397,7 @@ namespace BooksAndPubs
 
             else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 2
             && ((i.Position > 0 && percentB[0] < ENTRY_MAX_BB_LONG / 100.0)    // long
-            ||  (i.Position < 0 && percentB[0] > ENTRY_MIN_BB_SHORT / 100.0))) // short
+            || (i.Position < 0 && percentB[0] > ENTRY_MIN_BB_SHORT / 100.0))) // short
             {
                 // make sure we increase position size only once
                 _numPositions[i]++;
@@ -500,7 +499,7 @@ namespace BooksAndPubs
             //----- enter positions
 
             if ((i.Position == 0 && i.Close[0] > sma200[0] && rsi2[0] < ENTRY_MAX_RSI_LONG)   // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && rsi2[0] > ENTRY_MIN_RSI_SHORT)) // short
+            || (i.Position == 0 && i.Close[0] < sma200[0] && rsi2[0] > ENTRY_MIN_RSI_SHORT)) // short
             {
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
@@ -511,7 +510,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && i.Close[0] > sma5[0])  // long
-            ||       (i.Position < 0 && i.Close[0] < sma5[0])) // short
+            || (i.Position < 0 && i.Close[0] < sma5[0])) // short
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -520,7 +519,7 @@ namespace BooksAndPubs
 
             else if (AGGRESSIVE_ON > 0 && _numPositions[i] < 2
             && ((i.Position > 0 && rsi2[0] < ENTRY2_MAX_RSI_LONG)    // long
-            ||  (i.Position < 0 && rsi2[0] > ENTRY2_MIN_RSI_SHORT))) // short
+            || (i.Position < 0 && rsi2[0] > ENTRY2_MIN_RSI_SHORT))) // short
             {
                 // make sure we increase position size only once
                 _numPositions[i]++;
@@ -561,8 +560,8 @@ namespace BooksAndPubs
 
             //----- enter positions
 
-            if ((i.Position == 0 && i.Close[0] > sma200[0] && rsi2[0] < ENTRY_MAX_RSI_LONG  && rsi2[1] < ENTRY_MAX_RSI_LONG)   // long
-            ||  (i.Position == 0 && i.Close[0] < sma200[0] && rsi2[0] > ENTRY_MIN_RSI_SHORT && rsi2[1] > ENTRY_MIN_RSI_SHORT)) // short
+            if ((i.Position == 0 && i.Close[0] > sma200[0] && rsi2[0] < ENTRY_MAX_RSI_LONG && rsi2[1] < ENTRY_MAX_RSI_LONG)   // long
+            || (i.Position == 0 && i.Close[0] < sma200[0] && rsi2[0] > ENTRY_MIN_RSI_SHORT && rsi2[1] > ENTRY_MIN_RSI_SHORT)) // short
             {
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
@@ -575,7 +574,7 @@ namespace BooksAndPubs
             //----- exit positions
 
             else if ((i.Position > 0 && rsi2[0] > EXIT_MIN_RSI_LONG)   // long
-            ||       (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
+            || (i.Position < 0 && rsi2[0] < EXIT_MAX_RSI_SHORT)) // short
             {
                 return i.Position > 0 ? -1 : 1;
             }
@@ -583,8 +582,8 @@ namespace BooksAndPubs
             //----- aggressive version: increase position size
 
             else if (_numPositions[i] < 4
-            && ((i.Position > 0 && i.Close[0] <_entryPrices[i])    // long
-            ||  (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
+            && ((i.Position > 0 && i.Close[0] < _entryPrices[i])    // long
+            || (i.Position < 0 && i.Close[0] > _entryPrices[i]))) // short
             {
                 // increase position size up to 3 times
                 _numPositions[i]++;

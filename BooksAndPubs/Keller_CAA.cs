@@ -20,9 +20,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
+using TuringTrader.Support;
 #endregion
 
 namespace BooksAndPubs

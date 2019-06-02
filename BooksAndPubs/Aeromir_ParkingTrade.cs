@@ -44,8 +44,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -122,7 +121,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("fill", entry.FillPrice);
                     _plotter.Plot("gross", -100.0 * entry.OrderTicket.Quantity * entry.FillPrice);
                     _plotter.Plot("commission", -entry.Commission);
-                    _plotter.Plot("net", -100.0 * entry.OrderTicket.Quantity * entry.FillPrice 
+                    _plotter.Plot("net", -100.0 * entry.OrderTicket.Quantity * entry.FillPrice
                                         - entry.Commission);
                     _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
                 }
@@ -133,7 +132,7 @@ namespace TuringTrader.BooksAndPubs
         private void OpenParkingTrade(DateTime expiry)
         {
 #if FUB_IMPROVEMENTS || true
-            bool downDay = _underlyingInstrument.Close[0] 
+            bool downDay = _underlyingInstrument.Close[0]
                 < _underlyingInstrument.Close.SMA(3)[0];
 #else
             bool downDay = _underlyingInstrument.Close[0] 
@@ -166,10 +165,12 @@ namespace TuringTrader.BooksAndPubs
                         s => putCandidates
                             .Where(l => l.OptionStrike >= s.OptionStrike - 25
                                 && l.OptionStrike <= s.OptionStrike - 20),
-                        (s, l) => new {
+                        (s, l) => new
+                        {
                             shortLeg = s,
                             longLeg = l,
-                            credit = s.Bid[0] - l.Ask[0] })
+                            credit = s.Bid[0] - l.Ask[0]
+                        })
                     .Where(s => s.credit >= premiumMin && s.credit <= premiumMax)
                     .OrderBy(s => Math.Abs(s.credit - premiumTarget))
                     .FirstOrDefault();
@@ -184,8 +185,8 @@ namespace TuringTrader.BooksAndPubs
 
                 // determine risk
                 double risk = 100.0 * (
-                    putSpread.shortLeg.OptionStrike 
-                    - putSpread.longLeg.OptionStrike 
+                    putSpread.shortLeg.OptionStrike
+                    - putSpread.longLeg.OptionStrike
                     - putSpread.credit);
                 int numContracts = (int)Math.Round(NetAssetValue[0] * RISK_PER_TRADE / 100.0 / risk);
 
@@ -202,15 +203,15 @@ namespace TuringTrader.BooksAndPubs
         {
             // find long and short legs
             Instrument shortLeg = Positions.Keys
-                .Where(o => o.IsOption 
-                    && o.OptionIsPut 
-                    && o.OptionExpiry == expiry 
+                .Where(o => o.IsOption
+                    && o.OptionIsPut
+                    && o.OptionExpiry == expiry
                     && o.Position < 0)
                 .FirstOrDefault();
             Instrument longLeg = Positions.Keys
-                .Where(o => o.IsOption 
-                    && o.OptionIsPut 
-                    && o.OptionExpiry == expiry 
+                .Where(o => o.IsOption
+                    && o.OptionIsPut
+                    && o.OptionExpiry == expiry
                     && o.Position > 0)
                 .FirstOrDefault();
 
@@ -289,7 +290,7 @@ namespace TuringTrader.BooksAndPubs
 
                 // find all weekly expiry dates
                 List<DateTime> expiryDates = OptionChain(OPTION_NICK)
-                    .Where(o => o.OptionExpiry.DayOfWeek == DayOfWeek.Friday 
+                    .Where(o => o.OptionExpiry.DayOfWeek == DayOfWeek.Friday
                         || o.OptionExpiry.DayOfWeek == DayOfWeek.Saturday)
                     .Select(o => o.OptionExpiry.Date)
                     .Distinct()
@@ -300,10 +301,10 @@ namespace TuringTrader.BooksAndPubs
                     .Where(d => (d - SimTime[0]).TotalDays <= 32
                         && (d - SimTime[0]).TotalDays >= 30)
                     .FirstOrDefault();
-                    
+
                 // roll positions on the key dates
                 if (openExpiry != default(DateTime)
-                &&  Positions.Keys.Where(p => p.OptionExpiry == openExpiry).Count() == 0)
+                && Positions.Keys.Where(p => p.OptionExpiry == openExpiry).Count() == 0)
                 {
                     OpenParkingTrade(openExpiry);
                 }

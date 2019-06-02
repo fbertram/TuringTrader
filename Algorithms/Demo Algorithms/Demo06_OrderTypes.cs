@@ -4,7 +4,7 @@
 // Description: demonstrate various order types & trade log
 // History:     2018ix29, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -92,6 +92,13 @@ namespace TuringTrader.Demos
 
                 if (simTime.Date == DateTime.Parse("01/24/2018"))
                     instrument.Trade(-100, OrderType.limitNextBar, 2840); // triggers mid day
+
+                //===== conditional order
+                if (simTime.Date == DateTime.Parse("01/25/2018"))
+                    instrument.Trade(100, OrderType.openNextBar, 0.0, i => true); // will be executed 01/26
+
+                if (simTime.Date == DateTime.Parse("01/26/2018"))
+                    instrument.Trade(100, OrderType.openNextBar, 0.0, i => false); // won't trigger
             }
 
             //---------- post-processing

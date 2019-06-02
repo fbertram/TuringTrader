@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TuringTrader.Simulator;
+using TuringTrader.Indicators;
 #endregion
 
 namespace TuringTrader.Demos
@@ -92,12 +93,12 @@ namespace TuringTrader.Demos
                     .Select(e => e.instrument)
                     .ToList();
 
+                double equityPerInstrument = NetAssetValue[0] / Math.Max(holdInstruments.Count, 3);
                 foreach (Instrument instr in activeInstruments)
                 {
                     // determine equity per instrument
                     double targetEquity = holdInstruments.Contains(instr)
-                        ? NetAssetValue[0]
-                            / Math.Max(1.0, Math.Max(holdInstruments.Count, 3))
+                        ? equityPerInstrument
                         : 0.0;
 
                     // determine number of shares

@@ -26,6 +26,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TuringTrader.Simulator;
+using TuringTrader.Indicators;
 #endregion
 
 namespace TuringTrader.Demos
@@ -39,8 +40,7 @@ namespace TuringTrader.Demos
 #if USE_FAKE_QUOTES
         private readonly string _optionsNickname = "$SPX.fake.options";
 #else
-        //private readonly string _optionsNickname = "$SPX.options";
-        private readonly string _optionsNickname = "$SPX.weekly.options";
+        private readonly string _optionsNickname = "$SPX.options";
 #endif
         private readonly double _regTMarginToUse = 0.8;
         private readonly double _initialCash = 1e6;
@@ -54,7 +54,6 @@ namespace TuringTrader.Demos
             //---------- initialization
 
             // set simulation time frame
-            WarmupStartTime = DateTime.Parse("01/01/2017");
             StartTime = DateTime.Parse("01/01/2017");
             EndTime = DateTime.Parse("08/01/2018");
 
@@ -75,13 +74,11 @@ namespace TuringTrader.Demos
             {
                 // find the underlying instrument
                 // we could also find the underlying from the option chain
-                if (_underlyingInstrument == null)
-                    _underlyingInstrument = FindInstrument(_underlyingNickname);
+                _underlyingInstrument = _underlyingInstrument ?? FindInstrument(_underlyingNickname);
 
                 // retrieve the underlying spot price
                 double underlyingPrice = _underlyingInstrument.Close[0];
-                if (_initialUnderlyingPrice == null)
-                    _initialUnderlyingPrice = underlyingPrice;
+                _initialUnderlyingPrice = _initialUnderlyingPrice ?? underlyingPrice;
 
                 // calculate volatility
                 ITimeSeries<double> volatilitySeries = _underlyingInstrument.Close

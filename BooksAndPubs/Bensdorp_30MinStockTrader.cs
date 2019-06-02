@@ -18,8 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -301,7 +300,7 @@ namespace BooksAndPubs
                         pos.Trade(-pos.Position, OrderType.closeThisBar).Comment = "time exit";
                         numOpenPositions--;
                     }
-                    else if (ENTRY_DIR > 0 
+                    else if (ENTRY_DIR > 0
                         ? pos.Close[0] >= entryParameters[pos].profitTarget  // long
                         : pos.Close[0] <= entryParameters[pos].profitTarget) // short
                     {
@@ -440,31 +439,31 @@ namespace BooksAndPubs
 
     public abstract class Bensdorp_30MinStockTrader_MRL_Core : Bensdorp_30MinStockTrader_MRx_Core
     {
-        public override int ENTRY_DIR     { get; set; } = 1;   // 1 = long
-        public override int SMA_DAYS      { get; set; } = 150; // 150 days
-        public override int MIN_ADX       { get; set; } = 45;
-        public override int MIN_ATR       { get; set; } = 400; // 4%
-        public override int MINMAX_RSI    { get; set; } = 30;  // long: maximum
-        public override int STOP_LOSS     { get; set; } = 250; // 2.5 x ATR
+        public override int ENTRY_DIR { get; set; } = 1;   // 1 = long
+        public override int SMA_DAYS { get; set; } = 150; // 150 days
+        public override int MIN_ADX { get; set; } = 45;
+        public override int MIN_ATR { get; set; } = 400; // 4%
+        public override int MINMAX_RSI { get; set; } = 30;  // long: maximum
+        public override int STOP_LOSS { get; set; } = 250; // 2.5 x ATR
         public override int PROFIT_TARGET { get; set; } = 300; // 3%
-        public override int MAX_CAP       { get; set; } = 100; // 100%
-        public override int MAX_RISK      { get; set; } = 20;  // 20%
-        public override int MAX_ENTRIES   { get; set; } = 10;  // 10
+        public override int MAX_CAP { get; set; } = 100; // 100%
+        public override int MAX_RISK { get; set; } = 20;  // 20%
+        public override int MAX_ENTRIES { get; set; } = 10;  // 10
         public override int MAX_HOLD_DAYS { get; set; } = 4;   // 4 days
     }
 
     public abstract class Bensdorp_30MinStockTrader_MRS_Core : Bensdorp_30MinStockTrader_MRx_Core
     {
-        public override int ENTRY_DIR     { get; set; } = -1;  // -1 = short
-        public override int SMA_DAYS      { get; set; } = 150; // 150 days
-        public override int MIN_ADX       { get; set; } = 50;
-        public override int MIN_ATR       { get; set; } = 500; // 5%
-        public override int MINMAX_RSI    { get; set; } = 85;  // short: minimum
-        public override int STOP_LOSS     { get; set; } = 250; // 2.5 x ATR
+        public override int ENTRY_DIR { get; set; } = -1;  // -1 = short
+        public override int SMA_DAYS { get; set; } = 150; // 150 days
+        public override int MIN_ADX { get; set; } = 50;
+        public override int MIN_ATR { get; set; } = 500; // 5%
+        public override int MINMAX_RSI { get; set; } = 85;  // short: minimum
+        public override int STOP_LOSS { get; set; } = 250; // 2.5 x ATR
         public override int PROFIT_TARGET { get; set; } = 400; // 4%
-        public override int MAX_CAP       { get; set; } = 100; // 100%
-        public override int MAX_RISK      { get; set; } = 20;  // 20%
-        public override int MAX_ENTRIES   { get; set; } = 10;  // 10
+        public override int MAX_CAP { get; set; } = 100; // 100%
+        public override int MAX_RISK { get; set; } = 20;  // 20%
+        public override int MAX_ENTRIES { get; set; } = 10;  // 10
         public override int MAX_HOLD_DAYS { get; set; } = 2;   // 2 days
     }
     #endregion
