@@ -4,7 +4,7 @@
 // Description: arithmetic on time series
 // History:     2018ix14, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -15,15 +15,11 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Indicators
 {
     /// <summary>
     /// Collection of indicators performing arithmetic on time series.
@@ -42,7 +38,7 @@ namespace TuringTrader.Simulator
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>time series #1 + time series #2</returns>
-        public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2, 
+        public static ITimeSeries<double> Add(this ITimeSeries<double> series1, ITimeSeries<double> series2,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,

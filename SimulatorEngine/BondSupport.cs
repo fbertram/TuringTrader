@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Support
 {
     /// <summary>
     /// Collection of bond support functionality.

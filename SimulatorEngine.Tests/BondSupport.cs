@@ -15,11 +15,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TuringTrader.Simulator;
 
 namespace SimulatorEngine.Tests
 {
@@ -69,34 +64,34 @@ namespace SimulatorEngine.Tests
         {
             {
                 // annual compunding
-                double pv = TuringTrader.Simulator.BondSupport.PresentValue(179.08, 0.06, 10);
+                double pv = TuringTrader.Support.BondSupport.PresentValue(179.08, 0.06, 10);
                 Assert.IsTrue(Math.Abs(pv - 100.00) < 1e-2);
 
-                double fv = TuringTrader.Simulator.BondSupport.FutureValue(100, 0.06, 10);
+                double fv = TuringTrader.Support.BondSupport.FutureValue(100, 0.06, 10);
                 Assert.IsTrue(Math.Abs(fv - 179.08) < 1e-2);
             }
             {
                 // annual compounding
-                double pv = TuringTrader.Simulator.BondSupport.PresentValue(100.00, 0.06, 10);
+                double pv = TuringTrader.Support.BondSupport.PresentValue(100.00, 0.06, 10);
                 Assert.IsTrue(Math.Abs(pv - 55.8395) < 1e-2);
 
-                double fv = TuringTrader.Simulator.BondSupport.FutureValue(55.8395, 0.06, 10);
+                double fv = TuringTrader.Support.BondSupport.FutureValue(55.8395, 0.06, 10);
                 Assert.IsTrue(Math.Abs(fv - 100.00) < 1e-2);
             }
             {
                 // semiannual compounding
-                double pv = TuringTrader.Simulator.BondSupport.PresentValue(100.00, 0.0591 / 2.0, 20);
+                double pv = TuringTrader.Support.BondSupport.PresentValue(100.00, 0.0591 / 2.0, 20);
                 Assert.IsTrue(Math.Abs(pv - 55.8536) < 1e-2);
 
-                double fv = TuringTrader.Simulator.BondSupport.FutureValue(55.8395, 0.0591 / 2.0, 20);
+                double fv = TuringTrader.Support.BondSupport.FutureValue(55.8395, 0.0591 / 2.0, 20);
                 Assert.IsTrue(Math.Abs(fv - 99.9748) < 1e-2);
             }
             {
                 // continuous compounding
-                double pv = TuringTrader.Simulator.BondSupport.PresentValueContinuouslyCompounded(100.00, 0.0583, 10);
+                double pv = TuringTrader.Support.BondSupport.PresentValueContinuouslyCompounded(100.00, 0.0583, 10);
                 Assert.IsTrue(Math.Abs(pv - 55.8221) < 1e-2);
 
-                double fv = TuringTrader.Simulator.BondSupport.FutureValueContinuouslyCompunded(55.8395, 0.0583, 10);
+                double fv = TuringTrader.Support.BondSupport.FutureValueContinuouslyCompunded(55.8395, 0.0583, 10);
                 Assert.IsTrue(Math.Abs(fv - 100.0311) < 1e-2);
             }
         }
@@ -106,10 +101,10 @@ namespace SimulatorEngine.Tests
         {
             {
                 // annual compounding
-                double price6 = TuringTrader.Simulator.BondSupport.Price(100.00, 0.06, 0.06, 10);
+                double price6 = TuringTrader.Support.BondSupport.Price(100.00, 0.06, 0.06, 10);
                 Assert.IsTrue(Math.Abs(price6 - 100.00) < 1e-2);
 
-                double price5 = TuringTrader.Simulator.BondSupport.Price(100.00, 0.06, 0.05, 10);
+                double price5 = TuringTrader.Support.BondSupport.Price(100.00, 0.06, 0.05, 10);
                 Assert.IsTrue(Math.Abs(price5 - 107.7217) < 1e-2);
             }
         }

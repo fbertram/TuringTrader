@@ -368,7 +368,7 @@ namespace TuringTrader.Simulator
         #endregion
 
         //----- trading
-        #region public void Trade(int quantity, OrderExecution tradeExecution, double price)
+        #region public Order Trade(int quantity, OrderType tradeExecution, double price, Func<Instrument, bool> condition)
         /// <summary>
         /// Submit trade for this instrument.
         /// </summary>

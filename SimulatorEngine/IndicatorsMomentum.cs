@@ -4,7 +4,7 @@
 // Description: collection of momentum-based indicators
 // History:     2018ix15, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -15,14 +15,12 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Indicators
 {
     /// <summary>
     /// Collection of momentum-based indicators.
@@ -501,14 +499,14 @@ namespace TuringTrader.Simulator
             // +DI = 100 * Smoothed+DM / ATR
             var plusDI = plusDM
                 .EMA(n, cacheId);
-                //.Divide(atr)
-                //.Multiply(100.0);
+            //.Divide(atr)
+            //.Multiply(100.0);
 
             // -DI = 100 * Smoothed-DM / ATR
             var minusDI = minusDM
                 .EMA(n, cacheId);
-                //.Divide(atr)
-                //.Multiply(100.0);
+            //.Divide(atr)
+            //.Multiply(100.0);
 
             // DX = Abs(+DI - -DI) / (+DI + -DI)
             var DX = IndicatorsBasic.BufferedLambda(
@@ -519,7 +517,7 @@ namespace TuringTrader.Simulator
             // ADX = (13 * ADX[1] + DX) / 14
             var ADX = DX
                 .EMA(n, cacheId);
-                //.Multiply(100.0);
+            //.Multiply(100.0);
 
             return ADX;
         }

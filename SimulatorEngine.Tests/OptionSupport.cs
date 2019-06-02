@@ -4,7 +4,7 @@
 // Description: unit test for option support class.
 // History:     2019i14, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -13,11 +13,12 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TuringTrader.Simulator;
+using TuringTrader.Support;
 
 namespace SimulatorEngine.Tests
 {

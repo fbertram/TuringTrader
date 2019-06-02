@@ -93,6 +93,7 @@ namespace TuringTrader
         #region internal data
         private Algorithm _currentAlgorithm = null;
         private AlgorithmInfo _currentAlgorithmInfo = null;
+        private DateTime _currentAlgorithmTimestamp = default(DateTime);
         private OptimizerGrid _optimizer = null;
         private bool _runningBacktest = false;
         private bool _runningOptimization = false;
@@ -270,6 +271,10 @@ namespace TuringTrader
                 GlobalSettings.MostRecentAlgorithm = algoLookupName;
 
                 _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algoInfo);
+
+                _currentAlgorithmTimestamp = _currentAlgorithmInfo.SourcePath != null
+                    ? (new FileInfo(_currentAlgorithmInfo.SourcePath).LastWriteTime)
+                    : default(DateTime);
             }
 
             UpdateParameterDisplay();
@@ -419,6 +424,16 @@ namespace TuringTrader
             ResultsButton.IsEnabled = false;
             AlgoMenu.IsEnabled = false;
             _runningBacktest = true;
+
+            DateTime algorithmTimeStamp = _currentAlgorithmInfo.SourcePath != null
+                ? (new FileInfo(_currentAlgorithmInfo.SourcePath).LastWriteTime)
+                : default(DateTime);
+
+            if (algorithmTimeStamp != _currentAlgorithmTimestamp)
+            {
+                // algorithm instance out of date. re-instantiate!
+                SelectAlgo(AlgoLookupName(_currentAlgorithmInfo));
+            }
 
             ClearLog();
 

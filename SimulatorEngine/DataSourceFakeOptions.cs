@@ -4,7 +4,7 @@
 // Description: Data source providing fake option quotes
 // History:     2019i30, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -16,10 +16,8 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TuringTrader.Simulator;
+using TuringTrader.Indicators;
+using TuringTrader.Support;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -73,7 +71,7 @@ namespace TuringTrader.Simulator
                             {
                                 for (int putCall = 0; putCall < 2; putCall++) // 0 = put, 1 = call
                                 {
-                                    double z = (strike - underlying[0]) 
+                                    double z = (strike - underlying[0])
                                         / (Math.Sqrt(T) * underlying[0] * volatility[0]);
 
                                     double vol = volatility[0] * (1.0 + 0.30 * Math.Abs(z));

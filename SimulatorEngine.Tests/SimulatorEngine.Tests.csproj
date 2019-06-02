@@ -56,6 +56,7 @@
     <Compile Include="DataFiles.cs" />
     <Compile Include="DataSourceFred.cs" />
     <Compile Include="DataSourceTiingo.cs" />
+    <Compile Include="DataSourceYahoo.cs" />
     <Compile Include="IndicatorsMomentum.cs" />
     <Compile Include="IndicatorsTrend.cs" />
     <Compile Include="IndicatorsVolatility.cs" />

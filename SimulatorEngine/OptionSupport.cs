@@ -4,7 +4,7 @@
 // Description: option support functionality
 // History:     2019i29, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -24,11 +24,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Support
 {
     /// <summary>
     /// Collection of option support functionality.
@@ -60,7 +59,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="x">number of standard-deviations away from average</param>
         /// <returns>probability, that result is greater or equal to z-score</returns>
-        public static double CND(double x)
+        private static double CND(double x)
         {
             /*
                 '// Cummulative double precision algorithm based on Hart 1968
@@ -549,7 +548,7 @@ namespace TuringTrader.Simulator
                         (instrument.OptionExpiry - date).TotalDays / 365.25,
                         r,
                         b,
-                        _greeks[instrument].Volatility);          
+                        _greeks[instrument].Volatility);
                 }
                 else
                 {
@@ -603,4 +602,3 @@ namespace TuringTrader.Simulator
 
 //==============================================================================
 // end of file
-              

@@ -4,18 +4,16 @@
 // Description: unit test for portfolio support class
 // History:     2019iii06, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     this code is licensed under GPL-3.0-or-later
 //==============================================================================
 
 #region libraries
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TuringTrader.Simulator;
 #endregion
 
@@ -124,7 +122,7 @@ namespace SimulatorEngine.Tests
                     4.56082448686638,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(3),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -201,7 +199,7 @@ namespace SimulatorEngine.Tests
                 };
 
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(3),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -275,7 +273,7 @@ namespace SimulatorEngine.Tests
                     0.0198997487421324,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(3),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -349,7 +347,7 @@ namespace SimulatorEngine.Tests
                     0.0235764208277597,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(3),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -463,7 +461,7 @@ namespace SimulatorEngine.Tests
                     0.205237619813865,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(10),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -517,7 +515,7 @@ namespace SimulatorEngine.Tests
                     1.000000000000000E+000,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(mean.Count()),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],
@@ -603,7 +601,7 @@ namespace SimulatorEngine.Tests
                     0.000000000000000E+000,
                 };
 
-                var cla = new TuringTrader.Simulator.PortfolioSupport.MarkowitzCLA(
+                var cla = new TuringTrader.Support.PortfolioSupport.MarkowitzCLA(
                     instruments.Keys.Take(mean.Count()),
                     i => mean[instruments[i]],
                     (i, j) => covar[instruments[i], instruments[j]],

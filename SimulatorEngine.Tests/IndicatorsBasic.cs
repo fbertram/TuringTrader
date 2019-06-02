@@ -4,7 +4,7 @@
 // Description: unit test for basic indicators
 // History:     2018ixi27, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -13,8 +13,9 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
 namespace SimulatorEngine.Tests
@@ -46,7 +47,7 @@ namespace SimulatorEngine.Tests
             {
                 stimulus.Value = testVectors[row, 0];
                 ITimeSeries<double> response =
-                    TuringTrader.Simulator.IndicatorsBasic.Lambda(
+                    TuringTrader.Indicators.IndicatorsBasic.Lambda(
                         (t) => t + stimulus[0]);
                 //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);
 
@@ -86,8 +87,8 @@ namespace SimulatorEngine.Tests
             for (int row = 0; row <= testVectors.GetUpperBound(0); row++)
             {
                 stimulus.Value = testVectors[row, 0];
-                ITimeSeries<double> response = 
-                    TuringTrader.Simulator.IndicatorsBasic.BufferedLambda(
+                ITimeSeries<double> response =
+                    TuringTrader.Indicators.IndicatorsBasic.BufferedLambda(
                         (p) => p + stimulus[0],
                         0.0);
                 //Output.Write("{{ {0:F5}, ", testVectors[row, 0]);

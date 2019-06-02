@@ -386,7 +386,8 @@ namespace TuringTrader.Simulator
                 || infos.ContainsKey(DataSourceValue.bid)
                 || infos.ContainsKey(DataSourceValue.ask)
                 || infos.ContainsKey(DataSourceValue.bidSize)
-                || infos.ContainsKey(DataSourceValue.askSize)))
+                || infos.ContainsKey(DataSourceValue.askSize)
+                || infos.ContainsKey(DataSourceValue.dataUpdater)))
             {
                 infos[DataSourceValue.dataSource] = "csv";
             }
@@ -395,7 +396,7 @@ namespace TuringTrader.Simulator
                 defaultIfUndefined(DataSourceValue.dataSource);
             }
 
-            //--- parse info
+            //--- parse info for csv
             defaultIfUndefined(DataSourceValue.time);
 
             // if the data source is csv, and none of the mapping
@@ -420,8 +421,14 @@ namespace TuringTrader.Simulator
                 infos[DataSourceValue.volume] = defaults[DataSourceValue.volume];
             }
 
+            // if data source is csv, datapath must be set
+            if (infos[DataSourceValue.dataSource].ToLower().Contains("csv"))
+            {
+                defaultIfUndefined(DataSourceValue.dataPath);
+            }
+
             //--- symbol mapping
-            defaultIfUndefined(DataSourceValue.symbolNorgate);
+                defaultIfUndefined(DataSourceValue.symbolNorgate);
             defaultIfUndefined(DataSourceValue.symbolStooq);
             defaultIfUndefined(DataSourceValue.symbolYahoo);
             defaultIfUndefined(DataSourceValue.symbolFred);
@@ -459,6 +466,10 @@ namespace TuringTrader.Simulator
             else if (dataSource.Contains("csv"))
             {
                 return new DataSourceCsv(infos);
+            }
+            else if (dataSource.Contains("yahoo"))
+            {
+                return new DataSourceYahoo(infos);
             }
 
             throw new Exception("DataSource: can't instantiate data source");

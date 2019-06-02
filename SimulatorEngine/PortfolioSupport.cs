@@ -4,7 +4,7 @@
 // Description: portfolio support functionality
 // History:     2019iii06, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -14,15 +14,14 @@
 //==============================================================================
 
 #region libraries
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Support
 {
     /// <summary>
     /// Support class for portfolio construction
@@ -232,7 +231,7 @@ namespace TuringTrader.Simulator
                         // It was observed that lambdas have been going in circles,
                         // while it seems they should be monotonically falling?
                         // For now, we just abort the method here.
-                        bool noConvergence = _w.Count > 50 * _mean.Count; 
+                        bool noConvergence = _w.Count > 50 * _mean.Count;
 #else
                         bool noConvergence = false;
 #endif
@@ -583,7 +582,7 @@ namespace TuringTrader.Simulator
                     // original implementation
 
                     int i = 0;
-                    while(i < _w.Count() - 2) // last member is min variance p/f
+                    while (i < _w.Count() - 2) // last member is min variance p/f
                     {
                         bool isDuplicate = true;
                         foreach (var j in Enumerable.Range(0, _w[i].Count()))

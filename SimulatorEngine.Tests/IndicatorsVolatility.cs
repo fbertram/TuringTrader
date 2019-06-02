@@ -4,7 +4,7 @@
 // Description: unit test for volatility indicators
 // History:     2019ii21, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -13,8 +13,9 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
 namespace SimulatorEngine.Tests

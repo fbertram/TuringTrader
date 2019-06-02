@@ -113,6 +113,7 @@
     <Compile Include="DataSourceFred.cs" />
     <Compile Include="DataSourceHelper.cs" />
     <Compile Include="DataSourceTiingo.cs" />
+    <Compile Include="DataSourceYahoo.cs" />
     <Compile Include="DataUpdaterFred.cs" />
     <Compile Include="DynamicCompile.cs" />
     <Compile Include="LogAnalysis.cs" />

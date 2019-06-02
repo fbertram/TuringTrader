@@ -4,7 +4,7 @@
 // Description: test momentum indicators
 // History:     2018xi27, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -15,6 +15,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
 namespace SimulatorEngine.Tests
