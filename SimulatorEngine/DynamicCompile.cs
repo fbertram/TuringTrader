@@ -41,10 +41,6 @@ namespace TuringTrader.Simulator
             if (!File.Exists(sourcePath))
                 return null;
 
-            string source = "";
-            using (var sr = new StreamReader(sourcePath))
-                source = sr.ReadToEnd();
-
             // code provider
             // TODO: figure out how to compile for C# 7
             var options = new Dictionary<string, string> { { "CompilerVersion", "v4.0" } };
@@ -65,9 +61,16 @@ namespace TuringTrader.Simulator
             //cp.CompilerOptions = "/optimize /langversion:5"; // 7, 7.1, 7.2, 7.3, Latest
             //cp.WarningLevel = 3;
             //cp.GenerateExecutable = false;
-            //cp.IncludeDebugInformation = true;
+            cp.IncludeDebugInformation = true;
 
+#if false
+            string source = "";
+            using (var sr = new StreamReader(sourcePath))
+                source = sr.ReadToEnd();
             CompilerResults cr = provider.CompileAssemblyFromSource(cp, source);
+#else
+            CompilerResults cr = provider.CompileAssemblyFromFile(cp, sourcePath);
+#endif
 
             if (cr.Errors.HasErrors)
             {

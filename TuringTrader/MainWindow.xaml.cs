@@ -457,6 +457,9 @@ namespace TuringTrader
                         + Environment.NewLine);
                     try
                     {
+#if false
+                        System.Diagnostics.Debugger.Launch();
+#endif
                         _currentAlgorithm.Run();
                     }
                     catch (Exception exception)
