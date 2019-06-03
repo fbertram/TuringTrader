@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using TuringTrader.Simulator;
 #endregion
@@ -295,6 +296,7 @@ namespace TuringTrader
                 Algo.Text = "Algorithm: n/a";
             }
         }
+        private bool ControlPressed => Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
         #endregion
 
         #region public MainWindow()
@@ -337,6 +339,11 @@ namespace TuringTrader
         #region private void DispatcherTimer_Tick(object sender, EventArgs e)
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
+            // set Run button label
+            RunButton.Content = ControlPressed
+                ? "Debug"
+                : "Run";
+
             LogOutput.AppendText(_messageUpdate);
             _messageUpdate = "";
 
@@ -425,6 +432,8 @@ namespace TuringTrader
             AlgoMenu.IsEnabled = false;
             _runningBacktest = true;
 
+            bool debug = ControlPressed;
+
             DateTime algorithmTimeStamp = _currentAlgorithmInfo.SourcePath != null
                 ? (new FileInfo(_currentAlgorithmInfo.SourcePath).LastWriteTime)
                 : default(DateTime);
@@ -457,8 +466,9 @@ namespace TuringTrader
                         + Environment.NewLine);
                     try
                     {
-#if false
-                        System.Diagnostics.Debugger.Launch();
+#if true
+                        if (debug)
+                            System.Diagnostics.Debugger.Launch();
 #endif
                         _currentAlgorithm.Run();
                     }
