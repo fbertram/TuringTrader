@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- This is an example code snippets file -->
+<examples>
+
+<item id="Demo04#AddDataSource">
+<sampleCode language="CSharp">
+AddDataSource("$SPX.options");
+</sampleCode>
+</item>
+
+<item id="Demo04#OptionChain">
+<sampleCode language="CSharp">
+List&lt;Instrument&gt; optionChain = OptionChain("$SPX.options");</sampleCode>
+</item>
+
+<item id="Demo04#ExpiryDates">
+<sampleCode language="CSharp">
+List&lt;DateTime&gt; expiryDates = OptionChain("$SPX.options")
+    .Select(o =&gt; o.OptionExpiry)
+    .Distinct()
+    .ToList();
+</sampleCode>
+</item>
+
+<item id="Demo04#expiryDate">
+<sampleCode language="CSharp">
+DateTime expiryDate = expiryDates
+    .Where(d => (d - simTime).TotalDays &gt;= 21
+        &amp;&amp; (d - simTime).TotalDays &lt;= 28)
+    .FirstOrDefault();</sampleCode>
+</item>
+
+<item id="Demo04#shortPut">
+<sampleCode language="CSharp">
+Instrument shortPut = OptionChain("$SPX.options")
+    .Where(o => o.OptionIsPut
+        &amp;&amp; o.Option.Expiry == expiryDate)
+    .OrderBy(o => Math.Abs(o.OptionStrike - 2800)
+    .FirstOrDefault(); </sampleCode>
+</item>
+
+<item id="Demo04#Static">
+<sampleCode language="CSharp">
+</sampleCode>
+</item>
+
+</examples>
+

@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="702de1f5-680e-4624-9040-1276a217d25f" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!--
+    <summary>
+      <para>Optional summary abstract</para>
+    </summary>
+    -->
+    
+<introduction>
+<!-- Uncomment this to generate an outline of the section and sub-section
+titles.  Specify a numeric value as the inner text to limit it to
+a specific number of sub-topics when creating the outline.  Specify
+zero (0) to limit it to top-level sections only.  -->
+<!-- <autoOutline /> -->
+
+<para>
+To install TuringTrader, we recommend our binary distribution. While this 
+distribution might trail a little behind the repository head, it is generally 
+more stable and better tested than the many commits we make to the development 
+branch.
+</para>
+
+</introduction>
+
+<section><title>Prerequisites</title><content>
+
+<para>
+TuringTrader is designed to run on 64-bit Windows 10, with .NET Framework. And 
+while we are big fans of MacOS and Linux, we currently don't have the resources 
+to test and debug on these platforms.
+</para>
+
+</content></section>
+
+<section><title>Download and Install</title><content>
+
+<para>
+The first step is to download the installer file. TuringTrader comes as a plain 
+vanilla Windows Installer Package. You can find this package on the TuringTrader 
+download page:
+<externalLink>
+<linkText>https://www.turingtrader.org/download</linkText>
+<linkUri>https://www.turingtrader.org/download</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+</para>
+
+<para>
+Once you downloaded the installer, double-click the file, to start the Setup 
+Wizard. By default, TuringTrader will install to 
+"C:\Program Files\Bertram.Solutions\TuringTrader":
+</para>
+
+<mediaLink>
+<image xlink:href="setup-1"/>
+</mediaLink>
+
+<para>
+Because this destination is a protected location, you might need to enter your 
+administrator password to complete the installation.
+</para>
+
+<para>
+TuringTrader installs the following items:
+</para>
+
+<list class="bullet">
+<listItem><para>the TuringTrader application</para></listItem>
+<listItem><para>a Start Menu shortcut to launch TuringTrader</para></listItem>
+<listItem><para>some demo algorithms discussed in this quick start guide</para></listItem>
+<listItem><para>selected algorithms from books and publications</para></listItem>
+</list>
+
+</content></section>
+
+<section><title>Setting up Your Data</title><content>
+
+<para>
+TuringTrader requires data to run any simulations. We recommend using a data 
+feed, as this is the most convenient way to connect with data. Depending on your 
+goals, there are multiple choices, each of which we will describe a separate 
+section:
+</para>
+
+<list class="bullet">
+<listItem><para>if you are starting and want high-quality data for free, we recommend using Tiingo</para></listItem>
+<listItem><para>if you are more ambitious and can afford to spend some money, we recommend using Norgate Data</para></listItem>
+<listItem><para>if you already have data as CSV, you will need to set these up manually</para></listItem>
+</list>
+
+</content></section>
+
+<section><title>Using Tiingo</title><content>
+
+<para>
+To use Tiingo, you first need to sign-up for a free account with them. Once you 
+have signed up, go to
+<externalLink>
+<linkText>https://api.tiingo.com/documentation/end-of-day</linkText>
+<linkUri>https://api.tiingo.com/documentation/end-of-day</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+. Click on "Click here to see your API Token," and copy the token. 
+</para>
+
+<mediaLink>
+<image xlink:href="tiingo-1"/>
+</mediaLink>
+
+<para>
+Next, launch TuringTrader. Most likely, TuringTrader will take you to the 
+Settings dialog on the first launch. If not, open the Edit menu, and select 
+Settings:
+</para>
+
+<mediaLink>
+<image xlink:href="open-settings"/>
+</mediaLink>
+
+<para>
+The Settings dialog will open:
+</para>
+
+<mediaLink>
+<image xlink:href="tiingo-2"/>
+</mediaLink>
+
+<para>
+Go to the Data Feeds tab, select Tiingo as the default Data Feed, and copy the 
+API Key into the field. Click the OK button, and you are ready to go.
+</para>
+
+</content></section>
+
+<section><title>Using Norgate Data</title><content>
+
+<para>
+Norgate Data comes as a paid subscription. Go here to register for a free trial: 
+<externalLink>
+<linkText>https://norgatedata.com/freetrial.php</linkText>
+<linkUri>https://norgatedata.com/freetrial.php</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+.
+</para>
+
+<para>
+Once you have created an account with Norgate Data, you need to install the 
+Norgate Data Updater from here: 
+<externalLink>
+<linkText>https://norgatedata.com/ndu-installation.php</linkText>
+<linkUri>https://norgatedata.com/ndu-installation.php</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+.
+</para>
+
+<para>
+Next, launch the Norgate Data Updater and click "Check for Updates." Doing so 
+will initialize Norgate's database with an initial snapshot.
+</para>
+
+<mediaLink>
+<image xlink:href="norgate-1"/>
+</mediaLink>
+
+<para>
+Now it's time to launch TuringTrader. Go to the Settings dialog by opening the 
+Edit menu and selecting Settings. Make sure to choose Norgate as the Default 
+Data Feed.
+</para>
+
+<mediaLink>
+<image xlink:href="norgate-2"/>
+</mediaLink>
+
+</content></section>
+
+<section><title>Using CSV Data</title><content>
+
+<para>
+The process of setting up CSV data is slightly more involved, as you will need 
+to create Data Descriptor files for each instrument you are importing. 
+Therefore, we are describing the process in a separate topic: 
+<link xlink:href="17b6a987-0f98-4b8a-9c0c-50491eb1cdbd" />
+.
+</para>
+
+</content></section>
+
+<section><title>Running a Demo</title><content>
+
+<para>
+Now that we have data set up, it is time to run a demo, and see that everything 
+is working as expected. To do so, open the Algorithm menu, and click 
+"Demo01_Indicators.cs":
+</para>
+
+<mediaLink>
+<image xlink:href="demo-1"/>
+</mediaLink>
+
+<para>
+The demo algorithms are provided as C# source code. Therefore, TuringTrader will 
+first compile the source code. Once this has finished, we can run the demo by 
+clicking the Run button. Depending on your data feed, TuringTrader might take a 
+little moment to load data from the internet. Once the simulation has finished, 
+a report window will open, displaying a chart with some indicators:
+</para>
+
+<mediaLink>
+<image xlink:href="demo-2"/>
+</mediaLink>
+
+<para>
+The exact look of the plot depends on the rendering template in use for the 
+algorithm. By the time you run this demo, the template might look much nicer 
+than this.
+</para>
+
+</content></section>
+
+<section><title>Editing Source Code</title><content>
+
+<para>
+As the demos are provided as C# source code, you can edit them at any time. To 
+do so, open the Edit menu and click "Algorithm Source." The Windows shell will 
+use the file association for ".cs" to open your favorite editor.
+</para>
+
+<para>
+This concludes our quick tour through TuringTrader. As this is a tool written 
+for developers, there is much more to learn and explore. We recommend going 
+through the demos one by one, to gain an understanding of the main concepts. 
+Once you completed the demos, it might be helpful to look at our implementations 
+of algorithms from books and publications, demonstrating real-life algorithms.
+</para>
+
+</content></section>
+    
+    
+    
+    <relatedTopics>
+      <!-- One or more of the following:
+           - A local link
+           - An external link
+           - A code entity reference
+
+      <link xlink:href="Other Topic's ID"/>
+      <link xlink:href="Other Topic's ID">Link inner text</link>
+
+      <externalLink>
+          <linkText>Link text</linkText>
+          <linkAlternateText>Optional alternate link text</linkAlternateText>
+          <linkUri>URI</linkUri>
+      </externalLink>
+
+      <codeEntityReference>API member ID</codeEntityReference>
+
+      Examples:
+
+      <link xlink:href="00e97994-e9e6-46e0-b420-5be86b2f8270" />
+      <link xlink:href="00e97994-e9e6-46e0-b420-5be86b2f8278">Some other topic</link>
+
+      <externalLink>
+          <linkText>SHFB on GitHub</linkText>
+          <linkAlternateText>Go to GitHub</linkAlternateText>
+          <linkUri>https://GitHub.com/EWSoftware/SHFB</linkUri>
+      </externalLink>
+
+      <codeEntityReference>T:TestDoc.TestClass</codeEntityReference>
+      <codeEntityReference>P:TestDoc.TestClass.SomeProperty</codeEntityReference>
+      <codeEntityReference>M:TestDoc.TestClass.#ctor</codeEntityReference>
+      <codeEntityReference>M:TestDoc.TestClass.#ctor(System.String,System.Int32)</codeEntityReference>
+      <codeEntityReference>M:TestDoc.TestClass.ToString</codeEntityReference>
+      <codeEntityReference>M:TestDoc.TestClass.FirstMethod</codeEntityReference>
+      <codeEntityReference>M:TestDoc.TestClass.SecondMethod(System.Int32,System.String)</codeEntityReference>
+      -->
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

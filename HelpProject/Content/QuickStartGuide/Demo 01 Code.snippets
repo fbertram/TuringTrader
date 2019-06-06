@@ -14,7 +14,7 @@ public class HelloWorld : Algorithm
 	
 	override public void Report()
 	{
-		Output.WriteLine("Hello, here is a report.");
+		Output.WriteLine("Hello, here is your report.");
 	}
 }
 </sampleCode></item>
@@ -22,7 +22,7 @@ public class HelloWorld : Algorithm
 <item id="Demo01#LoadData"><sampleCode language="CSharp">
 StartTime = DateTime.Parse("01/01/2015");
 EndTime = DateTime.Parse("12/31/2016");
-AddDataSource("^SPX.Index");
+AddDataSource("$SPX");
 </sampleCode></item>
 
 <item id="Demo01#ProcessBars"><sampleCode language="CSharp">
@@ -37,7 +37,7 @@ Instrument instrument = Instruments.First();
 </sampleCode></item>
 
 <item id="Demo01#FindInstrument"><sampleCode language="CSharp">
-Instrument instrument = FindInstrument("^SPX.Index");
+Instrument instrument = FindInstrument("$SPX");
 </sampleCode></item>
 
 <item id="Demo01#TimeSeries"><sampleCode language="CSharp">

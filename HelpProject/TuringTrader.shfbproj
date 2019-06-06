@@ -13,7 +13,7 @@
     <RootNamespace>ApiHelp</RootNamespace>
     <Name>ApiHelp</Name>
     <!-- SHFB properties -->
-    <FrameworkVersion>.NET Framework 4.6.1</FrameworkVersion>
+    <FrameworkVersion>.NET Framework 4.7.1</FrameworkVersion>
     <OutputPath>..\Help\</OutputPath>
     <HtmlHelpName>TuringTrader</HtmlHelpName>
     <Language>en-US</Language>
@@ -53,8 +53,10 @@
     </FeedbackEMailLinkText>
     <CopyrightHref>http://www.bertram.solutions</CopyrightHref>
     <NamespaceSummaries>
-      <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
-      <NamespaceSummaryItem name="TuringTrader.Simulator" isDocumented="True" xmlns="">This namespace contains all of TuringTrader's simulator engine, indicators, and data sources.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="(global)" isDocumented="False" />
+      <NamespaceSummaryItem name="TuringTrader.Simulator" isDocumented="True">This namespace contains all of TuringTrader's simulator engine, and data sources.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="TuringTrader.Indicators" isDocumented="True">This namespace contains all of TuringTrader's indicators.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="TuringTrader.Support" isDocumented="True">This namespace contains all of TuringTrader's support packages.</NamespaceSummaryItem>
     </NamespaceSummaries>
     <HtmlSdkLinkType>Msdn</HtmlSdkLinkType>
     <BinaryTOC>True</BinaryTOC>
@@ -87,6 +89,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="media\Five Cent Tour\" />
     <Folder Include="Content\QuickStartGuide\" />
     <Folder Include="Content" />
     <Folder Include="Content\VersionHistory" />
@@ -94,9 +97,12 @@
     <Folder Include="media" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\QuickStartGuide\Coding a DLL.aml" />
+    <None Include="Content\QuickStartGuide\Running the Debugger.aml" />
+    <None Include="Content\QuickStartGuide\Customizing Templates.aml" />
     <None Include="Content\API Documentation.aml" />
-    <None Include="Content\QuickStartGuide\Prerequisites.aml" />
-    <None Include="Content\QuickStartGuide\Demo 07 R.aml" />
+    <None Include="Content\QuickStartGuide\Five Cent Tour.aml" />
+    <None Include="Content\QuickStartGuide\Demo 07 Subclassing.aml" />
     <None Include="Content\QuickStartGuide\Demo 06 Order Types.aml" />
     <None Include="Content\QuickStartGuide\Demo 05 Optimizer.aml" />
     <None Include="Content\QuickStartGuide\Demo 04 Trading options.aml" />
@@ -116,6 +122,42 @@
     <Content Include="icons\Help.png" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="media\output-xlsm.JPG">
+      <ImageId>output-xlsm</ImageId>
+      <AlternateText>output-xlsm</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\norgate-2.JPG">
+      <ImageId>norgate-2</ImageId>
+      <AlternateText>norgate-2</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\tiingo-2.JPG">
+      <ImageId>tiingo-2</ImageId>
+      <AlternateText>tiingo-2</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\tiingo-1.JPG">
+      <ImageId>tiingo-1</ImageId>
+      <AlternateText>tiingo-1</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\open-settings.JPG">
+      <ImageId>open-settings</ImageId>
+      <AlternateText>open-settings</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\norgate-1.JPG">
+      <ImageId>norgate-1</ImageId>
+      <AlternateText>norgate-1</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\demo-2.JPG">
+      <ImageId>demo-2</ImageId>
+      <AlternateText>demo-2</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\demo-1.JPG">
+      <ImageId>demo-1</ImageId>
+      <AlternateText>demo-1</AlternateText>
+    </Image>
+    <Image Include="media\Five Cent Tour\setup-1.JPG">
+      <ImageId>setup-1</ImageId>
+      <AlternateText>setup-1</AlternateText>
+    </Image>
     <Image Include="media\demo03_chart-small.png">
       <ImageId>demo03_chart-small</ImageId>
       <AlternateText>demo 03 chart-small</AlternateText>
@@ -146,6 +188,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <CodeSnippets Include="Content\QuickStartGuide\Demo 04 Options.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 03 Trading portfolios.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Demo 02 Trading stocks.snippets" />
     <CodeSnippets Include="Content\QuickStartGuide\Setting up data.snippets" />

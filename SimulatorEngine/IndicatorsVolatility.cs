@@ -156,15 +156,15 @@ namespace TuringTrader.Indicators
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>variance as time series</returns>
-        public static SemiDeviationResult SemiDeviation(this ITimeSeries<double> series, int n = 10,
+        public static _SemiDeviation SemiDeviation(this ITimeSeries<double> series, int n = 10,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), n);
 
-            var container = Cache<SemiDeviationResult>.GetData(
+            var container = Cache<_SemiDeviation>.GetData(
                     cacheId,
-                    () => new SemiDeviationResult());
+                    () => new _SemiDeviation());
 
             container.Average = series.SMA(n);
 
@@ -202,7 +202,7 @@ namespace TuringTrader.Indicators
         /// <summary>
         /// Result for semi-deviation
         /// </summary>
-        public class SemiDeviationResult
+        public class _SemiDeviation
         {
             /// <summary>
             /// average of time series

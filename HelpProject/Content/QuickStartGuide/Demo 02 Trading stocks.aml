@@ -1,162 +1,181 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <topic id="b9bbdb5b-4028-43da-aa9f-be1b08aa7708" revisionNumber="1">
-  <developerWalkthroughDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+<developerWalkthroughDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
 
-    <introduction>
-      	<para>
-			This demo loads a range of quote data for a common stock, calculates 
-			indicators on the quote data, and places trades based on the indicator 
-			values. The following key concepts are demonstrated:
- 		</para>
-		<list class="bullet">
-			<listItem>Setting initial capital</listItem>
-			<listItem>Determining net asset value</listItem>
-			<listItem>Placing orders</listItem>
-			<listItem>Keeping track of positions</listItem>
-		</list>
-	  <para>
-		The method implemented here is a simple moving-average crossover, as 
-		this is easy to understand and widely referenced. Please don’t use 
-		this for actual trading.
-	  </para>
-    </introduction>
-    
-    <section address="Section1">
-      <title>Setting initial capital</title>
-      <content>
-      	<para>
-			Before we start trading, we first need to set simulator’s initial capital. 
-			Just like in the real world, this is done by making a
-			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
-			.
-		</para>
-		<codeReference>Demo02#SetCash</codeReference>
-		<para>
-			We can use the 
-			<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.Cash</codeEntityReference>
-			property at any point in the simulation, to
-			determine the amount of cash at hand. However, this property is
-			readonly. 
-		</para>
-		<para>
-			Further, using the 
-			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
-			and 
-			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Withdraw(System.Double)</codeEntityReference>
-			methods, we can simulate deposits and withdrawals at any point during the simulation.
-			This allows us to simulate savings plans, or retirement scenarios.
-		</para>
-      </content>
-	</section>
+<introduction>
 
-    <section address="Section2">
-      <title>Determining net asset value</title>
-      <content>
-      	<para>
-      		When we are ready to place orders, we need to determine the net 
-      		asset value of our portfolio, which is the sum of our cash at hand, 
-      		plus the liquidation value of all positions we hold. The simulator 
-      		calculates the net asset value on every bar, and provides it as a 
-      		time series, 
-      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.NetAssetValue</codeEntityReference>
-      		.
-      	</para>
-      	<para>
-			The net asset value, divided by the current price of the instrument, 
-			should give us the number of shares we can afford:
-		</para>
-		<codeReference>Demo02#TargetPosition</codeReference>
-		<para>
-			Note that typically we can’t place an order to be filled on the 
-			close of the current bar. Therefore, and in case the instrument’s 
-			price moves significantly before the next bar’s open, this calculation 
-			might not be fully correct.
-		</para>
-		<para>
-			With the net asset value being a time series, we have easy access to 
-			the recent performance of our trading system. For example, we could 
-			determine the highest high of the last month like this:
-		</para>
-		<codeReference>Demo02#HighestHigh</codeReference>
-		<para>
-			This is very convenient for implementing money-management schemes.
-      	</para>
-      </content>
-	</section>
+<para>
+This demo loads a range of quote data for common stock, calculates indicators, 
+and places trades based on the indicator values. We demonstrate the following 
+key concepts: 
+</para>
 
-    <section address="Section3">
-      <title>Placing orders</title>
-      <content>
-      	<para>
-      		To place an order, we use the
-      		<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Instrument.Trade(System.Int32,TuringTrader.Simulator.OrderType,System.Double)</codeEntityReference>
-      		method. It takes at least one
-      		parameter: the quantity of shares/ contracts to trade. A positive 
-      		value will buy the instrument, while a negative value will sell the 
-      		instrument. The second parameter specifies the order type and is 
-      		optional. Typically, our orders will be submitted on the next bar. 
-      		Here, we place a market order to be (implicitly) executed on the 
-      		next bar’s open:
-      	</para>
-      	<codeReference>Demo02#TradeSimple</codeReference>
-      	<para>
-			There are other order types available, most importantly stop orders, 
-			which allow us to place orders contingent on the price touching the 
-			specified value. We will talk about these in a later demo.
-      	</para>
-      </content>
-	</section>
 
-    <section address="Section4">
-      <title>Keeping track of positions</title>
-      <content>
-      	<para>
-      		We can conveniently check an instrument directly for its current 
-      		position with the 
-      		<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.Instrument.Position</codeEntityReference>
-      		property.
-      	</para>
-      	<codeReference>Demo02#CurrentPositionRecommended</codeReference>
-      	<para>
-			The integer returned for the position size will be positive for long 
-			positions, negative for short positions, and zero if we are flat.
-		</para>
-		<para>      	
-      		The simulator also tracks all open positions via its
-      		<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Positions</codeEntityReference>
-      		property. Flat instruments are removed from this property. Using
-      		this property, we can check if we are holding any positions at all:
-      	</para>
-      	<codeReference>Demo02#CurrentPositionSimulator</codeReference>
-      	<para>
-      		This property is very useful when handling portfolios, and we will
-      		revisit it in a future demo.
-      	</para>
-		<para>
-			We are now ready place a trade with the 
-			<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Instrument.Trade(System.Int32,TuringTrader.Simulator.OrderType,System.Double)</codeEntityReference>
-			method. When placing trades, is good practice to calculate target positions 
-			and current positions separately, and then trade the difference 
-			between the two. That way, we will not get confused with long and 
-			short positions, and the sign of the quantity to trade. It is worth
-			mentioning that trade sizes of zero are ignored, so there is
-			no need to check for that:
-		</para>
-		<codeReference>Demo02#TradeRecommended</codeReference>
-		<para>
-			Once the demo completes, we can see how the algorithm attempts to 
-			follow bullish trends, and exit positions in bearish times:
-      	</para>
-      	
-      	<mediaLink>
-		<!-- <caption>Demo 02-plot-small</caption> -->
-		<image xlink:href="Demo02-plot-small"/>
-		</mediaLink>
+<list class="bullet">
+  <listItem><para>setting initial capital</para></listItem>
+  <listItem><para>determining net asset value</para></listItem>
+  <listItem><para>placing orders</para></listItem>
+  <listItem><para>keeping track of positions</para></listItem>
+</list>
 
-      </content>
-	</section>
+<para>
+The method implemented here is a simple moving-average crossover, as this is 
+easy to understand and widely referenced. Please don't use this for actual 
+trading. 
+</para>
 
-    <relatedTopics>
-    </relatedTopics>
-  </developerWalkthroughDocument>
+</introduction>
+
+<section address="Section1"><title>Setting Initial Capital</title><content>
+
+<para>
+Before we start trading, we first need to set the simulator's initial capital. To do so, we need to make a 
+<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Deposit(System.Double)</codeEntityReference>
+, just like in the real world.
+</para>
+
+<codeReference>Demo02#SetCash</codeReference>
+
+<para>
+Similarly, we can also make a withdrawal using the 
+<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.SimulatorCore.Withdraw(System.Double)</codeEntityReference>
+method. We can use the 
+<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.SimulatorCore.Cash</codeEntityReference>
+property at any point during the simulation, to determine the amount of cash at hand.
+</para>
+
+<para>
+These deposits and withdrawals allow us to simulate savings plans, or retirement 
+scenarios, or model the withdrawal of monthly fees.
+</para>
+
+</content></section>
+
+<section address="Section2"><title>Determining Net Asset Value</title><content>
+
+<para>
+During a simulation, we typically hold a combination of cash and assets, and we 
+are interested in the net asset value of our portfolio, which is the sum of 
+cash at hand, and the liquidation value of all positions we hold. The simulator 
+calculates the net asset value on every bar and provides it through the
+<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.NetAssetValue</codeEntityReference>
+time series.
+</para>
+
+<para>
+To place a trade, we need to calculate the number of shares we can afford. Here 
+is an example, showing how to do that:
+</para>
+
+<codeReference>Demo02#TargetPosition</codeReference>
+
+<para>
+Please note that this calculation might not be exact, in case of significant 
+changes in the instrument's price before we can place and fill the order.
+</para>
+
+<para>
+As the net asset value is a time series, we have easy access to the recent 
+performance of our trading system. For example, we could determine the highest 
+high of the last month like this: 
+</para>
+
+<codeReference>Demo02#HighestHigh</codeReference>
+
+<para>
+This feature comes handy for implementing money-management schemes. As an 
+example, a strategy might scale back exposure after a losing streak.
+</para>
+
+</content></section>
+
+<section address="Section3"><title>Placing Orders</title><content>
+
+<para>
+To place an order, we use the
+<codeEntityReference qualifyHint="false" autoUpgrade="true">M:TuringTrader.Simulator.Instrument.Trade(System.Int32,TuringTrader.Simulator.OrderType,System.Double)</codeEntityReference>
+method. In its simplest form, it takes only one parameter: the number of 
+shares/ contracts to trade. A positive value is equivalent to buying the 
+instrument, while a negative value denotes selling the instrument. The 
+following snippet places a market order, executed at the next bar's open:
+</para>
+
+<codeReference>Demo02#TradeSimple</codeReference>
+
+<para>
+There are various overloads to this method, for placing stop and limit orders. 
+We discuss these in
+<link xlink:href="592e6778-1013-4767-b1e0-82a9b9dd2c06" />
+.
+</para>
+
+</content></section>
+
+<section address="Section4"><title>Keeping Track of Positions</title><content>
+
+<para>
+To place orders more intelligently, we need information on the positions we 
+currently hold. We use an instrument's
+<codeEntityReference qualifyHint="false">P:TuringTrader.Simulator.Instrument.Position</codeEntityReference>
+property to determine the position in this specific instrument. The integer 
+returned for the position size is positive for long positions, negative for 
+short positions, and zero if we are flat:
+</para>
+
+<codeReference>Demo02#CurrentPositionInstrument</codeReference>
+
+<para>      	
+Also, the simulator tracks all open positions via its 
+<codeEntityReference qualifyHint="false">F:TuringTrader.Simulator.SimulatorCore.Positions</codeEntityReference>
+property. Flat instruments are removed from this dictionary. Using this property, 
+we can check if we are holding any positions at all: 
+</para>
+
+<codeReference>Demo02#CurrentPositionsSimulator</codeReference>
+
+<para>
+This property is handy when handling portfolios, and we revisit it in a future 
+demo. 
+</para>
+
+<para>
+With the current position at hand, we can code an improved way of placing 
+orders. To do so, we place an order for the difference between a target 
+position and our current holding. Note that orders with a zero quantity are 
+ignored, so there is no need to check for that: 
+</para>
+
+<codeReference>Demo02#TradeRecommended</codeReference>
+
+<para>
+If you haven't done so, check 
+<link xlink:href="6d517cb6-206e-418e-9b62-956faed83f09" />
+. Here is how we put this all together to trade moving averages:
+</para>
+
+<codeReference>Demo02#MovingAverages</codeReference>
+
+<para>
+Please find the full code for this demo in our
+<externalLink>
+<linkText>repository</linkText>
+<linkUri>https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo02_Stocks.cs</linkUri>
+<linkTarget>_blank</linkTarget>
+</externalLink>
+
+. Once the demo completes, we can see how the algorithm attempts to follow 
+bullish trends and exit positions in bearish times: 
+</para>
+
+<mediaLink>
+<!-- <caption>Demo 02-plot-small</caption> -->
+<image xlink:href="Demo02-plot-small"/>
+</mediaLink>
+
+</content>
+</section>
+
+<relatedTopics>
+</relatedTopics>
+</developerWalkthroughDocument>
 </topic>

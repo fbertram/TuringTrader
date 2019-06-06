@@ -229,15 +229,15 @@ namespace TuringTrader.Indicators
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Stochastic Oscillator as time series</returns>
-        public static StochasticOscillatorResult StochasticOscillator(this Instrument series, int n = 14,
+        public static _StochasticOscillator StochasticOscillator(this Instrument series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), n);
 
-            var container = Cache<StochasticOscillatorResult>.GetData(
+            var container = Cache<_StochasticOscillator>.GetData(
                     cacheId,
-                    () => new StochasticOscillatorResult());
+                    () => new _StochasticOscillator());
 
             double hh = series.High
                 .Highest(n, cacheId)[0];
@@ -269,16 +269,16 @@ namespace TuringTrader.Indicators
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>Stochastic Oscillator as time series</returns>
-        public static StochasticOscillatorResult StochasticOscillator(this ITimeSeries<double> series, int n = 14,
+        public static _StochasticOscillator StochasticOscillator(this ITimeSeries<double> series, int n = 14,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), n);
 
 
-            var container = Cache<StochasticOscillatorResult>.GetData(
+            var container = Cache<_StochasticOscillator>.GetData(
                     cacheId,
-                    () => new StochasticOscillatorResult());
+                    () => new _StochasticOscillator());
 
             double hh = series
                 .Highest(n, cacheId)[0];
@@ -302,7 +302,7 @@ namespace TuringTrader.Indicators
         /// <summary>
         /// Container for Stochastic Oscillator result.
         /// </summary>
-        public class StochasticOscillatorResult
+        public class _StochasticOscillator
         {
             /// <summary>
             /// %K
