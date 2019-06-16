@@ -157,11 +157,13 @@ namespace TuringTrader.Simulator
 
         private static IEnumerable<AlgorithmInfo> _enumStaticAlgorithms()
         {
+#if false
             string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (var algorithm in _enumDllAlgorithms(exePath))
                 yield return algorithm;
+#endif
 
-#if true
+#if false
             foreach (var algorithm in _enumDllAlgorithms(GlobalSettings.AlgorithmPath))
                 yield return algorithm;
 #endif

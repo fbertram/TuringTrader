@@ -45,6 +45,7 @@ namespace TuringTrader.Indicators
             // to go from, this will blow up when running multiple instances in the optimizer
             // a possible idea to fix this, would be to add the thread id... food for thought.
 
+#if false
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
             // there are alternatives, see here:
@@ -54,6 +55,9 @@ namespace TuringTrader.Indicators
 
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 lambda.GetHashCode());
+#else
+            var cacheId = new CacheId(parentId, memberName, lineNumber);
+#endif
 
             var functor = Cache<FunctorLambda>.GetData(
                     cacheId,
@@ -99,6 +103,7 @@ namespace TuringTrader.Indicators
             // to go from, this will blow up when running multiple instances in the optimizer
             // a possible idea to fix this, would be to add the thread id... food for thought.
 
+#if false
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
             // there are alternatives, see here:
@@ -108,6 +113,9 @@ namespace TuringTrader.Indicators
 
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 lambda.GetHashCode());
+#else
+            var cacheId = new CacheId(parentId, memberName, lineNumber);
+#endif
 
             var timeSeries = Cache<TimeSeries<double>>.GetData(
                 cacheId,

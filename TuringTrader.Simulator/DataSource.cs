@@ -439,6 +439,7 @@ namespace TuringTrader.Simulator
             //===== instantiate data source
             string dataSource = infos[DataSourceValue.dataSource].ToLower();
 
+#if false
             if (dataSource.Contains("norgate"))
             {
                 return new DataSourceNorgate(infos);
@@ -471,6 +472,7 @@ namespace TuringTrader.Simulator
             {
                 return new DataSourceYahoo(infos);
             }
+#endif
 
             throw new Exception("DataSource: can't instantiate data source");
         }

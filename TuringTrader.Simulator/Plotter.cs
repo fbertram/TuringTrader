@@ -24,7 +24,7 @@
 // add global assembly references to the following DLLs
 // - Microsoft.Office.Interop.Excel.dll
 
-#define ENABLE_CSHARP
+//#define ENABLE_CSHARP
 // To disable C#, comment the line above.
 
 #region libraries
