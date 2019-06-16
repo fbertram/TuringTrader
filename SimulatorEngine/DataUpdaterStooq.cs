@@ -4,7 +4,7 @@
 // Description: Web data updater, stooq.com
 // History:     2018x05, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -30,7 +30,7 @@ namespace TuringTrader.Simulator
 #if true
         private class DataUpdaterStooq : DataUpdater
         {
-            public override string Name => "IQFeed";
+            public override string Name => "Stooq";
 
             public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {

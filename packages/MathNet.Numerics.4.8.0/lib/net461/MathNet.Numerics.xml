@@ -39088,6 +39088,74 @@
         <member name="M:MathNet.Numerics.Optimization.IObjectiveFunction.Fork">
             <summary>Create a new independent copy of this objective function, evaluated at the same point.</summary>
         </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.ObservedY">
+            <summary>
+            Get the y-values of the observations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.Weights">
+            <summary>
+            Get the values of the weights for the observations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.ModelValues">
+            <summary>
+            Get the y-values of the fitted model that correspond to the independent values.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.Point">
+            <summary>
+            Get the values of the parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.Value">
+            <summary>
+            Get the residual sum of squares.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.Gradient">
+            <summary>
+            Get the Gradient vector. G = J'(y - f(x; p))
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.Hessian">
+            <summary>
+            Get the approximated Hessian matrix. H = J'J
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.FunctionEvaluations">
+            <summary>
+            Get the number of calls to function.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.JacobianEvaluations">
+            <summary>
+            Get the number of calls to jacobian.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.IObjectiveModelEvaluation.DegreeOfFreedom">
+            <summary>
+            Get the degree of freedom.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.LevenbergMarquardtMinimizer.InitialMu">
+            <summary>
+            The scale factor for initial mu
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.LevenbergMarquardtMinimizer.Minimum(MathNet.Numerics.Optimization.IObjectiveModel,MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Collections.Generic.List{System.Boolean},System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Non-linear least square fitting by the Levenberg-Marduardt algorithm.
+            </summary>
+            <param name="objective">The objective function, including model, observations, and parameter bounds.</param>
+            <param name="initialGuess">The initial guess values.</param>
+            <param name="initialMu">The initial damping parameter of mu.</param>        
+            <param name="gradientTolerance">The stopping threshold for infinity norm of the gradient vector.</param>
+            <param name="stepTolerance">The stopping threshold for L2 norm of the change of parameters.</param>
+            <param name="functionTolerance">The stopping threshold for L2 norm of the residuals.</param>
+            <param name="maximumIterations">The max iterations.</param>
+            <returns>The result of the Levenberg-Marquardt minimization</returns>
+        </member>
         <member name="T:MathNet.Numerics.Optimization.LimitedMemoryBfgsMinimizer">
             <summary>
             Limited Memory version of Broyden–Fletcher–Goldfarb–Shanno (BFGS) algorithm
@@ -39259,6 +39327,66 @@
             The value of the constant
             </summary>
         </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.MinimizingPoint">
+            <summary>
+            Returns the best fit parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.StandardErrors">
+            <summary>
+            Returns the standard errors of the corresponding parameters 
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.MinimizedValues">
+            <summary>
+            Returns the y-values of the fitted model that correspond to the independent values.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.Covariance">
+            <summary>
+            Returns the covariance matrix at minimizing point.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.Correlation">
+            <summary>
+             Returns the correlation matrix at minimizing point.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.FunctionTolerance">
+            <summary>
+            The stopping threshold for the function value or L2 norm of the residuals.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.StepTolerance">
+            <summary>
+            The stopping threshold for L2 norm of the change of the parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.GradientTolerance">
+            <summary>
+            The stopping threshold for infinity norm of the gradient.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.MaximumIterations">
+            <summary>
+            The maximum number of iterations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.LowerBound">
+            <summary>
+            The lower bound of the parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.UpperBound">
+            <summary>
+            The upper bound of the parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizerBase.Scales">
+            <summary>
+            The scale factors for the parameters.
+            </summary>
+        </member>
         <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.Value(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double})">
             <summary>
             Objective function where neither Gradient nor Hessian is available.
@@ -39309,6 +39437,37 @@
             Objective function where the first and second derivatives are available.
             </summary>
         </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearModel(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double}},System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Matrix{System.Double}},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            objective model with a user supplied jacobian for non-linear least squares regression.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearModel(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double}},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Int32)">
+            <summary>
+            Objective model for non-linear least squares regression.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearModel(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double,System.Double},System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double,MathNet.Numerics.LinearAlgebra.Vector{System.Double}},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            Objective model with a user supplied jacobian for non-linear least squares regression.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearModel(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double,System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Int32)">
+            <summary>
+            Objective model for non-linear least squares regression.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearFunction(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double}},System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Matrix{System.Double}},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            Objective function with a user supplied jacobian for nonlinear least squares regression.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunction.NonlinearFunction(System.Func{MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double}},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Int32)">
+            <summary>
+            Objective function for nonlinear least squares regression.
+            The numerical jacobian with accuracy order is used.
+            </summary>
+        </member>
         <member name="T:MathNet.Numerics.Optimization.ObjectiveFunctions.ForwardDifferenceGradientObjectiveFunction">
              <summary>
              Adapts an objective function with only value implemented
@@ -39320,6 +39479,122 @@
              additional number of function evaluations equal to the
              functions's number of input parameters.
              </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.ObservedX">
+            <summary>
+            Set or get the values of the independent variable.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.ObservedY">
+            <summary>
+            Set or get the values of the observations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.Weights">
+            <summary>
+            Set or get the values of the weights for the observations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.IsFixed">
+            <summary>
+            Get whether parameters are fixed or free.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.NumberOfObservations">
+            <summary>
+            Get the number of observations.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.NumberOfParameters">
+            <summary>
+            Get the number of unknown parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.DegreeOfFreedom">
+            <summary>
+            Get the degree of freedom
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.FunctionEvaluations">
+            <summary>
+            Get the number of calls to function.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.JacobianEvaluations">
+            <summary>
+            Get the number of calls to jacobian.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.Point">
+            <summary>
+            Set or get the values of the parameters.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.ModelValues">
+            <summary>
+            Get the y-values of the fitted model that correspond to the independent values.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.Value">
+            <summary>
+            Get the residual sum of squares.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.Gradient">
+            <summary>
+            Get the Gradient vector of x and p.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.Hessian">
+            <summary>
+            Get the Hessian matrix of x and p, J'WJ
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.SetObserved(MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            Set observed data to fit.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.ObjectiveFunctions.NonlinearObjectiveFunction.SetParameters(MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Collections.Generic.List{System.Boolean})">
+            <summary>
+            Set parameters and bounds.
+            </summary>
+            <param name="initialGuess">The initial values of parameters.</param>
+            <param name="isFixed">The list to the parameters fix or free.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.TrustRegion.TrustRegionDogLegMinimizer.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Non-linear least square fitting by the trust region dogleg algorithm.
+            </summary>
+        </member>
+        <member name="F:MathNet.Numerics.Optimization.TrustRegion.TrustRegionMinimizerBase.Subproblem">
+            <summary>
+            The trust region subproblem.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Optimization.TrustRegion.TrustRegionMinimizerBase.RadiusTolerance">
+            <summary>
+            The stopping threshold for the trust region radius.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.TrustRegion.TrustRegionMinimizerBase.Minimum(MathNet.Numerics.Optimization.TrustRegion.ITrustRegionSubproblem,MathNet.Numerics.Optimization.IObjectiveModel,MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Collections.Generic.List{System.Boolean},System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Non-linear least square fitting by the trust-region algorithm.
+            </summary>
+            <param name="objective">The objective model, including function, jacobian, observations, and parameter bounds.</param>
+            <param name="subproblem">The subproblem</param>
+            <param name="initialGuess">The initial guess values.</param>
+            <param name="functionTolerance">The stopping threshold for L2 norm of the residuals.</param>
+            <param name="gradientTolerance">The stopping threshold for infinity norm of the gradient vector.</param>
+            <param name="stepTolerance">The stopping threshold for L2 norm of the change of parameters.</param>
+            <param name="radiusTolerance">The stopping threshold for trust region radius</param>
+            <param name="maximumIterations">The max iterations.</param>
+            <returns></returns>
+        </member>
+        <member name="M:MathNet.Numerics.Optimization.TrustRegion.TrustRegionNewtonCGMinimizer.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Non-linear least square fitting by the trust region Newton-Conjugate-Gradient algorithm.
+            </summary>
         </member>
         <member name="T:MathNet.Numerics.Permutation">
             <summary>
@@ -50926,11 +51201,6 @@
             <para>Our unit tests suggest that the accuracy of the Exponential Integral function is correct up to 13 floating point digits.</para>
             </remarks>
         </member>
-        <member name="M:MathNet.Numerics.SpecialFunctions.#cctor">
-            <summary>
-            Initializes static members of the SpecialFunctions class.
-            </summary>
-        </member>
         <member name="M:MathNet.Numerics.SpecialFunctions.Factorial(System.Int32)">
             <summary>
             Computes the factorial function x -> x! of an integer number > 0. The function can represent all number up
@@ -55900,6 +56170,14 @@
             <summary>
             Triangular window.
             </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Window.Tukey(System.Int32,System.Double)">
+            <summary>
+            Tukey tapering window. A rectangular window bounded
+            by half a cosine window on each side.
+            </summary>
+            <param name="width">Width of the window</param>
+            <param name="r">Fraction of the window occupied by the cosine parts</param>
         </member>
     </members>
 </doc>
