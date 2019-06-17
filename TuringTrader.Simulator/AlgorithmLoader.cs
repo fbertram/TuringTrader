@@ -71,7 +71,17 @@ namespace TuringTrader.Simulator
 
         private static IEnumerable<AlgorithmInfo> _enumAssyAlgorithms(Assembly assembly)
         {
-            Type[] types = assembly.GetTypes();
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch
+            {
+                // can't load types: ignore
+                yield break;
+            }
+
             object[] titleAttributes = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
             string title = titleAttributes.Count() > 0
                 ? (titleAttributes[0] as AssemblyTitleAttribute).Title
@@ -157,13 +167,13 @@ namespace TuringTrader.Simulator
 
         private static IEnumerable<AlgorithmInfo> _enumStaticAlgorithms()
         {
-#if false
+#if true
             string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             foreach (var algorithm in _enumDllAlgorithms(exePath))
                 yield return algorithm;
 #endif
 
-#if false
+#if true
             foreach (var algorithm in _enumDllAlgorithms(GlobalSettings.AlgorithmPath))
                 yield return algorithm;
 #endif
