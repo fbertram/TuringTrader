@@ -4,7 +4,7 @@
 // Description: base class for instrument data
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -12,6 +12,16 @@
 //              the License, or (at your option) any later version.
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
+
+#define ENABLE_NORGATE
+//#define ENABLE_TIINGO
+//#define ENABLE_FRED
+//#define ENABLE_FAKEOPTIONS
+//#define ENABLE_CONSTYIELD
+//#define ENABLE_ALGO
+//#define ENABLE_CSV
+//#define ENABLE_YAHOO
+
 
 #region libraries
 using System;
@@ -439,39 +449,61 @@ namespace TuringTrader.Simulator
             //===== instantiate data source
             string dataSource = infos[DataSourceValue.dataSource].ToLower();
 
-#if false
+#if ENABLE_NORGATE
             if (dataSource.Contains("norgate"))
             {
                 return new DataSourceNorgate(infos);
             }
-            else if (dataSource.Contains("tiingo"))
+            else
+#endif
+#if ENABLE_TIINGO
+            if (dataSource.Contains("tiingo"))
             {
                 return new DataSourceTiingo(infos);
             }
-            else if (dataSource.Contains("fred"))
+            else
+#endif
+#if ENABLE_FRED
+            if (dataSource.Contains("fred"))
             {
                 return new DataSourceFred(infos);
             }
-            else if (dataSource.Contains("fakeoptions"))
+            else
+#endif
+#if ENABLE_FAKEOPTIONS
+            if (dataSource.Contains("fakeoptions"))
             {
                 return new DataSourceFakeOptions(infos);
             }
-            else if (dataSource.Contains("constantyield"))
+            else
+#endif
+#if ENABLE_CONSTYIELD
+            if (dataSource.Contains("constantyield"))
             {
                 return new DataSourceConstantYield(infos);
             }
-            else if (dataSource.Contains("algo"))
+            else
+#endif
+#if ENABLE_ALGO
+            if (dataSource.Contains("algo"))
             {
                 return new DataSourceAlgorithm(infos);
             }
-            else if (dataSource.Contains("csv"))
+            else
+#endif
+#if ENABLE_CSV
+            if (dataSource.Contains("csv"))
             {
                 return new DataSourceCsv(infos);
             }
-            else if (dataSource.Contains("yahoo"))
+            else
+#endif
+#if ENABLE_YAHOO
+            if (dataSource.Contains("yahoo"))
             {
                 return new DataSourceYahoo(infos);
             }
+            else
 #endif
 
             throw new Exception("DataSource: can't instantiate data source");

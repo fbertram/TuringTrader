@@ -7,8 +7,15 @@
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.8.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.2.0-beta1-final" />
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1000" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.0.0-preview6.19303.8" />
+    <PackageReference Include="NetOffice.Excel" Version="1.7.4.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="norgate.data.dotnet">
+      <HintPath>..\packages\NorgateData.DataAccess\NorgateData.DataAccess\bin\Release\norgate.data.dotnet.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

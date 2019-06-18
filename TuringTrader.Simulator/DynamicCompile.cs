@@ -128,13 +128,27 @@ namespace TuringTrader.Simulator
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Core.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Data.dll")),
+                MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Collections.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")),
 
-                //--- these are refereced by a type we need
+                //--- these are referenced by a type we need
                 //MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Object).GetTypeInfo().Assembly.Location),
-                //MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Algorithm).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(TuringTrader.Simulator.Algorithm).GetTypeInfo().Assembly.Location),
+                //MetadataReference.CreateFromFile(typeof(TuringTrader.Indicators.IndicatorsBasic).GetTypeInfo().Assembly.Location),
+
+                //--- this is what we used with CodeDOM
+                /*
+                cp.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+                cp.ReferencedAssemblies.Add("System.dll");
+                cp.ReferencedAssemblies.Add("System.Runtime.dll");
+                cp.ReferencedAssemblies.Add("System.Collections.dll");
+                cp.ReferencedAssemblies.Add("System.Core.dll");
+                cp.ReferencedAssemblies.Add("System.Data.dll");
+                cp.ReferencedAssemblies.Add("OxyPlot.dll");
+                cp.ReferencedAssemblies.Add("OxyPlot.Wpf.dll");
+                */
             };
 
             CSharpCompilation compilation = CSharpCompilation.Create(

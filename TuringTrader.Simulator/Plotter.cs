@@ -37,7 +37,8 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 #if ENABLE_EXCEL
-using Excel = Microsoft.Office.Interop.Excel;
+//using Excel = Microsoft.Office.Interop.Excel;
+using Excel = NetOffice.ExcelApi;
 #endif
 
 #if false
