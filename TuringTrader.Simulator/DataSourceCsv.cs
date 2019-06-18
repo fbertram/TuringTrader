@@ -13,6 +13,8 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+//#define UPDATE_DATA
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -353,6 +355,7 @@ namespace TuringTrader.Simulator
                 //if (updateEndTime > DateTime.Now)
                 //    updateEndTime = DateTime.Now;
 
+#if UPDATE_DATA
                 DataUpdater updater = DataUpdater.New(Simulator, Info);
                 if (updater != null)
                 {
@@ -382,11 +385,12 @@ namespace TuringTrader.Simulator
                     DateTime t2 = DateTime.Now;
                     Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
                 }
+#endif
             }
-            #endregion
+#endregion
 
             //---------- API
-            #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
+#region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
             /// <summary>
             /// Create and initialize new data source for CSV files.
             /// </summary>
@@ -407,8 +411,8 @@ namespace TuringTrader.Simulator
                 && !Directory.Exists(Info[DataSourceValue.dataPath]))
                     Directory.CreateDirectory(Info[DataSourceValue.dataPath]);
             }
-            #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+#endregion
+#region override public void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
@@ -454,7 +458,7 @@ namespace TuringTrader.Simulator
 
                 Data = data;
             }
-            #endregion
+#endregion
         }
     }
 }

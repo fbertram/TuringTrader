@@ -402,7 +402,18 @@ namespace TuringTrader
         #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
         private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
         {
+#if true
+            // see https://stackoverflow.com/questions/10174156/open-file-with-associated-application
+            new System.Diagnostics.Process
+            {
+                StartInfo = new System.Diagnostics.ProcessStartInfo(_currentAlgorithmInfo.SourcePath)
+                {
+                    UseShellExecute = true
+                }
+            }.Start();
+#else
             System.Diagnostics.Process.Start(_currentAlgorithmInfo.SourcePath);
+#endif
         }
         #endregion
         #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)

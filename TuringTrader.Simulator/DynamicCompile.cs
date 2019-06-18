@@ -27,79 +27,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 
-namespace ConsoleApplication
-{
-    public class Program
-    {
-        static Action<string> Write = Console.WriteLine;
-
-        public static void Main(string[] args)
-        {
-            Write("Let's compile!");
-
-            string codeToCompile = @"
-            using System;
-            namespace RoslynCompileSample
-            {
-                public class Writer
-                {
-                    public void Write(string message)
-                    {
-                        Console.WriteLine($""you said '{message}!'"");
-                    }
-                }
-            }";
-
-            Write("Parsing the code into the SyntaxTree");
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(codeToCompile);
-
-            string assemblyName = Path.GetRandomFileName();
-            MetadataReference[] references = new MetadataReference[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location)
-            };
-
-            Write("Compiling ...");
-            CSharpCompilation compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTrees: new[] { syntaxTree },
-                references: references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            using (var ms = new MemoryStream())
-            {
-                EmitResult result = compilation.Emit(ms);
-
-                if (!result.Success)
-                {
-                    Write("Compilation failed!");
-                    IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                        diagnostic.IsWarningAsError ||
-                        diagnostic.Severity == DiagnosticSeverity.Error);
-
-                    foreach (Diagnostic diagnostic in failures)
-                    {
-                        Console.Error.WriteLine("\t{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                    }
-                }
-                else
-                {
-                    Write("Compilation successful! Now instantiating and executing the code ...");
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
-                    var type = assembly.GetType("RoslynCompileSample.Writer");
-                    var instance = assembly.CreateInstance("RoslynCompileSample.Writer");
-                    var meth = type.GetMember("Write").First() as MethodInfo;
-                    meth.Invoke(instance, new[] { "joel" });
-                }
-            }
-
-
-        }
-    }
-}
-
 namespace TuringTrader.Simulator
 {
     /// <summary>
@@ -114,8 +41,10 @@ namespace TuringTrader.Simulator
         /// <returns>compiled assembly</returns>
         public static Assembly CompileSource(string sourcePath)
         {
-            string codeToCompile = System.IO.File.ReadAllText(sourcePath);
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(codeToCompile);
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
+                File.ReadAllText(sourcePath), 
+                path: sourcePath, 
+                encoding: System.Text.Encoding.UTF8);
 
             string assemblyName = Path.GetRandomFileName();
 
@@ -157,9 +86,10 @@ namespace TuringTrader.Simulator
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            using (var ms = new MemoryStream())
+            using (var dll = new MemoryStream())
+            using (var pdb = new MemoryStream())
             {
-                EmitResult result = compilation.Emit(ms);
+                EmitResult result = compilation.Emit(dll, pdb);
 
                 if (!result.Success)
                 {
@@ -174,9 +104,10 @@ namespace TuringTrader.Simulator
                 }
                 else
                 {
-                    ms.Seek(0, SeekOrigin.Begin);
+                    dll.Seek(0, SeekOrigin.Begin);
+                    pdb.Seek(0, SeekOrigin.Begin);
 
-                    Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+                    Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(dll, pdb);
                     return assembly;
                 }
             }
