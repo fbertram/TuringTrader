@@ -8,7 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Page Remove="Report.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AvalonLibrary" Version="2.4.0" />
+    <PackageReference Include="NetOffice.Excel" Version="1.7.4.4" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.0.0-unstable1035" />
   </ItemGroup>
 
   <ItemGroup>

@@ -32,7 +32,7 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Helper class to dynamically compile C# source code
     /// </summary>
-    class DynamicCompile
+    public class DynamicCompile
     {
         /// <summary>
         /// Compile C# source code

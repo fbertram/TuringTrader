@@ -14,14 +14,13 @@
 //==============================================================================
 
 #define ENABLE_NORGATE
-//#define ENABLE_TIINGO
-//#define ENABLE_FRED
-//#define ENABLE_FAKEOPTIONS
-//#define ENABLE_CONSTYIELD
-//#define ENABLE_ALGO
-//#define ENABLE_CSV
-//#define ENABLE_YAHOO
-
+#define ENABLE_TIINGO
+#define ENABLE_FRED
+#define ENABLE_FAKEOPTIONS
+#define ENABLE_CONSTYIELD
+#define ENABLE_ALGO
+#define ENABLE_CSV
+#define ENABLE_YAHOO
 
 #region libraries
 using System;

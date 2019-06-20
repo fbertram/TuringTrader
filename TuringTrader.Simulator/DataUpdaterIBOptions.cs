@@ -4,7 +4,7 @@
 // Description: Option data updater, Interactive Brokers
 // History:     2018x19, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -29,17 +29,32 @@ namespace TuringTrader.Simulator
 {
     public partial class DataUpdaterCollection
     {
+#if true
+        private class DataUpdaterIBOptions : DataUpdater
+        {
+            public override string Name => "InteractiveBrokers";
+
+            public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            {
+
+            }
+            override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
+            {
+                throw new Exception("Interactive Brokers download currently broken, we're working on it. Use Tiingo instead.");
+            }
+        }
+#else
         /// <summary>
         /// Data updater for Interactive Brokers option prices
         /// </summary>
         private class DataUpdaterIBOptions : DataUpdater
         {
-            #region internal data
-            #endregion
-            #region internal helpers
-            #endregion
+        #region internal data
+        #endregion
+        #region internal helpers
+        #endregion
 
-            #region public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+        #region public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             /// <summary>
             /// Create and initialize data updater.
             /// </summary>
@@ -48,9 +63,9 @@ namespace TuringTrader.Simulator
             public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
             {
             }
-            #endregion
+        #endregion
 
-            #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
+        #region override IEnumerable<Bar> void UpdateData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Run data update.
             /// </summary>
@@ -148,9 +163,9 @@ namespace TuringTrader.Simulator
                     Output.WriteLine("finished option loading after {0:F1} seconds", (timestamp2 - timestamp1).TotalSeconds);
                 }
             }
-            #endregion
+        #endregion
 
-            #region public override string Name
+        #region public override string Name
             /// <summary>
             /// Name of updater.
             /// </summary>
@@ -161,8 +176,9 @@ namespace TuringTrader.Simulator
                     return "InteractiveBrokers";
                 }
             }
-            #endregion
+        #endregion
         }
+#endif
     }
 }
 
