@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using OxyPlot;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader
 {
     /// <summary>
     /// Base class for C# plotter templates.

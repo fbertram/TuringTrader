@@ -1,5 +1,4 @@
-﻿#if false
-//==============================================================================
+﻿//==============================================================================
 // Project:     TuringTrader, simulator core
 // Name:        Report.xaml.cs
 // Description: Report window code-behind
@@ -94,4 +93,3 @@ namespace TuringTrader.Simulator
 
 //==============================================================================
 // end of file
-#endif

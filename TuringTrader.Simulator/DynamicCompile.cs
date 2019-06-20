@@ -39,7 +39,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="sourcePath">path to source</param>
         /// <returns>compiled assembly</returns>
-        public static Assembly CompileSource(string sourcePath)
+        public static Assembly CompileSource(string sourcePath, MetadataReference[] moreReferences = null)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
                 File.ReadAllText(sourcePath), 
@@ -79,6 +79,10 @@ namespace TuringTrader.Simulator
                 cp.ReferencedAssemblies.Add("OxyPlot.Wpf.dll");
                 */
             };
+
+            if (moreReferences != null)
+                foreach (var r in moreReferences)
+                    references = references.Append(r).ToArray();
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 assemblyName,
