@@ -41,8 +41,9 @@ namespace TuringTrader.Simulator
         /// <returns>compiled assembly</returns>
         public static Assembly CompileSource(string sourcePath, MetadataReference[] moreReferences = null)
         {
+            string sourceText = File.ReadAllText(sourcePath);
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
-                File.ReadAllText(sourcePath), 
+                sourceText, 
                 path: sourcePath, 
                 encoding: System.Text.Encoding.UTF8);
 
@@ -103,7 +104,15 @@ namespace TuringTrader.Simulator
 
                     foreach (Diagnostic diagnostic in failures)
                     {
-                        Output.WriteLine("\t{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
+                        // find error location and line number
+                        int errorChar = diagnostic.Location.SourceSpan.Start;
+                        string errorSource = sourceText.Substring(0, errorChar);
+                        int lineNumber = errorSource.Split('\n').Length;
+
+                        Output.WriteLine("Line {0}: {1} - {2}", 
+                            lineNumber,
+                            diagnostic.Id, 
+                            diagnostic.GetMessage());
                     }
                 }
                 else

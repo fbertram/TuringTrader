@@ -51,13 +51,13 @@ namespace TuringTrader
             }
         }
         #endregion
-        #region public abstract PlotModel RenderChart(string selectedChart)
+        #region public abstract object RenderChart(string selectedChart)
         /// <summary>
-        /// Abstract method to render chart to OxyPlot model.
+        /// Abstract method to render chart to model.
         /// </summary>
         /// <param name="selectedChart">chart to render</param>
         /// <returns>OxyPlot model</returns>
-        public abstract PlotModel RenderChart(string selectedChart);
+        public abstract object GetModel(string selectedChart);
         #endregion
     }
 }

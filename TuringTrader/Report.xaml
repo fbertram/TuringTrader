@@ -8,7 +8,8 @@
         mc:Ignorable="d" 
         Height="700" Width="1000">
     <Grid>
-        <oxy:PlotView Name="Chart" Margin="10,37,10,10"/>
         <ComboBox Name="ChartSelect" Margin="10,10,10,0" VerticalAlignment="Top" ItemsSource="{Binding AvailableCharts}" SelectedValue="{Binding SelectedChart}"/>
+        <oxy:PlotView Name="Chart" Margin="10,37,10,10"/>
+        <DataGrid Name="Table" Margin="10,37,10,10"/>
     </Grid>
 </Window>

@@ -70,7 +70,48 @@ namespace TuringTrader.Simulator
             set
             {
                 _selectedChart = value;
-                Chart.Model = _template.RenderChart(_selectedChart);
+
+                object model = _template.GetModel(_selectedChart);
+
+                if (model.GetType() == typeof(PlotModel))
+                {
+                    // OxyPlot model
+                    PlotModel plotModel = (PlotModel)model;
+
+                    Chart.Visibility = Visibility.Visible;
+                    Chart.Model = plotModel;
+
+                    Table.Visibility = Visibility.Hidden;
+                    Table.Columns.Clear();
+                    Table.Items.Clear();
+                }
+                else
+                {
+                    // List<Dictionary<string, object>>
+                    List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)model;
+
+                    Chart.Visibility = Visibility.Hidden;
+                    Chart.Model = null;
+
+                    Table.Visibility = Visibility.Visible;
+                    Table.Columns.Clear();
+                    Table.Items.Clear();
+
+                    var columns = tableModel
+                        .SelectMany(row => row.Keys)
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var c in columns)
+                        Table.Columns.Add(new DataGridTextColumn()
+                        {
+                            Header = c,
+                            Binding = new Binding(string.Format("[{0}]", c)),
+                        });
+
+                    foreach (var r in tableModel)
+                        Table.Items.Add(r);
+                }
             }
         }
         #endregion
