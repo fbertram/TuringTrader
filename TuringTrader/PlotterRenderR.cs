@@ -4,7 +4,7 @@
 // Description: Plotter renderer for R templates
 // History:     2019vi20, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 

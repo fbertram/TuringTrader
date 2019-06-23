@@ -82,10 +82,19 @@ namespace TuringTrader.Simulator
                 yield break;
             }
 
+#if true
+            // .net core 3
+            object[] descrAttributes = assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
+            string title = descrAttributes.Count() > 0
+                ? (descrAttributes[0] as AssemblyDescriptionAttribute).Description
+                : "n/a";
+#else
+            // .net framework
             object[] titleAttributes = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
             string title = titleAttributes.Count() > 0
                 ? (titleAttributes[0] as AssemblyTitleAttribute).Title
                 : "n/a";
+#endif
 
             foreach (Type type in types)
             {
@@ -183,9 +192,9 @@ namespace TuringTrader.Simulator
 
             yield break;
         }
-        #endregion
+#endregion
 
-        #region public static List<Type> GetAllAlgorithms()
+#region public static List<Type> GetAllAlgorithms()
         /// <summary>
         /// Return list of all known TuringTrader algorithms
         /// </summary>
@@ -210,8 +219,8 @@ namespace TuringTrader.Simulator
                     .ToList()
                 : allAlgorithms;
         }
-        #endregion
-        #region public static Algorithm InstantiateAlgorithm(string algorithmName)
+#endregion
+#region public static Algorithm InstantiateAlgorithm(string algorithmName)
         /// <summary>
         /// Instantiate TuringTrader algorithm
         /// </summary>
@@ -232,8 +241,8 @@ namespace TuringTrader.Simulator
 
             return InstantiateAlgorithm(matchingAlgorithms.First());
         }
-        #endregion
-        #region public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
+#endregion
+#region public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
         /// <summary>
         /// Instantiate TuringTrader algorithm
         /// </summary>
@@ -278,7 +287,7 @@ namespace TuringTrader.Simulator
                 return algo;
             }
         }
-        #endregion
+#endregion
     }
 }
 

@@ -5,6 +5,15 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <Authors>Felix Bertram</Authors>
+    <Company>Bertram Solutions LLC</Company>
+    <Description>Open-source backtesting engine and simulator</Description>
+    <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
+    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
+    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +25,9 @@
   <ItemGroup>
     <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="cd $(ProjectDir)&#xD;&#xA;echo public static class GitInfo { public static string Version = @^&quot; &gt; GitVersion.cs&#xD;&#xA;git describe &gt;&gt; GitVersion.cs&#xD;&#xA;echo ^&quot;; } &gt;&gt; GitVersion.cs" />
+  </Target>
 
 </Project>

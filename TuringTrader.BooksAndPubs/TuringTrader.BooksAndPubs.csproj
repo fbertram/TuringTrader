@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Authors>Felix Bertram et al</Authors>
+    <Company>Bertram Solutions LLC</Company>
+    <Product>TuringTrader</Product>
+    <Description>Showcase algorithms from books and publications</Description>
+    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
+    <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageId>TuringTrader.BooksAndPubs</PackageId>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
