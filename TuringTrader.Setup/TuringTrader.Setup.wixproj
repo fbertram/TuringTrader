@@ -17,14 +17,22 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\bin\publish;HomeDir=$(SolutionDir)</DefineConstants>
+    <DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\bin\publish;HomeDir=$(SolutionDir);Eula=$(SolutionDir)COPYING.txt</DefineConstants>
     <WixVariables>
     </WixVariables>
+    <CompilerAdditionalOptions>
+    </CompilerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AdditionalFiles.wxs" />
     <Compile Include="Product.wxs" />
     <Compile Include="PublishedFiles.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />

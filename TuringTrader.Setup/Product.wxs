@@ -6,6 +6,13 @@
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes" />
 
+    <!--
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+    -->
+    <UIRef Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="..\agpl-3.0.rtf" />
+    
     <Feature Id="PublishedFilesFeature" Title="Published Files" Level="1">
       <ComponentGroupRef Id="PublishedFilesComponentGroup" />
     </Feature>
