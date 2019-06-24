@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  
+	<Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="HomeDir" Name="Home">
+        <Directory Id="AlgorithmsDir" Name="Algorithms">
+          <Directory Id="DemoAlgorithmsDir" Name="Demo Algorithms" />
+        </Directory>
+        <Directory Id="DataDir" Name="Data">
+          <Directory Id="DataDataDir" Name ="Data">
+            <Directory Id="Data6040Dir" Name="@60_40" />
+          </Directory>
+        </Directory>
+        <Directory Id="TemplatesDir" Name="Templates" />
+        <Directory Id="BooksAndPubsDir" Name="BooksAndPubs" />
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="AdditionalFilesComponentGroup">
+
+      <Component Id="cmpHelp" Directory="INSTALLFOLDER" Guid="*">
+        <File Id="filHelp" KeyPath="yes" Source="$(var.HomeDir)\Help\TuringTrader.chm" />
+      </Component>
+
+      <Component Id="cmpDemo01" Directory="DemoAlgorithmsDir" Guid="*">
+        <File Id="filDemo01" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo01_Indicators.cs" />
+      </Component>
+
+      <Component Id="cmpSpxInf" Directory="DataDir" Guid="*">
+        <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />
+      </Component>
+
+      <Component Id="cmpTemplateSimpleChartCs" Directory="TemplatesDir" Guid="*">
+        <File Id="filTemplateSimpleChartsCs" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.cs" />
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>

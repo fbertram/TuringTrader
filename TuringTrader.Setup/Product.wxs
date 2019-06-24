@@ -4,27 +4,56 @@
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<MediaTemplate EmbedCab="yes" />
 
-		<Feature Id="ProductFeature" Title="TuringTrader.Setup" Level="1">
-			<ComponentGroupRef Id="ProductComponents" />
-		</Feature>
-
-    <Feature Id="ProductFeature2" Title="HarvestSetup" Level="1">
-      <ComponentGroupRef Id="PublishFilesComponentGroup" />
+    <Feature Id="PublishedFilesFeature" Title="Published Files" Level="1">
+      <ComponentGroupRef Id="PublishedFilesComponentGroup" />
     </Feature>
-	</Product>
+
+    <Feature Id="AdditionalFilesFeature" Title="Additional Files" Level="1">
+      <ComponentGroupRef Id="AdditionalFilesComponentGroup" />
+    </Feature>
+
+    <Feature Id="ProductFeature" Title="TuringTrader.Setup" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <Feature Id="AppShortcutFeature" Title="Application Shortcut" Level="1">
+      <ComponentGroupRef Id="ApplicationShortcutComponent" />
+    </Feature>
+  </Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="TuringTrader.Setup">
+      
+			<Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="TuringTrader">
           <Directory Id="PublishFilesComponentGroup" />
+          <Directory Id="AdditionalFilesComponentGroup" />
         </Directory>
 			</Directory>
-		</Directory>
-	</Fragment>
 
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Turing Trader"/>
+      </Directory>      
+      
+		</Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ApplicationShortcutComponent"  Directory="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcutComponent" Guid="bcb0cad4-b2af-400c-ac25-ba61adf232a5">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="TuringTrader"
+                  Description="TuringTrader Open-Source Backtesting Engine/ Market Simulator"
+                  Target="[INSTALLFOLDER]turingtrader.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\TuringTrader" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+  
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
@@ -33,4 +62,5 @@
 			<!-- </Component> -->
 		</ComponentGroup>
 	</Fragment>
+
 </Wix>
