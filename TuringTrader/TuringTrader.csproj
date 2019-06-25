@@ -7,7 +7,7 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Authors>Felix Bertram</Authors>
     <Company>Bertram Solutions LLC</Company>
-    <Description>Open-source backtesting engine and simulator</Description>
+    <Description>Open-source backtesting engine and market simulator</Description>
     <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
     <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
     <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>

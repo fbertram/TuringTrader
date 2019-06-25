@@ -9,7 +9,7 @@
         ResizeMode="NoResize" FontFamily="Segoe UI">
     <Grid>
         <TextBlock Margin="10,31,10,10" TextWrapping="Wrap">
-            <Run Text="An open-source backtesting engine/ market simulator"/><LineBreak/>
+            <Run Text="An open-source backtesting engine/ market simulator."/><LineBreak/>
             <Run Text="Copyright © 2011-2019, "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://bertram.solutions/">
                 <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
@@ -52,7 +52,7 @@ website at "/>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
             <Run FontWeight="Bold" Text="TuringTrader"/>
         </TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="116,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
+        <TextBlock HorizontalAlignment="Left" Margin="88,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigateGit" NavigateUri="https://bitbucket.org/fbertram/fub_tradingsimulator/commits/">
                 <Run Name="Version" Text="Git Version"/></Hyperlink>
         </TextBlock>
