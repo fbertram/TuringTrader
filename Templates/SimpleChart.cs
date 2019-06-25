@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="selectedChart">chart to render</param>
         /// <returns>OxyPlot model</returns>
-        public override PlotModel RenderChart(string selectedChart)
+        public override object GetModel(string selectedChart)
         {
             //===== get plot data
             var chartData = PlotData[selectedChart];
@@ -42,13 +42,12 @@ namespace TuringTrader.Simulator
             Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
 
             string xLabel = chartData
-                .First() // first row contains column headers
-                .First().Key; // first column is x-axis
+                .First()      // first row is as good as any
+                .First().Key; // first key is x-axis
 
-            //object xValue = null;
-            double xValue = 0;
-            //object xValue = chartData[1] // 
-            //    .First().Key;
+            object xValue = chartData
+                .First()        // first row is as good as any
+                .First().Value; // first key is x-axis
 
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
@@ -72,11 +71,7 @@ namespace TuringTrader.Simulator
             //===== create series
             foreach (var row in chartData)
             {
-                //xValue = row[xLabel];
-                xValue += 1.0;
-
-                if (xValue.GetType() != typeof(double))
-                    continue;
+                xValue = row[xLabel];
 
                 foreach (var col in row)
                 {
@@ -98,7 +93,9 @@ namespace TuringTrader.Simulator
                         allSeries[yLabel] = newSeries;
                     }
 
-                    allSeries[yLabel].Points.Add(new DataPoint((double)xValue, (double)yValue));
+                    allSeries[yLabel].Points.Add(new DataPoint(
+                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue, 
+                        (double)yValue));
                 }
             }
 

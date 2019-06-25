@@ -103,6 +103,28 @@ namespace TuringTrader
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
         #endregion
         #region internal helpers
+        public static void OpenWithShell(string fileOrUrl)
+        {
+            try
+            {
+#if true
+                // see https://stackoverflow.com/questions/10174156/open-file-with-associated-application
+                new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo(fileOrUrl)
+                    {
+                        UseShellExecute = true
+                    }
+                }.Start();
+#else
+            System.Diagnostics.Process.Start(fileOrUrl);
+#endif
+            }
+            catch
+            {
+                Output.WriteLine("Can't open {0}", fileOrUrl);
+            }
+        }
         private void Initialize_Once(object sender, EventArgs e)
         {
             _dispatcherTimer.Tick -= Initialize_Once;
@@ -393,18 +415,7 @@ namespace TuringTrader
         #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
         private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
         {
-#if true
-            // see https://stackoverflow.com/questions/10174156/open-file-with-associated-application
-            new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo(_currentAlgorithmInfo.SourcePath)
-                {
-                    UseShellExecute = true
-                }
-            }.Start();
-#else
-            System.Diagnostics.Process.Start(_currentAlgorithmInfo.SourcePath);
-#endif
+            OpenWithShell(_currentAlgorithmInfo.SourcePath);
         }
         #endregion
         #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
@@ -431,8 +442,7 @@ namespace TuringTrader
                 Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
                 "TuringTrader.chm");
 
-            if (File.Exists(helpFile))
-                System.Diagnostics.Process.Start(helpFile);
+            OpenWithShell(helpFile);
         }
         #endregion
 

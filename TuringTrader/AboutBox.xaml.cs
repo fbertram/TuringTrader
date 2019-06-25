@@ -57,7 +57,7 @@ namespace TuringTrader
         private void Hyperlink_RequestNavigate(object sender,
                                                System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
+            MainWindow.OpenWithShell(e.Uri.AbsoluteUri);
         }
 
         private void Hyperlink_RequestNavigateGit(object sender,
@@ -69,7 +69,7 @@ namespace TuringTrader
             string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
             string commitUrl = e.Uri.AbsoluteUri + gitCommit;
 
-            System.Diagnostics.Process.Start(commitUrl);
+            MainWindow.OpenWithShell(commitUrl);
         }
     }
 }
