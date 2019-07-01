@@ -117,6 +117,10 @@ namespace TuringTrader.Simulator
         private static IEnumerable<AlgorithmInfo> _enumDllAlgorithms(string dllPath)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
+
+            if (!dirInfo.Exists)
+                yield break;
+
             FileInfo[] files = dirInfo.GetFiles("*.dll");
 
             // see https://msdn.microsoft.com/en-us/library/ms972968.aspx

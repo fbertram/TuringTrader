@@ -14,6 +14,7 @@
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>AnyCPU;x64</Platforms>
+    <StartupObject>TuringTrader.App</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

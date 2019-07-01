@@ -271,7 +271,9 @@ namespace TuringTrader
             LogOutput.Text = "";
         }
         private string AlgoPathLookupName(IEnumerable<string> dp) => dp.Aggregate("/", (p, n) => p + n + "/");
-        private string AlgoLookupName(AlgorithmInfo a) => AlgoPathLookupName(a.DisplayPath.Concat(new List<string>() { a.Name }));
+        private string AlgoLookupName(AlgorithmInfo a) => a != null
+            ? AlgoPathLookupName(a.DisplayPath.Concat(new List<string>() { a.Name }))
+            : "";
         private void SelectAlgo(string algoLookupName)
         {
             ClearLog();
