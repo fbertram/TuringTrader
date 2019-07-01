@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.Simulator", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.Tests", "TuringTrader.Tests\TuringTrader.Tests.csproj", "{C0E4E9FB-93F0-44F3-9001-78C4AE93CFD5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.BooksAndPubs", "TuringTrader.BooksAndPubs\TuringTrader.BooksAndPubs.csproj", "{FEA00967-343E-4908-A9E6-AE5E80D175BD}"
-EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TuringTrader.Setup", "TuringTrader.Setup\TuringTrader.Setup.wixproj", "{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}"
 EndProject
 Global
@@ -31,10 +29,6 @@ Global
 		{C0E4E9FB-93F0-44F3-9001-78C4AE93CFD5}.Debug|x64.Build.0 = Debug|x64
 		{C0E4E9FB-93F0-44F3-9001-78C4AE93CFD5}.Release|x64.ActiveCfg = Release|x64
 		{C0E4E9FB-93F0-44F3-9001-78C4AE93CFD5}.Release|x64.Build.0 = Release|x64
-		{FEA00967-343E-4908-A9E6-AE5E80D175BD}.Debug|x64.ActiveCfg = Debug|x64
-		{FEA00967-343E-4908-A9E6-AE5E80D175BD}.Debug|x64.Build.0 = Debug|x64
-		{FEA00967-343E-4908-A9E6-AE5E80D175BD}.Release|x64.ActiveCfg = Release|x64
-		{FEA00967-343E-4908-A9E6-AE5E80D175BD}.Release|x64.Build.0 = Release|x64
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Debug|x64.ActiveCfg = Debug|x64
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Release|x64.ActiveCfg = Release|x64
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Release|x64.Build.0 = Release|x64

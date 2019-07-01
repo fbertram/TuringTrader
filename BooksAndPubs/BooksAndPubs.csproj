@@ -16,9 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj">
-      <Private>false</Private>
-    </ProjectReference>
+    <Reference Include="TuringTrader.Simulator">
+      <HintPath>C:\Program Files\TuringTrader\TuringTrader.Simulator.dll</HintPath>
+    </Reference>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) ..\Algorithms\$(TargetFileName)" />
+  </Target>
 
 </Project>

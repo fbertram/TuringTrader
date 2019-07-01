@@ -144,7 +144,7 @@ namespace TuringTrader
             //===== check home path
             string path = GlobalSettings.HomePath;
 
-            if (path.Length == 0)
+            if (path.Length == 0 || !Directory.Exists(path))
             {
                 // create folder in user's documents
                 string homePath = Path.Combine(
