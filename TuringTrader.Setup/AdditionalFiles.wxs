@@ -62,6 +62,22 @@
         <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />
       </Component>
 
+      <Component Id="cmpVixInf" Directory="DataDir" Guid="*">
+        <File Id="filVixInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$VIX.inf" />
+      </Component>
+
+      <Component Id="cmpSpxFakeOptionsInf" Directory="DataDir" Guid="*">
+        <File Id="filSpxFakeOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.fake.options.inf" />
+      </Component>
+
+      <Component Id="cmp6040Inf" Directory="DataDir" Guid="*">
+        <File Id="fil6040Inf" KeyPath="yes" Source="$(var.HomeDir)\Data\@60_40.inf" />
+      </Component>
+
+      <Component Id="cmp6040Csv" Directory="Data6040Dir" Guid="*">
+        <File Id="fil6040Csv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\@60_40\60_40.csv" />
+      </Component>
+
       <!-- ===== templates ======================================== -->
       <Component Id="cmpTemplateSimpleChartCs" Directory="TemplatesDir" Guid="*">
         <File Id="filTemplateSimpleChartsCs" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.cs" />
