@@ -29,82 +29,20 @@ namespace TuringTrader.Simulator
     /// </summary>
     public class SimpleChart : ReportTemplate
     {
+        #region public override object GetModel(string selectedChart)
         /// <summary>
-        /// Render plotter chart to OxyPlot model.
+        /// Get table or plot model for selected chart.
         /// </summary>
-        /// <param name="selectedChart">chart to render</param>
-        /// <returns>OxyPlot model</returns>
+        /// <param name="selectedChart"></param>
+        /// <returns>model</returns>
         public override object GetModel(string selectedChart)
         {
-            //===== get plot data
-            var chartData = PlotData[selectedChart];
-
-            Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
-
-            string xLabel = chartData
-                .First()      // first row is as good as any
-                .First().Key; // first key is x-axis
-
-            object xValue = chartData
-                .First()        // first row is as good as any
-                .First().Value; // first key is x-axis
-
-            //===== initialize plot model
-            PlotModel plotModel = new PlotModel();
-
-            plotModel.Title = selectedChart;
-
-            plotModel.Axes.Clear();
-
-            Axis xAxis = xValue.GetType() == typeof(DateTime)
-                ? new DateTimeAxis()
-                : new LinearAxis();
-            xAxis.Title = xLabel;
-            xAxis.Position = AxisPosition.Bottom;
-
-            var yAxis = new LinearAxis();
-            yAxis.Position = AxisPosition.Right;
-
-            plotModel.Axes.Add(xAxis);
-            plotModel.Axes.Add(yAxis);
-
-            //===== create series
-            foreach (var row in chartData)
-            {
-                xValue = row[xLabel];
-
-                foreach (var col in row)
-                {
-                    if (col.Key == xLabel)
-                        continue;
-
-                    string yLabel = col.Key;
-                    object yValue = col.Value;
-
-                    if (yValue.GetType() != typeof(double)
-                    || double.IsInfinity((double)yValue) || double.IsNaN((double)yValue))
-                        continue;
-
-                    if (!allSeries.ContainsKey(yLabel))
-                    {
-                        var newSeries = new LineSeries();
-                        newSeries.Title = yLabel;
-                        newSeries.IsVisible = true;
-                        allSeries[yLabel] = newSeries;
-                    }
-
-                    allSeries[yLabel].Points.Add(new DataPoint(
-                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue, 
-                        (double)yValue));
-                }
-            }
-
-            //===== add series to plot model
-            foreach (var series in allSeries)
-                plotModel.Series.Add(series.Value);
-
-            return plotModel;
+            if (IsTable(selectedChart))
+                return RenderTable(selectedChart);
+            else
+                return RenderSimple(selectedChart);
         }
+        #endregion
     }
 }
 
