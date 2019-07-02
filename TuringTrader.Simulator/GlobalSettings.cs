@@ -229,7 +229,7 @@ namespace TuringTrader.Simulator
             get
             {
                 object value = GetRegistryValue("SimulatorEngine", "DefaultDataFeed");
-                if (value == null) return "Tiingo";
+                if (value == null) return "Yahoo";
                 return value.ToString();
             }
             set

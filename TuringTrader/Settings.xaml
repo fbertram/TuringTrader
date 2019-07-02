@@ -21,6 +21,7 @@
                 <Grid Background="#FFE5E5E5">
                     <Label Content="Default Data Feed:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0"/>
                     <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultDataSource}" Grid.Column="1">
+                        <ComboBoxItem>Yahoo</ComboBoxItem>
                         <ComboBoxItem>Tiingo</ComboBoxItem>
                         <ComboBoxItem>Norgate</ComboBoxItem>
                         <ComboBoxItem>FRED</ComboBoxItem>

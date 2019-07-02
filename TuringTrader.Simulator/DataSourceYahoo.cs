@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 #endregion
 
@@ -48,7 +49,7 @@ namespace TuringTrader.Simulator
                 return ticker.Replace('.', '-');
             }
 
-            private JArray GetPrices(DateTime startTime, DateTime endTime)
+            private JObject GetPrices(DateTime startTime, DateTime endTime)
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "yahoo_timestamps");
@@ -56,7 +57,7 @@ namespace TuringTrader.Simulator
 
                 string rawPricesFromDisk = null;
                 string rawPrices = null;
-                JArray jsonPrices = null;
+                JObject jsonPrices = null;
 
                 bool validPrices()
                 {
@@ -86,7 +87,7 @@ namespace TuringTrader.Simulator
                         if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
                             rawPrices = rawPricesFromDisk;
 
-                        jsonPrices = JArray.Parse(rawPrices);
+                        jsonPrices = JObject.Parse(rawPrices);
                     }
                 }
 
@@ -121,7 +122,7 @@ namespace TuringTrader.Simulator
                     using (var client = new WebClient())
                         rawPrices = client.DownloadString(url);
 
-                    jsonPrices = JArray.Parse(rawPrices);
+                    jsonPrices = JObject.Parse(rawPrices);
                 }
 
                 //--- 3) if failed, try to fall back to data from disk
@@ -133,7 +134,7 @@ namespace TuringTrader.Simulator
                 if (!validPrices() && rawPricesFromDisk != null)
                 {
                     rawPrices = rawPricesFromDisk;
-                    jsonPrices = JArray.Parse(rawPrices);
+                    jsonPrices = JObject.Parse(rawPrices);
                 }
 
                 //--- 4) if failed, return
@@ -156,6 +157,61 @@ namespace TuringTrader.Simulator
 
                 return jsonPrices;
             }
+            private string GetMeta()
+            {
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string metaCache = Path.Combine(cachePath, "yahoo_meta");
+
+                bool writeToDisk = false;
+                string rawMeta = null;
+
+                bool validMeta()
+                {
+                    if (rawMeta == null)
+                        return false;
+
+                    if (rawMeta.Length < 10)
+                        return false;
+
+                    return true;
+                }
+
+                //--- 1) try to read meta from disk
+                if (File.Exists(metaCache))
+                {
+                    using (StreamReader mc = new StreamReader(File.Open(metaCache, FileMode.Open)))
+                        rawMeta = mc.ReadToEnd();
+                }
+
+                //--- 2) if failed, try to retrieve from web
+                if (!validMeta())
+                {
+
+                    string url = string.Format(
+                        @"http://finance.yahoo.com/quote/"
+                        + "{0}",
+                        ConvertSymbol(Info[DataSourceValue.symbolYahoo]));
+
+                    using (var client = new WebClient())
+                        rawMeta = client.DownloadString(url);
+
+                    writeToDisk = true;
+                }
+
+                //--- 3) if failed, return
+                if (!validMeta())
+                    return null;
+
+                //--- 4) write to disk
+                if (writeToDisk)
+                {
+                    Directory.CreateDirectory(cachePath);
+                    using (StreamWriter mc = new StreamWriter(File.Open(metaCache, FileMode.Create)))
+                        mc.Write(rawMeta);
+                }
+
+                return rawMeta;
+            }
             #endregion
 
             //---------- API
@@ -167,7 +223,24 @@ namespace TuringTrader.Simulator
             public DataSourceYahoo(Dictionary<DataSourceValue, string> info) : base(info)
             {
                 // Yahoo does not provide meta data
-                // the instrument's name will be filled with the ticker symbol
+                // we extract them from the instrument's web page
+
+                FirstTime = default(DateTime);
+                LastTime = default(DateTime);
+
+                string meta = GetMeta();
+
+                {
+                    string tmp1 = meta.Substring(meta.IndexOf("<h1"));
+                    string tmp2 = tmp1.Substring(0, tmp1.IndexOf("h1>"));
+
+                    string tmp3 = tmp2.Substring(tmp2.IndexOf(">") + 1);
+                    string tmp4 = tmp3.Substring(0, tmp3.IndexOf("<"));
+
+                    tmp4 = tmp4.Replace("&amp;", "&");
+
+                    Info[DataSourceValue.name] = tmp4;
+                }
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -196,30 +269,111 @@ namespace TuringTrader.Simulator
                         DateTime t1 = DateTime.Now;
                         Output.Write(string.Format("DataSourceYahoo: loading data for {0}...", Info[DataSourceValue.nickName]));
 
+                        JObject jsonData = GetPrices(startTime, endTime);
+
+                        /*
+                        Yahoo JSON format, as of 07/02/2019
+
+                        [JSON]
+                            chart
+                                result
+                                    [0]
+                                        meta
+                                            currency
+                                            symbol
+                                            ...
+                                        timestamp
+                                            [0]: 511108200
+                                            [1]: 511194600
+                                            ...
+                                        indicators
+                                            quote
+                                                [0]
+                                                    low
+                                                        [0]: 0.08854
+                                                        [1]: 0.09722
+                                                        ...
+                                                    close
+                                                    volume
+                                                    open
+                                                    high
+                                            adjclose
+                                                [0]
+                                                    adjclose
+                                                        [0]: 0.06999
+                                                        [1]: 0.07249
+                        */
+
                         List<Bar> bars = new List<Bar>();
 
-                        JArray jsonData = GetPrices(startTime, endTime);
-                        var e = jsonData.GetEnumerator();
+                        var timestamps = (JArray)jsonData["chart"]["result"][0]["timestamp"];
+                        var opens = (JArray)jsonData["chart"]["result"][0]["indicators"]["quote"][0]["open"];
+                        var highs = (JArray)jsonData["chart"]["result"][0]["indicators"]["quote"][0]["high"];
+                        var lows = (JArray)jsonData["chart"]["result"][0]["indicators"]["quote"][0]["low"];
+                        var closes = (JArray)jsonData["chart"]["result"][0]["indicators"]["quote"][0]["close"];
+                        var volumes = (JArray)jsonData["chart"]["result"][0]["indicators"]["quote"][0]["volume"];
+                        var adjcloses = (JArray)jsonData["chart"]["result"][0]["indicators"]["adjclose"][0]["adjclose"];
 
-                        while (e.MoveNext())
+                        var eT = timestamps.GetEnumerator();
+                        var eO = opens.GetEnumerator();
+                        var eH = highs.GetEnumerator();
+                        var eL = lows.GetEnumerator();
+                        var eC = closes.GetEnumerator();
+                        var eV = volumes.GetEnumerator();
+                        var eAC = adjcloses.GetEnumerator();
+
+                        while (eT.MoveNext() && eO.MoveNext() && eH.MoveNext()
+                            && eL.MoveNext() && eC.MoveNext() && eV.MoveNext() && eAC.MoveNext())
                         {
-                            var bar = e.Current;
+                            DateTime t = FromUnixTime((long)eT.Current);
 
-                            DateTime date = DateTime.Parse((string)bar["date"]).Date
-                                + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
+                            try
+                            {
+                                double o = (double)eO.Current;
+                                double h = (double)eH.Current;
+                                double l = (double)eL.Current;
+                                double c = (double)eC.Current;
+                                long v = (long)eV.Current;
+                                double ac = (double)eAC.Current;
 
-                            double open = (double)bar["adjOpen"];
-                            double high = (double)bar["adjHigh"];
-                            double low = (double)bar["adjLow"];
-                            double close = (double)bar["adjClose"];
-                            long volume = (long)bar["adjVolume"];
+                                // adjust prices according to the adjusted close.
+                                // note the volume is adjusted the opposite way.
+                                double ao = o * ac / c;
+                                double ah = h * ac / c;
+                                double al = l * ac / c;
+                                long av = (long)(v * c / ac);
 
-                            if (date >= startTime && date <= endTime)
-                                bars.Add(Bar.NewOHLC(
-                                    Info[DataSourceValue.ticker],
-                                    date,
-                                    open, high, low, close,
-                                    volume));
+                                if (t >= startTime && t <= endTime)
+                                    bars.Add(Bar.NewOHLC(
+                                        Info[DataSourceValue.ticker],
+                                        t,
+                                        ao, ah, al, ac,
+                                        av));
+
+                                if (FirstTime == default(DateTime) || t < FirstTime)
+                                    FirstTime = t;
+
+                                if (LastTime == default(DateTime) || t > LastTime)
+                                    LastTime = t;
+                            }
+                            catch
+                            {
+                                // Yahoo taints the results by filling in null values
+                                // we try to handle this gracefully by duplicating the
+                                // previous bar
+
+                                if (bars.Count < 1)
+                                    continue;
+
+                                Bar prevBar = bars.Last();
+
+                                if (t >= startTime && t <= endTime)
+                                    bars.Add(Bar.NewOHLC(
+                                        Info[DataSourceValue.ticker],
+                                        t,
+                                        prevBar.Open, prevBar.High, prevBar.Low, prevBar.Close,
+                                        prevBar.Volume));
+                            }
                         }
 
                         DateTime t2 = DateTime.Now;

@@ -9,6 +9,7 @@
         </Directory>
         <Directory Id="DataDir" Name="Data">
           <Directory Id="DataDataDir" Name ="Data">
+            <Directory Id="DataSpxOptionsDir" Name="$SPX.options" />
             <Directory Id="Data6040Dir" Name="@60_40" />
           </Directory>
         </Directory>
@@ -68,6 +69,14 @@
 
       <Component Id="cmpSpxFakeOptionsInf" Directory="DataDir" Guid="*">
         <File Id="filSpxFakeOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.fake.options.inf" />
+      </Component>
+
+      <Component Id="cmpSpxOptionsInf" Directory="DataDir" Guid="*">
+        <File Id="filSpxOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.options.inf" />
+      </Component>
+
+      <Component Id="cmpSpxOptionsCsv" Directory="DataSpxOptionsDir" Guid="*">
+        <File Id="filSpxOptionsCsv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
       </Component>
 
       <Component Id="cmp6040Inf" Directory="DataDir" Guid="*">
