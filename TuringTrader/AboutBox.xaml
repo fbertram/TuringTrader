@@ -5,11 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="About TuringTrader" Height="521.409" Width="450"
+        Title="About TuringTrader" Height="548.202" Width="450"
         ResizeMode="NoResize" FontFamily="Segoe UI">
     <Grid>
         <TextBlock Margin="10,31,10,10" TextWrapping="Wrap">
-            <Run Text="An open-source backtesting engine/ market simulator."/><LineBreak/>
+            <Run Text="An open-source backtesting engine/ market simulator."/>
+            <Run Text="For news, updates, and more information regarding the project, please visit the project
+website at "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
+                <Run Text="www.turingtrader.org"/></Hyperlink><Run Text="."/><LineBreak/>
+            <LineBreak/>
             <Run Text="Copyright © 2011-2019, "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://bertram.solutions/">
                 <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
@@ -27,11 +32,6 @@ along with this program.  If not, see "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0.html">
                 <Run Text="http://www.gnu.org/licenses/agpl-3.0.html"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             
-            <Run Text="For news, updates, and more information regarding the project, please visit the project
-website at "/>
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
-                <Run Text="www.turingtrader.org"/></Hyperlink><Run Text="."/><LineBreak/>
-            <Run/><LineBreak/>
             <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
             <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
                 <Run Text="AvalonLibrary (WPF Contrib)"/></Hyperlink><LineBreak/>
