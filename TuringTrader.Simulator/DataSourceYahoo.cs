@@ -99,10 +99,10 @@ namespace TuringTrader.Simulator
                     // offline behavior as pleasant as possible
                     DateTime DATA_START = DateTime.Parse("01/01/1970");
 
-                    startTime = ((DateTime)FirstTime) < DATA_START
-                        ? DATA_START
-                        : (DateTime)FirstTime;
-
+                    //startTime = ((DateTime)FirstTime) < DATA_START
+                    //    ? DATA_START
+                    //    : (DateTime)FirstTime;
+                    startTime = DATA_START;
                     endTime = DateTime.Now.Date + TimeSpan.FromDays(1);
 #else
                     startTime = startTime.Date;
@@ -225,9 +225,6 @@ namespace TuringTrader.Simulator
                 // Yahoo does not provide meta data
                 // we extract them from the instrument's web page
 
-                FirstTime = default(DateTime);
-                LastTime = default(DateTime);
-
                 string meta = GetMeta();
 
                 {
@@ -253,8 +250,8 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
-                    if (startTime < (DateTime)FirstTime)
-                        startTime = (DateTime)FirstTime;
+                    //if (startTime < (DateTime)FirstTime)
+                    //    startTime = (DateTime)FirstTime;
 
                     //if (endTime > (DateTime)LastTime)
                     //    endTime = (DateTime)LastTime;
@@ -325,10 +322,15 @@ namespace TuringTrader.Simulator
                         while (eT.MoveNext() && eO.MoveNext() && eH.MoveNext()
                             && eL.MoveNext() && eC.MoveNext() && eV.MoveNext() && eAC.MoveNext())
                         {
-                            DateTime t = FromUnixTime((long)eT.Current);
+                            DateTime t = FromUnixTime((long)eT.Current).Date
+                                + DateTime.Parse("16:00").TimeOfDay;
 
+                            Bar bar = null;
                             try
                             {
+                                // Yahoo taints the results by filling in null values
+                                // we try to handle this gracefully in the catch block
+
                                 double o = (double)eO.Current;
                                 double h = (double)eH.Current;
                                 double l = (double)eL.Current;
@@ -343,37 +345,28 @@ namespace TuringTrader.Simulator
                                 double al = l * ac / c;
                                 long av = (long)(v * c / ac);
 
-                                if (t >= startTime && t <= endTime)
-                                    bars.Add(Bar.NewOHLC(
+                                bar = Bar.NewOHLC(
                                         Info[DataSourceValue.ticker],
                                         t,
                                         ao, ah, al, ac,
-                                        av));
-
-                                if (FirstTime == default(DateTime) || t < FirstTime)
-                                    FirstTime = t;
-
-                                if (LastTime == default(DateTime) || t > LastTime)
-                                    LastTime = t;
+                                        av);
                             }
                             catch
                             {
-                                // Yahoo taints the results by filling in null values
-                                // we try to handle this gracefully by duplicating the
-                                // previous bar
-
                                 if (bars.Count < 1)
                                     continue;
 
                                 Bar prevBar = bars.Last();
 
-                                if (t >= startTime && t <= endTime)
-                                    bars.Add(Bar.NewOHLC(
+                                bar = Bar.NewOHLC(
                                         Info[DataSourceValue.ticker],
                                         t,
                                         prevBar.Open, prevBar.High, prevBar.Low, prevBar.Close,
-                                        prevBar.Volume));
+                                        prevBar.Volume);
                             }
+
+                            if (t >= startTime && t <= endTime)
+                                bars.Add(bar);
                         }
 
                         DateTime t2 = DateTime.Now;
@@ -382,7 +375,7 @@ namespace TuringTrader.Simulator
                         return bars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction); ;
+                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
                 }
 
                 catch (Exception e)

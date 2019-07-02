@@ -122,23 +122,41 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public DateTime? FirstTime
+        private DateTime? _firstTime = null;
         /// <summary>
         /// First time stamp available in database.
         /// </summary>
         public DateTime? FirstTime
         {
-            get;
-            protected set;
+            get
+            {
+                if (_firstTime == null && Data != null && Data.Count() > 0)
+                    _firstTime = Data.First().Time;
+                return _firstTime;
+            }
+            protected set
+            {
+                _firstTime = value;
+            }
         }
         #endregion
         #region public DateTime? LastTime
+        private DateTime? _lastTime = null;
         /// <summary>
         /// Last time stamp available in database.
         /// </summary>
         public DateTime? LastTime
         {
-            get;
-            protected set;
+            get
+            {
+                if (_lastTime == null && Data != null && Data.Count() > 0)
+                    _lastTime = Data.Last().Time;
+                return _lastTime;
+            }
+            protected set
+            {
+                _lastTime = value;
+            }
         }
         #endregion
 
@@ -225,8 +243,10 @@ namespace TuringTrader.Simulator
 
         private static Dictionary<DataSourceValue, string> _defaultInfo = null;
         /// <summary>
-        /// Datasource default info container.
+        /// Retrieve data source defaults
         /// </summary>
+        /// <param name="infos">current infos</param>
+        /// <returns>default infos</returns>
         private static Dictionary<DataSourceValue, string> GetDefaultInfo(Dictionary<DataSourceValue, string> infos)
         {
             string nickName = infos[DataSourceValue.nickName];
