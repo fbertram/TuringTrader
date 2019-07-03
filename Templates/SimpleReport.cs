@@ -82,6 +82,8 @@ namespace TuringTrader.Simulator
             Dictionary<string, double> maxValues = new Dictionary<string, double>();
 
             //===== create series
+            OxyColor navColor = OxyColor.FromRgb(0x44, 0x72, 0xc4); // OxyColors.Blue
+            OxyColor benchColor = OxyColor.FromRgb(0xeb, 0x7f, 0x34); // OxyColors.Orange
             Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
 
             foreach (var row in chartData)
@@ -111,12 +113,12 @@ namespace TuringTrader.Simulator
                         var newSeries = yLabel == row.Skip(1).First().Key
                             ? new AreaSeries
                             {
-                                Color = OxyColors.Blue,
+                                Color = navColor,
                                 ConstantY2 = 1.0,
                             }
                             : new LineSeries
                             {
-                                Color = OxyColors.Red,
+                                Color = benchColor,
                             };
                         newSeries.Title = yLabel;
                         newSeries.IsVisible = true;
@@ -127,11 +129,11 @@ namespace TuringTrader.Simulator
                         var ddSeries = yLabel == row.Skip(1).First().Key
                             ? new AreaSeries
                             {
-                                Color = OxyColors.Blue,
+                                Color = navColor,
                             }
                             : new LineSeries
                             {
-                                Color = OxyColors.Red,
+                                Color = benchColor,
                             };
                         ddSeries.Title = "DD(" + yLabel + ")";
                         ddSeries.IsVisible = true;
@@ -194,32 +196,36 @@ namespace TuringTrader.Simulator
                 years = (endDate - startDate).TotalDays / 365.25;
 
                 retvalue.Add(new Dictionary<string, object> {
-                { "Metric", "Simulation Start [date]" },
-                { "Value", startDate } });
+                    { "Metric", "Simulation Start" },
+                    { "Value", string.Format("{0:MM/dd/yyyy}", startDate) },
+                    { nav, string.Format("{0:C2}", (double)chartData.First()[nav]) },
+                    { benchmark2, string.Format("{0:C2}", (double)chartData.First()[benchmark]) } });
 
                 retvalue.Add(new Dictionary<string, object> {
-                { "Metric", "Simulation End [date]" },
-                { "Value", endDate } });
+                    { "Metric", "Simulation End" },
+                    { "Value", string.Format("{0:MM/dd/yyyy}", endDate) },
+                    { nav, string.Format("{0:C2}", (double)chartData.Last()[nav]) },
+                    { benchmark2, string.Format("{0:C2}", (double)chartData.Last()[benchmark]) } });
 
                 retvalue.Add(new Dictionary<string, object> {
-                { "Metric", "Simulation Period [years]" },
-                { "Value", years } });
+                    { "Metric", "Simulation Period" },
+                    { "Value", string.Format("{0:F1} years", years) } });
             }
 
             //===== CAGR
             {
                 double nav1 = (double)chartData.First()[nav];
                 double nav2 = (double)chartData.Last()[nav];
-                double navCagr = 100.0 * (Math.Pow(nav2 / nav1, 1.0 / years) - 1.0);
+                double navCagr = Math.Pow(nav2 / nav1, 1.0 / years) - 1.0;
 
                 double bench1 = (double)chartData.First()[benchmark];
                 double bench2 = (double)chartData.Last()[benchmark];
-                double benchCagr = 100.0 * (Math.Pow(bench2 / bench1, 1.0 / years) - 1.0);
+                double benchCagr = Math.Pow(bench2 / bench1, 1.0 / years) - 1.0;
 
                 retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Compound Annual Growth Rate [%]" },
-                    { nav, navCagr },
-                    { benchmark2, benchCagr } });
+                    { "Metric", "Compound Annual Growth Rate" },
+                    { nav, string.Format("{0:P2}", navCagr) },
+                    { benchmark2, string.Format("{0:P2}", benchCagr) } });
             }
 
             //===== MDD
@@ -239,9 +245,9 @@ namespace TuringTrader.Simulator
                 }
 
                 retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Maximum Drawdown [%]" },
-                    { nav, -100.0 * navDd },
-                    { benchmark2, -100.0 * benchDd } });
+                    { "Metric", "Maximum Drawdown" },
+                    { nav, string.Format("{0:P2}", navDd) },
+                    { benchmark2, string.Format("{0:P2}", benchDd) } });
             }
 
             //===== Maximum Flat Days
@@ -281,34 +287,43 @@ namespace TuringTrader.Simulator
                 }
 
                 retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Maximum Flat Period [days]" },
-                    { nav, navMaxFlat },
-                    { benchmark2, benchMaxFlat } });
+                    { "Metric", "Maximum Flat Period" },
+                    { nav, string.Format("{0} days", navMaxFlat) },
+                    { benchmark2, string.Format("{0} days", benchMaxFlat) } });
             }
 
             //===== Sharpe Ratio
+            List<double> navReturns = new List<double>();
+            List<double> benchReturns = new List<double>();
+            double navAvgRet;
+            double benchAvgRet;
             {
-                const double riskFree = 0.02 / 12.0; // 2% per year
-
-                List<double> navReturns = new List<double>();
-                List<double> benchReturns = new List<double>();
+                const bool calcMonthly = true;
 
                 DateTime prevTimestamp = startDate;
                 double? navPrev = null;
                 double? benchPrev = null;
 
+                // create list of returns
                 foreach (var row in chartData)
                 {
+                    DateTime timestamp = (DateTime)row.First().Value;
                     double navVal = (double)row[nav];
                     double benchVal = (double)row[benchmark];
-                    DateTime timestamp = (DateTime)row.First().Value;
 
-                    if (timestamp.Month != prevTimestamp.Month)
+                    if (!calcMonthly || calcMonthly && timestamp.Month != prevTimestamp.Month)
                     {
-                        if (navPrev != null)
+                        if (navPrev != null && benchPrev != null)
                         {
+#if true
+                            // use log-returns. note that we don't use the risk free rate here.
+                            navReturns.Add(Math.Log10(navVal / (double)navPrev));
+                            benchReturns.Add(Math.Log10(benchVal / (double)benchPrev));
+#else
+                            const double riskFree = 0.0;
                             navReturns.Add(navVal / (double)navPrev - 1.0 - riskFree);
                             benchReturns.Add(benchVal / (double)benchPrev - 1.0 - riskFree);
+#endif
                         }
 
                         prevTimestamp = timestamp;
@@ -317,26 +332,36 @@ namespace TuringTrader.Simulator
                     }
                 }
 
-                double navAvgRet = navReturns.Average();
-                double navVarRet = navReturns.Average(r => Math.Pow(r - navAvgRet, 2.0));
-                double navSharpe = Math.Sqrt(12.0) * navAvgRet / Math.Sqrt(navVarRet);
+                navAvgRet = navReturns.Average();
+                double navStdRet = Math.Sqrt(navReturns.Average(r => Math.Pow(r - navAvgRet, 2.0)));
+                double navSharpe = Math.Sqrt(calcMonthly ? 12.0 : 252.0) * navAvgRet / navStdRet;
 
-                double benchAvgRet = benchReturns.Average();
-                double benchVarRet = navReturns.Average(r => Math.Pow(r - benchAvgRet, 2.0));
-                double benchSharpe = Math.Sqrt(12.0) * benchAvgRet / Math.Sqrt(benchVarRet);
+                benchAvgRet = benchReturns.Average();
+                double benchStdRet = Math.Sqrt(benchReturns.Average(r => Math.Pow(r - benchAvgRet, 2.0)));
+                double benchSharpe = Math.Sqrt(calcMonthly ? 12.0 : 252.0) * benchAvgRet / benchStdRet;
 
                 retvalue.Add(new Dictionary<string, object> {
                     { "Metric", "Sharpe Ratio" },
-                    { nav, navSharpe },
-                    { benchmark2, benchSharpe } });
+                    { nav, string.Format("{0:F2}", navSharpe) },
+                    { benchmark2, string.Format("{0:F2}", benchSharpe) } });
             }
 
             //===== Beta
             {
-                foreach (var row in chartData)
-                {
+                int numBars = navReturns.Count();
 
-                }
+                double covar = Enumerable.Range(0, numBars)
+                    .Sum(i => (navReturns[i] - navAvgRet) * (benchReturns[i] - benchAvgRet))
+                    / (numBars - 1.0);
+
+                double benchVar = benchReturns.Average(r => Math.Pow(r - benchAvgRet, 2.0));
+
+                double beta = covar / benchVar;
+
+                retvalue.Add(new Dictionary<string, object> {
+                    { "Metric", "Beta" },
+                    { nav, string.Format("{0:F2}", beta) },
+                    { benchmark2, "n/a" } });
             }
 
             return retvalue;
