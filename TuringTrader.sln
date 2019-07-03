@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.Tests", "Turin
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TuringTrader.Setup", "TuringTrader.Setup\TuringTrader.Setup.wixproj", "{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BooksAndPubs", "BooksAndPubs\BooksAndPubs.csproj", "{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -32,6 +34,10 @@ Global
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Debug|x64.ActiveCfg = Debug|x64
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Release|x64.ActiveCfg = Release|x64
 		{B6FDC4DC-1D28-4E4F-B358-7D8941F40FAF}.Release|x64.Build.0 = Release|x64
+		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Debug|x64.ActiveCfg = Debug|x64
+		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Debug|x64.Build.0 = Debug|x64
+		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.ActiveCfg = Release|x64
+		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

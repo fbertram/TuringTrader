@@ -626,7 +626,7 @@ namespace BooksAndPubs
             "DHR",
             "DIS",
             "DUK",
-            "DWDP",
+            //"DWDP",
             "EMR",
             "EXC",
             "F",

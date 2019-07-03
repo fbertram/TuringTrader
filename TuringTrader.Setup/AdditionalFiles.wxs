@@ -58,6 +58,10 @@
         <File Id="filDemo07" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo07_Subclassing.cs" />
       </Component>
 
+      <Component Id="cmpBooksAndPubs" Directory="AlgorithmsDir" Guid="*">
+        <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\BooksAndPubs.dll" />
+      </Component>
+
       <!-- ===== data files ======================================== -->
       <Component Id="cmpSpxInf" Directory="DataDir" Guid="*">
         <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />

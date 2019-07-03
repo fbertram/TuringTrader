@@ -24,6 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BooksAndPubs\BooksAndPubs.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
 
