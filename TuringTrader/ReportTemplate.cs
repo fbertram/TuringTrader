@@ -72,8 +72,6 @@ namespace TuringTrader
 
             var yAxis = new LinearAxis();
             yAxis.Position = AxisPosition.Right;
-            yAxis.StartPosition = 0.25;
-            yAxis.EndPosition = 1.0;
             yAxis.Key = "y";
 
             plotModel.Axes.Add(xAxis);
