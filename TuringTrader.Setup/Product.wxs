@@ -35,7 +35,10 @@
       
 			<Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="TuringTrader">
-          <Directory Id="PublishFilesComponentGroup" />
+          <Directory Id="BINFOLDER" Name="Bin">
+            <Directory Id="PublishFilesComponentGroup" />
+          </Directory>
+          <Directory Id="HOMEFOLDER" Name="Home" />
           <Directory Id="AdditionalFilesComponentGroup" />
         </Directory>
 			</Directory>
@@ -53,8 +56,13 @@
         <Shortcut Id="ApplicationStartMenuShortcut"
                   Name="TuringTrader"
                   Description="TuringTrader Open-Source Backtesting Engine/ Market Simulator"
-                  Target="[INSTALLFOLDER]turingtrader.exe"
-                  WorkingDirectory="INSTALLFOLDER" />
+                  Target="[BINFOLDER]turingtrader.exe"
+                  WorkingDirectory="BINFOLDER" />
+        <Shortcut Id="HelpStartMenuShortcut"
+                  Name="TuringTrader Help"
+                  Description="TuringTrader API Documentation"
+                  Target="[BINFOLDER]turingtrader.chm"
+                  WorkingDirectory="BINFOLDER" />
         <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\TuringTrader" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>

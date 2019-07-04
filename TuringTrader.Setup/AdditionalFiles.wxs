@@ -2,21 +2,19 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   
 	<Fragment>
-    <DirectoryRef Id="INSTALLFOLDER">
-      <Directory Id="HomeDir" Name="Home">
-        <Directory Id="AlgorithmsDir" Name="Algorithms">
-          <Directory Id="DemoAlgorithmsDir" Name="Demo Algorithms" />
+    <DirectoryRef Id="HOMEFOLDER">
+      <Directory Id="AlgorithmsDir" Name="Algorithms">
+        <Directory Id="DemoAlgorithmsDir" Name="Demo Algorithms" />
+      </Directory>
+      <Directory Id="DataDir" Name="Data">
+        <Directory Id="DataDataDir" Name ="Data">
+          <Directory Id="DataSpxOptionsDir" Name="$SPX.options" />
+          <Directory Id="Data6040Dir" Name="@60_40" />
         </Directory>
-        <Directory Id="DataDir" Name="Data">
-          <Directory Id="DataDataDir" Name ="Data">
-            <Directory Id="DataSpxOptionsDir" Name="$SPX.options" />
-            <Directory Id="Data6040Dir" Name="@60_40" />
-          </Directory>
-        </Directory>
-        <Directory Id="TemplatesDir" Name="Templates" />
-        <Directory Id="BooksAndPubsDir" Name="BooksAndPubs">
-          <Directory Id="BooksAndPubsPropertiesDir" Name="Properties" />
-        </Directory>
+      </Directory>
+      <Directory Id="TemplatesDir" Name="Templates" />
+      <Directory Id="BooksAndPubsDir" Name="BooksAndPubs">
+        <Directory Id="BooksAndPubsPropertiesDir" Name="Properties" />
       </Directory>
     </DirectoryRef>
   </Fragment>
@@ -25,7 +23,7 @@
     <ComponentGroup Id="AdditionalFilesComponentGroup">
 
       <!-- ===== more binary files ======================================== -->
-      <Component Id="cmpHelp" Directory="INSTALLFOLDER" Guid="*">
+      <Component Id="cmpHelp" Directory="BINFOLDER" Guid="*">
         <File Id="filHelp" KeyPath="yes" Source="$(var.HomeDir)\Help\TuringTrader.chm" />
       </Component>
 
@@ -59,7 +57,7 @@
       </Component>
 
       <Component Id="cmpBooksAndPubs" Directory="AlgorithmsDir" Guid="*">
-        <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\BooksAndPubs.dll" />
+        <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\BooksAndPubs.dll" />
       </Component>
 
       <!-- ===== data files ======================================== -->

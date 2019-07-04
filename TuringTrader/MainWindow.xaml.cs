@@ -160,6 +160,7 @@ namespace TuringTrader
 
                 string homeTemplate = Path.Combine(
                     Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                    "..",
                     "Home");
 
                 void copyFolderFiles(string srcPath, string dstPath)
