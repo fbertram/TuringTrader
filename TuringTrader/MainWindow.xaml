@@ -13,20 +13,20 @@
         <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged"/>
         <Menu x:Name="MenuBar" Height="23" VerticalAlignment="Top">
             <MenuItem Header="_File">
+                <MenuItem x:Name="AlgoMenu" Header="_Algorithm" ItemsSource="{Binding MenuItems}" Click="MenuAlgorithm_Click">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Path=Header}"/>
+                            <Setter Property="ItemsSource" Value="{Binding Path=MenuItems}"/>
+                            <Setter Property="CommandParameter" Value="{Binding Path=CommandParameter}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
                 <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="Settings..." Click="MenuEditSettings_Click"/>
                 <MenuItem x:Name="MenuEditAlgorithm" Header="Algorithm Source..." Click="MenuEditAlgorithm_Click"/>
-            </MenuItem>
-            <MenuItem x:Name="AlgoMenu" Header="_Algorithm" ItemsSource="{Binding MenuItems}" Click="MenuAlgorithm_Click">
-                <MenuItem.ItemContainerStyle>
-                    <Style TargetType="{x:Type MenuItem}">
-                        <Setter Property="Header" Value="{Binding Path=Header}"/>
-                        <Setter Property="ItemsSource" Value="{Binding Path=MenuItems}"/>
-                        <Setter Property="CommandParameter" Value="{Binding Path=CommandParameter}"/>
-                    </Style>
-                </MenuItem.ItemContainerStyle>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_View Help File" Click="MenuHelpView_Click"/>
