@@ -321,10 +321,12 @@ namespace TuringTrader
                 ResultsButton.IsEnabled = false;
 
                 Algo.Text = "Algorithm: " + _currentAlgorithm.Name; // this may be different than class name
+                Title = "TuringTrader - " + _currentAlgorithm.Name;
             }
             else
             {
                 Algo.Text = "Algorithm: n/a";
+                Title = "TuringTrader";
             }
         }
         private bool ControlPressed => Keyboard.Modifiers.HasFlag(ModifierKeys.Control);

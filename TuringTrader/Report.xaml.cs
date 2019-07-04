@@ -127,6 +127,11 @@ namespace TuringTrader.Simulator
 
             InitializeComponent();
             DataContext = this;
+
+            // TODO: this needs clean up
+            string tmp = GlobalSettings.MostRecentAlgorithm.Substring(0, GlobalSettings.MostRecentAlgorithm.Length - 1);
+            string strategyName = tmp.Substring(tmp.LastIndexOf('/') + 1);
+            Title = "Strategy Report - " + strategyName;
         }
         #endregion
     }

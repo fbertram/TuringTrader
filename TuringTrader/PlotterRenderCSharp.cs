@@ -79,7 +79,7 @@ namespace TuringTrader
             thread.SetApartmentState(ApartmentState.STA);
 
             thread.Start();
-            thread.Join();
+            //thread.Join(); // wait for window to close
         }
     }
 }
