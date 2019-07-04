@@ -13,7 +13,7 @@
     <RootNamespace>ApiHelp</RootNamespace>
     <Name>ApiHelp</Name>
     <!-- SHFB properties -->
-    <FrameworkVersion>.NET Framework 4.7.1</FrameworkVersion>
+    <FrameworkVersion>Cross-platform (.NET Core/.NET Standard)</FrameworkVersion>
     <OutputPath>..\Help\</OutputPath>
     <HtmlHelpName>TuringTrader</HtmlHelpName>
     <Language>en-US</Language>
@@ -27,7 +27,7 @@
       <Argument Key="maxVersionParts" Value="" xmlns="" />
     </TransformComponentArguments>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\SimulatorEngine\SimulatorEngine.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\TuringTrader.Simulator\TuringTrader.Simulator.xml" />
     </DocumentationSources>
     <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
     <SyntaxFilters>C#</SyntaxFilters>
