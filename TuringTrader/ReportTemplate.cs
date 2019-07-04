@@ -60,6 +60,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
