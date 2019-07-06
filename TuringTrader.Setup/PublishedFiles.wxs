@@ -928,6 +928,9 @@
             <Component Id="cmpA23A2E49127366C2C0E829CF57687558" Directory="BINFOLDER" Guid="*">
                 <File Id="fil4B3ED69E8BC56BDFAEB371A2788A4682" KeyPath="yes" Source="$(var.SourceDir)\TuringTrader.Simulator.pdb" />
             </Component>
+            <Component Id="cmp2EDC235396B09E9C77F8C9F87EDCB628" Directory="BINFOLDER" Guid="*">
+                <File Id="filEFA1844F864A66E3294D9F06D51E0307" KeyPath="yes" Source="$(var.SourceDir)\TuringTrader.Simulator.xml" />
+            </Component>
             <Component Id="cmp582B2A8E74DEC0314A4336231AEFD8DF" Directory="BINFOLDER" Guid="*">
                 <File Id="fil2355D72B296C21BF59B59A84865AA741" KeyPath="yes" Source="$(var.SourceDir)\ucrtbase.dll" />
             </Component>

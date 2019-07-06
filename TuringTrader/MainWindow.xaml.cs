@@ -443,9 +443,13 @@ namespace TuringTrader
         #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
         private void MenuHelpView_Click(object sender, RoutedEventArgs e)
         {
+#if true
             string helpFile = Path.Combine(
                 Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
                 "TuringTrader.chm");
+#else
+            string helpFile = "https://www.turingtrader.org/help/";
+#endif
 
             OpenWithShell(helpFile);
         }

@@ -23,9 +23,11 @@
     <ComponentGroup Id="AdditionalFilesComponentGroup">
 
       <!-- ===== more binary files ======================================== -->
+      <!--
       <Component Id="cmpHelp" Directory="BINFOLDER" Guid="*">
         <File Id="filHelp" KeyPath="yes" Source="$(var.HomeDir)\Help\TuringTrader.chm" />
       </Component>
+      -->
 
       <!-- ===== demo algorithms ======================================== -->
       <Component Id="cmpDemo01" Directory="DemoAlgorithmsDir" Guid="*">

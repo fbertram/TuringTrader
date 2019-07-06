@@ -44,26 +44,35 @@
 			</Directory>
 
       <Directory Id="ProgramMenuFolder">
+        <!--
         <Directory Id="ApplicationProgramsFolder" Name="Turing Trader"/>
+        -->
       </Directory>      
       
 		</Directory>
   </Fragment>
 
   <Fragment>
-    <ComponentGroup Id="ApplicationShortcutComponent"  Directory="ApplicationProgramsFolder">
+      <ComponentGroup Id="ApplicationShortcutComponent"  Directory="ProgramMenuFolder">
+      <!--
+      <ComponentGroup Id="ApplicationShortcutComponent"  Directory="ApplicationProgramsFolder">
+      -->
       <Component Id="ApplicationShortcutComponent" Guid="bcb0cad4-b2af-400c-ac25-ba61adf232a5">
         <Shortcut Id="ApplicationStartMenuShortcut"
                   Name="TuringTrader"
                   Description="TuringTrader Open-Source Backtesting Engine/ Market Simulator"
                   Target="[BINFOLDER]turingtrader.exe"
                   WorkingDirectory="BINFOLDER" />
+        <!--
         <Shortcut Id="HelpStartMenuShortcut"
                   Name="TuringTrader Help"
                   Description="TuringTrader API Documentation"
                   Target="[BINFOLDER]turingtrader.chm"
                   WorkingDirectory="BINFOLDER" />
+        -->
+        <!--
         <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        -->
         <RegistryValue Root="HKCU" Key="Software\TuringTrader" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </ComponentGroup>
