@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
-// Name:        DataSourceValue
+// Name:        DataSourceParam
 // Description: enum for data source info values
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Enum for tags in data source descriptor .inf file.
     /// </summary>
-    public enum DataSourceValue
+    public enum DataSourceParam
     {
         /// <summary>
         /// error, none of the defined values
@@ -144,9 +144,9 @@ namespace TuringTrader.Simulator
         /// </summary>
         symbolTiingo,
         /// <summary>
-        /// data source to use
+        /// data feed to use
         /// </summary>
-        dataSource,
+        dataFeed,
         /// <summary>
         /// data updater to use
         /// </summary>

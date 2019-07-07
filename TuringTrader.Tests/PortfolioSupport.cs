@@ -34,10 +34,10 @@ namespace SimulatorEngine.Tests
             Dictionary<Instrument, int> instruments = Enumerable.Range(0, 10)
                 .ToDictionary(i =>
                 {
-                    Dictionary<DataSourceValue, string> info = new Dictionary<DataSourceValue, string>
+                    Dictionary<DataSourceParam, string> info = new Dictionary<DataSourceParam, string>
                     {
-                        { DataSourceValue.name, string.Format("X{0}", i) },
-                        { DataSourceValue.nickName, string.Format("X{0}", i) },
+                        { DataSourceParam.name, string.Format("X{0}", i) },
+                        { DataSourceParam.nickName, string.Format("X{0}", i) },
                     };
                     var dataSource = new DataSourceFromBars(null, info);
 

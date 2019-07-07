@@ -56,6 +56,8 @@ namespace TuringTrader
         {
             if (Path.GetExtension(template).ToLower() != ".rmd")
                 return;
+
+            Output.WriteLine("Rendering with R Markdown is currently unavailable. Stay tuned");
         }
     }
 }

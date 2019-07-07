@@ -32,7 +32,7 @@ namespace TuringTrader.Simulator
         {
             public override string Name => "Stooq";
 
-            public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterStooq(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
 
             }

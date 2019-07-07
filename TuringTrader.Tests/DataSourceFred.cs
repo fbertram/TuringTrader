@@ -34,7 +34,7 @@ namespace SimulatorEngine.Tests
 
             ds.LoadData(DateTime.Parse("09/30/2018"), DateTime.Parse("01/03/2019"));
 
-            Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceValue.name].ToLower().Contains("real gross domestic product"));
+            Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("real gross domestic product"));
             Assert.IsTrue(((DateTime)ds.FirstTime).Date == DateTime.Parse("01/01/1947"));
             //Assert.IsTrue(((DateTime)ds.LastTime).Date == DateTime.Parse("01/11/2019"));
             Assert.IsTrue(ds.Data.Count() == 64);

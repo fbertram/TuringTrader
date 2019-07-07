@@ -77,7 +77,7 @@ namespace TuringTrader.Simulator
             if (ParentDataSource != null)
             {
                 Bar bar = Bar.NewOHLC(
-                    ParentDataSource.Info[DataSourceValue.ticker],
+                    ParentDataSource.Info[DataSourceParam.ticker],
                     SimTime[0],
                     value, value, value, value, 0);
 

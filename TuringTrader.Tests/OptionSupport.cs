@@ -180,9 +180,9 @@ namespace SimulatorEngine.Tests
             foreach (var testVector in testVectors)
             {
                 //--- create data source for underlying
-                Dictionary<DataSourceValue, string> underlyingInfos = new Dictionary<DataSourceValue, string>
+                Dictionary<DataSourceParam, string> underlyingInfos = new Dictionary<DataSourceParam, string>
                 {
-                    { DataSourceValue.name, "S&P 500 Index" }
+                    { DataSourceParam.name, "S&P 500 Index" }
                 };
 
                 List<Bar> underlyingBars = new List<Bar>
@@ -195,10 +195,10 @@ namespace SimulatorEngine.Tests
                 DataSource underlyingDataSource = new DataSourceFromBars(underlyingBars, underlyingInfos);
 
                 //--- create data source for option
-                Dictionary<DataSourceValue, string> optionInfos = new Dictionary<DataSourceValue, string>
+                Dictionary<DataSourceParam, string> optionInfos = new Dictionary<DataSourceParam, string>
                 {
-                    { DataSourceValue.name, "S&P 500 Index Options" },
-                    { DataSourceValue.optionUnderlying, "SPX" }
+                    { DataSourceParam.name, "S&P 500 Index Options" },
+                    { DataSourceParam.optionUnderlying, "SPX" }
                 };
                 List<Bar> optionBars = new List<Bar>
                 {   new Bar(

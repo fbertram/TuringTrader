@@ -48,7 +48,7 @@ namespace TuringTrader.Simulator
         {
             public override string Name => "IQFeed";
 
-            public DataUpdaterIQFeed(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterIQFeed(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
 
             }

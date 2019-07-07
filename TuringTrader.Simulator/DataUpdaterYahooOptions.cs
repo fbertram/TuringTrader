@@ -214,7 +214,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="simulator">parent simulator</param>
             /// <param name="info">info dictionary</param>
-            public DataUpdaterYahooOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterYahooOptions(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
             }
             #endregion
@@ -229,7 +229,7 @@ namespace TuringTrader.Simulator
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
                 string url = string.Format(_urlTemplate1,
-                    Info[DataSourceValue.symbolYahoo]);
+                    Info[DataSourceParam.symbolYahoo]);
 
                 JToken result0 = LoadJson(url);
 
@@ -242,7 +242,7 @@ namespace TuringTrader.Simulator
                     if (expirationDate != expirationDates.First())
                     {
                         url = string.Format(_urlTemplate2,
-                            Info[DataSourceValue.symbolYahoo], ToUnixTime(expirationDate));
+                            Info[DataSourceParam.symbolYahoo], ToUnixTime(expirationDate));
                         result0 = LoadJson(url);
                     }
 

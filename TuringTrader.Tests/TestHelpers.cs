@@ -29,7 +29,7 @@ namespace SimulatorEngine.Tests
     #region class DataSourceFromBars
     class DataSourceFromBars : DataSource
     {
-        public DataSourceFromBars(List<Bar> bars, Dictionary<DataSourceValue, string> infos) : base(infos)
+        public DataSourceFromBars(List<Bar> bars, Dictionary<DataSourceParam, string> infos) : base(infos)
         {
             Data = bars;
         }

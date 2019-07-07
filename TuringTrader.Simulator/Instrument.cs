@@ -115,7 +115,7 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                return DataSource.Info[DataSourceValue.nickName];
+                return DataSource.Info[DataSourceParam.nickName];
             }
         }
         #endregion
@@ -127,7 +127,7 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                return DataSource.Info[DataSourceValue.name];
+                return DataSource.Info[DataSourceParam.name];
             }
         }
         #endregion

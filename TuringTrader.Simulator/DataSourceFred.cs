@@ -40,7 +40,7 @@ namespace TuringTrader.Simulator
 
             private JObject GetSeries()
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string metaCache = Path.Combine(cachePath, "fred_meta");
 
                 bool writeToDisk = false;
@@ -79,13 +79,13 @@ namespace TuringTrader.Simulator
                 //--- 2) if failed, try to retrieve from web
                 if (!validMeta())
                 {
-                    Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceValue.nickName]);
+                    Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
                     string url = string.Format(
                         "https://api.stlouisfed.org/fred/series"
                             + "?series_id={0}"
                             + "&api_key={1}&file_type=json",
-                        Info[DataSourceValue.symbolFred],
+                        Info[DataSourceParam.symbolFred],
                         _apiKey);
 
                     using (var client = new WebClient())
@@ -112,7 +112,7 @@ namespace TuringTrader.Simulator
             }
             private JObject GetData(DateTime startTime, DateTime endTime)
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "fred_timestamps");
                 string dataCache = Path.Combine(cachePath, "fred_data");
 
@@ -177,7 +177,7 @@ namespace TuringTrader.Simulator
                             + "&file_type=json"
                             + "&observation_start={2:yyyy}-{2:MM}-{2:dd}"
                             + "&observation_end={3:yyyy}-{3:MM}-{3:dd}",
-                        Info[DataSourceValue.symbolFred],
+                        Info[DataSourceParam.symbolFred],
                         _apiKey,
                         startTime,
                         endTime);
@@ -228,13 +228,13 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for FRED Data.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceFred(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceFred(Dictionary<DataSourceParam, string> info) : base(info)
             {
                 try
                 {
                     JObject jsonData = GetSeries();
 
-                    Info[DataSourceValue.name] = (string)jsonData["seriess"][0]["title"];
+                    Info[DataSourceParam.name] = (string)jsonData["seriess"][0]["title"];
 
                     FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"]);
                     LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"]);
@@ -243,7 +243,7 @@ namespace TuringTrader.Simulator
                 {
                     throw new Exception(
                         string.Format("DataSourceFred: failed to load meta for {0}",
-                            Info[DataSourceValue.nickName]));
+                            Info[DataSourceParam.nickName]));
                 }
             }
             #endregion
@@ -264,14 +264,14 @@ namespace TuringTrader.Simulator
                     //    endTime = (DateTime)LastTime;
 
                     var cacheKey = new CacheId(null, "", 0,
-                        Info[DataSourceValue.nickName].GetHashCode(),
+                        Info[DataSourceParam.nickName].GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());
 
                     List<Bar> retrievalFunction()
                     {
                         DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceValue.nickName]));
+                        Output.Write(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         List<Bar> rawBars = new List<Bar>();
 
@@ -283,7 +283,7 @@ namespace TuringTrader.Simulator
                             var bar = e.Current;
 
                             DateTime date = DateTime.Parse((string)bar["date"]).Date
-                                + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
+                                + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
 
                             string valueString = (string)bar["value"];
                             double value;
@@ -301,7 +301,7 @@ namespace TuringTrader.Simulator
                             }
 
                             rawBars.Add(Bar.NewOHLC(
-                                Info[DataSourceValue.ticker],
+                                Info[DataSourceParam.ticker],
                                 date,
                                 value, value, value, value,
                                 0));
@@ -326,11 +326,11 @@ namespace TuringTrader.Simulator
                 {
                     throw new Exception(
                         string.Format("DataSourceFred: failed to load quotes for {0}, {1}",
-                            Info[DataSourceValue.nickName], e.Message));
+                            Info[DataSourceParam.nickName], e.Message));
                 }
 
                 if ((Data as List<Bar>).Count == 0)
-                    throw new Exception(string.Format("DataSourceFred: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceFred: no data for {0}", Info[DataSourceParam.nickName]));
             }
             #endregion
         }

@@ -38,7 +38,7 @@ namespace TuringTrader.Simulator
         /// <param name="simulator">parent simulator</param>
         /// <param name="info">info dictionary</param>
         /// <returns>new data updater object</returns>
-        static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceParam, string> info)
         {
             return DataUpdaterCollection.New(simulator, info);
         }
@@ -49,7 +49,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="simulator">parent simulator</param>
         /// <param name="info">info dictionary</param>
-        protected DataUpdater(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        protected DataUpdater(SimulatorCore simulator, Dictionary<DataSourceParam, string> info)
         {
             Simulator = simulator;
             Info = info;
@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Info dictionary, holding data source description.
         /// </summary>
-        public readonly Dictionary<DataSourceValue, string> Info;
+        public readonly Dictionary<DataSourceParam, string> Info;
         #endregion
         #region public readonly SimulatorCore Simulator
         /// <summary>
@@ -99,36 +99,36 @@ namespace TuringTrader.Simulator
         /// <param name="simulator">parent simulator</param>
         /// <param name="info">info dictionary</param>
         /// <returns>new data updater object</returns>
-        static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceValue, string> info)
+        static public DataUpdater New(SimulatorCore simulator, Dictionary<DataSourceParam, string> info)
         {
-            if (!info.ContainsKey(DataSourceValue.dataUpdater))
+            if (!info.ContainsKey(DataSourceParam.dataUpdater))
                 return null;
 
-            string dataUpdater = info[DataSourceValue.dataUpdater].ToLower();
+            string dataUpdater = info[DataSourceParam.dataUpdater].ToLower();
 
             if (dataUpdater.Contains("iq")
-            && info.ContainsKey(DataSourceValue.symbolIqfeed))
+            && info.ContainsKey(DataSourceParam.symbolIqfeed))
                 return new DataUpdaterIQFeed(simulator, info);
 
             if (dataUpdater.Contains("ib")
-            && info.ContainsKey(DataSourceValue.symbolInteractiveBrokers))
+            && info.ContainsKey(DataSourceParam.symbolInteractiveBrokers))
                 return new DataUpdaterIBOptions(simulator, info);
 
             if (dataUpdater.Contains("yahoo")
             && dataUpdater.Contains("opt")
-            && info.ContainsKey(DataSourceValue.symbolYahoo))
+            && info.ContainsKey(DataSourceParam.symbolYahoo))
                 return new DataUpdaterYahooOptions(simulator, info);
 
             if (dataUpdater.Contains("yahoo")
-            && info.ContainsKey(DataSourceValue.symbolYahoo))
+            && info.ContainsKey(DataSourceParam.symbolYahoo))
                 return new DataUpdaterYahoo(simulator, info);
 
             if (dataUpdater.Contains("stooq")
-            && info.ContainsKey(DataSourceValue.symbolStooq))
+            && info.ContainsKey(DataSourceParam.symbolStooq))
                 return new DataUpdaterStooq(simulator, info);
 
             if (dataUpdater.Contains("fred")
-            && info.ContainsKey(DataSourceValue.symbolFred))
+            && info.ContainsKey(DataSourceParam.symbolFred))
                 return new DataUpdaterFred(simulator, info);
 
             return null;

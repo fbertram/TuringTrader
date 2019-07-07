@@ -35,9 +35,9 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for algorithm quotes.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceAlgorithm(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceAlgorithm(Dictionary<DataSourceParam, string> info) : base(info)
             {
-                _algoName = Info[DataSourceValue.dataSource]
+                _algoName = Info[DataSourceParam.dataFeed]
                     .Split(':')
                     .Last();
 
@@ -46,7 +46,7 @@ namespace TuringTrader.Simulator
                 if (algo == null)
                     throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", _algoName));
 
-                Info[DataSourceValue.name] = algo.Name;
+                Info[DataSourceParam.name] = algo.Name;
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -67,7 +67,7 @@ namespace TuringTrader.Simulator
                     try
                     {
                         DateTime t1 = DateTime.Now;
-                        Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceValue.nickName]));
+                        Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                         var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
 
@@ -94,7 +94,7 @@ namespace TuringTrader.Simulator
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
                 if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceParam.nickName]));
 
                 Data = data;
             }

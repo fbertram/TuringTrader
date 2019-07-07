@@ -77,7 +77,7 @@ namespace TuringTrader.Simulator
         /// Create and initialize data source object.
         /// </summary>
         /// <param name="info">data source info</param>
-        protected DataSource(Dictionary<DataSourceValue, string> info)
+        protected DataSource(Dictionary<DataSourceParam, string> info)
         {
             Info = info;
             FirstTime = null;
@@ -90,7 +90,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Data source info container.
         /// </summary>
-        public Dictionary<DataSourceValue, string> Info
+        public Dictionary<DataSourceParam, string> Info
         {
             get;
             protected set;
@@ -105,7 +105,7 @@ namespace TuringTrader.Simulator
             get
             {
                 //return Info.ContainsKey(DataSourceValue.optionExpiration);
-                return Info.ContainsKey(DataSourceValue.optionUnderlying);
+                return Info.ContainsKey(DataSourceParam.optionUnderlying);
             }
         }
         #endregion
@@ -117,7 +117,7 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                return Info[DataSourceValue.optionUnderlying];
+                return Info[DataSourceParam.optionUnderlying];
             }
         }
         #endregion
@@ -218,7 +218,7 @@ namespace TuringTrader.Simulator
     public partial class DataSourceCollection
     {
         #region internal helpers
-        private static void LoadInfoFile(string infoPathName, Dictionary<DataSourceValue, string> infos)
+        private static void LoadInfoFile(string infoPathName, Dictionary<DataSourceParam, string> infos)
         {
             string[] lines = File.ReadAllLines(infoPathName);
             foreach (string line in lines)
@@ -227,8 +227,8 @@ namespace TuringTrader.Simulator
 
                 try
                 {
-                    DataSourceValue key = (DataSourceValue)
-                        Enum.Parse(typeof(DataSourceValue), line.Substring(0, idx), true);
+                    DataSourceParam key = (DataSourceParam)
+                        Enum.Parse(typeof(DataSourceParam), line.Substring(0, idx), true);
 
                     string value = line.Substring(idx + 1);
 
@@ -241,48 +241,48 @@ namespace TuringTrader.Simulator
             }
         }
 
-        private static Dictionary<DataSourceValue, string> _defaultInfo = null;
+        private static Dictionary<DataSourceParam, string> _defaultInfo = null;
         /// <summary>
         /// Retrieve data source defaults
         /// </summary>
         /// <param name="infos">current infos</param>
         /// <returns>default infos</returns>
-        private static Dictionary<DataSourceValue, string> GetDefaultInfo(Dictionary<DataSourceValue, string> infos)
+        private static Dictionary<DataSourceParam, string> GetDefaultInfo(Dictionary<DataSourceParam, string> infos)
         {
-            string nickName = infos[DataSourceValue.nickName];
-            string nickName2 = infos[DataSourceValue.nickName2];
-            string ticker = infos.ContainsKey(DataSourceValue.ticker)
-                ? infos[DataSourceValue.ticker]
+            string nickName = infos[DataSourceParam.nickName];
+            string nickName2 = infos[DataSourceParam.nickName2];
+            string ticker = infos.ContainsKey(DataSourceParam.ticker)
+                ? infos[DataSourceParam.ticker]
                 : nickName2;
 
             //--- load defaults file, create copy
             if (_defaultInfo == null)
             {
-                _defaultInfo = new Dictionary<DataSourceValue, string>()
+                _defaultInfo = new Dictionary<DataSourceParam, string>()
                 {
                     // general info
-                    { DataSourceValue.nickName, "{0}" },
-                    { DataSourceValue.name, "{0}" },
-                    { DataSourceValue.ticker, "{0}" },
+                    { DataSourceParam.nickName, "{0}" },
+                    { DataSourceParam.name, "{0}" },
+                    { DataSourceParam.ticker, "{0}" },
                     //{ DataSourceValue.dataSource, "csv" },
-                    { DataSourceValue.dataSource, GlobalSettings.DefaultDataFeed },
+                    { DataSourceParam.dataFeed, GlobalSettings.DefaultDataFeed },
                     // csv file defaults
-                    { DataSourceValue.dataPath, "Data\\{0}" },
-                    { DataSourceValue.date, "{1:MM/dd/yyyy}" },
-                    { DataSourceValue.time, "16:00"},
-                    { DataSourceValue.open, "{2:F2}" },
-                    { DataSourceValue.high, "{3:F2}" },
-                    { DataSourceValue.low, "{4:F2}" },
-                    { DataSourceValue.close, "{5:F2}" },
-                    { DataSourceValue.volume, "{6}" },
+                    { DataSourceParam.dataPath, "Data\\{0}" },
+                    { DataSourceParam.date, "{1:MM/dd/yyyy}" },
+                    { DataSourceParam.time, "16:00"},
+                    { DataSourceParam.open, "{2:F2}" },
+                    { DataSourceParam.high, "{3:F2}" },
+                    { DataSourceParam.low, "{4:F2}" },
+                    { DataSourceParam.close, "{5:F2}" },
+                    { DataSourceParam.volume, "{6}" },
                     // symbol mapping
-                    { DataSourceValue.symbolYahoo, "{0}"},
-                    { DataSourceValue.symbolFred, "{0}"},
-                    { DataSourceValue.symbolNorgate, "{0}"},
-                    { DataSourceValue.symbolIqfeed, "{0}"},
-                    { DataSourceValue.symbolStooq, "{0}"},
-                    { DataSourceValue.symbolTiingo, "{0}"},
-                    { DataSourceValue.symbolInteractiveBrokers, "{0}"},
+                    { DataSourceParam.symbolYahoo, "{0}"},
+                    { DataSourceParam.symbolFred, "{0}"},
+                    { DataSourceParam.symbolNorgate, "{0}"},
+                    { DataSourceParam.symbolIqfeed, "{0}"},
+                    { DataSourceParam.symbolStooq, "{0}"},
+                    { DataSourceParam.symbolTiingo, "{0}"},
+                    { DataSourceParam.symbolInteractiveBrokers, "{0}"},
                 };
 
                 string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
@@ -291,13 +291,13 @@ namespace TuringTrader.Simulator
                     LoadInfoFile(infoPathName, _defaultInfo);
             }
 
-            var defaultInfo = new Dictionary<DataSourceValue, string>(_defaultInfo);
+            var defaultInfo = new Dictionary<DataSourceParam, string>(_defaultInfo);
 
             //--- fill in nickname, as required
-            List<DataSourceValue> updateWithNickname = new List<DataSourceValue>
+            List<DataSourceParam> updateWithNickname = new List<DataSourceParam>
             {
-                DataSourceValue.nickName,
-                DataSourceValue.name,
+                DataSourceParam.nickName,
+                DataSourceParam.name,
             };
 
             foreach (var field in updateWithNickname)
@@ -306,9 +306,9 @@ namespace TuringTrader.Simulator
             }
 
             //--- fill in nickname w/o source, as required
-            List<DataSourceValue> updateWithNickname2 = new List<DataSourceValue>
+            List<DataSourceParam> updateWithNickname2 = new List<DataSourceParam>
             {
-                DataSourceValue.dataPath,
+                DataSourceParam.dataPath,
             };
 
             foreach (var field in updateWithNickname2)
@@ -317,16 +317,16 @@ namespace TuringTrader.Simulator
             }
 
             //--- fill in ticker, as required
-            List<DataSourceValue> updateWithTicker = new List<DataSourceValue>
+            List<DataSourceParam> updateWithTicker = new List<DataSourceParam>
             {
-                DataSourceValue.ticker,
-                DataSourceValue.symbolYahoo,
-                DataSourceValue.symbolNorgate,
-                DataSourceValue.symbolIqfeed,
-                DataSourceValue.symbolStooq,
-                DataSourceValue.symbolInteractiveBrokers,
-                DataSourceValue.symbolFred,
-                DataSourceValue.symbolTiingo,
+                DataSourceParam.ticker,
+                DataSourceParam.symbolYahoo,
+                DataSourceParam.symbolNorgate,
+                DataSourceParam.symbolIqfeed,
+                DataSourceParam.symbolStooq,
+                DataSourceParam.symbolInteractiveBrokers,
+                DataSourceParam.symbolFred,
+                DataSourceParam.symbolTiingo,
             };
 
             foreach (var field in updateWithTicker)
@@ -361,12 +361,12 @@ namespace TuringTrader.Simulator
         static public DataSource New(string nickname)
         {
             //===== setup info structure
-            Dictionary<DataSourceValue, string> infos = new Dictionary<DataSourceValue, string>();
+            Dictionary<DataSourceParam, string> infos = new Dictionary<DataSourceParam, string>();
 
             // we know our nickname
             // nickname2, w/o data source is preliminary
-            infos[DataSourceValue.nickName] = nickname;
-            infos[DataSourceValue.nickName2] = nickname;
+            infos[DataSourceParam.nickName] = nickname;
+            infos[DataSourceParam.nickName2] = nickname;
 
             //===== load from .inf file
             if (!nickname.Contains(":"))
@@ -376,7 +376,7 @@ namespace TuringTrader.Simulator
                 if (File.Exists(infoPathName))
                 {
                     LoadInfoFile(infoPathName, infos);
-                    infos[DataSourceValue.infoPath] = infoPathName;
+                    infos[DataSourceParam.infoPath] = infoPathName;
                 }
             }
 
@@ -385,88 +385,88 @@ namespace TuringTrader.Simulator
             {
                 string[] tmp = nickname.Split(':');
 
-                infos[DataSourceValue.dataSource] = nickname; // TODO: do we need to use a substring here?
-                infos[DataSourceValue.nickName2] = tmp[1];
+                infos[DataSourceParam.dataFeed] = nickname; // TODO: do we need to use a substring here?
+                infos[DataSourceParam.nickName2] = tmp[1];
             }
 
             //===== fill in defaults, as required
-            Dictionary<DataSourceValue, string> defaults = GetDefaultInfo(infos);
+            Dictionary<DataSourceParam, string> defaults = GetDefaultInfo(infos);
 
-            void defaultIfUndefined(DataSourceValue value)
+            void defaultIfUndefined(DataSourceParam value)
             {
                 if (!infos.ContainsKey(value))
                     infos[value] = defaults[value];
             }
 
             //--- name, ticker
-            defaultIfUndefined(DataSourceValue.name);
-            defaultIfUndefined(DataSourceValue.ticker);
+            defaultIfUndefined(DataSourceParam.name);
+            defaultIfUndefined(DataSourceParam.ticker);
 
             //--- data source
             // any mapping field (other than time) implies
             // that the data source is csv
-            if (!infos.ContainsKey(DataSourceValue.dataSource)
-            && (infos.ContainsKey(DataSourceValue.date)
-                || infos.ContainsKey(DataSourceValue.open)
-                || infos.ContainsKey(DataSourceValue.high)
-                || infos.ContainsKey(DataSourceValue.low)
-                || infos.ContainsKey(DataSourceValue.close)
-                || infos.ContainsKey(DataSourceValue.volume)
-                || infos.ContainsKey(DataSourceValue.bid)
-                || infos.ContainsKey(DataSourceValue.ask)
-                || infos.ContainsKey(DataSourceValue.bidSize)
-                || infos.ContainsKey(DataSourceValue.askSize)
-                || infos.ContainsKey(DataSourceValue.dataUpdater)))
+            if (!infos.ContainsKey(DataSourceParam.dataFeed)
+            && (infos.ContainsKey(DataSourceParam.date)
+                || infos.ContainsKey(DataSourceParam.open)
+                || infos.ContainsKey(DataSourceParam.high)
+                || infos.ContainsKey(DataSourceParam.low)
+                || infos.ContainsKey(DataSourceParam.close)
+                || infos.ContainsKey(DataSourceParam.volume)
+                || infos.ContainsKey(DataSourceParam.bid)
+                || infos.ContainsKey(DataSourceParam.ask)
+                || infos.ContainsKey(DataSourceParam.bidSize)
+                || infos.ContainsKey(DataSourceParam.askSize)
+                || infos.ContainsKey(DataSourceParam.dataUpdater)))
             {
-                infos[DataSourceValue.dataSource] = "csv";
+                infos[DataSourceParam.dataFeed] = "csv";
             }
             else
             {
-                defaultIfUndefined(DataSourceValue.dataSource);
+                defaultIfUndefined(DataSourceParam.dataFeed);
             }
 
             //--- parse info for csv
-            defaultIfUndefined(DataSourceValue.time);
+            defaultIfUndefined(DataSourceParam.time);
 
             // if the data source is csv, and none of the mapping
             // fields are set, we use a default mapping
-            if (infos[DataSourceValue.dataSource].ToLower().Contains("csv")
-            && !infos.ContainsKey(DataSourceValue.date)
-            && !infos.ContainsKey(DataSourceValue.open)
-            && !infos.ContainsKey(DataSourceValue.high)
-            && !infos.ContainsKey(DataSourceValue.low)
-            && !infos.ContainsKey(DataSourceValue.close)
-            && !infos.ContainsKey(DataSourceValue.volume)
-            && !infos.ContainsKey(DataSourceValue.bid)
-            && !infos.ContainsKey(DataSourceValue.ask)
-            && !infos.ContainsKey(DataSourceValue.bidSize)
-            && !infos.ContainsKey(DataSourceValue.askSize))
+            if (infos[DataSourceParam.dataFeed].ToLower().Contains("csv")
+            && !infos.ContainsKey(DataSourceParam.date)
+            && !infos.ContainsKey(DataSourceParam.open)
+            && !infos.ContainsKey(DataSourceParam.high)
+            && !infos.ContainsKey(DataSourceParam.low)
+            && !infos.ContainsKey(DataSourceParam.close)
+            && !infos.ContainsKey(DataSourceParam.volume)
+            && !infos.ContainsKey(DataSourceParam.bid)
+            && !infos.ContainsKey(DataSourceParam.ask)
+            && !infos.ContainsKey(DataSourceParam.bidSize)
+            && !infos.ContainsKey(DataSourceParam.askSize))
             {
-                infos[DataSourceValue.date] = defaults[DataSourceValue.date];
-                infos[DataSourceValue.open] = defaults[DataSourceValue.open];
-                infos[DataSourceValue.high] = defaults[DataSourceValue.high];
-                infos[DataSourceValue.low] = defaults[DataSourceValue.low];
-                infos[DataSourceValue.close] = defaults[DataSourceValue.close];
-                infos[DataSourceValue.volume] = defaults[DataSourceValue.volume];
+                infos[DataSourceParam.date] = defaults[DataSourceParam.date];
+                infos[DataSourceParam.open] = defaults[DataSourceParam.open];
+                infos[DataSourceParam.high] = defaults[DataSourceParam.high];
+                infos[DataSourceParam.low] = defaults[DataSourceParam.low];
+                infos[DataSourceParam.close] = defaults[DataSourceParam.close];
+                infos[DataSourceParam.volume] = defaults[DataSourceParam.volume];
             }
 
             // if data source is csv, datapath must be set
-            if (infos[DataSourceValue.dataSource].ToLower().Contains("csv"))
+            if (infos[DataSourceParam.dataFeed].ToLower().Contains("csv"))
             {
-                defaultIfUndefined(DataSourceValue.dataPath);
+                defaultIfUndefined(DataSourceParam.dataPath);
             }
 
             //--- symbol mapping
-                defaultIfUndefined(DataSourceValue.symbolNorgate);
-            defaultIfUndefined(DataSourceValue.symbolStooq);
-            defaultIfUndefined(DataSourceValue.symbolYahoo);
-            defaultIfUndefined(DataSourceValue.symbolFred);
-            defaultIfUndefined(DataSourceValue.symbolIqfeed);
-            defaultIfUndefined(DataSourceValue.symbolTiingo);
-            defaultIfUndefined(DataSourceValue.symbolInteractiveBrokers);
+                defaultIfUndefined(DataSourceParam.symbolNorgate);
+            defaultIfUndefined(DataSourceParam.symbolStooq);
+            defaultIfUndefined(DataSourceParam.symbolYahoo);
+            defaultIfUndefined(DataSourceParam.symbolFred);
+            defaultIfUndefined(DataSourceParam.symbolIqfeed);
+            defaultIfUndefined(DataSourceParam.symbolTiingo);
+            defaultIfUndefined(DataSourceParam.symbolInteractiveBrokers);
 
             //===== instantiate data source
-            string dataSource = infos[DataSourceValue.dataSource].ToLower();
+            string dataSource = infos[DataSourceParam.dataFeed].ToLower();
 
 #if ENABLE_NORGATE
             if (dataSource.Contains("norgate"))

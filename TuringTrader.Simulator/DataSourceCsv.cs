@@ -42,9 +42,9 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private Bar CreateBar(string line)
             {
-                string[] items = (Info[DataSourceValue.ticker] + "," + line).Split(',');
+                string[] items = (Info[DataSourceParam.ticker] + "," + line).Split(',');
 
-                string ticker = Info[DataSourceValue.ticker];
+                string ticker = Info[DataSourceParam.ticker];
                 DateTime date = default(DateTime);
                 DateTime time = default(DateTime);
 
@@ -75,30 +75,30 @@ namespace TuringTrader.Simulator
                         // assign sub-string to field
                         switch (mapping.Key)
                         {
-                            case DataSourceValue.date: date = DateTime.Parse(mappedString); break;
-                            case DataSourceValue.time: time = DateTime.Parse(mappedString); break;
+                            case DataSourceParam.date: date = DateTime.Parse(mappedString); break;
+                            case DataSourceParam.time: time = DateTime.Parse(mappedString); break;
 
-                            case DataSourceValue.open: open = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceValue.high: high = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceValue.low: low = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceValue.close: close = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceValue.volume: volume = long.Parse(mappedString); break;
+                            case DataSourceParam.open: open = double.Parse(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.high: high = double.Parse(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.low: low = double.Parse(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.close: close = double.Parse(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.volume: volume = long.Parse(mappedString); break;
 
-                            case DataSourceValue.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
-                            case DataSourceValue.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
-                            case DataSourceValue.bidSize: bidVolume = long.Parse(mappedString); break;
-                            case DataSourceValue.askSize: askVolume = long.Parse(mappedString); break;
+                            case DataSourceParam.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
+                            case DataSourceParam.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
+                            case DataSourceParam.bidSize: bidVolume = long.Parse(mappedString); break;
+                            case DataSourceParam.askSize: askVolume = long.Parse(mappedString); break;
 
-                            case DataSourceValue.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
-                            case DataSourceValue.optionStrike: optionStrike = double.Parse(mappedString); break;
-                            case DataSourceValue.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
+                            case DataSourceParam.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
+                            case DataSourceParam.optionStrike: optionStrike = double.Parse(mappedString); break;
+                            case DataSourceParam.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
                         }
                     }
                     catch
                     {
                         // there are a lot of things that can go wrong here
                         // we try to move on, as long as we can parse at least part of the fields
-                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", Info[DataSourceValue.nickName], line, mapping.Key, mapping.Value);
+                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", Info[DataSourceParam.nickName], line, mapping.Key, mapping.Value);
                     }
                 }
 
@@ -204,39 +204,39 @@ namespace TuringTrader.Simulator
             }
             private void WriteCsv(string sourceName, IEnumerable<Bar> updateBars)
             {
-                string updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
+                string updateFilePath = Path.Combine(Info[DataSourceParam.dataPath],
                     string.Format("{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), sourceName.ToLower()));
 
-                DirectoryInfo d = new DirectoryInfo(Info[DataSourceValue.dataPath]);
+                DirectoryInfo d = new DirectoryInfo(Info[DataSourceParam.dataPath]);
                 FileInfo[] files = d.GetFiles("*.*");
                 if (files.Count() > 0
                 && files.Select(i => i.Name).OrderByDescending(n => n).FirstOrDefault().CompareTo(updateFilePath) > 0)
                 {
                     // try filename at end of the alphabet
-                    updateFilePath = Path.Combine(Info[DataSourceValue.dataPath],
+                    updateFilePath = Path.Combine(Info[DataSourceParam.dataPath],
                         string.Format("zzz-{0:yyyy-MM-dd}-{1}.csv", updateBars.Select(b => b.Time).Max(), sourceName.ToLower()));
                 }
 
 
-                if (Directory.Exists(Info[DataSourceValue.dataPath])
+                if (Directory.Exists(Info[DataSourceParam.dataPath])
                 && !File.Exists(updateFilePath))
                 {
                     using (StreamWriter writer = new StreamWriter(updateFilePath))
                     {
 #if true
                         //--- find mapping
-                        Dictionary<int, DataSourceValue> mapping = new Dictionary<int, DataSourceValue>();
+                        Dictionary<int, DataSourceParam> mapping = new Dictionary<int, DataSourceParam>();
                         for (int column = 1; column < 20; column++)
                         {
                             string map1 = string.Format("{{{0}}}", column);
                             string map2 = string.Format("{{{0}:", column);
 
-                            DataSourceValue value = Info
+                            DataSourceParam value = Info
                                 .Where(i => i.Value.Contains(map1) || i.Value.Contains(map2))
                                 .Select(i => i.Key)
                                 .FirstOrDefault();
 
-                            if (value != default(DataSourceValue))
+                            if (value != default(DataSourceParam))
                                 mapping[column] = value;
                         }
 
@@ -258,53 +258,53 @@ namespace TuringTrader.Simulator
                             {
                                 if (mapping.ContainsKey(column))
                                 {
-                                    DataSourceValue prop = mapping[column];
+                                    DataSourceParam prop = mapping[column];
                                     object value = null;
                                     switch (prop)
                                     {
-                                        case DataSourceValue.date:
+                                        case DataSourceParam.date:
                                             value = bar.Time.Date;
                                             break;
-                                        case DataSourceValue.time:
+                                        case DataSourceParam.time:
                                             value = bar.Time.TimeOfDay;
                                             break;
 
-                                        case DataSourceValue.open:
+                                        case DataSourceParam.open:
                                             value = bar.Open;
                                             break;
-                                        case DataSourceValue.high:
+                                        case DataSourceParam.high:
                                             value = bar.High;
                                             break;
-                                        case DataSourceValue.low:
+                                        case DataSourceParam.low:
                                             value = bar.Low;
                                             break;
-                                        case DataSourceValue.close:
+                                        case DataSourceParam.close:
                                             value = bar.Close;
                                             break;
-                                        case DataSourceValue.volume:
+                                        case DataSourceParam.volume:
                                             value = bar.Volume;
                                             break;
 
-                                        case DataSourceValue.bid:
+                                        case DataSourceParam.bid:
                                             value = bar.Bid;
                                             break;
-                                        case DataSourceValue.ask:
+                                        case DataSourceParam.ask:
                                             value = bar.Ask;
                                             break;
-                                        case DataSourceValue.bidSize:
+                                        case DataSourceParam.bidSize:
                                             value = bar.BidVolume;
                                             break;
-                                        case DataSourceValue.askSize:
+                                        case DataSourceParam.askSize:
                                             value = bar.AskVolume;
                                             break;
 
-                                        case DataSourceValue.optionExpiration:
+                                        case DataSourceParam.optionExpiration:
                                             value = bar.OptionExpiry;
                                             break;
-                                        case DataSourceValue.optionStrike:
+                                        case DataSourceParam.optionStrike:
                                             value = bar.OptionStrike;
                                             break;
-                                        case DataSourceValue.optionRight:
+                                        case DataSourceParam.optionRight:
                                             value = bar.OptionIsPut ? "P" : "C";
                                             break;
                                     }
@@ -360,7 +360,7 @@ namespace TuringTrader.Simulator
                 if (updater != null)
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceCsv: updating data for {0} using {1}...", Info[DataSourceValue.nickName], updater.Name));
+                    Output.Write(string.Format("DataSourceCsv: updating data for {0} using {1}...", Info[DataSourceParam.nickName], updater.Name));
 
                     // retrieve update data
                     // we copy these to a list, to avoid evaluating this multiple times
@@ -395,21 +395,21 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for CSV files.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceCsv(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceCsv(Dictionary<DataSourceParam, string> info) : base(info)
             {
-                if (!Info.ContainsKey(DataSourceValue.dataPath))
-                    throw new Exception(string.Format("DataSourceCsv: {0} missing mandatory dataPath key", info[DataSourceValue.nickName]));
+                if (!Info.ContainsKey(DataSourceParam.dataPath))
+                    throw new Exception(string.Format("DataSourceCsv: {0} missing mandatory dataPath key", info[DataSourceParam.nickName]));
 
                 // expand relative paths, if required
-                if (!Info[DataSourceValue.dataPath].Substring(1, 1).Equals(":")   // drive letter
-                && !Info[DataSourceValue.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
-                    Info[DataSourceValue.dataPath] = Path.Combine(DataPath, Info[DataSourceValue.dataPath]);
+                if (!Info[DataSourceParam.dataPath].Substring(1, 1).Equals(":")   // drive letter
+                && !Info[DataSourceParam.dataPath].Substring(0, 1).Equals(@"\")) // absolute path
+                    Info[DataSourceParam.dataPath] = Path.Combine(DataPath, Info[DataSourceParam.dataPath]);
 
                 // dataPath should be either a file name, or a directory
                 // if it's neither, try to create a directory
-                if (!File.Exists(Info[DataSourceValue.dataPath])
-                && !Directory.Exists(Info[DataSourceValue.dataPath]))
-                    Directory.CreateDirectory(Info[DataSourceValue.dataPath]);
+                if (!File.Exists(Info[DataSourceParam.dataPath])
+                && !Directory.Exists(Info[DataSourceParam.dataPath]))
+                    Directory.CreateDirectory(Info[DataSourceParam.dataPath]);
             }
 #endregion
 #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -421,21 +421,21 @@ namespace TuringTrader.Simulator
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
-                    Info[DataSourceValue.nickName].GetHashCode(),
+                    Info[DataSourceParam.nickName].GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());
 
                 List<Bar> retrievalFunction()
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceValue.nickName]));
+                    Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                     List<Bar> bars = new List<Bar>();
 
-                    if (File.Exists(Info[DataSourceValue.dataPath]))
-                        LoadFile(bars, Info[DataSourceValue.dataPath], startTime, endTime);
-                    else if (Directory.Exists(Info[DataSourceValue.dataPath]))
-                        LoadDir(bars, Info[DataSourceValue.dataPath], startTime, endTime);
+                    if (File.Exists(Info[DataSourceParam.dataPath]))
+                        LoadFile(bars, Info[DataSourceParam.dataPath], startTime, endTime);
+                    else if (Directory.Exists(Info[DataSourceParam.dataPath]))
+                        LoadDir(bars, Info[DataSourceParam.dataPath], startTime, endTime);
 
                     // this should never happen - we create an empty directory in DataSource.New
                     else
@@ -454,7 +454,7 @@ namespace TuringTrader.Simulator
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
                 if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));
 
                 Data = data;
             }

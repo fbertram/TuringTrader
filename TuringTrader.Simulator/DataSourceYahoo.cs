@@ -51,7 +51,7 @@ namespace TuringTrader.Simulator
 
             private JObject GetPrices(DateTime startTime, DateTime endTime)
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "yahoo_timestamps");
                 string priceCache = Path.Combine(cachePath, "yahoo_prices");
 
@@ -115,7 +115,7 @@ namespace TuringTrader.Simulator
                         + "?interval=1d"
                         + "&period1={1}"
                         + "&period2={2}",
-                        ConvertSymbol(Info[DataSourceValue.symbolYahoo]),
+                        ConvertSymbol(Info[DataSourceParam.symbolYahoo]),
                         ToUnixTime(startTime),
                         ToUnixTime(endTime));
 
@@ -159,7 +159,7 @@ namespace TuringTrader.Simulator
             }
             private string GetMeta()
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string metaCache = Path.Combine(cachePath, "yahoo_meta");
 
                 bool writeToDisk = false;
@@ -190,7 +190,7 @@ namespace TuringTrader.Simulator
                     string url = string.Format(
                         @"http://finance.yahoo.com/quote/"
                         + "{0}",
-                        ConvertSymbol(Info[DataSourceValue.symbolYahoo]));
+                        ConvertSymbol(Info[DataSourceParam.symbolYahoo]));
 
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
@@ -220,7 +220,7 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for Yahoo Data.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceYahoo(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceYahoo(Dictionary<DataSourceParam, string> info) : base(info)
             {
                 // Yahoo does not provide meta data
                 // we extract them from the instrument's web page
@@ -236,7 +236,7 @@ namespace TuringTrader.Simulator
 
                     tmp4 = tmp4.Replace("&amp;", "&");
 
-                    Info[DataSourceValue.name] = tmp4;
+                    Info[DataSourceParam.name] = tmp4;
                 }
             }
             #endregion
@@ -257,14 +257,14 @@ namespace TuringTrader.Simulator
                     //    endTime = (DateTime)LastTime;
 
                     var cacheKey = new CacheId(null, "", 0,
-                        Info[DataSourceValue.nickName].GetHashCode(),
+                        Info[DataSourceParam.nickName].GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());
 
                     List<Bar> retrievalFunction()
                     {
                         DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceYahoo: loading data for {0}...", Info[DataSourceValue.nickName]));
+                        Output.Write(string.Format("DataSourceYahoo: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         JObject jsonData = GetPrices(startTime, endTime);
 
@@ -346,7 +346,7 @@ namespace TuringTrader.Simulator
                                 long av = (long)(v * c / ac);
 
                                 bar = Bar.NewOHLC(
-                                        Info[DataSourceValue.ticker],
+                                        Info[DataSourceParam.ticker],
                                         t,
                                         ao, ah, al, ac,
                                         av);
@@ -359,7 +359,7 @@ namespace TuringTrader.Simulator
                                 Bar prevBar = bars.Last();
 
                                 bar = Bar.NewOHLC(
-                                        Info[DataSourceValue.ticker],
+                                        Info[DataSourceParam.ticker],
                                         t,
                                         prevBar.Open, prevBar.High, prevBar.Low, prevBar.Close,
                                         prevBar.Volume);
@@ -382,11 +382,11 @@ namespace TuringTrader.Simulator
                 {
                     throw new Exception(
                         string.Format("DataSourceYahoo: failed to load quotes for {0}, {1}",
-                            Info[DataSourceValue.nickName], e.Message));
+                            Info[DataSourceParam.nickName], e.Message));
                 }
 
                 if ((Data as List<Bar>).Count == 0)
-                    throw new Exception(string.Format("DataSourceYahoo: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceYahoo: no data for {0}", Info[DataSourceParam.nickName]));
 
             }
             #endregion

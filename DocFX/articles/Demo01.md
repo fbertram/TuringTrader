@@ -79,7 +79,7 @@ Instrument instrument = FindInstrument("$SPX");
 
 When trading options, there is a one-to-many relationship between a nickname and the instrument it references, which requires a slightly different approach. We'll talk about that when we walk through the [options trading demo](Demo04.md). 
 
-An Instrument holds, among others, the following invariable information: 
+An [Instrument](xref:TuringTrader.Simulator.Instrument) holds, among others, the following invariable information: 
 
 * Nickname: the nickname we used to add the data source.
 * Name: the descriptive name of the instrument, e.g., "Alphabet Inc Class A".
@@ -88,7 +88,7 @@ An Instrument holds, among others, the following invariable information:
 
 ## Accessing Time Series Data
 
-An Instrument also holds, among others, the following time series: 
+An [Instrument](xref:TuringTrader.Simulator.Instrument) also holds, among others, the following time series: 
 
 * Open, High, Low, Close, Volume: the market quote data.
 * Bid, Ask, BidVolume, AskVolume: the bid/ask quote data.
@@ -120,7 +120,7 @@ TuringTrader includes many 'industry standard' indicators, all of which residing
 
 ## Plotting Data
 
-Our algorithm now calculates MACD, but it won't share the results with us. TuringTrader can render data natively, save them as CSV, or pass them on to Excel and R. In all cases, we first need to create a [Plotter](xref:TuringTrader.Simulator.Plotter) object: 
+Our algorithm now calculates [MACD](xref:TuringTrader.Indicators.IndicatorsTrend#TuringTrader_Indicators_IndicatorsTrend_MACD_TuringTrader_Simulator_ITimeSeries_System_Double__System_Int32_System_Int32_System_Int32_TuringTrader_Simulator_CacheId_System_String_System_Int32_), but it won't share the results with us. TuringTrader can render data natively, save them as CSV, or pass them on to Excel and R. In all cases, we first need to create a [Plotter](xref:TuringTrader.Simulator.Plotter) object: 
 
 ```c#
 Plotter _plotter = new Plotter();
@@ -171,7 +171,7 @@ We like charts much more than tables. Creating a pretty plot requires just a sim
 _plotter.OpenWith("SimpleChart");
 ```
 
-The parameter passed into the method points to a template, which controls the appearance. If the template file name does not include an extension, like in this example, the extension used is the Default Template Extension from the Report Output Settings:
+The parameter passed into the method refers to a template, which controls the appearance. If the template file name does not include an extension, like in this example, the extension used is the Default Template Extension from the Report Output Settings:
 
 ![](../images/demo01/reportOutputSettings.jpg)
 

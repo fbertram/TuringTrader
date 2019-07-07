@@ -42,7 +42,7 @@ namespace TuringTrader.Simulator
             }
             private JObject GetMeta()
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string metaCache = Path.Combine(cachePath, "tiingo_meta");
 
                 bool writeToDisk = false;
@@ -75,10 +75,10 @@ namespace TuringTrader.Simulator
                 //--- 2) if failed, try to retrieve from web
                 if (!validMeta())
                 {
-                    Output.WriteLine("DataSourceTiingo: retrieving meta for {0}", Info[DataSourceValue.nickName]);
+                    Output.WriteLine("DataSourceTiingo: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
                     string url = string.Format("https://api.tiingo.com/tiingo/daily/{0}?token={1}",
-                        ConvertSymbol(Info[DataSourceValue.symbolTiingo]),
+                        ConvertSymbol(Info[DataSourceParam.symbolTiingo]),
                         _apiToken);
 
                     using (var client = new WebClient())
@@ -105,7 +105,7 @@ namespace TuringTrader.Simulator
             }
             private JArray GetPrices(DateTime startTime, DateTime endTime)
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceValue.nickName2]);
+                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "tiingo_timestamps");
                 string priceCache = Path.Combine(cachePath, "tiingo_prices");
 
@@ -170,7 +170,7 @@ namespace TuringTrader.Simulator
                         + "&format=json"
                         + "&resampleFreq=daily"
                         + "&token={3}",
-                        ConvertSymbol(Info[DataSourceValue.symbolTiingo]),
+                        ConvertSymbol(Info[DataSourceParam.symbolTiingo]),
                         startTime,
                         endTime,
                         _apiToken);
@@ -221,13 +221,13 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for Tiingo Data.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceTiingo(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceTiingo(Dictionary<DataSourceParam, string> info) : base(info)
             {
                 try
                 {
                     JObject jsonData = GetMeta();
 
-                    Info[DataSourceValue.name] = (string)jsonData["name"];
+                    Info[DataSourceParam.name] = (string)jsonData["name"];
 
                     FirstTime = DateTime.Parse((string)jsonData["startDate"]);
                     LastTime = DateTime.Parse((string)jsonData["endDate"]);
@@ -236,7 +236,7 @@ namespace TuringTrader.Simulator
                 {
                     throw new Exception(
                         string.Format("DataSourceTiingo: failed to load meta for {0}",
-                            Info[DataSourceValue.nickName]));
+                            Info[DataSourceParam.nickName]));
                 }
             }
             #endregion
@@ -257,14 +257,14 @@ namespace TuringTrader.Simulator
                     //    endTime = (DateTime)LastTime;
 
                     var cacheKey = new CacheId(null, "", 0,
-                        Info[DataSourceValue.nickName].GetHashCode(),
+                        Info[DataSourceParam.nickName].GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());
 
                     List<Bar> retrievalFunction()
                     {
                         DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceTiingo: loading data for {0}...", Info[DataSourceValue.nickName]));
+                        Output.Write(string.Format("DataSourceTiingo: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         List<Bar> bars = new List<Bar>();
 
@@ -276,7 +276,7 @@ namespace TuringTrader.Simulator
                             var bar = e.Current;
 
                             DateTime date = DateTime.Parse((string)bar["date"]).Date
-                                + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
+                                + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
 
                             double open = (double)bar["adjOpen"];
                             double high = (double)bar["adjHigh"];
@@ -286,7 +286,7 @@ namespace TuringTrader.Simulator
 
                             if (date >= startTime && date <= endTime)
                                 bars.Add(Bar.NewOHLC(
-                                    Info[DataSourceValue.ticker],
+                                    Info[DataSourceParam.ticker],
                                     date,
                                     open, high, low, close,
                                     volume));
@@ -305,11 +305,11 @@ namespace TuringTrader.Simulator
                 {
                     throw new Exception(
                         string.Format("DataSourceTiingo: failed to load quotes for {0}, {1}",
-                            Info[DataSourceValue.nickName], e.Message));
+                            Info[DataSourceParam.nickName], e.Message));
                 }
 
                 if ((Data as List<Bar>).Count == 0)
-                    throw new Exception(string.Format("DataSourceTiingo: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceTiingo: no data for {0}", Info[DataSourceParam.nickName]));
 
             }
             #endregion

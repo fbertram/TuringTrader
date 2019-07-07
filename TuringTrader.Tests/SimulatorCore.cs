@@ -56,10 +56,10 @@ namespace SimulatorEngine.Tests
                 Bar.NewOHLC("SPX", DateTime.Parse("1/31/2019"), 2685.49, 2708.95, 2678.65, 2704.10, 3423600000),
             };
 
-            private Dictionary<DataSourceValue, string> spxInfo = new Dictionary<DataSourceValue, string>
+            private Dictionary<DataSourceParam, string> spxInfo = new Dictionary<DataSourceParam, string>
                 {
-                    { DataSourceValue.nickName, "SPX" },
-                    { DataSourceValue.name, "S&P 500 Index" },
+                    { DataSourceParam.nickName, "SPX" },
+                    { DataSourceParam.name, "S&P 500 Index" },
                 };
 
             public override void Run()

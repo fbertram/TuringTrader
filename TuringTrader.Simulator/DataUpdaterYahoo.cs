@@ -57,7 +57,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="simulator">parent simulator</param>
             /// <param name="info">info dictionary</param>
-            public DataUpdaterYahoo(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterYahoo(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
             }
             #endregion
@@ -72,7 +72,7 @@ namespace TuringTrader.Simulator
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
                 string url = string.Format(_urlTemplate,
-                    Info[DataSourceValue.symbolYahoo], ToUnixTime(startTime), ToUnixTime(endTime));
+                    Info[DataSourceParam.symbolYahoo], ToUnixTime(startTime), ToUnixTime(endTime));
 
                 using (var client = new WebClient())
                 {
@@ -125,8 +125,8 @@ namespace TuringTrader.Simulator
                         .Select(x => convertToInt64(x))
                         .GetEnumerator();
 
-                    double priceMultiplier = Info.ContainsKey(DataSourceValue.dataUpdaterPriceMultiplier)
-                        ? Convert.ToDouble(Info[DataSourceValue.dataUpdaterPriceMultiplier])
+                    double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
+                        ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
                         : 1.0;
 
                     while (timeStamp.MoveNext())
@@ -140,7 +140,7 @@ namespace TuringTrader.Simulator
 
                         DateTime time = FromUnixTime(timeStamp.Current).Date + TimeSpan.FromHours(16);
 
-                        Bar newBar = new Bar(Info[DataSourceValue.ticker],
+                        Bar newBar = new Bar(Info[DataSourceParam.ticker],
                             time,
                             open.Current * priceMultiplier,
                             high.Current * priceMultiplier,

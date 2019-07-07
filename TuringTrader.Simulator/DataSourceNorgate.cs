@@ -41,16 +41,16 @@ namespace TuringTrader.Simulator
             private void SetName()
             {
                 // no proper name given, try to retrieve from Norgate
-                string ticker = Info[DataSourceValue.symbolNorgate];
-                Info[DataSourceValue.name] = NDU.Api.GetSecurityName(ticker);
+                string ticker = Info[DataSourceParam.symbolNorgate];
+                Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
             }
             private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
             {
                 DateTime barTime = norgate.Date.Date
-                    + DateTime.Parse(Info[DataSourceValue.time]).TimeOfDay;
+                    + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
 
                 return new Bar(
-                                Info[DataSourceValue.ticker], barTime,
+                                Info[DataSourceParam.ticker], barTime,
                                 (double)norgate.Open * priceMultiplier, 
                                 (double)norgate.High * priceMultiplier, 
                                 (double)norgate.Low * priceMultiplier, 
@@ -88,11 +88,11 @@ namespace TuringTrader.Simulator
 
                 //--- get data from Norgate
                 List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceValue.symbolNorgate], out norgateData, startTime, endTime);
+                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
 
                 //--- copy to TuringTrader bars
-                double priceMultiplier = Info.ContainsKey(DataSourceValue.dataUpdaterPriceMultiplier)
-                    ? Convert.ToDouble(Info[DataSourceValue.dataUpdaterPriceMultiplier])
+                double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
+                    ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
                     : 1.0;
 
                 foreach (var ohlc in norgateData)
@@ -255,12 +255,12 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for Norgate Data.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceNorgate(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceNorgate(Dictionary<DataSourceParam, string> info) : base(info)
             {
                 // make sure Norgate api is properly loaded
                 HandleUnresovledAssemblies();
 
-                if (info[DataSourceValue.name] == info[DataSourceValue.nickName])
+                if (info[DataSourceParam.name] == info[DataSourceParam.nickName])
                 {
                     // no proper name given, try to retrieve from Norgate
                     SetName();
@@ -276,14 +276,14 @@ namespace TuringTrader.Simulator
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
-                    Info[DataSourceValue.nickName].GetHashCode(),
+                    Info[DataSourceParam.nickName].GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());
 
                 List<Bar> retrievalFunction()
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceNorgate: loading data for {0}...", Info[DataSourceValue.nickName]));
+                    Output.Write(string.Format("DataSourceNorgate: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                     List<Bar> bars = new List<Bar>();
 
@@ -298,7 +298,7 @@ namespace TuringTrader.Simulator
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
                 if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceValue.nickName]));
+                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceParam.nickName]));
 
                 Data = data;
             }

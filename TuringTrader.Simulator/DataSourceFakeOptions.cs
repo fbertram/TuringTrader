@@ -115,7 +115,7 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for fake option quotes.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceFakeOptions(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceFakeOptions(Dictionary<DataSourceParam, string> info) : base(info)
             {
             }
             #endregion
@@ -128,7 +128,7 @@ namespace TuringTrader.Simulator
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
                 DateTime t1 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceFakeOptions: generating data for {0}...", Info[DataSourceValue.nickName]));
+                Output.WriteLine(string.Format("DataSourceFakeOptions: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                 List<Bar> data = new List<Bar>();
                 LoadData(data, startTime, endTime);

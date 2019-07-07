@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
         {
             public override string Name => "InteractiveBrokers";
 
-            public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterIBOptions(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
 
             }

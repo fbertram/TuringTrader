@@ -561,7 +561,7 @@ namespace TuringTrader.Simulator
             string nickLower = nickname; //.ToLower();
 
             foreach (DataSource source in _dataSources)
-                if (source.Info[DataSourceValue.nickName] == nickLower)
+                if (source.Info[DataSourceParam.nickName] == nickLower)
                     return;
 
             _dataSources.Add(DataSource.New(nickLower));

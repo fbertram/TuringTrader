@@ -142,6 +142,8 @@ namespace TuringTrader
         {
             if (Path.GetExtension(template).ToLower() != ".r")
                 return;
+
+            Output.WriteLine("Rendering with R is currently unavailable. Stay tuned");
         }
     }
 }

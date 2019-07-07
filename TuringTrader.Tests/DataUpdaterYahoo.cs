@@ -30,11 +30,11 @@ namespace SimulatorEngine.Tests
         [TestMethod]
         public void Test_UpdateData()
         {
-            Dictionary<DataSourceValue, string> info = new Dictionary<DataSourceValue, string>()
+            Dictionary<DataSourceParam, string> info = new Dictionary<DataSourceParam, string>()
             {
-                { DataSourceValue.ticker, "^SPX" },
-                { DataSourceValue.symbolYahoo, "^GSPC" },
-                { DataSourceValue.dataUpdater, "yahoo" }
+                { DataSourceParam.ticker, "^SPX" },
+                { DataSourceParam.symbolYahoo, "^GSPC" },
+                { DataSourceParam.dataUpdater, "yahoo" }
             };
 
             DataUpdater updater = DataUpdater.New(

@@ -90,7 +90,7 @@ namespace TuringTrader.Simulator
             /// Create and initialize new data source for constant yield quotes.
             /// </summary>
             /// <param name="info">info dictionary</param>
-            public DataSourceConstantYield(Dictionary<DataSourceValue, string> info) : base(info)
+            public DataSourceConstantYield(Dictionary<DataSourceParam, string> info) : base(info)
             {
             }
             #endregion
@@ -103,7 +103,7 @@ namespace TuringTrader.Simulator
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
                 DateTime t1 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceConstantYield: generating data for {0}...", Info[DataSourceValue.nickName]));
+                Output.WriteLine(string.Format("DataSourceConstantYield: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                 List<Bar> data = new List<Bar>();
                 LoadData(data, startTime, endTime);

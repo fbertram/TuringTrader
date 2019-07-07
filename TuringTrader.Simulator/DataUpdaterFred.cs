@@ -78,11 +78,11 @@ namespace TuringTrader.Simulator
             #region internal data & helpers
             // URL can be retrieved by manually downloading from FRED website
             private static readonly string URL_TEMPLATE = @"https://fred.stlouisfed.org/graph/fredgraph.csv?id={0}&cosd={1:yyyy}-{1:MM}-{1:dd}&coed={2:yyyy}-{2:MM}-{2:dd}";
-            private static readonly Dictionary<DataSourceValue, string> PARSE_INFO = new Dictionary<DataSourceValue, string>()
+            private static readonly Dictionary<DataSourceParam, string> PARSE_INFO = new Dictionary<DataSourceParam, string>()
             {
-                { DataSourceValue.date,     "{1}" },
-                { DataSourceValue.time,     "16:00" },
-                { DataSourceValue.close,    "{2}" },
+                { DataSourceParam.date,     "{1}" },
+                { DataSourceParam.time,     "16:00" },
+                { DataSourceParam.close,    "{2}" },
             };
             #endregion
 
@@ -92,7 +92,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="simulator">parent simulator</param>
             /// <param name="info">info dictionary</param>
-            public DataUpdaterFred(SimulatorCore simulator, Dictionary<DataSourceValue, string> info) : base(simulator, info)
+            public DataUpdaterFred(SimulatorCore simulator, Dictionary<DataSourceParam, string> info) : base(simulator, info)
             {
             }
             #endregion
@@ -107,7 +107,7 @@ namespace TuringTrader.Simulator
             override public IEnumerable<Bar> UpdateData(DateTime startTime, DateTime endTime)
             {
                 string url = string.Format(URL_TEMPLATE,
-                    Info[DataSourceValue.symbolFred], startTime, endTime);
+                    Info[DataSourceParam.symbolFred], startTime, endTime);
 
                 var rawBars = new List<Bar>();
 
@@ -125,16 +125,16 @@ namespace TuringTrader.Simulator
                             if (line.Length == 0)
                                 continue; // to handle end of file
 
-                            string[] items = (Info[DataSourceValue.ticker] + "," + line).Split(',');
+                            string[] items = (Info[DataSourceParam.ticker] + "," + line).Split(',');
 
                             var timestamp =
-                                DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.date], items)).Date
-                                + DateTime.Parse(string.Format(PARSE_INFO[DataSourceValue.time], items)).TimeOfDay;
+                                DateTime.Parse(string.Format(PARSE_INFO[DataSourceParam.date], items)).Date
+                                + DateTime.Parse(string.Format(PARSE_INFO[DataSourceParam.time], items)).TimeOfDay;
 
-                            var close = double.Parse(string.Format(PARSE_INFO[DataSourceValue.close], items));
+                            var close = double.Parse(string.Format(PARSE_INFO[DataSourceParam.close], items));
 
                             var bar = Bar.NewOHLC(
-                                Info[DataSourceValue.ticker], timestamp,
+                                Info[DataSourceParam.ticker], timestamp,
                                 close, close, close, close, default(long));
 
                             rawBars.Add(bar);

@@ -12,41 +12,48 @@ Like others before, this demo is non-sensical, meant as a sandbox to experiment 
 
 If no order type is specified, TuringTrader defaults to a market order, executed on the next bar's open. You can also specify the order type explicitly:
 
-C#
-                    instrument.Trade(100, OrderType.openNextBar);
+```c#
+instrument.Trade(100, OrderType.openNextBar);
+```
 
 It is also possible to execute an order on the close of the current bar. Please note that this will introduce some data snooping bias, dependent on how fast the market was moving upon close. Be mindful:
 
-C#
-                    instrument.Trade(-100, OrderType.closeThisBar);
+```c#
+instrument.Trade(-100, OrderType.closeThisBar);
+```
 
 ## Stop Orders
 
 Stop orders turn into market orders when the market turns 'worse' than the stop price. A 'stop-loss' for a long position will trigger when the market falls below the stop price:
 
-C#
-                    instrument.Trade(-100, OrderType.stopNextBar, 2799);
+```c#
+instrument.Trade(-100, OrderType.stopNextBar, 2799);
+```
 
 ## Limit Orders
 
 Limit orders execute at a price equal to or 'better' than the limit price. Traders often use them to ensure reasonable fill prices, risking that they might not fill at all:
 
-C#
-                    instrument.Trade(100, OrderType.limitNextBar, 2750);
+```c#
+instrument.Trade(100, OrderType.limitNextBar, 2750);
+```
 
 ## Time in Force
 
-All TuringTrader orders have a time-in-force of one bar. This behavior is natural when working with end-of-day bars, which is what we typically do for our applications. We the confusion created by this behavior when using intra-day bars. We might fix that one day.
+All TuringTrader orders have a time-in-force of **one bar**. This behavior is natural when working with end-of-day bars, which is what we typically do for our applications. We are aware of the confusion created by this behavior when using intra-day bars, and might fix that one day.
 
 ## Conditional Orders
 
 TuringTrader supports conditional orders. Using this feature, you can model more sophisticated execution types, e.g., one-cancels-other order groups. The following example buys 100 shares, but only if the position is still flat by the time the order is executed:
 
-C#
+```c#
 instrument.Trade(100, OrderType.openNextBar, 0.0, i => i.Position == 0);
+```
 
-Order Log
-As shown in <demo 03>, we recommend creating an order log, to analyze the orders placed by your strategy. Here is the output of this demo, when rendered with Excel:
-<image>
+## Order Log
 
-The full source code is available <here>.
+As shown in a [previous demo](Demo03.md), we recommend creating an order log, to analyze the orders placed by your strategy. Here is the output of this demo, when rendered natively:
+
+![](../images/demo06/orderLog.jpg)
+
+The full source code is available in our [repository](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo06_OrderTypes.cs).
