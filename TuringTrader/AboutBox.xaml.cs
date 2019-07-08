@@ -63,11 +63,18 @@ namespace TuringTrader
         private void Hyperlink_RequestNavigateGit(object sender,
                                                System.Windows.Navigation.RequestNavigateEventArgs e)
         {
+#if true
+            // https://github.com/
+            string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
+            string commitUrl = "https://github.com/fbertram/TuringTrader/commit/" + gitCommit + "/";
+#else
+            // https://bitbucket.org/
             // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/all
             // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/f1f13fb
 
             string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
             string commitUrl = e.Uri.AbsoluteUri + gitCommit;
+#endif
 
             MainWindow.OpenWithShell(commitUrl);
         }
