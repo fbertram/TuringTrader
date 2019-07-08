@@ -34,7 +34,8 @@
           "articles/overview/**.md",
           "articles/overview/**/toc.yml",
           "toc.yml",
-          "*.md"
+          "*.md",
+	  "index.html"
         ]
       },
       {

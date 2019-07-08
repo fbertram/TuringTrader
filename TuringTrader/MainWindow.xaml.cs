@@ -443,7 +443,7 @@ namespace TuringTrader
         #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
         private void MenuHelpView_Click(object sender, RoutedEventArgs e)
         {
-#if true
+#if false
             string helpFile = Path.Combine(
                 Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
                 "TuringTrader.chm");
