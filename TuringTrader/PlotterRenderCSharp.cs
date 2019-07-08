@@ -13,6 +13,7 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+#region libraries
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using TuringTrader.Simulator;
+#endregion
 
 namespace TuringTrader
 {
@@ -32,6 +34,7 @@ namespace TuringTrader
             Plotter.Renderer += Renderer;
         }
 
+        #region public static void Renderer(Plotter plotter, string pathToCSharpTemplate)
         public static void Renderer(Plotter plotter, string pathToCSharpTemplate)
         {
             if (Path.GetExtension(pathToCSharpTemplate).ToLower() != ".cs")
@@ -81,6 +84,7 @@ namespace TuringTrader
             thread.Start();
             //thread.Join(); // wait for window to close
         }
+        #endregion
     }
 }
 

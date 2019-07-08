@@ -13,35 +13,13 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using TuringTrader.Simulator;
-
-#if false
-                string renderOutput = Path.ChangeExtension(Path.GetTempFileName(), ".htm");
-
-                using (var sw = new StreamWriter(launcherScript))
-                {
-#if false
-                    sw.WriteLine("rmarkdown::render(\"{0}\", output_file=\"{1}\")",
-                        fullPath.Replace("\\", "/"),
-                        renderOutput.Replace("\\", "/"));
-                    sw.WriteLine("browseURL(\"{0}\")",
-                        renderOutput.Replace("\\", "/"));
-#else
-                    sw.WriteLine("library(rmarkdown)");
-                    sw.WriteLine("render(\"{0}\", output_file=\"{1}\")",
-                        fullPath.Replace("\\", "/"),
-                        renderOutput.Replace("\\", "/"));
-                    sw.WriteLine("browseURL(\"{0}\")",
-                        renderOutput.Replace("\\", "/"));
-#endif
-                    sw.Flush();
-                    OpenWithRscript(launcherScript);
-
-#endif
+#endregion
 
 namespace TuringTrader
 {
@@ -52,13 +30,38 @@ namespace TuringTrader
             Plotter.Renderer += Renderer;
         }
 
-        public static void Renderer(Plotter plotter, string template)
+        #region public static void Renderer(Plotter plotter, string pathToRmdTemplate)
+        public static void Renderer(Plotter plotter, string pathToRmdTemplate)
         {
-            if (Path.GetExtension(template).ToLower() != ".rmd")
+            if (Path.GetExtension(pathToRmdTemplate).ToLower() != ".rmd")
                 return;
 
-            Output.WriteLine("Rendering with R Markdown is currently unavailable. Stay tuned");
+            string launcherScript = Path.ChangeExtension(Path.GetTempFileName(), ".r");
+            string renderOutput = Path.ChangeExtension(Path.GetTempFileName(), ".htm");
+
+            using (var sw = new StreamWriter(launcherScript))
+            {
+#if false
+                    sw.WriteLine("rmarkdown::render(\"{0}\", output_file=\"{1}\")",
+                        fullPath.Replace("\\", "/"),
+                        renderOutput.Replace("\\", "/"));
+                    sw.WriteLine("browseURL(\"{0}\")",
+                        renderOutput.Replace("\\", "/"));
+#else
+                sw.WriteLine("library(rmarkdown)");
+                sw.WriteLine("render(\"{0}\", output_file=\"{1}\")",
+                    pathToRmdTemplate.Replace("\\", "/"),
+                    renderOutput.Replace("\\", "/"));
+                sw.WriteLine("browseURL(\"{0}\")",
+                    renderOutput.Replace("\\", "/"));
+#endif
+                sw.Flush();
+
+                // open launcher script with R renderer
+                PlotterRenderR.Renderer(plotter, launcherScript);
+            }
         }
+        #endregion
     }
 }
 

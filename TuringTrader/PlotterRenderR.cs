@@ -13,32 +13,45 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using TuringTrader.Simulator;
+#endregion
 
-#if false
-#region private void OpenWithRscript(string pathToRscriptTemplate)
-#if ENABLE_R
-        /// <summary>
-        /// Open plot with Rscript. This will launch the default R core,
-        /// as found in HKLM/SOFTWARE/R-Core/R/InstallPath
-        /// </summary>
-        /// <param name="pathToRscriptTemplate"></param>
-        private void OpenWithRscript(string pathToRscriptTemplate)
+namespace TuringTrader
+{
+    static class PlotterRenderR
+    {
+        public static void Register()
         {
+            Plotter.Renderer += Renderer;
+        }
+
+        #region public static void Renderer(Plotter plotter, string pathToRscriptTemplate)
+        public static void Renderer(Plotter plotter, string pathToRscriptTemplate)
+        {
+            if (Path.GetExtension(pathToRscriptTemplate).ToLower() != ".r")
+                return;
+
+            if (!File.Exists(pathToRscriptTemplate))
+            {
+                Output.WriteLine("Template '{0}' not found", pathToRscriptTemplate);
+                return;
+            }
+
             string defaultR = GlobalSettings.DefaultRCore;
-            if (defaultR == null)
-                throw new Exception("Logger: no default R installation found");
 
             string rscriptExe = Path.Combine(defaultR, "bin", "Rscript.exe");
             if (!File.Exists(rscriptExe))
-                throw new Exception("Logger: Rscript.exe not found");
+                throw new Exception("PlotterRenderR: Rscript.exe not found");
 
             string csvFileArgs = "";
-            foreach (string plotTitle in AllData.Keys)
+            foreach (string plotTitle in plotter.AllData.Keys)
             {
                 string tmpFile = Path.ChangeExtension(Path.GetTempFileName(), ".csv");
 
@@ -46,8 +59,8 @@ using TuringTrader.Simulator;
                 // see https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions
                 Func<object, string> _convertToString = (o) =>
                 {
-                    // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
-                    if (o.GetType() == typeof(DateTime))
+                        // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
+                        if (o.GetType() == typeof(DateTime))
                     {
                         DateTime d = (DateTime)o;
                         return string.Format("{0:MM/dd/yyyy}", d);
@@ -56,7 +69,7 @@ using TuringTrader.Simulator;
                     return o.ToString();
                 };
 
-                SaveAsCsv(tmpFile, plotTitle, _convertToString);
+                plotter.SaveAsCsv(tmpFile, plotTitle, _convertToString);
 
                 // see https://stackoverflow.com/questions/5510343/escape-command-line-arguments-in-c-sharp/6040946#6040946
                 Func<string, string> _encodeParameterArgument = (original) =>
@@ -120,31 +133,7 @@ using TuringTrader.Simulator;
                 throw new Exception("Logger: R script execution failed");
             }
         }
-#else
-        private void OpenWithRscript(string pathToRscriptTemplate)
-        {
-				Output.WriteLine("Plotter: OpenWithRscript bypassed w/ ENABLE_R switch");
-        }
-#endif
-#endregion
-#endif
-
-namespace TuringTrader
-{
-    static class PlotterRenderR
-    {
-        public static void Register()
-        {
-            Plotter.Renderer += Renderer;
-        }
-
-        public static void Renderer(Plotter plotter, string template)
-        {
-            if (Path.GetExtension(template).ToLower() != ".r")
-                return;
-
-            Output.WriteLine("Rendering with R is currently unavailable. Stay tuned");
-        }
+        #endregion
     }
 }
 

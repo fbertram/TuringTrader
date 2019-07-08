@@ -320,12 +320,10 @@ namespace TuringTrader
                 OptimizerButton.IsEnabled = _currentAlgorithm.OptimizerParams.Count > 0;
                 ResultsButton.IsEnabled = false;
 
-                Algo.Text = "Algorithm: " + _currentAlgorithm.Name; // this may be different than class name
                 Title = "TuringTrader - " + _currentAlgorithm.Name;
             }
             else
             {
-                Algo.Text = "Algorithm: n/a";
                 Title = "TuringTrader";
             }
         }
