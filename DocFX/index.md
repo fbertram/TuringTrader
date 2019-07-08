@@ -1,4 +1,6 @@
-# This is the **HOMEPAGE**.
-Refer to [Markdown](http://daringfireball.net/projects/markdown/) for how to write markdown files.
-## Quick Start Notes:
-1. Add images to the *images* folder if the file is referencing an image.
+# Welcome...
+... but you shouldn't have come here, this is *not* the TuringTrader homepage.
+
+* Please find the TuringTrader homepage [here](https://www.turingtrader.org).
+* The TuringTrader documentation home is [here](articles/overview/Welcome.md).
+

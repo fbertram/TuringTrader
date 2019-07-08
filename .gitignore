@@ -260,3 +260,4 @@ Cache/
 Data/Data/$SPX/
 Data/Data/$VIX/
 TuringTrader.Simulator/TuringTrader.Simulator.xml
+DocFX/_exported_templates/

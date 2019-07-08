@@ -31,6 +31,8 @@
         "files": [
           "articles/**.md",
           "articles/**/toc.yml",
+          "articles/overview/**.md",
+          "articles/overview/**/toc.yml",
           "toc.yml",
           "*.md"
         ]
@@ -63,7 +65,8 @@
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
     "template": [
-      "default"
+      "default",
+      "templates/turingtrader"
     ],
     "postProcessors": [],
     "markdownEngineName": "markdig",
