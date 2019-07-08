@@ -5,16 +5,56 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="About TuringTrader" Height="183.553" Width="309.308"
-        ResizeMode="NoResize">
+        Title="About TuringTrader" Height="548.202" Width="450"
+        ResizeMode="NoResize" FontFamily="Segoe UI">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Margin="10,10,10,48" TextWrapping="Wrap" Grid.ColumnSpan="3"><Run FontWeight="Bold" Text="TuringTrader"/><LineBreak/><Run Text="Copyright (c) 2011-2019, Bertram Solutions LLC"/><LineBreak/><Run Text="TuringTrader is licensed under AGPL-3.0-or-later."/><LineBreak/><Run/><LineBreak/><Hyperlink NavigateUri="https://www.turingtrader.org/"/><Run Text="https://www.turingtrader.org"/><Hyperlink/><LineBreak/></TextBlock>
-        <Button Content="OK" Width="75" Grid.Column="1" Margin="0,0,0,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click"/>
-
+        <TextBlock Margin="10,31,10,10" TextWrapping="Wrap">
+            <Run Text="An open-source backtesting engine/ market simulator."/>
+            <Run Text="For news, updates, and more information about the project, please visit our
+website at "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
+                <Run Text="www.turingtrader.org"/></Hyperlink><Run Text="."/><LineBreak/>
+            <LineBreak/>
+            <Run Text="Copyright © 2011-2019, "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://bertram.solutions/">
+                <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
+            <Run Text="This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version."/><LineBreak/>
+            <Run Text="This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details." FontFamily="Segoe UI"/><LineBreak/>
+            <Run Text="You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see "/>
+            
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0.html">
+                <Run Text="http://www.gnu.org/licenses/agpl-3.0.html"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
+            
+            <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
+                <Run Text="AvalonLibrary (WPF Contrib)"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/IQFeed.CSharpApiClient/">
+                <Run Text="IQFeed.CSharpApiClient"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/MathNet.Numerics">
+                <Run Text="Math.NET Numerics"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/Newtonsoft.Json/">
+                <Run Text="Newtonsoft.Json (Json.NET)"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/NetOffice.Excel/">
+                <Run Text="NetOffice.Excel"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/OxyPlot.Wpf">
+                <Run Text="OxyPlot.Wpf"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://interactivebrokers.github.io/tws-api/">
+                <Run Text="TWS API"/></Hyperlink><LineBreak/>
+        </TextBlock>
+        <Button Content="OK" Width="75" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click" HorizontalAlignment="Right"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Run FontWeight="Bold" Text="TuringTrader"/>
+        </TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="88,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigateGit" NavigateUri="https://bitbucket.org/fbertram/fub_tradingsimulator/commits/">
+                <Run Name="Version" Text="Git Version"/></Hyperlink>
+        </TextBlock>
     </Grid>
 </Window>

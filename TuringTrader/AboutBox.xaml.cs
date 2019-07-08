@@ -4,7 +4,7 @@
 // Description: about box code-behind
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2018, Bertram Solutions LLC
+// Copyright:   (c) 2011-2018, Bertram Solutions LLC
 //              http://www.bertram.solutions
 // License:     This code is licensed under the term of the
 //              GNU Affero General Public License as published by 
@@ -36,14 +36,47 @@ namespace TuringTrader
     /// </summary>
     public partial class AboutBox : Window
     {
+        private string _gitVersion => GitInfo.Version
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty)
+                .Replace(" ", string.Empty);
+
         public AboutBox()
         {
             InitializeComponent();
+
+            string version = 
+            Version.Text = _gitVersion;
         }
 
         private void AboutBox_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender,
+                                               System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            MainWindow.OpenWithShell(e.Uri.AbsoluteUri);
+        }
+
+        private void Hyperlink_RequestNavigateGit(object sender,
+                                               System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+#if true
+            // https://github.com/
+            string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
+            string commitUrl = "https://github.com/fbertram/TuringTrader/commit/" + gitCommit + "/";
+#else
+            // https://bitbucket.org/
+            // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/all
+            // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/f1f13fb
+
+            string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
+            string commitUrl = e.Uri.AbsoluteUri + gitCommit;
+#endif
+
+            MainWindow.OpenWithShell(commitUrl);
         }
     }
 }

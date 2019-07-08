@@ -18,10 +18,8 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -162,7 +160,7 @@ namespace BooksAndPubs
 
             if (_market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0] 
+                if (_market.Close[0] > marketSma200[0]
                 && marketRsi2[0] < ENTRY_MAX_RSI)
                 {
                     return 1;
@@ -275,7 +273,7 @@ namespace BooksAndPubs
         public virtual int LE1_MIN_VIX_DAYS { get; set; } = 3;
 
         [OptimizerParam(1, 10, 1)]
-        public virtual int LE1_MIN_VIX_PCNT {get; set; } = 5;
+        public virtual int LE1_MIN_VIX_PCNT { get; set; } = 5;
 
         [OptimizerParam(50, 90, 5)]
         public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
@@ -291,7 +289,7 @@ namespace BooksAndPubs
             var volStretch = Enumerable.Range(0, LE1_MIN_VIX_DAYS)
                 .Aggregate(true, (prev, idx) => prev
                     && _volatility.Close[idx] > volSma10[idx] * (1.0 + LE1_MIN_VIX_PCNT / 100.0));
-                
+
             //----- enter positions
 
             if (_market.Position == 0)
@@ -459,7 +457,7 @@ namespace BooksAndPubs
             var marketSma5 = _market.Close.SMA(5);
 
             var marketUpDays = Enumerable.Range(0, LE5_MIN_MKT_UP)
-                .Aggregate(true, (prev, idx) => prev 
+                .Aggregate(true, (prev, idx) => prev
                     && _market.Close[idx] > _market.Close[idx + 1]);
 
             //----- enter positions

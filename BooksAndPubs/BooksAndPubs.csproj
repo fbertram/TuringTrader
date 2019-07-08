@@ -1,66 +1,28 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3155C4AA-828F-4528-ADBB-B34E2E3D1C9C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BooksAndPubs</RootNamespace>
-    <AssemblyName>BooksAndPubs</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Authors>Felix Bertram et al</Authors>
+    <Company>Bertram Solutions LLC</Company>
+    <Product>TuringTrader</Product>
+    <Description>Showcase Algorithms</Description>
+    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
+    <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageId>TuringTrader.BooksAndPubs</PackageId>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) ..\Algorithms\$(TargetFileName)" />
+  </Target>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Reference Include="TuringTrader.Simulator">
+      <HintPath>C:\Program Files\TuringTrader\Bin\TuringTrader.Simulator.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Aeromir_ParkingTrade.cs" />
-    <Compile Include="Alvarez_EtfSectorRotation.cs" />
-    <Compile Include="Antonacci_DualMomentumInvesting.cs" />
-    <Compile Include="Bensdorp_30MinStockTrader.cs" />
-    <Compile Include="Clenow_StocksOnTheMove.cs" />
-    <Compile Include="Connors_HighProbEtfTrading.cs" />
-    <Compile Include="Connors_ShortTermTrading.cs" />
-    <Compile Include="Faber_IvyPortfolio.cs" />
-    <Compile Include="Keller_CAA.cs" />
-    <Compile Include="Keller_DAA.cs" />
-    <Compile Include="Livingston_MuscularPortfolios.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimulatorEngine\SimulatorEngine.csproj">
-      <Project>{5d08f12a-f6be-4d9f-adbe-014e261a6d51}</Project>
-      <Name>SimulatorEngine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

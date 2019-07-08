@@ -18,8 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -51,7 +50,7 @@ namespace TuringTrader.BooksAndPubs
             //----- initialization
 
             StartTime = DateTime.Parse("01/01/1990");
-            EndTime = DateTime.Now - TimeSpan.FromDays(3);
+            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             AddDataSource(BENCHMARK);
             foreach (AssetClass assetClass in _assetClasses)

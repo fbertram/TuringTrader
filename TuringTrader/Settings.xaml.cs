@@ -13,20 +13,11 @@
 //              see: https://www.gnu.org/licenses/agpl-3.0.en.html
 //==============================================================================
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalon.Windows.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Avalon.Windows.Dialogs;
+using System.Windows.Threading;
 using TuringTrader.Simulator;
 
 namespace TuringTrader
@@ -36,63 +27,61 @@ namespace TuringTrader
     /// </summary>
     public partial class Settings : Window
     {
-        private class DataModel
+        #region data model
+        public string HomePath
         {
-            public string HomePath
+            get
             {
-                get
+                string homePath = GlobalSettings.HomePath ?? "";
+                if (homePath.Length > 40)
                 {
-                    string homePath = GlobalSettings.HomePath ?? "";
-                    if (homePath.Length > 40)
-                    {
-                        string left = homePath.Substring(0, 15);
-                        string right = homePath.Substring(homePath.Length - 25, 25);
-                        homePath = left + "..." + right;
-                    }
-                    return homePath;
+                    string left = homePath.Substring(0, 15);
+                    string right = homePath.Substring(homePath.Length - 25, 25);
+                    homePath = left + "..." + right;
                 }
-            }
-            public string TiingoApiKey
-            {
-                get
-                {
-                    return GlobalSettings.TiingoApiKey;
-                }
-                set
-                {
-                    GlobalSettings.TiingoApiKey = value;
-                }
-            }
-
-            public string DefaultDataSource
-            {
-                get
-                {
-                    return GlobalSettings.DefaultDataSource;
-                }
-                set
-                {
-                    GlobalSettings.DefaultDataSource = value;
-                }
-            }
-
-            public string DefaultTemplateExtension
-            {
-                get
-                {
-                    return GlobalSettings.DefaultTemplateExtension;
-                }
-                set
-                {
-                    GlobalSettings.DefaultTemplateExtension = value;
-                }
+                return homePath;
             }
         }
+        public string TiingoApiKey
+        {
+            get
+            {
+                return GlobalSettings.TiingoApiKey;
+            }
+            set
+            {
+                GlobalSettings.TiingoApiKey = value;
+            }
+        }
+
+        public string DefaultDataSource
+        {
+            get
+            {
+                return GlobalSettings.DefaultDataFeed;
+            }
+            set
+            {
+                GlobalSettings.DefaultDataFeed = value;
+            }
+        }
+        public string DefaultTemplateExtension
+        {
+            get
+            {
+                return GlobalSettings.DefaultTemplateExtension;
+            }
+            set
+            {
+                GlobalSettings.DefaultTemplateExtension = value;
+            }
+        }
+        #endregion
 
         public Settings()
         {
             InitializeComponent();
-            DataContext = new DataModel();
+            DataContext = this;
         }
 
         private void HomePathButton_Click(object sender, RoutedEventArgs e)
@@ -108,7 +97,7 @@ namespace TuringTrader
                 GlobalSettings.HomePath = folderDialog.SelectedPath;
             }
 
-            LabelHomePath.Content = (DataContext as DataModel).HomePath;
+            LabelHomePath.Content = HomePath;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

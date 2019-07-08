@@ -5,31 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TuringTrader"
         mc:Ignorable="d"
-        Title="TuringTrader" Height="450" Width="800"
-        ResizeMode="NoResize">
+        Title="TuringTrader" Height="450" Width="800" MinWidth="400" MinHeight="300"
+        ResizeMode="CanResize">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="65*"/>
-            <ColumnDefinition Width="133*"/>
-        </Grid.ColumnDefinitions>
-        <ComboBox x:Name="AlgoSelector" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="373" SelectionChanged="AlgoSelector_SelectionChanged" Grid.ColumnSpan="2"/>
-        <Button x:Name="RunButton" Content="Run" Margin="0,45,319,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" Grid.Column="1" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
-        <Button x:Name="ReportButton" Content="Report" Margin="0,45,218,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" Grid.Column="1" HorizontalAlignment="Right" Width="75"/>
-        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged" Grid.ColumnSpan="2"/>
-        <Menu Height="23" VerticalAlignment="Top" Grid.ColumnSpan="2">
+        <Button x:Name="RunButton" Content="Run" Margin="0,30,99,0" VerticalAlignment="Top" IsEnabled="False" Click="RunButton_Click" RenderTransformOrigin="0.547,2.8" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="ReportButton" Content="Report" Margin="0,30,10,0" VerticalAlignment="Top" IsEnabled="False" Click="ReportButton_Click" HorizontalAlignment="Right" Width="75"/>
+        <TextBox x:Name="LogOutput" VerticalScrollBarVisibility="Auto" Margin="10,94,10,23" TextWrapping="Wrap" Text="" TextChanged="LogOutput_TextChanged"/>
+        <Menu x:Name="MenuBar" Height="23" VerticalAlignment="Top">
             <MenuItem Header="_File">
+                <MenuItem x:Name="AlgoMenu" Header="_Algorithm" ItemsSource="{Binding MenuItems}" Click="MenuAlgorithm_Click">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Path=Header}"/>
+                            <Setter Property="ItemsSource" Value="{Binding Path=MenuItems}"/>
+                            <Setter Property="CommandParameter" Value="{Binding Path=CommandParameter}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
                 <MenuItem Header="_Exit" Click="MenuFileExit_Click"/>
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="Settings..." Click="MenuEditSettings_Click"/>
+                <MenuItem x:Name="MenuEditAlgorithm" Header="Algorithm Source..." Click="MenuEditAlgorithm_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
+                <MenuItem Header="_View Online Help" Click="MenuHelpView_Click"/>
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Button x:Name="OptimizerButton" Content="Optimize" Grid.Column="1" Margin="0,45,111,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
-        <TextBlock x:Name="AlgoParameters" Margin="10,73,10,0" TextWrapping="Wrap" Text="Parameters" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-        <Button x:Name="ResultsButton" Content="Opt Results" Grid.Column="1" Margin="0,45,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
-        <ProgressBar x:Name="Progress" Margin="10,0,10,10" Grid.ColumnSpan="2" Visibility="Hidden" Height="8" VerticalAlignment="Bottom"/>
+        <Button x:Name="OptimizerButton" Content="Optimize" Margin="0,58,99,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="ResultsButton" Content="Opt Results" Margin="0,58,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
+        <ProgressBar x:Name="Progress" Margin="10,0,10,10" Visibility="Hidden" Height="8" VerticalAlignment="Bottom"/>
+        <TextBlock x:Name="AlgoParameters" Text="Parameters: " Margin="10,32,214,0" VerticalAlignment="Top" Height="46"/>
     </Grid>
 </Window>

@@ -1,0 +1,30 @@
+- name: The Five Cent Tour
+  href: FiveCentTour.md
+- name: Calculating Indicators
+  href: Demo01.md
+- name: Trading Single Instruments
+  href: Demo02.md
+- name: Trading Portfolios
+  href: Demo03.md
+- name: Trading Options
+  href: Demo04.md
+- name: Running the Optimizer
+  href: Demo05.md
+- name: Order Types
+  href: Demo06.md
+- name: Subclassing Algorithms
+  href: Demo07.md
+- name: Data Setup
+  href: DataSetup.md
+- name: Creating a DLL
+  href: CreateDlls.md
+- name: Creating an Application
+  href: CreateApplications.md
+- name: Creating a Custom Indicator
+  href: CreateIndicators.md
+- name: Debugging your Strategy
+  href: Debugging.md
+- name: Indicator Pitfalls
+  href: IndicatorPitfalls.md
+- name: Showcase Algorithms
+  href: ShowcaseAlgorithms.md

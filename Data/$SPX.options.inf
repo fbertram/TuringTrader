@@ -1,0 +1,13 @@
+name=S&P 500 OPTIONS
+dataPath=Data\$SPX.options
+ticker=$SPX
+date={2:MM/dd/yyyy}
+time=16:00
+bidSize=100
+askSize=100
+bid={8:F2}
+ask={8:F2}
+optionExpiration={5:MM/dd/yyyy}
+optionStrike={6}
+optionRight={7}
+optionUnderlying=$SPX

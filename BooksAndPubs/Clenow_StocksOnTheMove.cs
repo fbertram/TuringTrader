@@ -19,8 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -64,7 +63,7 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
             WarmupStartTime = DateTime.Parse("01/01/2005");
             StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Now - TimeSpan.FromDays(3);
+            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             // set account value
             Deposit(INITIAL_FUNDS);

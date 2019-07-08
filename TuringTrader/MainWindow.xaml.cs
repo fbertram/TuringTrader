@@ -14,29 +14,18 @@
 //==============================================================================
 
 #region Libraries
-using TuringTrader.Simulator;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Path = System.IO.Path;
-using Avalon.Windows.Dialogs;
 using System.Windows.Threading;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader
@@ -46,8 +35,66 @@ namespace TuringTrader
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region data model
+        public class MenuItemViewModel
+        {
+            //private readonly ICommand _command;
+
+            public MenuItemViewModel()
+            {
+                //_command = new CommandViewModel(Execute);
+            }
+
+            public string Header { get; set; }
+            public object CommandParameter { get; set; }
+
+            public ObservableCollection<MenuItemViewModel> MenuItems { get; set; }
+
+            //public ICommand Command
+            //{
+            //    get
+            //    {
+            //        return _command;
+            //    }
+            //}
+
+            //private void Execute()
+            //{
+            //    // (NOTE: In a view model, you normally should not use MessageBox.Show()).
+            //    MessageBox.Show("Clicked at " + Header);
+            //}
+        }
+        /*public class CommandViewModel : ICommand
+        {
+            private readonly Action _action;
+
+            public CommandViewModel(Action action)
+            {
+                _action = action;
+            }
+
+            public void Execute(object o)
+            {
+                _action();
+            }
+
+            public bool CanExecute(object o)
+            {
+                return true;
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
+        }*/
+        public ObservableCollection<MenuItemViewModel> MenuItems { get; set; }
+        #endregion
         #region internal data
         private Algorithm _currentAlgorithm = null;
+        private AlgorithmInfo _currentAlgorithmInfo = null;
+        private DateTime _currentAlgorithmTimestamp = default(DateTime);
         private OptimizerGrid _optimizer = null;
         private bool _runningBacktest = false;
         private bool _runningOptimization = false;
@@ -56,8 +103,164 @@ namespace TuringTrader
         private DispatcherTimer _dispatcherTimer = new DispatcherTimer();
         #endregion
         #region internal helpers
+        public static void OpenWithShell(string fileOrUrl)
+        {
+            try
+            {
+#if true
+                // see https://stackoverflow.com/questions/10174156/open-file-with-associated-application
+                new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo(fileOrUrl)
+                    {
+                        UseShellExecute = true
+                    }
+                }.Start();
+#else
+            System.Diagnostics.Process.Start(fileOrUrl);
+#endif
+            }
+            catch
+            {
+                Output.WriteLine("Can't open {0}", fileOrUrl);
+            }
+        }
+        private void Initialize_Once(object sender, EventArgs e)
+        {
+            _dispatcherTimer.Tick -= Initialize_Once;
+
+            CheckSettings();
+            PopulateAlgorithmMenu();
+            LoadMostRecentAlgorithm();
+
+            // register various plotter renderers
+            PlotterRenderExcel.Register();
+            PlotterRenderCSharp.Register();
+            PlotterRenderR.Register();
+            PlotterRenderRMarkdown.Register();
+        }
+        private void CheckSettings()
+        {
+            //===== check home path
+            string path = GlobalSettings.HomePath;
+
+            if (path.Length == 0 || !Directory.Exists(path))
+            {
+                // create folder in user's documents
+                string homePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    "TuringTrader");
+
+                if (!Directory.Exists(homePath))
+                    Directory.CreateDirectory(homePath);
+
+                GlobalSettings.HomePath = homePath;
+
+                // copy files from install directory
+
+                string homeTemplate = Path.Combine(
+                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                    "..",
+                    "Home");
+
+                void copyFolderFiles(string srcPath, string dstPath)
+                {
+                    DirectoryInfo src = new DirectoryInfo(srcPath);
+
+                    FileInfo[] srcFiles = src.GetFiles();
+                    foreach (FileInfo srcFile in srcFiles)
+                    {
+                        File.Copy(srcFile.FullName, Path.Combine(dstPath, srcFile.Name));
+                    }
+
+                    DirectoryInfo[] srcDirs = src.GetDirectories();
+                    foreach (DirectoryInfo srcDir in srcDirs)
+                    {
+                        string dstDir = Path.Combine(dstPath, srcDir.Name);
+                        Directory.CreateDirectory(dstDir);
+                        copyFolderFiles(srcDir.FullName, dstDir);
+                    }
+                }
+
+                if (Directory.Exists(homeTemplate))
+                    copyFolderFiles(homeTemplate, homePath);
+            }
+            else if (!Directory.Exists(path))
+            {
+                MessageBox.Show("Please set TuringTrader's home folder");
+                MenuEditSettings_Click(null, null);
+            }
+
+            //===== check Tiingo API key
+            if (GlobalSettings.DefaultDataFeed == "Tiingo" && GlobalSettings.TiingoApiKey.Length < 10)
+            {
+                MessageBox.Show("Please set Tiingo API key");
+                MenuEditSettings_Click(null, null);
+            }
+        }
+        private void PopulateAlgorithmMenu()
+        {
+            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
+
+            // NOTE: this is done in the MainWindow constructor
+            //MenuItems = new ObservableCollection<MenuItemViewModel>();
+
+            var map = new Dictionary<string, ObservableCollection<MenuItemViewModel>>();
+            map["/"] = MenuItems;
+
+            // 1) create sub-menu structure
+            foreach (var algo in allAlgorithms)
+            {
+                string algoPath = AlgoPathLookupName(algo.DisplayPath);
+
+                if (!map.ContainsKey(algoPath))
+                {
+                    for (int i = 1; i <= algo.DisplayPath.Count; i++)
+                    {
+                        var parentPath = AlgoPathLookupName(algo.DisplayPath.Take(i - 1));
+                        var newPath = AlgoPathLookupName(algo.DisplayPath.Take(i));
+
+                        var newEntry = new MenuItemViewModel
+                        {
+                            Header = algo.DisplayPath[i - 1],
+                            MenuItems = new ObservableCollection<MenuItemViewModel>(),
+                        };
+
+                        if (!map.ContainsKey(newPath))
+                        {
+                            map[newPath] = newEntry.MenuItems;
+                            map[parentPath].Add(newEntry);
+                        }
+                    }
+                }
+            }
+
+            // 2) add individual entries
+            foreach (var algo in allAlgorithms)
+            {
+                var parent = map[AlgoPathLookupName(algo.DisplayPath)];
+                var newEntry = new MenuItemViewModel
+                {
+                    Header = "_" + algo.Name,
+                    CommandParameter = algo,
+                };
+
+                parent.Add(newEntry);
+            }
+        }
+        private void LoadMostRecentAlgorithm()
+        {
+            string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
+            SelectAlgo(mostRecentAlgorithm);
+        }
         private void UpdateParameterDisplay()
         {
+            if (_currentAlgorithm == null)
+            {
+                AlgoParameters.Text = "Parameters: n/a";
+                return;
+            }
+
             AlgoParameters.Text = "Parameters: "
                 + (_currentAlgorithm.OptimizerParams.Count > 0
                     ? _currentAlgorithm.OptimizerParamsAsString
@@ -68,48 +271,81 @@ namespace TuringTrader
             _messageUpdate = "";
             LogOutput.Text = "";
         }
+        private string AlgoPathLookupName(IEnumerable<string> dp) => dp.Aggregate("/", (p, n) => p + n + "/");
+        private string AlgoLookupName(AlgorithmInfo a) => a != null
+            ? AlgoPathLookupName(a.DisplayPath.Concat(new List<string>() { a.Name }))
+            : "";
+        private void SelectAlgo(string algoLookupName)
+        {
+            ClearLog();
+
+            _currentAlgorithm = null;
+            _currentAlgorithmInfo = null;
+            _optimizer = null;
+
+            RunButton.IsEnabled = false;
+            MenuEditAlgorithm.IsEnabled = false;
+            ReportButton.IsEnabled = false;
+            OptimizerButton.IsEnabled = false;
+            ResultsButton.IsEnabled = false;
+
+            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
+
+            var matchedAlgorithms = allAlgorithms
+                .Where(t => AlgoLookupName(t) == algoLookupName)
+                .ToList();
+
+            if (matchedAlgorithms.Count == 1)
+            {
+                AlgorithmInfo algoInfo = matchedAlgorithms.First();
+                _currentAlgorithmInfo = algoInfo;
+
+                GlobalSettings.MostRecentAlgorithm = algoLookupName;
+
+                _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algoInfo);
+
+                _currentAlgorithmTimestamp = _currentAlgorithmInfo.SourcePath != null
+                    ? (new FileInfo(_currentAlgorithmInfo.SourcePath).LastWriteTime)
+                    : default(DateTime);
+            }
+
+            UpdateParameterDisplay();
+
+            MenuEditAlgorithm.IsEnabled = _currentAlgorithmInfo != null && _currentAlgorithmInfo.SourcePath != null;
+
+            if (_currentAlgorithm != null)
+            {
+                RunButton.IsEnabled = true;
+                ReportButton.IsEnabled = false;
+                OptimizerButton.IsEnabled = _currentAlgorithm.OptimizerParams.Count > 0;
+                ResultsButton.IsEnabled = false;
+
+                Title = "TuringTrader - " + _currentAlgorithm.Name;
+            }
+            else
+            {
+                Title = "TuringTrader";
+            }
+        }
+        private bool ControlPressed => Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
         #endregion
 
         #region public MainWindow()
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
 
-            //--- settings sanity check
-            string path = GlobalSettings.HomePath;
-            if (!Directory.Exists(path))
-            {
-                MessageBox.Show("Please set TuringTrader's home folder");
-                MenuEditSettings_Click(null, null);
-            }
-
-            if (GlobalSettings.DefaultDataSource == "Tiingo" && GlobalSettings.TiingoApiKey.Length < 10)
-            {
-                MessageBox.Show("Please set Tiingo API key");
-                MenuEditSettings_Click(null, null);
-            }
-
-            //--- set timer event
-            _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
-            _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
-            _dispatcherTimer.Start();
-
-            //--- initialize algorithm selector
-            var allAlgorithms = TuringTrader.Simulator.AlgorithmLoader.GetAllAlgorithms();
-
-            foreach (Type algorithm in allAlgorithms)
-                AlgoSelector.Items.Add(algorithm.Name);
-
-            // attempt to recover most-recent algo
-            string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
-            if (mostRecentAlgorithm != default(string))
-            {
-                AlgoSelector.SelectedIndex = allAlgorithms
-                    .FindIndex(t => t.Name == mostRecentAlgorithm);
-            }
+            MenuItems = new ObservableCollection<MenuItemViewModel>();
 
             //--- redirect log output
             Output.WriteEvent += WriteEventHandler;
+
+            //--- set timer event
+            _dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
+            _dispatcherTimer.Tick += new EventHandler(Initialize_Once);
+            _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
+            _dispatcherTimer.Start();
         }
         #endregion
 
@@ -134,6 +370,11 @@ namespace TuringTrader
         #region private void DispatcherTimer_Tick(object sender, EventArgs e)
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
+            // set Run button label
+            RunButton.Content = ControlPressed
+                ? "Debug"
+                : "Run";
+
             LogOutput.AppendText(_messageUpdate);
             _messageUpdate = "";
 
@@ -167,13 +408,6 @@ namespace TuringTrader
             Application.Current.Shutdown();
         }
         #endregion
-        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutBox = new AboutBox();
-            aboutBox.ShowDialog();
-        }
-        #endregion
         #region private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
         private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -181,24 +415,45 @@ namespace TuringTrader
             settingsDialog.ShowDialog();
         }
         #endregion
-
-        //----- buttons
-        #region private void AlgoSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        private void AlgoSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
+        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
         {
-            string algorithmName = AlgoSelector.SelectedItem.ToString();
-            _currentAlgorithm = AlgorithmLoader.InstantiateAlgorithm(algorithmName);
-            _optimizer = null;
-
-            UpdateParameterDisplay();
-            ClearLog();
-
-            RunButton.IsEnabled = true;
-            ReportButton.IsEnabled = false;
-            OptimizerButton.IsEnabled = _currentAlgorithm.OptimizerParams.Count > 0;
-            ResultsButton.IsEnabled = false;
+            OpenWithShell(_currentAlgorithmInfo.SourcePath);
         }
         #endregion
+        #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
+        private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)e.OriginalSource;
+            var commandParam = menuItem.CommandParameter;
+            var algoType = commandParam as AlgorithmInfo;
+
+            SelectAlgo(AlgoLookupName(algoType));
+        }
+        #endregion
+        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
+        }
+        #endregion
+        #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        {
+#if false
+            string helpFile = Path.Combine(
+                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                "TuringTrader.chm");
+#else
+            string helpFile = "https://www.turingtrader.org/help/";
+#endif
+
+            OpenWithShell(helpFile);
+        }
+        #endregion
+
+        //----- buttons
         #region private async void RunButton_Click(object sender, RoutedEventArgs e)
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
@@ -208,8 +463,20 @@ namespace TuringTrader
             OptimizerButton.IsEnabled = false;
             bool saveResultsButton = ResultsButton.IsEnabled;
             ResultsButton.IsEnabled = false;
-            AlgoSelector.IsEnabled = false;
+            AlgoMenu.IsEnabled = false;
             _runningBacktest = true;
+
+            bool debug = ControlPressed;
+
+            DateTime algorithmTimeStamp = _currentAlgorithmInfo.SourcePath != null
+                ? (new FileInfo(_currentAlgorithmInfo.SourcePath).LastWriteTime)
+                : default(DateTime);
+
+            if (algorithmTimeStamp != _currentAlgorithmTimestamp)
+            {
+                // algorithm instance out of date. re-instantiate!
+                SelectAlgo(AlgoLookupName(_currentAlgorithmInfo));
+            }
 
             ClearLog();
 
@@ -233,6 +500,10 @@ namespace TuringTrader
                         + Environment.NewLine);
                     try
                     {
+#if true
+                        if (debug)
+                            System.Diagnostics.Debugger.Launch();
+#endif
                         _currentAlgorithm.Run();
                     }
                     catch (Exception exception)
@@ -253,7 +524,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = true;
             OptimizerButton.IsEnabled = saveOptimizerButton;
             ResultsButton.IsEnabled = saveResultsButton;
-            AlgoSelector.IsEnabled = true;
+            AlgoMenu.IsEnabled = true;
             _runningBacktest = false;
 
             ReportButton_Click(null, null);
@@ -268,7 +539,7 @@ namespace TuringTrader
             OptimizerButton.IsEnabled = false;
             bool saveResultsButton = ResultsButton.IsEnabled;
             ResultsButton.IsEnabled = false;
-            AlgoSelector.IsEnabled = false;
+            AlgoMenu.IsEnabled = false;
             _runningBacktest = true;
 
             if (_currentAlgorithm != null)
@@ -290,7 +561,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = true;
             OptimizerButton.IsEnabled = saveOptimizerButton;
             ResultsButton.IsEnabled = saveResultsButton;
-            AlgoSelector.IsEnabled = true;
+            AlgoMenu.IsEnabled = true;
             _runningBacktest = false;
         }
         #endregion
@@ -301,7 +572,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = false;
             ResultsButton.IsEnabled = false;
-            AlgoSelector.IsEnabled = false;
+            AlgoMenu.IsEnabled = false;
 
             ClearLog();
 
@@ -315,7 +586,7 @@ namespace TuringTrader
                     ReportButton.IsEnabled = false;
                     OptimizerButton.IsEnabled = true;
                     ResultsButton.IsEnabled = true;
-                    AlgoSelector.IsEnabled = true;
+                    AlgoMenu.IsEnabled = true;
                     _runningOptimization = false;
 
                     UpdateParameterDisplay();
@@ -347,7 +618,7 @@ namespace TuringTrader
                             ReportButton.IsEnabled = false;
                             OptimizerButton.IsEnabled = true;
                             ResultsButton.IsEnabled = true;
-                            AlgoSelector.IsEnabled = true;
+                            AlgoMenu.IsEnabled = true;
                             _runningOptimization = false;
 
                             ResultsButton_Click(null, null);
@@ -361,7 +632,7 @@ namespace TuringTrader
                 ReportButton.IsEnabled = false;
                 OptimizerButton.IsEnabled = true;
                 ResultsButton.IsEnabled = false;
-                AlgoSelector.IsEnabled = true;
+                AlgoMenu.IsEnabled = true;
                 _runningOptimization = false;
             }
         }
@@ -373,7 +644,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = false;
             ResultsButton.IsEnabled = false;
-            AlgoSelector.IsEnabled = false;
+            AlgoMenu.IsEnabled = false;
 
             var optimizerResults = new OptimizerResults(_optimizer);
 
@@ -383,7 +654,7 @@ namespace TuringTrader
             ReportButton.IsEnabled = false;
             OptimizerButton.IsEnabled = true;
             ResultsButton.IsEnabled = true;
-            AlgoSelector.IsEnabled = true;
+            AlgoMenu.IsEnabled = true;
 
             if (paramsChanged)
             {

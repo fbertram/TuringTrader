@@ -1,0 +1,39 @@
+﻿<!--<Project Sdk="Microsoft.NET.Sdk">-->
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Authors>Felix Bertram</Authors>
+    <Company>Bertram Solutions LLC</Company>
+    <Product>TuringTrader</Product>
+    <Description>Open-source backtesting engine and simulator</Description>
+    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
+    <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
+    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DocumentationFile>C:\Users\Felix\Documents\Trading\FUB_TradingSimulator\FUB_TradingSimulator\TuringTrader.Simulator\TuringTrader.Simulator.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="4.8.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.2.0-beta1-final" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.0.0-preview6.19303.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="IB.CSharpAPI">
+      <HintPath>..\packages\IB.CSharpAPI.9.72.18\IB.CSharpAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="norgate.data.dotnet">
+      <HintPath>..\packages\NorgateData.DataAccess\NorgateData.DataAccess\bin\Release\norgate.data.dotnet.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
