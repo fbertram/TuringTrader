@@ -65,8 +65,11 @@ namespace TuringTrader
         {
 #if true
             // https://github.com/
-            string gitCommit = _gitVersion.Substring(_gitVersion.LastIndexOf("-") + 2);
-            string commitUrl = "https://github.com/fbertram/TuringTrader/commit/" + gitCommit + "/";
+            int hashIndex = _gitVersion.LastIndexOf("-");
+
+            string commitUrl = (hashIndex < 0)
+                ? "https://github.com/fbertram/TuringTrader/releases/tag/" + _gitVersion + "/"
+                : "https://github.com/fbertram/TuringTrader/commit/" + _gitVersion.Substring(hashIndex + 2) + "/";
 #else
             // https://bitbucket.org/
             // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/all
