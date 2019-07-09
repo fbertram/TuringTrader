@@ -83,4 +83,4 @@ FitnessValue = (NetAssetValue[0] / INITIAL_CASH - 1.0)
 
 Before you start brute-force optimization of multiple parameters, consider optimizing smaller subsets of parameters sequentially. Doing so reduces the search space significantly, leading to faster results.
 
-Also, to avoid wasting many hours of CPU time, we recommend playing around with the demo until you fully understand how the optimizer is working. The full source code of the demo is available [here](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo05_Optimizer.cs).
+Also, to avoid wasting many hours of CPU time, we recommend playing around with the demo until you fully understand how the optimizer is working. The full source code of the demo is available in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo05_Optimizer.cs).

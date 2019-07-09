@@ -1,6 +1,8 @@
 # Live Trading
 
-Unfortunately, we didn't write this article yet. Here are some hints:
+Unfortunately, we didn't write this article yet. 
+
+Here are some hints:
 
 * TuringTrader can be used to perform live trading, and we successfully do so for our own portfolios
 * Unlike other simulators, there is no automatic transition from historical to live mode

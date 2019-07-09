@@ -142,4 +142,4 @@ Excel works best for analyzing trade logs, thanks to its filtering features. Her
 
 ![](../images/demo03/logExcel.jpg)
 
-As always, find the full code for this demo in our [repository](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo03_Portfolio.cs).
+As always, find the full code for this demo in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo03_Portfolio.cs).

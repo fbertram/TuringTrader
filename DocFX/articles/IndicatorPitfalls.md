@@ -1,6 +1,8 @@
 # Indicator Pitfalls
 
-Unfortunately, we didn't write this article yet. Here are some hints:
+Unfortunately, we didn't write this article yet. 
+
+Here are some hints:
 
 * indicators must be called exactly once per bar. Therefore
   * do not call indicators within conditional statements
