@@ -136,7 +136,7 @@ namespace TuringTrader.Simulator
                             {
                                 Color = benchColor,
                             };
-                        ddSeries.Title = "DD(" + yLabel + ")";
+                        // ddSeries.Title = "DD(" + yLabel + ")";
                         ddSeries.IsVisible = true;
                         ddSeries.XAxisKey = "x";
                         ddSeries.YAxisKey = "dd";
