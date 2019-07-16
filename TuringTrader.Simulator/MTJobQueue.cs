@@ -73,14 +73,23 @@ namespace TuringTrader.Simulator
         #region private void JobRunner(Action job)
         private void JobRunner(Action job)
         {
-            job();
-
-            lock(_queueLock)
+            try
             {
-                _jobsRunning--;
-            }
+                job();
 
-            CheckQueue();
+                lock (_queueLock)
+                {
+                    _jobsRunning--;
+                }
+
+                CheckQueue();
+            }
+            catch (Exception exception)
+            {
+                Output.WriteLine(
+                    string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                    + Environment.NewLine);
+            }
         }
         #endregion
 
