@@ -162,7 +162,8 @@ namespace TuringTrader.BooksAndPubs
                         .Where(i => i.Value != 0.0)
                         .Aggregate(string.Format("{0:MM/dd/yyyy}: ", SimTime[0]),
                             (prev, next) => prev + string.Format("{0}={1:P2} ", next.Key.Symbol, next.Value));
-                    Output.WriteLine(message);
+                    if (!IsOptimizing)
+                        Output.WriteLine(message);
                 }
 
                 // create plots on Sheet 1
