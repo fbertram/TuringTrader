@@ -44,6 +44,7 @@ namespace TuringTrader.Simulator
             #region internal data
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
+            private static object _lockUnresolved = new object();
             #endregion
             #region internal helpers
             private void SetName()
@@ -132,12 +133,15 @@ namespace TuringTrader.Simulator
             }
             private static void HandleUnresovledAssemblies()
             {
-                if (_handleUnresolvedAssemblies)
+                lock (_lockUnresolved)
                 {
-                    _handleUnresolvedAssemblies = false;
+                    if (_handleUnresolvedAssemblies)
+                    {
+                        _handleUnresolvedAssemblies = false;
 
-                    AppDomain currentDomain = AppDomain.CurrentDomain;
-                    currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+                        AppDomain currentDomain = AppDomain.CurrentDomain;
+                        currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+                    }
                 }
             }
             private static Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
