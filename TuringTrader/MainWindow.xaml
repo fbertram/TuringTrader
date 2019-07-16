@@ -36,6 +36,6 @@
         <Button x:Name="OptimizerButton" Content="Optimize" Margin="0,58,99,0" VerticalAlignment="Top" Click="OptimizeButton_Click" IsEnabled="False" HorizontalAlignment="Right" Width="75"/>
         <Button x:Name="ResultsButton" Content="Opt Results" Margin="0,58,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" IsEnabled="False" Click="ResultsButton_Click"/>
         <ProgressBar x:Name="Progress" Margin="10,0,10,10" Visibility="Hidden" Height="8" VerticalAlignment="Bottom"/>
-        <TextBlock x:Name="AlgoParameters" Text="Parameters: " Margin="10,32,214,0" VerticalAlignment="Top" Height="46"/>
+        <TextBlock x:Name="AlgoParameters" Text="Parameters: " Margin="10,32,214,0" VerticalAlignment="Top" TextWrapping="Wrap" Height="46"/>
     </Grid>
 </Window>
