@@ -29,8 +29,8 @@ GNU Affero General Public License for more details." FontFamily="Segoe UI"/><Lin
             <Run Text="You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see "/>
             
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0.html">
-                <Run Text="http://www.gnu.org/licenses/agpl-3.0.html"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0">
+                <Run Text="http://www.gnu.org/licenses/agpl-3.0"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             
             <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
             <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
