@@ -457,7 +457,7 @@ namespace TuringTrader.Simulator
             }
 
             //--- symbol mapping
-                defaultIfUndefined(DataSourceParam.symbolNorgate);
+            defaultIfUndefined(DataSourceParam.symbolNorgate);
             defaultIfUndefined(DataSourceParam.symbolStooq);
             defaultIfUndefined(DataSourceParam.symbolYahoo);
             defaultIfUndefined(DataSourceParam.symbolFred);
