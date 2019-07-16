@@ -36,6 +36,7 @@ namespace TuringTrader.Simulator
         private class DataSourceTiingo : DataSource
         {
             #region internal helpers
+            private static object _lockCache = new object();
             private string _apiToken
             {
                 get
@@ -233,12 +234,15 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
-                    JObject jsonData = GetMeta();
+                    lock (_lockCache)
+                    {
+                        JObject jsonData = GetMeta();
 
-                    Info[DataSourceParam.name] = (string)jsonData["name"];
+                        Info[DataSourceParam.name] = (string)jsonData["name"];
 
-                    FirstTime = DateTime.Parse((string)jsonData["startDate"]);
-                    LastTime = DateTime.Parse((string)jsonData["endDate"]);
+                        FirstTime = DateTime.Parse((string)jsonData["startDate"]);
+                        LastTime = DateTime.Parse((string)jsonData["endDate"]);
+                    }
                 }
                 catch (Exception /*e*/)
                 {

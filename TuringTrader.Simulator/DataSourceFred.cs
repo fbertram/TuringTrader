@@ -39,6 +39,7 @@ namespace TuringTrader.Simulator
         private class DataSourceFred : DataSource
         {
             #region internal helpers
+            private static object _lockCache = new object();
             private string _apiKey
             {
                 // this API key is registered with FRED 
@@ -240,12 +241,15 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
-                    JObject jsonData = GetSeries();
+                    lock (_lockCache)
+                    {
+                        JObject jsonData = GetSeries();
 
-                    Info[DataSourceParam.name] = (string)jsonData["seriess"][0]["title"];
+                        Info[DataSourceParam.name] = (string)jsonData["seriess"][0]["title"];
 
-                    FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"]);
-                    LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"]);
+                        FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"]);
+                        LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"]);
+                    }
                 }
                 catch (Exception /*e*/)
                 {

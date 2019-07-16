@@ -39,6 +39,7 @@ namespace TuringTrader.Simulator
         private class DataSourceYahoo : DataSource
         {
             #region internal helpers
+            private static object _lockCache = new object();
             private static readonly DateTime _epochOrigin 
                 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -233,18 +234,21 @@ namespace TuringTrader.Simulator
                 // Yahoo does not provide meta data
                 // we extract them from the instrument's web page
 
-                string meta = GetMeta();
-
+                lock (_lockCache)
                 {
-                    string tmp1 = meta.Substring(meta.IndexOf("<h1"));
-                    string tmp2 = tmp1.Substring(0, tmp1.IndexOf("h1>"));
+                    string meta = GetMeta();
 
-                    string tmp3 = tmp2.Substring(tmp2.IndexOf(">") + 1);
-                    string tmp4 = tmp3.Substring(0, tmp3.IndexOf("<"));
+                    {
+                        string tmp1 = meta.Substring(meta.IndexOf("<h1"));
+                        string tmp2 = tmp1.Substring(0, tmp1.IndexOf("h1>"));
 
-                    tmp4 = tmp4.Replace("&amp;", "&");
+                        string tmp3 = tmp2.Substring(tmp2.IndexOf(">") + 1);
+                        string tmp4 = tmp3.Substring(0, tmp3.IndexOf("<"));
 
-                    Info[DataSourceParam.name] = tmp4;
+                        tmp4 = tmp4.Replace("&amp;", "&");
+
+                        Info[DataSourceParam.name] = tmp4;
+                    }
                 }
             }
             #endregion
