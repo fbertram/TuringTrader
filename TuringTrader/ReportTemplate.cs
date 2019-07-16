@@ -167,7 +167,7 @@ namespace TuringTrader
             plotModel.Axes.Add(yAxis);
 
             //===== create series
-            Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
+            Dictionary<string, ScatterSeries> allSeries = new Dictionary<string, ScatterSeries>();
 
             foreach (var row in chartData)
             {
@@ -195,7 +195,7 @@ namespace TuringTrader
                         allSeries[yLabel] = newSeries;
                     }
 
-                    allSeries[yLabel].Points.Add(new DataPoint(
+                    allSeries[yLabel].Points.Add(new ScatterPoint(
                         xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
                         (double)yValue));
                 }
