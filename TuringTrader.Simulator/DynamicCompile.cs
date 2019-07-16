@@ -46,6 +46,7 @@ namespace TuringTrader.Simulator
         /// Compile C# source code
         /// </summary>
         /// <param name="sourcePath">path to source</param>
+        /// <param name="moreReferences">additional library references</param>
         /// <returns>compiled assembly</returns>
         public static Assembly CompileSource(string sourcePath, MetadataReference[] moreReferences = null)
         {

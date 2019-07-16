@@ -63,7 +63,16 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region renderer
+        /// <summary>
+        /// Delegate for renderer event.
+        /// </summary>
+        /// <param name="plotter">plotter requesting rendering</param>
+        /// <param name="template">name of rendering template</param>
         public delegate void renderer(Plotter plotter, string template);
+        /// <summary>
+        /// Renderer event. Renderers register with this event, to be invoked
+        /// whenever rendering is required.
+        /// </summary>
         public static event renderer Renderer;
         #endregion
 
