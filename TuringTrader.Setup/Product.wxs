@@ -11,7 +11,7 @@
     <UIRef Id="WixUI_InstallDir" />
     -->
     <UIRef Id="WixUI_Minimal" />
-    <WixVariable Id="WixUILicenseRtf" Value="..\LICENSE.rtf" />
+    <WixVariable Id="WixUILicenseRtf" Value="..\COPYING.rtf" />
     
     <Feature Id="PublishedFilesFeature" Title="Published Files" Level="1">
       <ComponentGroupRef Id="PublishedFilesComponentGroup" />
