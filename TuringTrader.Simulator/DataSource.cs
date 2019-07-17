@@ -264,7 +264,7 @@ namespace TuringTrader.Simulator
                 : nickName2;
 
             //--- load defaults file, create copy
-            if (_defaultInfo == null)
+            //if (_defaultInfo == null)
             {
                 _defaultInfo = new Dictionary<DataSourceParam, string>()
                 {

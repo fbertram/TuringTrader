@@ -47,7 +47,36 @@ namespace TuringTrader.Simulator
                 get => "967bc3160a70e6f8a501f4e3a3516fdc";
             }
 
-            private JObject GetSeries()
+            private JObject parseMeta(string raw)
+            {
+                if (raw == null)
+                    return null;
+
+                if (raw.Length < 10)
+                    return null;
+
+                JObject json = null;
+                try
+                {
+                    json = JObject.Parse(raw);
+                }
+                catch
+                {
+                    return null;
+                }
+
+                //if (jsonMeta["seriess"].Type == JTokenType.Null)
+                //    return false;
+
+                //if (jsonMeta["seriess"][0].Type == JTokenType.Null)
+                //    return false;
+
+                if (json["seriess"][0]["title"].Type == JTokenType.Null)
+                    return null;
+
+                return json;
+            }
+            private JObject getMeta()
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string metaCache = Path.Combine(cachePath, "fred_meta");
@@ -56,37 +85,17 @@ namespace TuringTrader.Simulator
                 string rawMeta = null;
                 JObject jsonMeta = null;
 
-                bool validMeta()
-                {
-                    if (rawMeta == null)
-                        return false;
-
-                    if (rawMeta.Length < 10)
-                        return false;
-
-                    //if (jsonMeta["seriess"].Type == JTokenType.Null)
-                    //    return false;
-
-                    //if (jsonMeta["seriess"][0].Type == JTokenType.Null)
-                    //    return false;
-
-                    if (jsonMeta["seriess"][0]["title"].Type == JTokenType.Null)
-                        return false;
-
-                    return true;
-                }
-
                 //--- 1) try to read raw json from disk
                 if (File.Exists(metaCache))
                 {
                     using (BinaryReader mc = new BinaryReader(File.Open(metaCache, FileMode.Open)))
                         rawMeta = mc.ReadString();
 
-                    jsonMeta = JObject.Parse(rawMeta);
+                    jsonMeta = parseMeta(rawMeta);
                 }
 
                 //--- 2) if failed, try to retrieve from web
-                if (!validMeta())
+                if (jsonMeta == null)
                 {
                     Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
@@ -100,13 +109,12 @@ namespace TuringTrader.Simulator
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
 
-                    jsonMeta = JObject.Parse(rawMeta);
-
+                    jsonMeta = parseMeta(rawMeta);
                     writeToDisk = true;
                 }
 
                 //--- 3) if failed, return
-                if (!validMeta())
+                if (jsonMeta == null)
                     return null;
 
                 //--- 4) write to disk
@@ -119,35 +127,44 @@ namespace TuringTrader.Simulator
 
                 return jsonMeta;
             }
-            private JObject GetData(DateTime startTime, DateTime endTime)
+            private JObject parseData(string raw)
+            {
+                if (raw == null)
+                    return null;
+
+                if (raw.Length < 25)
+                    return null;
+
+                JObject json = null;
+                try
+                {
+                    json = JObject.Parse(raw);
+                }
+                catch
+                {
+                    return null;
+                }
+
+                if (!json["observations"].HasValues)
+                    return null;
+
+                return json;
+            }
+            private JObject getData(DateTime startTime, DateTime endTime)
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "fred_timestamps");
                 string dataCache = Path.Combine(cachePath, "fred_data");
 
-                string rawDataFromDisk = null;
+                bool writeToDisk = false;
                 string rawData = null;
                 JObject jsonData = null;
-
-                bool validData()
-                {
-                    if (rawData == null)
-                        return false;
-
-                    if (rawData.Length < 25)
-                        return false;
-
-                    if (!jsonData["observations"].HasValues)
-                        return false;
-
-                    return true;
-                }
 
                 //--- 1) try to read raw json from disk
                 if (File.Exists(timeStamps) && File.Exists(dataCache))
                 {
                     using (BinaryReader pc = new BinaryReader(File.Open(dataCache, FileMode.Open)))
-                        rawDataFromDisk = pc.ReadString();
+                        rawData = pc.ReadString();
 
                     using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
                     {
@@ -155,14 +172,12 @@ namespace TuringTrader.Simulator
                         DateTime cacheEndTime = new DateTime(ts.ReadInt64());
 
                         if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
-                            rawData = rawDataFromDisk;
-
-                        jsonData = JObject.Parse(rawData);
+                            jsonData = parseData(rawData);
                     }
                 }
 
                 //--- 2) if failed, try to retrieve from web
-                if (!validData())
+                if (jsonData == null)
                 {
 #if true
                     // always request whole range here, to make
@@ -191,30 +206,34 @@ namespace TuringTrader.Simulator
                         startTime,
                         endTime);
 
+                    string tmpData = null;
                     using (var client = new WebClient())
-                        rawData = client.DownloadString(url);
+                        tmpData = client.DownloadString(url);
 
-                    jsonData = JObject.Parse(rawData);
+                    jsonData = parseData(tmpData);
+
+                    if (jsonData != null)
+                    {
+                        rawData = tmpData;
+                        writeToDisk = true;
+                    }
+                    else
+                    {
+                        // we might have discarded the data from disk before,
+                        // because the time frame wasn't what we were looking for. 
+                        // however, in case we can't load from web, e.g. because 
+                        // we don't have internet connectivity, it's still better 
+                        // to go with what we have cached before
+                        jsonData = parseData(rawData);
+                    }
                 }
 
-                //--- 3) if failed, try to fall back to data from disk
-                // we might have discarded the data from disk before,
-                // because the time frame wasn't what we were looking for. 
-                // however, in case we can't load from web, e.g. because 
-                // we don't have internet connectivity, it's still better 
-                // to go with what we have cached before
-                if (!validData() && rawDataFromDisk != null)
-                {
-                    rawData = rawDataFromDisk;
-                    jsonData = JObject.Parse(rawData);
-                }
-
-                //--- 4) if failed, return
-                if (!validData())
+                //--- 3) if failed, return
+                if (jsonData == null)
                     return null;
 
-                //--- 5) write to disk
-                if (rawDataFromDisk == null)
+                //--- 4) write to disk
+                if (writeToDisk)
                 {
                     Directory.CreateDirectory(cachePath);
                     using (BinaryWriter pc = new BinaryWriter(File.Open(dataCache, FileMode.Create)))
@@ -232,7 +251,7 @@ namespace TuringTrader.Simulator
             #endregion
 
             //---------- API
-            #region public DataSourceTiingo(Dictionary<DataSourceValue, string> info)
+            #region public DataSourceFred(Dictionary<DataSourceParam, string> info) : base(info)
             /// <summary>
             /// Create and initialize new data source for FRED Data.
             /// </summary>
@@ -243,7 +262,7 @@ namespace TuringTrader.Simulator
                 {
                     lock (_lockCache)
                     {
-                        JObject jsonData = GetSeries();
+                        JObject jsonData = getMeta();
 
                         Info[DataSourceParam.name] = (string)jsonData["seriess"][0]["title"];
 
@@ -287,7 +306,7 @@ namespace TuringTrader.Simulator
 
                         List<Bar> rawBars = new List<Bar>();
 
-                        JObject jsonData = GetData(startTime, endTime);
+                        JObject jsonData = getData(startTime, endTime);
                         var e = ((JArray)jsonData["observations"]).GetEnumerator();
 
                         while (e.MoveNext())

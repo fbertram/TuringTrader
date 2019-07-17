@@ -45,11 +45,39 @@ namespace TuringTrader.Simulator
                 }
             }
 
-            private string ConvertSymbol(string ticker)
+            private string convertSymbol(string ticker)
             {
                 return ticker.Replace('.', '-');
             }
-            private JObject GetMeta()
+            private JObject parseMeta(string raw)
+            {
+                JObject json = null;
+
+                if (raw == null)
+                    return null;
+
+                if (raw.Length < 10)
+                    return null;
+
+                try
+                {
+                    json = JObject.Parse(raw);
+                }
+                catch
+                {
+                    return null;
+                }
+
+                if (!json.HasValues)
+                    return null;
+
+                if (json["name"].Type == JTokenType.Null)
+                    return null;
+
+                // this seems to be valid meta data
+                return json;
+            }
+            private JObject getMeta()
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string metaCache = Path.Combine(cachePath, "tiingo_meta");
@@ -58,48 +86,34 @@ namespace TuringTrader.Simulator
                 string rawMeta = null;
                 JObject jsonMeta = null;
 
-                bool validMeta()
-                {
-                    if (rawMeta == null)
-                        return false;
 
-                    if (rawMeta.Length < 10)
-                        return false;
-
-                    if (jsonMeta["name"].Type == JTokenType.Null)
-                        return false;
-
-                    return true;
-                }
-
-                //--- 1) try to read raw json from disk
+                //--- 1) try to read cached json from disk
                 if (File.Exists(metaCache))
                 {
                     using (BinaryReader mc = new BinaryReader(File.Open(metaCache, FileMode.Open)))
                         rawMeta = mc.ReadString();
 
-                    jsonMeta = JObject.Parse(rawMeta);
+                    jsonMeta = parseMeta(rawMeta);
                 }
 
                 //--- 2) if failed, try to retrieve from web
-                if (!validMeta())
+                if (jsonMeta == null)
                 {
                     Output.WriteLine("DataSourceTiingo: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
                     string url = string.Format("https://api.tiingo.com/tiingo/daily/{0}?token={1}",
-                        ConvertSymbol(Info[DataSourceParam.symbolTiingo]),
+                        convertSymbol(Info[DataSourceParam.symbolTiingo]),
                         _apiToken);
 
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
 
-                    jsonMeta = JObject.Parse(rawMeta);
-
+                    jsonMeta = parseMeta(rawMeta);
                     writeToDisk = true;
                 }
 
                 //--- 3) if failed, return
-                if (!validMeta())
+                if (jsonMeta == null)
                     return null;
 
                 //--- 4) write to disk
@@ -112,35 +126,45 @@ namespace TuringTrader.Simulator
 
                 return jsonMeta;
             }
-            private JArray GetPrices(DateTime startTime, DateTime endTime)
+            private JArray parsePrices(string raw)
+            {
+                JArray json = null;
+
+                if (raw == null)
+                    return null;
+
+                if (raw.Length < 25)
+                    return null;
+
+                try
+                {
+                    json = JArray.Parse(raw);
+                }
+                catch
+                {
+                    return null;
+                }
+                
+                if (!json.HasValues)
+                    return null;
+
+                return json;
+            }
+            private JArray getPrices(DateTime startTime, DateTime endTime)
             {
                 string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
                 string timeStamps = Path.Combine(cachePath, "tiingo_timestamps");
                 string priceCache = Path.Combine(cachePath, "tiingo_prices");
 
-                string rawPricesFromDisk = null;
+                bool writeToDisk = false;
                 string rawPrices = null;
                 JArray jsonPrices = null;
 
-                bool validPrices()
-                {
-                    if (rawPrices == null)
-                        return false;
-
-                    if (rawPrices.Length < 25)
-                        return false;
-
-                    if (!jsonPrices.HasValues)
-                        return false;
-
-                    return true;
-                }
-
-                //--- 1) try to read raw json from disk
+                //--- 1) try to read cached json from disk
                 if (File.Exists(timeStamps) && File.Exists(priceCache))
                 {
                     using (BinaryReader pc = new BinaryReader(File.Open(priceCache, FileMode.Open)))
-                        rawPricesFromDisk = pc.ReadString();
+                        rawPrices = pc.ReadString();
 
                     using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
                     {
@@ -148,14 +172,12 @@ namespace TuringTrader.Simulator
                         DateTime cacheEndTime = new DateTime(ts.ReadInt64());
 
                         if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
-                            rawPrices = rawPricesFromDisk;
-
-                        jsonPrices = JArray.Parse(rawPrices);
+                            jsonPrices = parsePrices(rawPrices);
                     }
                 }
 
                 //--- 2) if failed, try to retrieve from web
-                if (!validPrices())
+                if (jsonPrices == null)
                 {
 #if true
                     // always request whole range here, to make
@@ -179,35 +201,39 @@ namespace TuringTrader.Simulator
                         + "&format=json"
                         + "&resampleFreq=daily"
                         + "&token={3}",
-                        ConvertSymbol(Info[DataSourceParam.symbolTiingo]),
+                        convertSymbol(Info[DataSourceParam.symbolTiingo]),
                         startTime,
                         endTime,
                         _apiToken);
 
+                    string tmpPrices = null;
                     using (var client = new WebClient())
-                        rawPrices = client.DownloadString(url);
+                        tmpPrices = client.DownloadString(url);
 
-                    jsonPrices = JArray.Parse(rawPrices);
+                    jsonPrices = parsePrices(tmpPrices);
+
+                    if (jsonPrices != null)
+                    {
+                        rawPrices = tmpPrices;
+                        writeToDisk = true;
+                    }
+                    else
+                    {
+                        // we might have discarded the data from disk before,
+                        // because the time frame wasn't what we were looking for. 
+                        // however, in case we can't load from web, e.g. because 
+                        // we don't have internet connectivity, it's still better 
+                        // to go with what we have cached before
+                        jsonPrices = parsePrices(rawPrices);
+                    }
                 }
 
-                //--- 3) if failed, try to fall back to data from disk
-                // we might have discarded the data from disk before,
-                // because the time frame wasn't what we were looking for. 
-                // however, in case we can't load from web, e.g. because 
-                // we don't have internet connectivity, it's still better 
-                // to go with what we have cached before
-                if (!validPrices() && rawPricesFromDisk != null)
-                {
-                    rawPrices = rawPricesFromDisk;
-                    jsonPrices = JArray.Parse(rawPrices);
-                }
-
-                //--- 4) if failed, return
-                if (!validPrices())
+                //--- 3) if failed, return
+                if (jsonPrices == null)
                     return null;
 
-                //--- 5) write to disk
-                if (rawPricesFromDisk == null)
+                //--- 4) write to disk
+                if (writeToDisk)
                 {
                     Directory.CreateDirectory(cachePath);
                     using (BinaryWriter pc = new BinaryWriter(File.Open(priceCache, FileMode.Create)))
@@ -236,7 +262,7 @@ namespace TuringTrader.Simulator
                 {
                     lock (_lockCache)
                     {
-                        JObject jsonData = GetMeta();
+                        JObject jsonData = getMeta();
 
                         Info[DataSourceParam.name] = (string)jsonData["name"];
 
@@ -280,7 +306,7 @@ namespace TuringTrader.Simulator
 
                         List<Bar> bars = new List<Bar>();
 
-                        JArray jsonData = GetPrices(startTime, endTime);
+                        JArray jsonData = getPrices(startTime, endTime);
                         var e = jsonData.GetEnumerator();
 
                         while (e.MoveNext())
