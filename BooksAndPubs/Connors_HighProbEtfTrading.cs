@@ -100,7 +100,7 @@ namespace BooksAndPubs
                 if (!IsOptimizing)
                 {
                     // plot to chart
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
+                    _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("nav", NetAssetValue[0]);
                     _plotter.Plot(_market.Symbol, _market.Close[0]);
