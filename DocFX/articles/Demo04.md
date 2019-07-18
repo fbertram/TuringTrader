@@ -74,11 +74,9 @@ Our demo strategy includes a few more bells and whistles. In particular:
 * close position, if the option contract held is at risk of expiring in the money
 * position sizing based on margin rules
 
-Please find the full source code [here](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo04_Options.cs)).
+Please find the full source code in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo04_Options.cs).
 
-## Further Considerations
-
-TuringTrader is assuming the traded option to be cash-settled and European-style, which has significant consequences:
+TuringTrader is assuming the options traded to be cash-settled and European-style, which has significant consequences:
 
 * assignment of American-style options will not be modeled accurately
 * stocks added or removed from the portfolio through option exercise will be replaced with a cash transaction for the same amount

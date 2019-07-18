@@ -179,7 +179,7 @@ Here is how a simple plot could look like, when using a native C# template:
 
 ![](../images/demo01/demo01Chart.jpg)
 
-Please find the full code for this demo in our [repository](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo01_Indicators.cs).
+Please find the full code for this demo in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo01_Indicators.cs).
 
-There are virtually no limits to the customized reports and plots we can create. The repository contains simple templates, but you are welcome to create your own. Read [this topic](CustomTemplates.md) to learn more.
+There are virtually no limits to the customized reports and plots we can create. The repository contains simple templates, but you are welcome to create your own, fancier and more elegant ones. Read [this topic](CustomTemplates.md) to learn more.
 

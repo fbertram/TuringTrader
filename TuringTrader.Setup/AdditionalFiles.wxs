@@ -9,7 +9,7 @@
       <Directory Id="DataDir" Name="Data">
         <Directory Id="DataDataDir" Name ="Data">
           <Directory Id="DataSpxOptionsDir" Name="$SPX.options" />
-          <Directory Id="Data6040Dir" Name="@60_40" />
+          <!-- <Directory Id="Data6040Dir" Name="@60_40" /> -->
         </Directory>
       </Directory>
       <Directory Id="TemplatesDir" Name="Templates" />
@@ -87,9 +87,9 @@
         <File Id="fil6040Inf" KeyPath="yes" Source="$(var.HomeDir)\Data\@60_40.inf" />
       </Component>
 
-      <Component Id="cmp6040Csv" Directory="Data6040Dir" Guid="*">
+      <!-- <Component Id="cmp6040Csv" Directory="Data6040Dir" Guid="*">
         <File Id="fil6040Csv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\@60_40\60_40.csv" />
-      </Component>
+      </Component> -->
 
       <!-- ===== templates ======================================== -->
       <Component Id="cmpTemplateSimpleChartCs" Directory="TemplatesDir" Guid="*">

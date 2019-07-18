@@ -56,4 +56,4 @@ As shown in a [previous demo](Demo03.md), we recommend creating an order log, to
 
 ![](../images/demo06/orderLog.jpg)
 
-The full source code is available in our [repository](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo06_OrderTypes.cs).
+The full source code is available in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo06_OrderTypes.cs).

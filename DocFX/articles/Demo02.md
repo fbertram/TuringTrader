@@ -95,7 +95,7 @@ instrument.Trade(targetPosition - currentPosition,
                  OrderType.openNextBar);
 ```
 
-Please find the full code for this demo in our [repository](https://bitbucket.org/fbertram/fub_tradingsimulator/src/develop/Algorithms/Demo%20Algorithms/Demo02_Stocks.cs).
+Please find the full code for this demo in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo02_Stocks.cs).
 
 Once the demo completes, we can see how the algorithm attempts to follow bullish trends and exit positions in bearish times: 
 

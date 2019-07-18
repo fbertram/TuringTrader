@@ -22,6 +22,8 @@
   href: CreateApplications.md
 - name: Creating a Custom Indicator
   href: CreateIndicators.md
+- name: Creating a Custom Data Source
+  href: CreateDataSources.md
 - name: Debugging your Strategy
   href: Debugging.md
 - name: Indicator Pitfalls
