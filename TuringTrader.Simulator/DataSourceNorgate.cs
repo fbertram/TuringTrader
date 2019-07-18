@@ -5,13 +5,21 @@
 //              Tested w/ Norgate Data API 4.1.5.27.
 // History:     2019i06, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2017-2019, Bertram Solutions LLC
-//              http://www.bertram.solutions
-// License:     This code is licensed under the term of the
-//              GNU Affero General Public License as published by 
-//              the Free Software Foundation, either version 3 of 
-//              the License, or (at your option) any later version.
-//              see: https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+//              https://www.bertram.solutions
+// License:     This file is part of TuringTrader, an open-source backtesting
+//              engine/ market simulator.
+//              TuringTrader is free software: you can redistribute it and/or 
+//              modify it under the terms of the GNU Affero General Public 
+//              License as published by the Free Software Foundation, either 
+//              version 3 of the License, or (at your option) any later version.
+//              TuringTrader is distributed in the hope that it will be useful,
+//              but WITHOUT ANY WARRANTY; without even the implied warranty of
+//              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+//              GNU Affero General Public License for more details.
+//              You should have received a copy of the GNU Affero General Public
+//              License along with TuringTrader. If not, see 
+//              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
 #region libraries
@@ -36,6 +44,7 @@ namespace TuringTrader.Simulator
             #region internal data
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
+            private static object _lockUnresolved = new object();
             #endregion
             #region internal helpers
             private void SetName()
@@ -124,12 +133,15 @@ namespace TuringTrader.Simulator
             }
             private static void HandleUnresovledAssemblies()
             {
-                if (_handleUnresolvedAssemblies)
+                lock (_lockUnresolved)
                 {
-                    _handleUnresolvedAssemblies = false;
+                    if (_handleUnresolvedAssemblies)
+                    {
+                        _handleUnresolvedAssemblies = false;
 
-                    AppDomain currentDomain = AppDomain.CurrentDomain;
-                    currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+                        AppDomain currentDomain = AppDomain.CurrentDomain;
+                        currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+                    }
                 }
             }
             private static Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

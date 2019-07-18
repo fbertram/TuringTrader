@@ -84,7 +84,7 @@ By default, TuringTrader uses data from Yahoo Finance. The advantage of doing so
 
 ### Tiingo (free and paid)
 
-Tiingo is one step up from Yahoo. Tiingo provides quite generous limits for their free accounts, which should be enough to get you started with algorithmic trading. If at some point you need more data, you can upgrade to a paid account.
+Tiingo is a big step up from Yahoo. Tiingo provides quite generous limits for their free accounts, which should be enough to get you started with algorithmic trading. If at some point you need more data, you can upgrade to a paid account. This makes Tiingo an excellent choice for getting started with TuringTrader.
 
 To use Tiingo, you first need to sign-up for a free account with them. Once you have signed up, go to https://api.tiingo.com/documentation/end-of-day. Click on `Click here to see your API Token`, and copy the token. 
 
@@ -102,9 +102,9 @@ The FRED data series often come with weekly, monthly, or quarterly sampling freq
 
 ### Norgate Data (paid)
 
-Norgate Data comes as a paid subscription. What makes them unique is the fact that their tools maintain a local database on your computer, taking care of updating, and adjusting.
+Norgate Data comes as a paid subscription. What makes them unique is how their tools mirror a fully adjusted database to your computer, so that applications can access it without accessing the network.
 
-To set things up, first, register for a free trial at https://norgatedata.com/freetrial.php. Then install the Norgate Data Updater from https://norgatedata.com/ndu-installation.php. Next, launch the Norgate Data Updater and click `Check for Updates`. Doing so initializes Norgate's database with an initial snapshot. 
+To set things up, first, register for a free trial at https://norgatedata.com/freetrial.php. Then install the Norgate Data Updater from https://norgatedata.com/ndu-installation.php. Next, launch the Norgate Data Updater and click `Check for Updates`. Doing so initializes your computer with initial snapshot of the Norgate database. 
 
 ![](../images/dataSetup/norgate-1.jpg)
 

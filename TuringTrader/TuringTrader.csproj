@@ -9,8 +9,8 @@
     <Company>Bertram Solutions LLC</Company>
     <Description>Open-source backtesting engine and market simulator</Description>
     <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
-    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
-    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>AnyCPU;x64</Platforms>

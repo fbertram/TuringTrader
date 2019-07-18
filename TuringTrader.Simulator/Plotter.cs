@@ -4,13 +4,21 @@
 // Description: logging class to connect w/ CSV Files, Excel, R, C#
 // History:     2017xii08, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2018, Bertram Solutions LLC
-//              http://www.bertram.solutions
-// License:     This code is licensed under the term of the
-//              GNU Affero General Public License as published by 
-//              the Free Software Foundation, either version 3 of 
-//              the License, or (at your option) any later version.
-//              see: https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+//              https://www.bertram.solutions
+// License:     This file is part of TuringTrader, an open-source backtesting
+//              engine/ market simulator.
+//              TuringTrader is free software: you can redistribute it and/or 
+//              modify it under the terms of the GNU Affero General Public 
+//              License as published by the Free Software Foundation, either 
+//              version 3 of the License, or (at your option) any later version.
+//              TuringTrader is distributed in the hope that it will be useful,
+//              but WITHOUT ANY WARRANTY; without even the implied warranty of
+//              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+//              GNU Affero General Public License for more details.
+//              You should have received a copy of the GNU Affero General Public
+//              License along with TuringTrader. If not, see 
+//              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
 #region libraries
@@ -55,7 +63,16 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region renderer
+        /// <summary>
+        /// Delegate for renderer event.
+        /// </summary>
+        /// <param name="plotter">plotter requesting rendering</param>
+        /// <param name="template">name of rendering template</param>
         public delegate void renderer(Plotter plotter, string template);
+        /// <summary>
+        /// Renderer event. Renderers register with this event, to be invoked
+        /// whenever rendering is required.
+        /// </summary>
         public static event renderer Renderer;
         #endregion
 

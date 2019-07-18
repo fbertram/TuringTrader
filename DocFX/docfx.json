@@ -74,6 +74,9 @@
     "noLangKeyword": false,
     "keepFileLink": false,
     "cleanupCacheHistory": false,
-    "disableGitFeatures": false
+    "disableGitFeatures": false,
+    "sitemap": {
+	    "baseUrl": "https://www.turingtrader.org/help"
+    }
   }
 }

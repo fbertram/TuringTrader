@@ -6,9 +6,9 @@
     <Company>Bertram Solutions LLC</Company>
     <Product>TuringTrader</Product>
     <Description>Showcase Algorithms</Description>
-    <RepositoryUrl>https://bitbucket.org/fbertram/fub_tradingsimulator</RepositoryUrl>
+    <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://www.turingtrader.org</PackageProjectUrl>
+    <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
     <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>TuringTrader.BooksAndPubs</PackageId>
