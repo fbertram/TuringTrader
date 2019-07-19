@@ -192,6 +192,8 @@ namespace TuringTrader
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
+                        newSeries.MarkerType = MarkerType.Circle;
+                        newSeries.MarkerSize = 2;
                         allSeries[yLabel] = newSeries;
                     }
 
