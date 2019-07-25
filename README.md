@@ -1,6 +1,10 @@
 # TuringTrader
 
-An open-source backtesting engine/ market simulator. For news, updates, and  more information about the project, please visit our website at https://www.turingtrader.org/.
+![](https://www.gnu.org/graphics/agplv3-155x51.png)
+
+An open-source backtesting engine/ market simulator, licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0).
+
+For news, updates, and  more information about the project, please visit our website at https://www.turingtrader.org/.
 
 ## Installing
 
@@ -25,13 +29,12 @@ see https://dotnet.microsoft.com/download/dotnet-core/3.0
 
 ### Build Steps
 
+- Install TuringTrader from binary distribution
 - Open TuringTrader solution in Visual Studio
 - Build release version of TuringTrader project
 - Publish TuringTrader application
-- Build TuringTrader.Setup project, this will be missing books & pubs
-- Install TuringTrader from setup created in the previous step
-- Build BooksAndPubs project
-- Re-build setup project, now including books & pubs
+- Build BooksAndPubs project (will link against the binary version installed)
+- Build setup project
 
 
 
