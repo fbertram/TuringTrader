@@ -273,7 +273,7 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
             WarmupStartTime = DateTime.Parse("06/01/2011");
             StartTime = DateTime.Parse("01/01/2012");
-            EndTime = DateTime.Parse("11/30/2018, 4pm");
+            EndTime = DateTime.Parse("12/31/2018");
 
             // set commission
             // Interactive Brokers: $0.70 per contract (premium >= $0.10, volume <= 10,000)
