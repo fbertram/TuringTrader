@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,8 +47,8 @@ namespace TuringTrader.Demos
         {
             //---------- initialization
 
-            StartTime = DateTime.Parse("01/01/2018");
-            EndTime = DateTime.Parse("08/01/2018");
+            StartTime = DateTime.Parse("01/01/2018", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("08/01/2018", CultureInfo.InvariantCulture);
 
             // set account value
             Deposit(_initialCash);

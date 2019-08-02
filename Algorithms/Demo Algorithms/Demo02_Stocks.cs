@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,8 +50,8 @@ namespace TuringTrader.Demos
             //---------- initialization
 
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2007");
-            EndTime = DateTime.Parse("08/01/2018");
+            StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("08/01/2018", CultureInfo.InvariantCulture);
 
             // add instruments
             AddDataSource(_instrumentNick);

@@ -23,6 +23,7 @@
 
 #region libraries
 using System;
+using System.Globalization;
 using TuringTrader.Simulator;
 #endregion
 
@@ -94,7 +95,7 @@ namespace Demos
         private Plotter _plotter = new Plotter();
         public override void Run()
         {
-            StartTime = DateTime.Parse("01/01/2008");
+            StartTime = DateTime.Parse("01/01/2008", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             // our sub-classed data source is used exactly
