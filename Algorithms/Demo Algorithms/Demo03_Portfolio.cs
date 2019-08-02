@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -56,8 +57,8 @@ namespace TuringTrader.Demos
             //---------- initialization
 
             // set simulation time frame
-            StartTime = DateTime.Parse("01/01/2007");
-            EndTime = DateTime.Parse("12/01/2018");
+            StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("12/01/2018", CultureInfo.InvariantCulture);
 
             // set initial account value
             Deposit(_initialCash);

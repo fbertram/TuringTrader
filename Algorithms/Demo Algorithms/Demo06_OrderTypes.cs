@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,8 +47,8 @@ namespace TuringTrader.Demos
         {
             //---------- initialization
 
-            StartTime = DateTime.Parse("01/01/2018");
-            EndTime = DateTime.Parse("08/01/2018");
+            StartTime = DateTime.Parse("01/01/2018", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("08/01/2018", CultureInfo.InvariantCulture);
 
             // set account value
             Deposit(_initialCash);
@@ -64,48 +65,48 @@ namespace TuringTrader.Demos
 
                 //===== market order, open next bar
                 // put in on Friday, this will execute Monday morning
-                if (simTime.Date == DateTime.Parse("01/05/2018"))
+                if (simTime.Date == DateTime.Parse("01/05/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.openNextBar);
 
                 //===== market order, close this bar
                 // put in on on Friday, this will execute Friday
                 // be mindful of data-snooping when using this!
-                if (simTime.Date == DateTime.Parse("01/12/2018"))
+                if (simTime.Date == DateTime.Parse("01/12/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(-100, OrderType.closeThisBar);
 
                 //===== stop order
                 // will turn into market order, if stop price is hit
                 // stop price is always 'worse' than current price
-                if (simTime.Date == DateTime.Parse("01/12/2018"))
+                if (simTime.Date == DateTime.Parse("01/12/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.stopNextBar, 3000); // won't trigger
 
-                if (simTime.Date == DateTime.Parse("01/16/2018"))
+                if (simTime.Date == DateTime.Parse("01/16/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.stopNextBar, 2780); // triggers at open
 
-                if (simTime.Date == DateTime.Parse("01/17/2018"))
+                if (simTime.Date == DateTime.Parse("01/17/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(-100, OrderType.stopNextBar, 2000); // won't trigger
 
-                if (simTime.Date == DateTime.Parse("01/18/2018"))
+                if (simTime.Date == DateTime.Parse("01/18/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(-100, OrderType.stopNextBar, 2799); // triggers mid day
 
                 //===== limit order
-                if (simTime.Date == DateTime.Parse("01/19/2018"))
+                if (simTime.Date == DateTime.Parse("01/19/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.limitNextBar, 2750); // won't trigger
 
-                if (simTime.Date == DateTime.Parse("01/22/2018"))
+                if (simTime.Date == DateTime.Parse("01/22/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.limitNextBar, 2850); // triggers at open
 
-                if (simTime.Date == DateTime.Parse("01/23/2018"))
+                if (simTime.Date == DateTime.Parse("01/23/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(-100, OrderType.limitNextBar, 2860); // won't trigger
 
-                if (simTime.Date == DateTime.Parse("01/24/2018"))
+                if (simTime.Date == DateTime.Parse("01/24/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(-100, OrderType.limitNextBar, 2840); // triggers mid day
 
                 //===== conditional order
-                if (simTime.Date == DateTime.Parse("01/25/2018"))
+                if (simTime.Date == DateTime.Parse("01/25/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.openNextBar, 0.0, i => true); // will be executed 01/26
 
-                if (simTime.Date == DateTime.Parse("01/26/2018"))
+                if (simTime.Date == DateTime.Parse("01/26/2018", CultureInfo.InvariantCulture))
                     instrument.Trade(100, OrderType.openNextBar, 0.0, i => false); // won't trigger
             }
 

@@ -27,6 +27,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -115,7 +116,7 @@ namespace TuringTrader.Simulator
 #if true
                     // always request whole range here, to make
                     // offline behavior as pleasant as possible
-                    DateTime DATA_START = DateTime.Parse("01/01/1970");
+                    DateTime DATA_START = DateTime.Parse("01/01/1970", CultureInfo.InvariantCulture);
 
                     //startTime = ((DateTime)FirstTime) < DATA_START
                     //    ? DATA_START

@@ -51,6 +51,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
@@ -271,9 +272,9 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             // set simulation time frame
-            WarmupStartTime = DateTime.Parse("06/01/2011");
-            StartTime = DateTime.Parse("01/01/2012");
-            EndTime = DateTime.Parse("11/30/2018, 4pm");
+            WarmupStartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
+            StartTime = DateTime.Parse("01/01/2012", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
 
             // set commission
             // Interactive Brokers: $0.70 per contract (premium >= $0.10, volume <= 10,000)

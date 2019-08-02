@@ -25,6 +25,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
@@ -58,7 +59,7 @@ namespace BooksAndPubs
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/2008");
+            StartTime = DateTime.Parse("01/01/2008", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             foreach (var n in UNIVERSE)
