@@ -26,6 +26,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
@@ -69,8 +70,8 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             // set simulation time frame
-            WarmupStartTime = DateTime.Parse("01/01/2005");
-            StartTime = DateTime.Parse("01/01/2008");
+            WarmupStartTime = DateTime.Parse("01/01/2005", CultureInfo.InvariantCulture);
+            StartTime = DateTime.Parse("01/01/2008", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             // set account value

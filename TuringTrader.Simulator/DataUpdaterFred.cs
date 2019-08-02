@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -136,7 +137,7 @@ namespace TuringTrader.Simulator
                             string[] items = (Info[DataSourceParam.ticker] + "," + line).Split(',');
 
                             var timestamp =
-                                DateTime.Parse(string.Format(PARSE_INFO[DataSourceParam.date], items)).Date
+                                DateTime.Parse(string.Format(PARSE_INFO[DataSourceParam.date], items), CultureInfo.InvariantCulture).Date
                                 + DateTime.Parse(string.Format(PARSE_INFO[DataSourceParam.time], items)).TimeOfDay;
 
                             var close = double.Parse(string.Format(PARSE_INFO[DataSourceParam.close], items));

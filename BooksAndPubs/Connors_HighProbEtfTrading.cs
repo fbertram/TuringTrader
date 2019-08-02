@@ -25,6 +25,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
@@ -55,7 +56,7 @@ namespace BooksAndPubs
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990");
+            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             AddDataSource(MARKET);

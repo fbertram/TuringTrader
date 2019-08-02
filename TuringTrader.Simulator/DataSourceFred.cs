@@ -28,6 +28,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 #endregion
@@ -182,7 +183,7 @@ namespace TuringTrader.Simulator
 #if true
                     // always request whole range here, to make
                     // offline behavior as pleasant as possible
-                    DateTime DATA_START = DateTime.Parse("01/01/1970");
+                    DateTime DATA_START = DateTime.Parse("01/01/1970", CultureInfo.InvariantCulture);
 
                     startTime = ((DateTime)FirstTime) < DATA_START
                         ? DATA_START
@@ -266,8 +267,8 @@ namespace TuringTrader.Simulator
 
                         Info[DataSourceParam.name] = (string)jsonData["seriess"][0]["title"];
 
-                        FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"]);
-                        LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"]);
+                        FirstTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_start"], CultureInfo.InvariantCulture);
+                        LastTime = DateTime.Parse((string)jsonData["seriess"][0]["observation_end"], CultureInfo.InvariantCulture);
                     }
                 }
                 catch (Exception /*e*/)
@@ -313,8 +314,8 @@ namespace TuringTrader.Simulator
                         {
                             var bar = e.Current;
 
-                            DateTime date = DateTime.Parse((string)bar["date"]).Date
-                                + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
+                            DateTime date = DateTime.Parse((string)bar["date"], CultureInfo.InvariantCulture).Date
+                                + DateTime.Parse(Info[DataSourceParam.time], CultureInfo.InvariantCulture).TimeOfDay;
 
                             string valueString = (string)bar["value"];
                             double value;

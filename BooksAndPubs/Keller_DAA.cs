@@ -27,6 +27,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace BooksAndPubs
         {
             //----- initialization
 
-            StartTime = DateTime.Parse("01/01/1990");
+            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))

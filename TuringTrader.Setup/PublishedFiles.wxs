@@ -217,6 +217,9 @@
             <Component Id="cmp57CBBC6DBD34B4D7DB2BC3A0688FDD6A" Directory="BINFOLDER" Guid="*">
                 <File Id="filB28471BBC1CF6E8FEC80D4CA3DC081AF" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.30373.dll" />
             </Component>
+            <Component Id="cmp5F2ADB7B567C88791AC30D8A24322015" Directory="BINFOLDER" Guid="*">
+                <File Id="fil4AD2E36F915ACF5C78CAA35DB554152E" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.32702.dll" />
+            </Component>
             <Component Id="cmpAF28CE66C6DA6E2E7F469E603E9CD404" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5A3F401CAE73B190C6C3DB8367EC383D" KeyPath="yes" Source="$(var.SourceDir)\mscordbi.dll" />
             </Component>
@@ -312,6 +315,9 @@
             </Component>
             <Component Id="cmpCDA3957C43D3314EA56E3AA14293A05A" Directory="BINFOLDER" Guid="*">
                 <File Id="fil0BE47BCA71F30F444E9B174DDCD73E83" KeyPath="yes" Source="$(var.SourceDir)\sos_amd64_amd64_4.700.19.30373.dll" />
+            </Component>
+            <Component Id="cmpD839918CC813B33CEDD38D41ED1EF9C0" Directory="BINFOLDER" Guid="*">
+                <File Id="fil5EB25AD5999ED902E5700B46B19BE7CB" KeyPath="yes" Source="$(var.SourceDir)\SOS_README.md" />
             </Component>
             <Component Id="cmpB6DD7512A5156B3AEA780BFDC803FF74" Directory="BINFOLDER" Guid="*">
                 <File Id="fil7E9148F5E89346D218983BA04B604E1C" KeyPath="yes" Source="$(var.SourceDir)\System.AppContext.dll" />
@@ -810,6 +816,9 @@
             </Component>
             <Component Id="cmp82B97FDEC4C9801C56FD5BAF7268FF0F" Directory="BINFOLDER" Guid="*">
                 <File Id="fil510544D8673EBC7270420A9AF5723C88" KeyPath="yes" Source="$(var.SourceDir)\System.Threading.AccessControl.dll" />
+            </Component>
+            <Component Id="cmpBB51930637D8675389BED8190887AE44" Directory="BINFOLDER" Guid="*">
+                <File Id="fil4EC082AAC8B67EF0E545674D4BE2F5C2" KeyPath="yes" Source="$(var.SourceDir)\System.Threading.Channels.dll" />
             </Component>
             <Component Id="cmp7AB69A0A2EE1708248A4111A05F83CBB" Directory="BINFOLDER" Guid="*">
                 <File Id="filB6A655D80CF1A2E3BC5A263607F2BFEB" KeyPath="yes" Source="$(var.SourceDir)\System.Threading.dll" />

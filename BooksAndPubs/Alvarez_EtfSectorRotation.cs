@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
@@ -56,8 +57,8 @@ namespace BooksAndPubs
 
         public override void Run()
         {
-            StartTime = DateTime.Parse("01/01/1990");
-            EndTime = DateTime.Now - TimeSpan.FromDays(5);
+            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
             foreach (var nick in UNIVERSE)
                 AddDataSource(nick);
