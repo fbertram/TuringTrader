@@ -9,8 +9,14 @@
         Title="Strategy Report"
         Height="700" Width="1000">
     <Grid>
-        <ComboBox Name="ChartSelect" Margin="10,10,10,0" VerticalAlignment="Top" ItemsSource="{Binding AvailableCharts}" SelectedValue="{Binding SelectedChart}"/>
-        <oxy:PlotView Name="Chart" Margin="10,37,10,10"/>
-        <DataGrid Name="Table" Margin="10,37,10,10"/>
+        <Menu x:Name="MenuBar" Height="23" VerticalAlignment="Top">
+            <MenuItem Header="_File">
+                <MenuItem Name="ChartSave" Header="Save _PNG" Click="SaveAsPng"/>
+                <MenuItem Name="TableSave" Header="Save _CSV" Click="SaveAsCsv"/>
+            </MenuItem>
+        </Menu>
+        <ComboBox Name="ChartSelect" Margin="10,32,10,0" VerticalAlignment="Top" ItemsSource="{Binding AvailableCharts}" SelectedValue="{Binding SelectedChart}"/>
+        <oxy:PlotView Name="Chart" Margin="10,65,10,10" Visibility="Hidden"/>
+        <DataGrid Name="Table" Margin="10,65,10,10" Visibility="Hidden"/>
     </Grid>
 </Window>
