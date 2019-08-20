@@ -37,16 +37,22 @@ namespace TuringTrader.Simulator
     /// </summary>
     public class SimpleReport : ReportTemplate
     {
-        #region private PlotModel RenderNavAndDrawdown(string selectedChart)
+        #region internal data
+        private static string EQUITY_CURVE = "Equity Curve";
+        private static string METRICS = "Performance Metrics";
+        private static string ANNUAL_BARS = "Annual Performance";
+        #endregion
+
+        #region private PlotModel RenderNavAndDrawdown()
         /// <summary>
         /// Specialized chart rendering NAV and drawdown logarithmically
         /// </summary>
         /// <param name="selectedChart">chart to render</param>
         /// <returns>OxyPlot model</returns>
-        private PlotModel RenderNavAndDrawdown(string selectedChart)
+        private PlotModel RenderNavAndDrawdown()
         {
             //===== get plot data
-            var chartData = PlotData[selectedChart];
+            var chartData = PlotData.First().Value;
 
             string xLabel = chartData
                 .First()      // first row is as good as any
@@ -58,7 +64,7 @@ namespace TuringTrader.Simulator
 
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
-            plotModel.Title = selectedChart;
+            plotModel.Title = PlotData.Keys.First();
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
@@ -171,7 +177,6 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region private List<Dictionary<string, object>> RenderMetrics()
-        private static string METRICS = "Strategy Metrics";
         /// <summary>
         /// Specialized table rendering strategy and benchmark metrics.
         /// </summary>
@@ -378,6 +383,118 @@ namespace TuringTrader.Simulator
             return retvalue;
         }
         #endregion
+        #region private PlotModel RenderAnnualBars()
+        /// <summary>
+        /// Specialized chart rendering NAV and drawdown logarithmically
+        /// </summary>
+        /// <param name="selectedChart">chart to render</param>
+        /// <returns>OxyPlot model</returns>
+        private PlotModel RenderAnnualBars()
+        {
+            //===== get plot data
+            var chartData = PlotData.First().Value;
+            var nav = chartData
+                .First() // first row
+                .Skip(1) // second column
+                .First()
+                .Key;
+            var bench = chartData
+                .First() // first row
+                .Skip(2) // third column
+                .First()
+                .Key;
+
+            //===== create annual bars
+            Dictionary<int, Tuple<double, double>> annualBars = new Dictionary<int, Tuple<double, double>>();
+
+            DateTime timePrev = default(DateTime);
+            double navPrev = 0.0;
+            double benchPrev = 0.0;
+            DateTime timeLast = (DateTime)chartData.Last().First().Value;
+
+            foreach (var row in chartData)
+            {
+                DateTime timeNow = (DateTime)row.First().Value;
+                double navNow = (double)row[nav];
+                double benchNow = (double)row[bench];
+
+                if (timePrev == default(DateTime))
+                {
+                    timePrev = timeNow;
+                    navPrev = navNow;
+                    benchPrev = benchNow;
+                }
+
+                if (timeNow.Date.Year != timePrev.Date.Year
+                || timeNow == timeLast)
+                {
+                    int year = timePrev.Date.Year;
+                    double navGain = 100.0 * (navNow / navPrev - 1.0);
+                    double benchGain = 100.0 * (benchNow / benchPrev - 1.0);
+
+                    annualBars.Add(year, new Tuple<double, double>(navGain, benchGain));
+
+                    timePrev = timeNow;
+                    navPrev = navNow;
+                    benchPrev = benchNow;
+                }
+            }
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = ANNUAL_BARS;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            var xAxis = new CategoryAxis();
+            xAxis.Title = "Year";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            //===== create series
+            OxyColor navColor = _seriesColors[0];
+            OxyColor benchColor = _seriesColors[1];
+
+            var navSeries = new ColumnSeries();
+            navSeries.Title = nav;
+            navSeries.IsVisible = true;
+            navSeries.XAxisKey = "x";
+            navSeries.YAxisKey = "y";
+            navSeries.FillColor = navColor;
+
+            var benchSeries = new ColumnSeries();
+            benchSeries.Title = bench;
+            benchSeries.IsVisible = true;
+            benchSeries.XAxisKey = "x";
+            benchSeries.YAxisKey = "y";
+            benchSeries.FillColor = benchColor;
+
+            foreach (var row in annualBars)
+            {
+                int year = row.Key;
+                double navGain = row.Value.Item1;
+                double benchGain = row.Value.Item2;
+
+                xAxis.Labels.Add(year.ToString());
+
+                navSeries.Items.Add(new ColumnItem(navGain));
+                benchSeries.Items.Add(new ColumnItem(benchGain));
+            }
+
+            //===== add series to plot model
+            plotModel.Series.Add(navSeries);
+            plotModel.Series.Add(benchSeries);
+
+            return plotModel;
+        }
+        #endregion
 
         #region public override IEnumerable<string> AvailableCharts
         /// <summary>
@@ -387,9 +504,9 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                yield return PlotData.Keys.First();
-
+                yield return EQUITY_CURVE;
                 yield return METRICS;
+                yield return ANNUAL_BARS;
 
                 foreach (string chart in PlotData.Keys.Skip(1))
                     yield return chart;
@@ -407,12 +524,16 @@ namespace TuringTrader.Simulator
         public override object GetModel(string selectedChart)
         {
             // 1st chart is always NAV and drawdown
-            if (selectedChart == PlotData.Keys.First())
-                return RenderNavAndDrawdown(selectedChart);
+            if (selectedChart == EQUITY_CURVE)
+                return RenderNavAndDrawdown();
 
             // 2nd chart is always metrics
             if (selectedChart == METRICS)
                 return RenderMetrics();
+
+            // 3rd chart is always annual bars
+            if (selectedChart == ANNUAL_BARS)
+                return RenderAnnualBars();
 
             // all other are either tables or tables
             if (IsTable(selectedChart))
