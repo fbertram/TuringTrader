@@ -39,6 +39,33 @@ namespace TuringTrader
     /// </summary>
     public abstract class ReportTemplate
     {
+        #region protected OxyColor[] _seriesColors
+        protected OxyColor[] _seriesColors =
+        {
+            OxyColor.FromRgb(68, 114, 196),  // blue
+            OxyColor.FromRgb(237, 125, 49),  // orange
+            OxyColor.FromRgb(165, 165, 165), // grey
+            OxyColor.FromRgb(255, 192, 0),   // yellow
+            OxyColor.FromRgb(91, 155, 213),  // light blue
+            OxyColor.FromRgb(112, 173, 71),  // green
+            OxyColor.FromRgb(38, 68, 120),   // dark blue
+            OxyColor.FromRgb(158, 72, 14),   // brown
+            OxyColor.FromRgb(99, 99, 99),    // dark grey
+            OxyColor.FromRgb(153, 115, 0),   // swampy green
+            OxyColor.FromRgb(37, 94, 145),   // blue grey
+            OxyColor.FromRgb(67, 104, 43),   // algae green
+            OxyColor.FromRgb(105, 142, 208), // light blue
+            OxyColor.FromRgb(241, 151, 90),  // orange tan
+            OxyColor.FromRgb(183, 183, 183), // light grey
+            OxyColor.FromRgb(255, 205, 51),  // light yellow
+            OxyColor.FromRgb(124, 175, 221), // light blue
+            OxyColor.FromRgb(140, 193, 104), // light green
+            OxyColor.FromRgb(51, 90, 161),   // blue
+            OxyColor.FromRgb(210, 96, 18),   // brown
+            //OxyColor.FromRgb(132, 132, 132), // grey
+        };
+        #endregion
+
         #region protected object RenderTable(string selectedChart)
         protected object RenderTable(string selectedChart)
         {
@@ -111,6 +138,7 @@ namespace TuringTrader
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
+                        newSeries.Color = _seriesColors[allSeries.Count % _seriesColors.Count()];
                         allSeries[yLabel] = newSeries;
                     }
 
@@ -194,6 +222,8 @@ namespace TuringTrader
                         newSeries.YAxisKey = "y";
                         newSeries.MarkerType = MarkerType.Circle;
                         newSeries.MarkerSize = 2;
+                        newSeries.MarkerStroke = _seriesColors[allSeries.Count % _seriesColors.Count()];
+                        newSeries.MarkerFill = newSeries.MarkerStroke;
                         allSeries[yLabel] = newSeries;
                     }
 

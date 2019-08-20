@@ -91,8 +91,8 @@ namespace TuringTrader.Simulator
             Dictionary<string, double> maxValues = new Dictionary<string, double>();
 
             //===== create series
-            OxyColor navColor = OxyColor.FromRgb(0x44, 0x72, 0xc4); // OxyColors.Blue
-            OxyColor benchColor = OxyColor.FromRgb(0xeb, 0x7f, 0x34); // OxyColors.Orange
+            OxyColor navColor = _seriesColors[0]; //OxyColor.FromRgb(0x44, 0x72, 0xc4); // OxyColors.Blue
+            OxyColor benchColor = _seriesColors[1]; //OxyColor.FromRgb(0xeb, 0x7f, 0x34); // OxyColors.Orange
             Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
 
             foreach (var row in chartData)
@@ -123,6 +123,7 @@ namespace TuringTrader.Simulator
                             ? new AreaSeries
                             {
                                 Color = navColor,
+                                Fill = navColor,
                                 ConstantY2 = 1.0,
                             }
                             : new LineSeries
@@ -139,6 +140,7 @@ namespace TuringTrader.Simulator
                             ? new AreaSeries
                             {
                                 Color = navColor,
+                                Fill = navColor,
                             }
                             : new LineSeries
                             {
