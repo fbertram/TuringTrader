@@ -232,7 +232,7 @@ namespace TuringTrader.BooksAndPubs
                     "AMGN",
                     "AMZN",
                     "APA",
-                    "APC",
+                    //"APC",
                     "ATVI",
                     "AVGO",
                     "AXP",
