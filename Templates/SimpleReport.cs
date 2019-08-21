@@ -38,9 +38,238 @@ namespace TuringTrader.Simulator
     public class SimpleReport : ReportTemplate
     {
         #region internal data
-        private static string EQUITY_CURVE = "Equity Curve";
+        private static string EQUITY_CURVE = "Equity Curve with Drawdown";
         private static string METRICS = "Performance Metrics";
         private static string ANNUAL_BARS = "Annual Performance";
+        private static string MONTE_CARLO = "Monte Carlo Analysis";
+        #endregion
+        #region internal helpers
+        private List<Dictionary<string, object>> NAV_BENCH_DATA { get { return PlotData.First().Value; } }
+        private string METRIC_LABEL = "Metric";
+        private string UNI_LABEL = "Value"; 
+        private string NAV_LABEL   { get { return NAV_BENCH_DATA.First().Skip(1).First().Key; } }
+        private string BENCH_LABEL { get { return NAV_BENCH_DATA.First().Skip(2).First().Key; } }
+
+        // FIXME: somehow we need to escape the carrot, as XAML treats it
+        //        as a special character
+        // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
+        private string BENCH_LABEL_XAML { get { return BENCH_LABEL.Replace("^", string.Empty); } }
+
+        private DateTime START_DATE { get { return (DateTime)NAV_BENCH_DATA.First().First().Value; } }
+        private DateTime END_DATE { get { return (DateTime)NAV_BENCH_DATA.Last().First().Value; } }
+        private double YEARS { get { return (END_DATE - START_DATE).TotalDays / 365.25; } }
+
+        private double NAV_START   { get { return (double)NAV_BENCH_DATA.First()[NAV_LABEL];   } }
+        private double NAV_END     { get { return (double)NAV_BENCH_DATA.Last()[NAV_LABEL];    } }
+        private double BENCH_START { get { return (double)NAV_BENCH_DATA.First()[BENCH_LABEL]; } }
+        private double BENCH_END   { get { return (double)NAV_BENCH_DATA.Last()[BENCH_LABEL];  } }
+        private double NAV_CAGR    { get { return Math.Pow(NAV_END / NAV_START, 1.0 / YEARS) - 1.0; } }
+        private double BENCH_CAGR  { get { return Math.Pow(BENCH_END / BENCH_START, 1.0 / YEARS) - 1.0; } }
+
+        private Dictionary<DateTime, double> _getMonthlyReturns(string label)
+        {
+            var monthlyReturns = new Dictionary<DateTime, double>();
+            DateTime prevTime = START_DATE;
+            double? prevValue = null;
+
+            foreach (var row in NAV_BENCH_DATA)
+            {
+                DateTime curTime = (DateTime)row.First().Value;
+                double curValue = (double)row[label];
+
+                if (curTime.Month != prevTime.Month)
+                {
+                    DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+
+                    if (prevValue != null)
+                        monthlyReturns[ts] = Math.Log(curValue / (double)prevValue);
+
+                    prevTime = curTime;
+                    prevValue = curValue;
+                }
+            }
+
+            return monthlyReturns;
+        }
+        private Dictionary<DateTime, double> _navMonthlyRet = null;
+        private Dictionary<DateTime, double> NAV_MONTHLY_RET { get { if (_navMonthlyRet == null) _navMonthlyRet = _getMonthlyReturns(NAV_LABEL); return _navMonthlyRet; } }
+
+        private Dictionary<DateTime, double> _benchMonthlyRet = null;
+        private Dictionary<DateTime, double> BENCH_MONTHLY_RET { get { if (_benchMonthlyRet == null) _benchMonthlyRet = _getMonthlyReturns(BENCH_LABEL); return _benchMonthlyRet; } }
+
+        private Dictionary<DateTime, double> _rfMonthlyYield = null;
+        private Dictionary<DateTime, double> RF_MONTHLY_YIELD
+        {
+            get
+            {
+                if (_rfMonthlyYield == null)
+                {
+                    var dsRiskFree = DataSource.New("FRED:DTB3"); // 3-Month Treasury Bill: Secondary Market Rate
+                    dsRiskFree.LoadData(START_DATE, END_DATE);
+
+                    _rfMonthlyYield = new Dictionary<DateTime, double>();
+                    DateTime prevTime = START_DATE;
+
+                    foreach (var bar in dsRiskFree.Data)
+                    {
+                        DateTime curTime = bar.Time;
+                        double curValue = bar.Close;
+
+                        if (curTime.Month != prevTime.Month)
+                        {
+                            DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                            _rfMonthlyYield[ts] = curValue / 100.0 / 12.0; // monthly yield
+
+                            prevTime = curTime;
+                        }
+                    }
+                }
+                return _rfMonthlyYield;
+            }
+        }
+
+        private double NAV_AVG_MONTHLY_RET   { get { return NAV_MONTHLY_RET.Average(r => r.Value); } }
+        private double BENCH_AVG_MONTHLY_RET { get { return BENCH_MONTHLY_RET.Average(r => r.Value); } }
+
+        private double NAV_STDEV_MONTHLY_RET   { get { double avg = NAV_AVG_MONTHLY_RET;  return Math.Sqrt(NAV_MONTHLY_RET.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
+        private double BENCH_STDEV_MONTHLY_RET { get { double avg = BENCH_AVG_MONTHLY_RET; return Math.Sqrt(BENCH_MONTHLY_RET.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
+
+        private double _getMdd(string label)
+        {
+            double max = -1e99;
+            double mdd = 0.0;
+
+            foreach (var row in NAV_BENCH_DATA)
+            {
+                double val = (double)row[label];
+
+                max = Math.Max(max, val);
+                double dd = (max - val) / max;
+
+                mdd = Math.Max(mdd, dd);
+            }
+
+            return mdd;
+        }
+        private double NAV_MDD { get { return _getMdd(NAV_LABEL); } }
+        private double BENCH_MDD { get { return _getMdd(BENCH_LABEL); } }
+
+        private double _getMaxFlat(string label)
+        {
+            double peakValue = -1e99;
+            DateTime peakTime = START_DATE;
+            double maxFlat = 0.0;
+
+            foreach (var row in NAV_BENCH_DATA)
+            {
+                DateTime time = (DateTime)row.First().Value;
+                double value = (double)row[label];
+
+                if (value > peakValue)
+                {
+                    double flatDays = (time - peakTime).TotalDays;
+                    maxFlat = Math.Max(maxFlat, flatDays);
+
+                    peakValue = value;
+                    peakTime = time;
+                }
+            }
+
+            return maxFlat;
+        }
+        private double NAV_MAX_FLAT { get { return _getMaxFlat(NAV_LABEL); } }
+        private double BENCH_MAX_FLAT { get { return _getMaxFlat(BENCH_LABEL); } }
+
+        private Dictionary<DateTime, double> _getExcReturns(string label)
+        {
+            Dictionary<DateTime, double> monthlyReturns = label == NAV_LABEL ? NAV_MONTHLY_RET : BENCH_MONTHLY_RET;
+
+            return monthlyReturns
+                .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - RF_MONTHLY_YIELD[r.Key]));
+        }
+
+        private Dictionary<DateTime, double> _navMonthlyExcess = null;
+        private Dictionary<DateTime, double> NAV_MONTHLY_EXCESS   { get { if (_navMonthlyExcess == null) _navMonthlyExcess = _getExcReturns(NAV_LABEL); return _navMonthlyExcess; } }
+        private Dictionary<DateTime, double> _benchMonthlyExcess = null;
+        private Dictionary<DateTime, double> BENCH_MONTHLY_EXCESS { get { if (_benchMonthlyExcess == null) _benchMonthlyExcess = _getExcReturns(BENCH_LABEL); return _benchMonthlyExcess; } }
+
+        private double NAV_AVG_MONTHLY_EXCESS   { get { return NAV_MONTHLY_EXCESS.Average(r => r.Value); } }
+        private double BENCH_AVG_MONTHLY_EXCESS { get { return BENCH_MONTHLY_EXCESS.Average(r => r.Value); } }
+
+        private double NAV_STDEV_MONTHLY_EXCESS   { get { double avg = NAV_AVG_MONTHLY_EXCESS; return Math.Sqrt(NAV_MONTHLY_EXCESS.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
+        private double BENCH_STDEV_MONTHLY_EXCESS { get { double avg = BENCH_AVG_MONTHLY_EXCESS; return Math.Sqrt(BENCH_MONTHLY_EXCESS.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
+
+        private double NAV_SHARPE { get { return Math.Sqrt(12.0) * NAV_AVG_MONTHLY_EXCESS / NAV_STDEV_MONTHLY_EXCESS; } }
+        private double BENCH_SHARPE { get { return Math.Sqrt(12.0) * BENCH_AVG_MONTHLY_EXCESS / BENCH_STDEV_MONTHLY_EXCESS; } }
+
+        private double BETA
+        {
+            get
+            {
+                var dates = NAV_MONTHLY_RET.Keys.ToList();
+
+                double covar = dates
+                    .Sum(d => (NAV_MONTHLY_RET[d] - NAV_AVG_MONTHLY_RET) * (BENCH_MONTHLY_RET[d] - BENCH_AVG_MONTHLY_RET))
+                    / (dates.Count - 1.0);
+
+                //double benchVar = benchReturns.Values.Average(r => Math.Pow(r - benchAvgRet, 2.0));
+
+                //double beta = covar / benchVar;
+
+                return covar / Math.Pow(BENCH_STDEV_MONTHLY_RET, 2.0);
+            }
+        }
+
+        private double _getUlcerIndex(string label)
+        {
+            double peak = 0.0;
+            double sumDd2 = 0.0;
+            int N = 0;
+
+            foreach (var row in NAV_BENCH_DATA)
+            {
+                N++;
+                peak = Math.Max(peak, (double)row[label]);
+                sumDd2 += Math.Pow(1.0 * (peak - (double)row[label]) / peak, 2.0);
+            }
+
+            return Math.Sqrt(sumDd2 / N);
+        }
+        private double NAV_ULCER_INDEX   { get { return _getUlcerIndex(NAV_LABEL); } }
+        private double BENCH_ULCER_INDEX { get { return _getUlcerIndex(BENCH_LABEL); } }
+
+        private double NAV_UPI   { get { return (Math.Exp(12.0 * NAV_AVG_MONTHLY_EXCESS) - 1.0) / NAV_ULCER_INDEX; } }
+        private double BENCH_UPI { get { return (Math.Exp(12.0 * BENCH_AVG_MONTHLY_EXCESS) - 1.0) / BENCH_ULCER_INDEX; } }
+
+        private Dictionary<DateTime, double> _activeReturn = null;
+        private Dictionary<DateTime, double> ACTIVE_RETURN
+        {
+            get
+            {
+                if (_activeReturn == null)
+                {
+                    _activeReturn = new Dictionary<DateTime, double>();
+                    var dates = NAV_MONTHLY_RET.Keys;
+
+                    foreach (var date in dates)
+                        _activeReturn[date] = NAV_MONTHLY_RET[date] - BENCH_MONTHLY_RET[date];
+                }
+                return _activeReturn;
+            }
+        }
+
+        // FIXME: results seem incorrect
+        private double NAV_INFORMATION_RATIO
+        {
+            get
+            {
+                double expectedActiveReturn = ACTIVE_RETURN
+                    .Average(r => r.Value);
+                double trackingError = Math.Sqrt(ACTIVE_RETURN
+                    .Average(r => Math.Pow(r.Value - expectedActiveReturn, 2.0)));
+                return Math.Sqrt(12.0) * expectedActiveReturn / trackingError;
+            }
+        }
         #endregion
 
         #region private PlotModel RenderNavAndDrawdown()
@@ -184,212 +413,93 @@ namespace TuringTrader.Simulator
         private List<Dictionary<string, object>> RenderMetrics()
         {
             var retvalue = new List<Dictionary<string, object>>();
-            var chartData = PlotData.First().Value;
-            var nav = chartData
-                .First() // first row
-                .Skip(1) // second column
-                .First()
-                .Key;
-            var benchmark = chartData
-                .First() // first row
-                .Skip(2) // third column
-                .First()
-                .Key;
 
-            // FIXME: somehow we need to escape the carrot, as XAML treats it
-            //        as a special character
-            // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
-            string benchmark2 = benchmark.Replace("^", string.Empty);
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Simulation Start" },
+                { UNI_LABEL, string.Format("{0:MM/dd/yyyy}", START_DATE) },
+                { NAV_LABEL, string.Format("{0:C2}", NAV_START) },
+                { BENCH_LABEL_XAML, string.Format("{0:C2}", BENCH_START) } });
 
-            //===== start and end date
-            DateTime startDate;
-            double years;
-            {
-                startDate = chartData
-                        .Min(row => (DateTime)row.First().Value);
-                DateTime endDate = chartData
-                        .Max(row => (DateTime)row.First().Value);
-                years = (endDate - startDate).TotalDays / 365.25;
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Simulation End" },
+                { UNI_LABEL, string.Format("{0:MM/dd/yyyy}", END_DATE) },
+                { NAV_LABEL, string.Format("{0:C2}", NAV_END) },
+                { BENCH_LABEL_XAML, string.Format("{0:C2}", BENCH_END) } });
 
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Simulation Start" },
-                    { "Value", string.Format("{0:MM/dd/yyyy}", startDate) },
-                    { nav, string.Format("{0:C2}", (double)chartData.First()[nav]) },
-                    { benchmark2, string.Format("{0:C2}", (double)chartData.First()[benchmark]) } });
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Simulation Period" },
+                { "Value", string.Format("{0:F1} years", YEARS) } });
 
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Simulation End" },
-                    { "Value", string.Format("{0:MM/dd/yyyy}", endDate) },
-                    { nav, string.Format("{0:C2}", (double)chartData.Last()[nav]) },
-                    { benchmark2, string.Format("{0:C2}", (double)chartData.Last()[benchmark]) } });
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Compound Annual Growth Rate" },
+                { NAV_LABEL, string.Format("{0:P2}", NAV_CAGR) },
+                { BENCH_LABEL, string.Format("{0:P2}", BENCH_CAGR) } });
 
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Simulation Period" },
-                    { "Value", string.Format("{0:F1} years", years) } });
-            }
-
-            //===== CAGR
-            {
-                double nav1 = (double)chartData.First()[nav];
-                double nav2 = (double)chartData.Last()[nav];
-                double navCagr = Math.Pow(nav2 / nav1, 1.0 / years) - 1.0;
-
-                double bench1 = (double)chartData.First()[benchmark];
-                double bench2 = (double)chartData.Last()[benchmark];
-                double benchCagr = Math.Pow(bench2 / bench1, 1.0 / years) - 1.0;
-
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Compound Annual Growth Rate" },
-                    { nav, string.Format("{0:P2}", navCagr) },
-                    { benchmark2, string.Format("{0:P2}", benchCagr) } });
-            }
-
-            //===== MDD
-            {
-                double navMax = 0.0;
-                double benchMax = 0.0;
-                double navDd = 0.0;
-                double benchDd = 0.0;
-
-                foreach (var row in chartData)
-                {
-                    navMax = Math.Max(navMax, (double)row[nav]);
-                    benchMax = Math.Max(benchMax, (double)row[benchmark]);
-
-                    navDd = Math.Max(navDd, (navMax - (double)row[nav]) / navMax);
-                    benchDd = Math.Max(benchDd, (benchMax - (double)row[benchmark]) / benchMax);
-                }
-
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Maximum Drawdown" },
-                    { nav, string.Format("{0:P2}", navDd) },
-                    { benchmark2, string.Format("{0:P2}", benchDd) } });
-            }
-
-            //===== Maximum Flat Days
-            {
-                double navMaxValue = 0.0;
-                DateTime navMaxTime = startDate;
-                double navMaxFlat = 0.0;
-                double benchMaxValue = 0.0;
-                DateTime benchMaxTime = startDate;
-                double benchMaxFlat = 0.0;
-
-                foreach (var row in chartData)
-                {
-                    double navVal = (double)row[nav];
-                    double benchVal = (double)row[benchmark];
-                    DateTime timestamp = (DateTime)row.First().Value;
-
-                    if (navVal > navMaxValue)
-                    {
-                        navMaxValue = navVal;
-                        navMaxTime = timestamp;
-                    }
-                    else
-                    {
-                        navMaxFlat = Math.Max(navMaxFlat, (timestamp - navMaxTime).TotalDays);
-                    }
-
-                    if (benchVal > benchMaxValue)
-                    {
-                        benchMaxValue = benchVal;
-                        benchMaxTime = timestamp;
-                    }
-                    else
-                    {
-                        benchMaxFlat = Math.Max(benchMaxFlat, (timestamp - benchMaxTime).TotalDays);
-                    }
-                }
-
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Maximum Flat Period" },
-                    { nav, string.Format("{0} days", navMaxFlat) },
-                    { benchmark2, string.Format("{0} days", benchMaxFlat) } });
-            }
-
-            //===== Sharpe Ratio
-            List<double> navReturns = new List<double>();
-            List<double> benchReturns = new List<double>();
-            double navAvgRet;
-            double benchAvgRet;
-            {
-                const bool calcMonthly = true;
-
-                DateTime prevTimestamp = startDate;
-                double? navPrev = null;
-                double? benchPrev = null;
-
-                // create list of returns
-                foreach (var row in chartData)
-                {
-                    DateTime timestamp = (DateTime)row.First().Value;
-                    double navVal = (double)row[nav];
-                    double benchVal = (double)row[benchmark];
-
-                    if (!calcMonthly || calcMonthly && timestamp.Month != prevTimestamp.Month)
-                    {
-                        if (navPrev != null && benchPrev != null)
-                        {
-#if true
-                            // use log-returns. note that we don't use the risk free rate here.
-                            navReturns.Add(Math.Log10(navVal / (double)navPrev));
-                            benchReturns.Add(Math.Log10(benchVal / (double)benchPrev));
-#else
-                            const double riskFree = 0.0;
-                            navReturns.Add(navVal / (double)navPrev - 1.0 - riskFree);
-                            benchReturns.Add(benchVal / (double)benchPrev - 1.0 - riskFree);
+#if false
+            // testing only, should be same as CAGR
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Average Return (Annualized)" },
+                { NAV_LABEL, string.Format("{0:P2}", Math.Exp(12.0 * NAV_AVG_MONTHLY_RET) - 1.0) },
+                { BENCH_LABEL_XAML, string.Format("{0:P2}", Math.Exp(12.0 * BENCH_AVG_MONTHLY_RET) - 1.0) } });
 #endif
-                        }
 
-                        prevTimestamp = timestamp;
-                        navPrev = navVal;
-                        benchPrev = benchVal;
-                    }
-                }
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Standard Deviation of Returns (Annualized)" },
+                { NAV_LABEL, string.Format("{0:P2}", Math.Exp(Math.Sqrt(12.0) * NAV_STDEV_MONTHLY_RET) - 1.0) },
+                { BENCH_LABEL_XAML, string.Format("{0:P2}", Math.Exp(Math.Sqrt(12.0) * BENCH_STDEV_MONTHLY_RET) - 1.0)} });
 
-                navAvgRet = navReturns.Average();
-                double navStdRet = Math.Sqrt(navReturns.Average(r => Math.Pow(r - navAvgRet, 2.0)));
-                double navSharpe = Math.Sqrt(calcMonthly ? 12.0 : 252.0) * navAvgRet / navStdRet;
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Maximum Drawdown" },
+                { NAV_LABEL, string.Format("{0:P2}", NAV_MDD) },
+                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_MDD) } });
 
-                benchAvgRet = benchReturns.Average();
-                double benchStdRet = Math.Sqrt(benchReturns.Average(r => Math.Pow(r - benchAvgRet, 2.0)));
-                double benchSharpe = Math.Sqrt(calcMonthly ? 12.0 : 252.0) * benchAvgRet / benchStdRet;
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Maximum Flat Period" },
+                { NAV_LABEL, string.Format("{0} days", NAV_MAX_FLAT) },
+                { BENCH_LABEL_XAML, string.Format("{0} days", BENCH_MAX_FLAT) } });
 
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Sharpe Ratio" },
-                    { nav, string.Format("{0:F2}", navSharpe) },
-                    { benchmark2, string.Format("{0:F2}", benchSharpe) } });
-            }
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Sharpe Ratio" },
+                { NAV_LABEL, string.Format("{0:F2}", NAV_SHARPE) },
+                { BENCH_LABEL_XAML, string.Format("{0:F2}", BENCH_SHARPE) } });
 
-            //===== Beta
-            {
-                int numBars = navReturns.Count();
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Beta" },
+                { NAV_LABEL, string.Format("{0:F2}", BETA) },
+                { BENCH_LABEL_XAML, "n/a" } });
 
-                double covar = Enumerable.Range(0, numBars)
-                    .Sum(i => (navReturns[i] - navAvgRet) * (benchReturns[i] - benchAvgRet))
-                    / (numBars - 1.0);
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Ulcer Index" },
+                { NAV_LABEL, string.Format("{0:P2}", NAV_ULCER_INDEX) },
+                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_ULCER_INDEX) } });
 
-                double benchVar = benchReturns.Average(r => Math.Pow(r - benchAvgRet, 2.0));
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Ulcer Performance Index (Martin Ratio)" },
+                { NAV_LABEL, string.Format("{0:F2}", NAV_UPI) },
+                { BENCH_LABEL_XAML, string.Format("{0:F2}", BENCH_UPI) } });
 
-                double beta = covar / benchVar;
+#if true
+            retvalue.Add(new Dictionary<string, object> {
+                { METRIC_LABEL, "Information Ratio" },
+                { NAV_LABEL, string.Format("{0:F2}", NAV_INFORMATION_RATIO) },
+                { BENCH_LABEL_XAML, "n/a" } });
+#endif
 
-                retvalue.Add(new Dictionary<string, object> {
-                    { "Metric", "Beta" },
-                    { nav, string.Format("{0:F2}", beta) },
-                    { benchmark2, "n/a" } });
-            }
+            // Sortino Ratio
+            // Calmar Ratio
+            // Fouse Ratio
+            // Sterling Ratio
 
             return retvalue;
         }
         #endregion
-        #region private PlotModel RenderAnnualBars()
+        #region private PlotModel RenderAnnualColumns()
         /// <summary>
-        /// Specialized chart rendering NAV and drawdown logarithmically
+        /// Specialized chart rendering annual columns for NAV and benchmark P&L
         /// </summary>
         /// <param name="selectedChart">chart to render</param>
         /// <returns>OxyPlot model</returns>
-        private PlotModel RenderAnnualBars()
+        private PlotModel RenderAnnualColumns()
         {
             //===== get plot data
             var chartData = PlotData.First().Value;
@@ -454,6 +564,7 @@ namespace TuringTrader.Simulator
             var yAxis = new LinearAxis();
             yAxis.Position = AxisPosition.Right;
             yAxis.Key = "y";
+            yAxis.ExtraGridlines = new Double[] { 0 };
 
             plotModel.Axes.Add(xAxis);
             plotModel.Axes.Add(yAxis);
@@ -495,6 +606,12 @@ namespace TuringTrader.Simulator
             return plotModel;
         }
         #endregion
+        #region private PlotModel RenderMonteCarlo()
+        private PlotModel RenderMonteCarlo()
+        {
+            return null;
+        }
+        #endregion
 
         #region public override IEnumerable<string> AvailableCharts
         /// <summary>
@@ -533,7 +650,7 @@ namespace TuringTrader.Simulator
 
             // 3rd chart is always annual bars
             if (selectedChart == ANNUAL_BARS)
-                return RenderAnnualBars();
+                return RenderAnnualColumns();
 
             // all other are either tables or tables
             if (IsTable(selectedChart))
