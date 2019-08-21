@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWPF>true</UseWPF>
     <Authors>Felix Bertram</Authors>
     <Company>Bertram Solutions LLC</Company>
     <Product>TuringTrader</Product>
