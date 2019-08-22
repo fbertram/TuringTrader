@@ -38,15 +38,18 @@ namespace TuringTrader.Simulator
     public class SimpleReport : ReportTemplate
     {
         #region internal data
-        private static string EQUITY_CURVE = "Equity Curve with Drawdown";
-        private static string METRICS = "Performance Metrics";
-        private static string ANNUAL_BARS = "Annual Performance";
-        private static string MONTE_CARLO = "Monte Carlo Analysis";
+        private const string EQUITY_CURVE = "Equity Curve with Drawdown";
+        private const string METRICS = "Performance Metrics";
+        private const string ANNUAL_BARS = "Annual Performance";
+        private const string RETURN_DISTRIBUTION = "Cumulative Distribution of Returns";
+        private const string MONTE_CARLO = "Monte Carlo Analysis";
+        private string METRIC_LABEL = "Metric";
+        private string UNI_LABEL = "-";
+        private const double DISTR_CUTOFF = 0.495;
+        private const int NUM_MONTE_CARLO_SIMS = 1000;
         #endregion
         #region internal helpers
         private List<Dictionary<string, object>> NAV_BENCH_DATA { get { return PlotData.First().Value; } }
-        private string METRIC_LABEL = "Metric";
-        private string UNI_LABEL = "Value"; 
         private string NAV_LABEL   { get { return NAV_BENCH_DATA.First().Skip(1).First().Key; } }
         private string BENCH_LABEL { get { return NAV_BENCH_DATA.First().Skip(2).First().Key; } }
 
@@ -270,6 +273,31 @@ namespace TuringTrader.Simulator
                 return Math.Sqrt(12.0) * expectedActiveReturn / trackingError;
             }
         }
+
+        private List<double> _getDistribution(string label)
+        {
+            List<double> returns = new List<double>();
+            double? prevValue = null;
+
+            foreach (var row in NAV_BENCH_DATA)
+            {
+                double curValue = (double)row[label];
+
+                if (prevValue != null)
+                    returns.Add(Math.Log(curValue / (double)prevValue));
+
+                prevValue = curValue;
+            }
+
+            return returns
+                .OrderBy(v => v)
+                .ToList();
+        }
+
+        private List<double> _navDistribution = null;
+        private List<double> NAV_DISTRIBUTION { get { if (_navDistribution == null) _navDistribution = _getDistribution(NAV_LABEL); return _navDistribution; } }
+        private List<double> _benchDistribution = null;
+        private List<double> BENCH_DISTRIBUTION { get { if (_benchDistribution == null) _benchDistribution = _getDistribution(BENCH_LABEL); return _benchDistribution; } }
         #endregion
 
         #region private PlotModel RenderNavAndDrawdown()
@@ -305,15 +333,17 @@ namespace TuringTrader.Simulator
             xAxis.Key = "x";
 
             var yAxis = new LogarithmicAxis();
+            yAxis.Title = "Relative Equity";
             yAxis.Position = AxisPosition.Right;
-            yAxis.StartPosition = 0.25;
+            yAxis.StartPosition = 0.35;
             yAxis.EndPosition = 1.0;
             yAxis.Key = "y";
 
             var ddAxis = new LinearAxis();
+            ddAxis.Title = "Drawdown [%]";
             ddAxis.Position = AxisPosition.Right;
             ddAxis.StartPosition = 0.0;
-            ddAxis.EndPosition = 0.25;
+            ddAxis.EndPosition = 0.30;
             ddAxis.Key = "dd";
 
             plotModel.Axes.Add(xAxis);
@@ -394,7 +424,7 @@ namespace TuringTrader.Simulator
 
                     allSeries["dd" + yLabel].Points.Add(new DataPoint(
                         xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
-                        dd));
+                        100.0 * dd));
                 }
             }
 
@@ -428,12 +458,12 @@ namespace TuringTrader.Simulator
 
             retvalue.Add(new Dictionary<string, object> {
                 { METRIC_LABEL, "Simulation Period" },
-                { "Value", string.Format("{0:F1} years", YEARS) } });
+                { UNI_LABEL, string.Format("{0:F1} years", YEARS) } });
 
             retvalue.Add(new Dictionary<string, object> {
                 { METRIC_LABEL, "Compound Annual Growth Rate" },
                 { NAV_LABEL, string.Format("{0:P2}", NAV_CAGR) },
-                { BENCH_LABEL, string.Format("{0:P2}", BENCH_CAGR) } });
+                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_CAGR) } });
 
 #if false
             // testing only, should be same as CAGR
@@ -478,7 +508,7 @@ namespace TuringTrader.Simulator
                 { NAV_LABEL, string.Format("{0:F2}", NAV_UPI) },
                 { BENCH_LABEL_XAML, string.Format("{0:F2}", BENCH_UPI) } });
 
-#if true
+#if false
             retvalue.Add(new Dictionary<string, object> {
                 { METRIC_LABEL, "Information Ratio" },
                 { NAV_LABEL, string.Format("{0:F2}", NAV_INFORMATION_RATIO) },
@@ -562,6 +592,7 @@ namespace TuringTrader.Simulator
             xAxis.Key = "x";
 
             var yAxis = new LinearAxis();
+            yAxis.Title = "Annual P&L [%]";
             yAxis.Position = AxisPosition.Right;
             yAxis.Key = "y";
             yAxis.ExtraGridlines = new Double[] { 0 };
@@ -606,10 +637,266 @@ namespace TuringTrader.Simulator
             return plotModel;
         }
         #endregion
+        #region private PlotModel RenderReturnDistribution()
+        private PlotModel RenderReturnDistribution()
+        {
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = RETURN_DISTRIBUTION;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            xAxis.Title = "Probability [%]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Daily Log-Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            //===== create series
+            OxyColor navColor = _seriesColors[0];
+            OxyColor benchColor = _seriesColors[1];
+
+            var navSeries = new AreaSeries
+            {
+                Color = navColor,
+                Fill = navColor,
+                ConstantY2 = 0.0,
+            };
+            navSeries.Title = NAV_LABEL;
+            navSeries.IsVisible = true;
+            navSeries.XAxisKey = "x";
+            navSeries.YAxisKey = "y";
+
+            for (int i = 0; i < NAV_DISTRIBUTION.Count; i++)
+            {
+                double p = (double)i / NAV_DISTRIBUTION.Count;
+                if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                    navSeries.Points.Add(new DataPoint(100.0 * p, 100.0 * NAV_DISTRIBUTION[i]));
+            }
+
+            var benchSeries = new LineSeries
+            {
+                Color = benchColor,
+            };
+            benchSeries.Title = BENCH_LABEL;
+            benchSeries.IsVisible = true;
+            benchSeries.XAxisKey = "x";
+            benchSeries.YAxisKey = "y";
+
+            for (int i = 0; i < BENCH_DISTRIBUTION.Count; i++)
+            {
+                double p = (double)i / BENCH_DISTRIBUTION.Count;
+                if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                    benchSeries.Points.Add(new DataPoint(100.0 * p, 100.0 * BENCH_DISTRIBUTION[i]));
+            }
+
+            //===== add series
+            plotModel.Series.Add(navSeries);
+            plotModel.Series.Add(benchSeries);
+
+            return plotModel;
+        }
+        #endregion
         #region private PlotModel RenderMonteCarlo()
         private PlotModel RenderMonteCarlo()
         {
-            return null;
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = "Monte Carlo Analysis of Returns and Drawdowns"; //MONTE_CARLO;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            xAxis.Title = "Probability [%]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis1 = new LinearAxis();
+            yAxis1.Title = "CAGR [%]";
+            yAxis1.Position = AxisPosition.Right;
+            yAxis1.StartPosition = 0.52;
+            yAxis1.EndPosition = 1.0;
+            yAxis1.Key = "y1";
+
+            var yAxis2 = new LinearAxis();
+            yAxis2.Title = "MDD [%]";
+            yAxis2.Position = AxisPosition.Right;
+            yAxis2.StartPosition = 0.0;
+            yAxis2.EndPosition = 0.48;
+            yAxis2.Key = "y2";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis1);
+            plotModel.Axes.Add(yAxis2);
+
+            OxyColor navColor = _seriesColors[0];
+            OxyColor benchColor = _seriesColors[1];
+
+            //===== run Monte Carlo simulations (one block for strategy, one block for benchmark)
+            Random rnd = new Random();
+
+            for (int i = 0; i < 2; i++)
+            {
+                List<double> distribution = i == 0
+                    ? NAV_DISTRIBUTION
+                    : BENCH_DISTRIBUTION;
+
+                List<double> simsCagr = new List<double>();
+                List<double> simsMdd = new List<double>();
+
+                for (int n = 0; n < NUM_MONTE_CARLO_SIMS; n++)
+                {
+                    //--- create equity curve
+                    List<double> equityCurve = new List<double>();
+                    equityCurve.Add(1.0);
+
+                    for (int t = 0; t < distribution.Count; t++)
+                    {
+                        int idx = rnd.Next(distribution.Count);
+                        double logReturn = distribution[idx];
+
+                        equityCurve.Add(equityCurve.Last() * Math.Exp(logReturn));
+                    }
+
+                    double cagr = Math.Pow(equityCurve.Last(), 1.0 / YEARS) - 1.0;
+                    simsCagr.Add(100.0 * cagr);
+
+                    //--- calculate MDD
+                    double peak = 0.0;
+                    double mdd = 0.0;
+
+                    foreach (var nav in equityCurve)
+                    {
+                        peak = Math.Max(peak, nav);
+                        mdd = Math.Max(mdd, (peak - nav) / peak);
+                    }
+
+                    simsMdd.Add(100.0 * mdd);
+                }
+
+                //--- create distributions
+                var distrCagr = simsCagr
+                    .OrderBy(c => c)
+                    .ToList();
+
+                var distrMdd = simsMdd
+                    .OrderBy(m => m)
+                    .ToList();
+
+                //===== plot series
+
+                //--- cagr
+                var cagrSeries = i == 0
+                    ? new AreaSeries
+                    {
+                        Color = navColor,
+                        Fill = navColor,
+                        ConstantY2 = 0.0,
+                    }
+                    : new LineSeries
+                    {
+                        Color = benchColor,
+                    };
+                cagrSeries.Title = i == 0 ? NAV_LABEL : BENCH_LABEL;
+                cagrSeries.IsVisible = true;
+                cagrSeries.XAxisKey = "x";
+                cagrSeries.YAxisKey = "y1";
+
+                for (int x = 0; x < distrCagr.Count; x++)
+                {
+                    double p = (double)x / distrCagr.Count;
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        cagrSeries.Points.Add(new DataPoint(100.0 * p, distrCagr[x]));
+                }
+
+                //--- mdd
+                var mddSeries = i == 0
+                    ? new AreaSeries
+                    {
+                        Color = navColor,
+                        Fill = navColor,
+                        ConstantY2 = 0.0,
+                    }
+                    : new LineSeries
+                    {
+                        Color = benchColor,
+                    };
+                mddSeries.IsVisible = true;
+                mddSeries.XAxisKey = "x";
+                mddSeries.YAxisKey = "y2";
+
+                for (int x = 0; x < distrMdd.Count; x++)
+                {
+                    double p = (double)x / distrMdd.Count;
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        mddSeries.Points.Add(new DataPoint(100.0 * p, -distrMdd[x]));
+                }
+
+                //--- cagr marker
+                double findProbability(List<double> distr, double val)
+                {
+                    var less = distr
+                        .Where(v => v <= val)
+                        .ToList();
+                    var more = distr
+                        .Where(v => v >= val)
+                        .ToList();
+
+                    var pLess = (double)less.Count() / distr.Count;
+                    var vLess = less.Max();
+                    var pMore = 1.0 - (double)more.Count() / distr.Count;
+                    var vMore = more.Min();
+
+                    double p = pLess;
+
+                    if (val > vLess)
+                        p += (val - vLess) / (vMore - vLess) * (pMore - pLess);
+
+                    return p;
+                }
+
+                var cagrMarker = new ScatterSeries();
+                cagrMarker.IsVisible = true;
+                cagrMarker.XAxisKey = "x";
+                cagrMarker.YAxisKey = "y1";
+                cagrMarker.MarkerType = MarkerType.Circle;
+                cagrMarker.MarkerSize = 5;
+                cagrMarker.MarkerStroke = mddSeries.Color;
+                cagrMarker.MarkerFill = OxyColors.White;
+
+                var cagrValue = i == 0 ? 100.0 * NAV_CAGR : 100.0 * BENCH_CAGR;
+                var cagrProb = findProbability(distrCagr, cagrValue);
+                cagrMarker.Points.Add(new ScatterPoint(100.0 * cagrProb, cagrValue));
+
+                //--- mdd marker
+                var mddMarker = new ScatterSeries();
+                mddMarker.IsVisible = true;
+                mddMarker.XAxisKey = "x";
+                mddMarker.YAxisKey = "y2";
+                mddMarker.MarkerType = MarkerType.Circle;
+                mddMarker.MarkerSize = 5;
+                mddMarker.MarkerStroke = mddSeries.Color;
+                mddMarker.MarkerFill = OxyColors.White;
+
+                var mddValue = i == 0 ? 100.0 * NAV_MDD : 100.0 * BENCH_MDD;
+                var mddProb = findProbability(distrMdd, mddValue);
+                mddMarker.Points.Add(new ScatterPoint(100.0 * mddProb, -mddValue));
+
+                //===== add series
+                plotModel.Series.Add(cagrSeries);
+                plotModel.Series.Add(mddSeries);
+                plotModel.Series.Add(cagrMarker);
+                plotModel.Series.Add(mddMarker);
+            }
+
+            return plotModel;
         }
         #endregion
 
@@ -624,6 +911,8 @@ namespace TuringTrader.Simulator
                 yield return EQUITY_CURVE;
                 yield return METRICS;
                 yield return ANNUAL_BARS;
+                yield return RETURN_DISTRIBUTION;
+                yield return MONTE_CARLO;
 
                 foreach (string chart in PlotData.Keys.Skip(1))
                     yield return chart;
@@ -640,23 +929,29 @@ namespace TuringTrader.Simulator
         /// <returns>model</returns>
         public override object GetModel(string selectedChart)
         {
-            // 1st chart is always NAV and drawdown
-            if (selectedChart == EQUITY_CURVE)
-                return RenderNavAndDrawdown();
+            switch(selectedChart)
+            {
+                case EQUITY_CURVE:
+                    return RenderNavAndDrawdown();
 
-            // 2nd chart is always metrics
-            if (selectedChart == METRICS)
-                return RenderMetrics();
+                case METRICS:
+                    return RenderMetrics();
 
-            // 3rd chart is always annual bars
-            if (selectedChart == ANNUAL_BARS)
-                return RenderAnnualColumns();
+                case ANNUAL_BARS:
+                    return RenderAnnualColumns();
 
-            // all other are either tables or tables
-            if (IsTable(selectedChart))
-                return RenderTable(selectedChart);
-            else
-                return RenderSimple(selectedChart);
+                case RETURN_DISTRIBUTION:
+                    return RenderReturnDistribution();
+
+                case MONTE_CARLO:
+                    return RenderMonteCarlo();
+
+                default:
+                    if (IsTable(selectedChart))
+                        return RenderTable(selectedChart);
+                    else
+                        return RenderSimple(selectedChart);
+            }
         }
         #endregion
     }
