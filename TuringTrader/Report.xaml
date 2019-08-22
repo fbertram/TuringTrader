@@ -17,6 +17,6 @@
         </Menu>
         <ComboBox Name="ChartSelect" Margin="10,32,10,0" VerticalAlignment="Top" ItemsSource="{Binding AvailableCharts}" SelectedValue="{Binding SelectedChart}"/>
         <oxy:PlotView Name="Chart" Margin="10,65,10,10" Visibility="Hidden"/>
-        <DataGrid Name="Table" Margin="10,65,10,10" Visibility="Hidden"/>
+        <DataGrid Name="Table" Margin="10,65,10,10" Visibility="Visible" GridLinesVisibility="None" ColumnWidth="*" IsReadOnly="True"/>
     </Grid>
 </Window>

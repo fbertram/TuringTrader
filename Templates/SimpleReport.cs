@@ -44,7 +44,7 @@ namespace TuringTrader.Simulator
         private const string RETURN_DISTRIBUTION = "Cumulative Distribution of Returns";
         private const string MONTE_CARLO = "Monte Carlo Analysis";
         private string METRIC_LABEL = "Metric";
-        private string UNI_LABEL = "-";
+        private string UNI_LABEL = "";
         private const double DISTR_CUTOFF = 0.495;
         private const int NUM_MONTE_CARLO_SIMS = 1000;
         #endregion
