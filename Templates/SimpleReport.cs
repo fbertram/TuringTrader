@@ -328,7 +328,7 @@ namespace TuringTrader.Simulator
             Axis xAxis = xValue.GetType() == typeof(DateTime)
                 ? new DateTimeAxis()
                 : new LinearAxis();
-            xAxis.Title = xLabel;
+            xAxis.Title = "Date"; //xLabel
             xAxis.Position = AxisPosition.Bottom;
             xAxis.Key = "x";
 
