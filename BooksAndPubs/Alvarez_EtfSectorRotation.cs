@@ -33,6 +33,8 @@ namespace BooksAndPubs
 {
     public class Alvarez_EtfSectorRotation : Algorithm
     {
+        public override string Name { get { return "ETF Sector Rotation"; } }
+
         private static readonly string[] UNIVERSE =
         {
             "XLY", // consumer discretionary
@@ -167,12 +169,12 @@ namespace BooksAndPubs
                 }
 
                 //---- plot output
-                _plotter.SelectChart(Name, "date");
+                _plotter.SelectChart(Name, "Date");
                 _plotter.SetX(SimTime[0]);
-                _plotter.Plot("NAV", NetAssetValue[0]);
-                _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                _plotter.Plot(Name, NetAssetValue[0]);
+                _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
-                _plotter.SelectChart("Holdings", "date");
+                _plotter.SelectChart("Strategy Positions", "Date");
                 _plotter.SetX(SimTime[0]);
                 foreach (var i in _universe)
                     _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);

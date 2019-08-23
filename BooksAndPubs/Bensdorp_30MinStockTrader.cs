@@ -37,6 +37,8 @@ namespace BooksAndPubs
     #region Weekly Rotation Core
     public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
     {
+        public override string Name { get { return "WR Strategy"; } }
+
         #region inputs
         protected abstract List<string> UNIVERSE
         { get; }
@@ -126,14 +128,11 @@ namespace BooksAndPubs
                     // plot to chart
                     _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("nav", NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
-
-                    // placeholder, to make sure positions land on sheet 2
-                    _plotter.SelectChart(Name + " positions", "entry date");
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
                     // additional indicators
-                    _plotter.SelectChart(Name + " extra", "date");
+                    _plotter.SelectChart("Strategy Leverage", "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                 }
@@ -149,7 +148,7 @@ namespace BooksAndPubs
                     .GroupPositions(Log, true)
                     .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-                _plotter.SelectChart(Name + " positions", "entry date");
+                _plotter.SelectChart("Strategy Positions", "entry date");
                 foreach (var trade in tradeLog)
                 {
                     _plotter.SetX(trade.Entry.BarOfExecution.Time);
@@ -182,6 +181,8 @@ namespace BooksAndPubs
     #region Mean Reversion Core
     public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
     {
+        public override string Name { get { return ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy"; } }
+
         #region inputs
         protected abstract List<string> UNIVERSE
         { get; }
@@ -393,14 +394,14 @@ namespace BooksAndPubs
                     // plot to chart
                     _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("nav", NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
                     // placeholder, to make sure positions land on sheet 2
-                    _plotter.SelectChart(Name + " positions", "entry date");
+                    _plotter.SelectChart("Strategy Positions", "entry date");
 
                     // additional indicators
-                    _plotter.SelectChart(Name + " extra", "date");
+                    _plotter.SelectChart("Strategy Leverage", "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                 }
@@ -416,7 +417,7 @@ namespace BooksAndPubs
                     .GroupPositions(Log, true)
                     .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-                _plotter.SelectChart(Name + " positions", "entry date");
+                _plotter.SelectChart("Strategy Positions", "entry date");
                 foreach (var trade in tradeLog)
                 {
                     _plotter.SetX(trade.Entry.BarOfExecution.Time);

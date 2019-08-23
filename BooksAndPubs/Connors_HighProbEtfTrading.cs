@@ -103,13 +103,10 @@ namespace BooksAndPubs
                     // plot to chart
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("nav", NetAssetValue[0]);
-                    _plotter.Plot(_market.Symbol, _market.Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_market.Name, _market.Close[0]);
 
-                    // placeholder for 2nd sheet
-                    _plotter.SelectChart(Name + " positions", "entry date");
-
-                    _plotter.SelectChart(Name + " % invested", "entry date");
+                    _plotter.SelectChart("Strategy Leverage", "entry date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("% long", Positions.Keys.Sum(i => Math.Max(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
                     _plotter.Plot("% short", Positions.Keys.Sum(i => -Math.Min(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
@@ -127,7 +124,7 @@ namespace BooksAndPubs
                     .GroupPositions(Log, true)
                     .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-                _plotter.SelectChart(Name + " positions", "entry date");
+                _plotter.SelectChart("Strategy Positions", "entry date");
                 foreach (var trade in tradeLog)
                 {
                     _plotter.SetX(trade.Entry.BarOfExecution.Time);
@@ -162,6 +159,8 @@ namespace BooksAndPubs
     #region 3-Day High/Low
     public class Connors_HighProbEtfTrading_3DayHighLow : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "3-Day High/Low Strategy"; } }
+
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
 
@@ -221,6 +220,8 @@ namespace BooksAndPubs
     #region RSI 25 & RSI 75
     public class Connors_HighProbEtfTrading_Rsi25Rsi75 : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "RSI 25 & RSI 75 Strategy"; } }
+
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;
 
@@ -283,6 +284,8 @@ namespace BooksAndPubs
     #region R3
     public class Connors_HighProbEtfTrading_R3 : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "R3 Strategy"; } }
+
         [OptimizerParam(50, 70, 5)]
         public int ENTRY_MAX_RSI_2_LONG = 60;
 
@@ -357,6 +360,8 @@ namespace BooksAndPubs
     #region %b
     public class Connors_HighProbEtfTrading_PercentB : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "%b Strategy"; } }
+
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_BB_LONG = 20;
 
@@ -421,6 +426,8 @@ namespace BooksAndPubs
     #region MDU and MDD
     public class Connors_HighProbEtfTrading_MduMdd : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "MDU and MDD Strategy"; } }
+
         [OptimizerParam(3, 6, 1)]
         public int ENTRY_MIN_UP_DN = 4;
 
@@ -482,6 +489,8 @@ namespace BooksAndPubs
     #region RSI 10/6 & RSI 90/94
     public class Connors_HighProbEtfTrading_Rsi1006Rsi9094 : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "RSI 10/6 & RSI 90/94 Strategy"; } }
+
         [OptimizerParam(5, 10, 1)]
         public int ENTRY_MAX_RSI_LONG = 10;
 
@@ -543,6 +552,8 @@ namespace BooksAndPubs
     #region TPS
     public class Connors_HighProbEtfTrading_Tps : Connors_HighProbEtfTrading_Core
     {
+        public override string Name { get { return "TPS Strategy"; } }
+
         [OptimizerParam(10, 40, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;
 

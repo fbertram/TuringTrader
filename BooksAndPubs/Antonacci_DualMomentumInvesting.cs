@@ -37,6 +37,8 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Antonacci_DualMomentumInvesting : Algorithm
     {
+        public override string Name { get { return "Dual Momentum Strategy"; } }
+
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
@@ -162,9 +164,9 @@ namespace TuringTrader.BooksAndPubs
 
                 if (TradingDays > 0)
                 {
-                    _plotter.SelectChart(Name, "date");
+                    _plotter.SelectChart(Name, "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
                     _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
                 }
             }
@@ -172,7 +174,7 @@ namespace TuringTrader.BooksAndPubs
             //----- post processing
 
             // create trading log on Sheet 2
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);

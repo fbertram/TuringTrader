@@ -36,6 +36,8 @@ namespace TuringTrader.BooksAndPubs
 {
     public abstract class Clenov_StocksOnTheMove_Core : Algorithm
     {
+        public override string Name { get { return "Stocks on the Move"; } }
+
         #region inputs
         [OptimizerParam(63, 252, 21)]
         public int MOM_PERIOD = 90;
@@ -172,8 +174,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(BENCHMARK, FindInstrument(BENCHMARK).Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(FindInstrument(BENCHMARK).Name, FindInstrument(BENCHMARK).Close[0]);
                 }
             }
 
@@ -184,7 +186,7 @@ namespace TuringTrader.BooksAndPubs
                 .GroupPositions(Log, true)
                 .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-            _plotter.SelectChart(Name + " positions", "entry date");
+            _plotter.SelectChart("Strategy Positions", "entry date");
             foreach (var trade in tradeLog)
             {
                 _plotter.SetX(trade.Entry.BarOfExecution.Time.Date);
