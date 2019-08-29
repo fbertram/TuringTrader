@@ -467,9 +467,9 @@ namespace TuringTrader.Simulator
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
                     // execute orders
-                    foreach (Order order in _pendingOrders)
+                    foreach (Order order in PendingOrders)
                         ExecOrder(order);
-                    _pendingOrders.Clear();
+                    PendingOrders.Clear();
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
@@ -526,7 +526,7 @@ namespace TuringTrader.Simulator
                 //----- attempt to free up resources
                 _instruments.Clear();
                 Positions.Clear();
-                _pendingOrders.Clear();
+                PendingOrders.Clear();
                 SimTime.Clear();
 
                 yield break;
@@ -685,7 +685,7 @@ namespace TuringTrader.Simulator
         {
             order.QueueTime = SimTime.BarsAvailable > 0
                 ? SimTime[0] : default(DateTime);
-            _pendingOrders.Add(order);
+            PendingOrders.Add(order);
         }
         #endregion
         #region public List<Order> PendingOrders
@@ -696,8 +696,7 @@ namespace TuringTrader.Simulator
         {
             get;
             private set;
-        }
-        private List<Order> _pendingOrders = new List<Order>();
+        } = new List<Order>();
         #endregion
         #region public Dictionary<Instrument, int> Positions
         /// <summary>
