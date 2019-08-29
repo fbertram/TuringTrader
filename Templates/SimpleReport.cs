@@ -42,40 +42,68 @@ namespace TuringTrader.Simulator
         private const string METRICS = "Performance Metrics";
         private const string ANNUAL_BARS = "Annual Performance";
         private const string RETURN_DISTRIBUTION = "Cumulative Distribution of Returns";
-        private const string MONTE_CARLO = "Monte Carlo Analysis";
+        private const string MONTE_CARLO = "Monte-Carlo Analysis";
         private string METRIC_LABEL = "Metric";
         private string UNI_LABEL = "";
         private const double DISTR_CUTOFF = 0.495;
         private const int NUM_MONTE_CARLO_SIMS = 1000;
         #endregion
         #region internal helpers
-        private List<Dictionary<string, object>> NAV_BENCH_DATA { get { return PlotData.First().Value; } }
-        private string NAV_LABEL   { get { return NAV_BENCH_DATA.First().Skip(1).First().Key; } }
-        private string BENCH_LABEL { get { return NAV_BENCH_DATA.First().Skip(2).First().Key; } }
+        private List<Dictionary<string, object>> FIRST_CHART => PlotData.First().Value;
 
-        // FIXME: somehow we need to escape the carrot, as XAML treats it
-        //        as a special character
-        // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
-        private string BENCH_LABEL_XAML { get { return BENCH_LABEL.Replace("^", string.Empty); } }
+        private string X_LABEL => FIRST_CHART.First().First().Key; 
+        private Type X_TYPE => FIRST_CHART.First().First().Value.GetType();
 
-        private DateTime START_DATE { get { return (DateTime)NAV_BENCH_DATA.First().First().Value; } }
-        private DateTime END_DATE { get { return (DateTime)NAV_BENCH_DATA.Last().First().Value; } }
-        private double YEARS { get { return (END_DATE - START_DATE).TotalDays / 365.25; } }
+        private List<string> ALL_Y_LABELS => FIRST_CHART.First().Keys.Skip(1).ToList(); 
+        private int NUM_Y_LABELS => ALL_Y_LABELS.Count();
+        private string FIRST_Y_LABEL => ALL_Y_LABELS.First();
+        private string BENCH_Y_LABEL => ALL_Y_LABELS.Last();
 
-        private double NAV_START   { get { return (double)NAV_BENCH_DATA.First()[NAV_LABEL];   } }
-        private double NAV_END     { get { return (double)NAV_BENCH_DATA.Last()[NAV_LABEL];    } }
-        private double BENCH_START { get { return (double)NAV_BENCH_DATA.First()[BENCH_LABEL]; } }
-        private double BENCH_END   { get { return (double)NAV_BENCH_DATA.Last()[BENCH_LABEL];  } }
-        private double NAV_CAGR    { get { return Math.Pow(NAV_END / NAV_START, 1.0 / YEARS) - 1.0; } }
-        private double BENCH_CAGR  { get { return Math.Pow(BENCH_END / BENCH_START, 1.0 / YEARS) - 1.0; } }
+        private DateTime START_DATE => (DateTime)FIRST_CHART.First()[X_LABEL];
+        private DateTime END_DATE => (DateTime)FIRST_CHART.Last()[X_LABEL];
+        private double YEARS => (END_DATE - START_DATE).TotalDays / 365.25;
 
-        private Dictionary<DateTime, double> _getMonthlyReturns(string label)
+        private Dictionary<DateTime, double> GET_SERIES(string yLabel)
+        {
+            var xLabel = X_LABEL;
+            var series = new Dictionary<DateTime, double>();
+            foreach (var row in FIRST_CHART)
+            {
+                if (row.ContainsKey(yLabel))
+                    series[(DateTime)row[xLabel]] = (double)row[yLabel];
+            }
+            return series;
+        }
+
+        private double START_VALUE(string label) => GET_SERIES(label).First().Value;
+        private double END_VALUE(string label) => GET_SERIES(label).Last().Value;
+
+        private double CAGR(string label) => Math.Pow(END_VALUE(label) / START_VALUE(label), 1.0 / YEARS) - 1.0;
+        private double MDD(string label)
+        {
+            double max = -1e99;
+            double mdd = 0.0;
+
+            foreach (var row in FIRST_CHART)
+            {
+                double val = (double)row[label];
+
+                max = Math.Max(max, val);
+                double dd = (max - val) / max;
+
+                mdd = Math.Max(mdd, dd);
+            }
+
+            return mdd;
+        }
+
+        private Dictionary<DateTime, double> MONTHLY_RETURNS(string label)
         {
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = START_DATE;
             double? prevValue = null;
 
-            foreach (var row in NAV_BENCH_DATA)
+            foreach (var row in FIRST_CHART)
             {
                 DateTime curTime = (DateTime)row.First().Value;
                 double curValue = (double)row[label];
@@ -94,14 +122,29 @@ namespace TuringTrader.Simulator
 
             return monthlyReturns;
         }
-        private Dictionary<DateTime, double> _navMonthlyRet = null;
-        private Dictionary<DateTime, double> NAV_MONTHLY_RET { get { if (_navMonthlyRet == null) _navMonthlyRet = _getMonthlyReturns(NAV_LABEL); return _navMonthlyRet; } }
 
-        private Dictionary<DateTime, double> _benchMonthlyRet = null;
-        private Dictionary<DateTime, double> BENCH_MONTHLY_RET { get { if (_benchMonthlyRet == null) _benchMonthlyRet = _getMonthlyReturns(BENCH_LABEL); return _benchMonthlyRet; } }
+        double AVG_MONTHLY_RETURN(string label) => MONTHLY_RETURNS(label).Values.Average(r => r);
+        double STD_MONTHLY_RETURN(string label)
+        {
+            double avg = AVG_MONTHLY_RETURN(label);
+            return Math.Sqrt(MONTHLY_RETURNS(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+        }
+        double SHARPE_RATIO(string label)
+        {
+            var exc = EXC_MONTHLY_RETURNS(label);
+            var avg = exc.Values.Average(r => r);
+            var var = exc.Values.Average(r => Math.Pow(r - avg, 2.0));
+
+            return Math.Sqrt(12.0) * avg / Math.Sqrt(var);
+        }
+
+        // FIXME: somehow we need to escape the carrot, as XAML treats it
+        //        as a special character
+        // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
+        //private string BENCH_LABEL_XAML { get { return BENCH_LABEL.Replace("^", string.Empty); } }
 
         private Dictionary<DateTime, double> _rfMonthlyYield = null;
-        private Dictionary<DateTime, double> RF_MONTHLY_YIELD
+        private Dictionary<DateTime, double> RF_MONTHLY_RETURNS
         {
             get
             {
@@ -131,39 +174,13 @@ namespace TuringTrader.Simulator
             }
         }
 
-        private double NAV_AVG_MONTHLY_RET   { get { return NAV_MONTHLY_RET.Average(r => r.Value); } }
-        private double BENCH_AVG_MONTHLY_RET { get { return BENCH_MONTHLY_RET.Average(r => r.Value); } }
-
-        private double NAV_STDEV_MONTHLY_RET   { get { double avg = NAV_AVG_MONTHLY_RET;  return Math.Sqrt(NAV_MONTHLY_RET.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
-        private double BENCH_STDEV_MONTHLY_RET { get { double avg = BENCH_AVG_MONTHLY_RET; return Math.Sqrt(BENCH_MONTHLY_RET.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
-
-        private double _getMdd(string label)
-        {
-            double max = -1e99;
-            double mdd = 0.0;
-
-            foreach (var row in NAV_BENCH_DATA)
-            {
-                double val = (double)row[label];
-
-                max = Math.Max(max, val);
-                double dd = (max - val) / max;
-
-                mdd = Math.Max(mdd, dd);
-            }
-
-            return mdd;
-        }
-        private double NAV_MDD { get { return _getMdd(NAV_LABEL); } }
-        private double BENCH_MDD { get { return _getMdd(BENCH_LABEL); } }
-
-        private double _getMaxFlat(string label)
+        private double MAX_FLAT_DAYS(string label)
         {
             double peakValue = -1e99;
             DateTime peakTime = START_DATE;
             double maxFlat = 0.0;
 
-            foreach (var row in NAV_BENCH_DATA)
+            foreach (var row in FIRST_CHART)
             {
                 DateTime time = (DateTime)row.First().Value;
                 double value = (double)row[label];
@@ -180,56 +197,38 @@ namespace TuringTrader.Simulator
 
             return maxFlat;
         }
-        private double NAV_MAX_FLAT { get { return _getMaxFlat(NAV_LABEL); } }
-        private double BENCH_MAX_FLAT { get { return _getMaxFlat(BENCH_LABEL); } }
 
-        private Dictionary<DateTime, double> _getExcReturns(string label)
+        private Dictionary<DateTime, double> EXC_MONTHLY_RETURNS(string label)
         {
-            Dictionary<DateTime, double> monthlyReturns = label == NAV_LABEL ? NAV_MONTHLY_RET : BENCH_MONTHLY_RET;
+            Dictionary<DateTime, double> monthlyReturns = MONTHLY_RETURNS(label);
 
             return monthlyReturns
-                .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - RF_MONTHLY_YIELD[r.Key]));
+                .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - RF_MONTHLY_RETURNS[r.Key]));
         }
 
-        private Dictionary<DateTime, double> _navMonthlyExcess = null;
-        private Dictionary<DateTime, double> NAV_MONTHLY_EXCESS   { get { if (_navMonthlyExcess == null) _navMonthlyExcess = _getExcReturns(NAV_LABEL); return _navMonthlyExcess; } }
-        private Dictionary<DateTime, double> _benchMonthlyExcess = null;
-        private Dictionary<DateTime, double> BENCH_MONTHLY_EXCESS { get { if (_benchMonthlyExcess == null) _benchMonthlyExcess = _getExcReturns(BENCH_LABEL); return _benchMonthlyExcess; } }
-
-        private double NAV_AVG_MONTHLY_EXCESS   { get { return NAV_MONTHLY_EXCESS.Average(r => r.Value); } }
-        private double BENCH_AVG_MONTHLY_EXCESS { get { return BENCH_MONTHLY_EXCESS.Average(r => r.Value); } }
-
-        private double NAV_STDEV_MONTHLY_EXCESS   { get { double avg = NAV_AVG_MONTHLY_EXCESS; return Math.Sqrt(NAV_MONTHLY_EXCESS.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
-        private double BENCH_STDEV_MONTHLY_EXCESS { get { double avg = BENCH_AVG_MONTHLY_EXCESS; return Math.Sqrt(BENCH_MONTHLY_EXCESS.Average(r => Math.Pow(r.Value - avg, 2.0))); } }
-
-        private double NAV_SHARPE { get { return Math.Sqrt(12.0) * NAV_AVG_MONTHLY_EXCESS / NAV_STDEV_MONTHLY_EXCESS; } }
-        private double BENCH_SHARPE { get { return Math.Sqrt(12.0) * BENCH_AVG_MONTHLY_EXCESS / BENCH_STDEV_MONTHLY_EXCESS; } }
-
-        private double BETA
+        private double BETA(string seriesLabel, string benchLabel)
         {
-            get
-            {
-                var dates = NAV_MONTHLY_RET.Keys.ToList();
+            var series = MONTHLY_RETURNS(seriesLabel);
+            var seriesAvg = series.Values.Average(v => v);
+            var bench = MONTHLY_RETURNS(benchLabel);
+            var benchAvg = bench.Values.Average(v => v);
+            var benchVar = bench.Values.Average(v => Math.Pow(v - benchAvg, 2.0));
+            var dates = series.Keys.ToList();
 
-                double covar = dates
-                    .Sum(d => (NAV_MONTHLY_RET[d] - NAV_AVG_MONTHLY_RET) * (BENCH_MONTHLY_RET[d] - BENCH_AVG_MONTHLY_RET))
-                    / (dates.Count - 1.0);
+            double covar = dates
+                .Sum(d => (series[d] - seriesAvg) * (bench[d] - benchAvg))
+                / (dates.Count - 1.0);
 
-                //double benchVar = benchReturns.Values.Average(r => Math.Pow(r - benchAvgRet, 2.0));
-
-                //double beta = covar / benchVar;
-
-                return covar / Math.Pow(BENCH_STDEV_MONTHLY_RET, 2.0);
-            }
+            return covar / benchVar;
         }
 
-        private double _getUlcerIndex(string label)
+        private double ULCER_INDEX(string label)
         {
             double peak = 0.0;
             double sumDd2 = 0.0;
             int N = 0;
 
-            foreach (var row in NAV_BENCH_DATA)
+            foreach (var row in FIRST_CHART)
             {
                 N++;
                 peak = Math.Max(peak, (double)row[label]);
@@ -238,48 +237,20 @@ namespace TuringTrader.Simulator
 
             return Math.Sqrt(sumDd2 / N);
         }
-        private double NAV_ULCER_INDEX   { get { return _getUlcerIndex(NAV_LABEL); } }
-        private double BENCH_ULCER_INDEX { get { return _getUlcerIndex(BENCH_LABEL); } }
 
-        private double NAV_UPI   { get { return (Math.Exp(12.0 * NAV_AVG_MONTHLY_EXCESS) - 1.0) / NAV_ULCER_INDEX; } }
-        private double BENCH_UPI { get { return (Math.Exp(12.0 * BENCH_AVG_MONTHLY_EXCESS) - 1.0) / BENCH_ULCER_INDEX; } }
-
-        private Dictionary<DateTime, double> _activeReturn = null;
-        private Dictionary<DateTime, double> ACTIVE_RETURN
+        private double ULCER_PERFORMANCE_INDEX(string label)
         {
-            get
-            {
-                if (_activeReturn == null)
-                {
-                    _activeReturn = new Dictionary<DateTime, double>();
-                    var dates = NAV_MONTHLY_RET.Keys;
-
-                    foreach (var date in dates)
-                        _activeReturn[date] = NAV_MONTHLY_RET[date] - BENCH_MONTHLY_RET[date];
-                }
-                return _activeReturn;
-            }
+            double perf = Math.Exp(12.0 * EXC_MONTHLY_RETURNS(label).Values.Average(r => r)) - 1.0;
+            double ulcer = ULCER_INDEX(label);
+            return perf / ulcer;
         }
 
-        // FIXME: results seem incorrect
-        private double NAV_INFORMATION_RATIO
-        {
-            get
-            {
-                double expectedActiveReturn = ACTIVE_RETURN
-                    .Average(r => r.Value);
-                double trackingError = Math.Sqrt(ACTIVE_RETURN
-                    .Average(r => Math.Pow(r.Value - expectedActiveReturn, 2.0)));
-                return Math.Sqrt(12.0) * expectedActiveReturn / trackingError;
-            }
-        }
-
-        private List<double> _getDistribution(string label)
+        private List<double> DISTR_DAILY_RETURNS(string label)
         {
             List<double> returns = new List<double>();
             double? prevValue = null;
 
-            foreach (var row in NAV_BENCH_DATA)
+            foreach (var row in FIRST_CHART)
             {
                 double curValue = (double)row[label];
 
@@ -294,10 +265,27 @@ namespace TuringTrader.Simulator
                 .ToList();
         }
 
-        private List<double> _navDistribution = null;
-        private List<double> NAV_DISTRIBUTION { get { if (_navDistribution == null) _navDistribution = _getDistribution(NAV_LABEL); return _navDistribution; } }
-        private List<double> _benchDistribution = null;
-        private List<double> BENCH_DISTRIBUTION { get { if (_benchDistribution == null) _benchDistribution = _getDistribution(BENCH_LABEL); return _benchDistribution; } }
+        private double DISTR_RET_PROBABILITY(List<double> distr, double val)
+        {
+            var less = distr
+                .Where(v => v <= val)
+                .ToList();
+            var more = distr
+                .Where(v => v >= val)
+                .ToList();
+
+            var pLess = (double)less.Count() / distr.Count;
+            var vLess = less.Max();
+            var pMore = 1.0 - (double)more.Count() / distr.Count;
+            var vMore = more.Min();
+
+            double p = pLess;
+
+            if (val > vLess)
+                p += (val - vLess) / (vMore - vLess) * (pMore - pLess);
+
+            return p;
+        }
         #endregion
 
         #region private PlotModel RenderNavAndDrawdown()
@@ -308,27 +296,14 @@ namespace TuringTrader.Simulator
         /// <returns>OxyPlot model</returns>
         private PlotModel RenderNavAndDrawdown()
         {
-            //===== get plot data
-            var chartData = PlotData.First().Value;
-
-            string xLabel = chartData
-                .First()      // first row is as good as any
-                .First().Key; // first column is x-axis
-
-            object xValue = chartData
-                .First()        // first row is as good as any
-                .First().Value; // first column is x-axis
-
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = PlotData.Keys.First();
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
-            Axis xAxis = xValue.GetType() == typeof(DateTime)
-                ? new DateTimeAxis()
-                : new LinearAxis();
-            xAxis.Title = "Date"; //xLabel
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
             xAxis.Position = AxisPosition.Bottom;
             xAxis.Key = "x";
 
@@ -350,87 +325,73 @@ namespace TuringTrader.Simulator
             plotModel.Axes.Add(yAxis);
             plotModel.Axes.Add(ddAxis);
 
-            Dictionary<string, object> normalizeValues = chartData
-                .First();
-
-            Dictionary<string, double> maxValues = new Dictionary<string, double>();
-
             //===== create series
-            OxyColor navColor = _seriesColors[0]; //OxyColor.FromRgb(0x44, 0x72, 0xc4); // OxyColors.Blue
-            OxyColor benchColor = _seriesColors[1]; //OxyColor.FromRgb(0xeb, 0x7f, 0x34); // OxyColors.Orange
-            Dictionary<string, LineSeries> allSeries = new Dictionary<string, LineSeries>();
-
-            foreach (var row in chartData)
+            for (int i = 0; i < NUM_Y_LABELS; i++)
             {
-                xValue = row[xLabel];
+                string yLabel = ALL_Y_LABELS[i];
+                var series = GET_SERIES(yLabel);
+                var color = _seriesColors[i];
 
-                foreach (var col in row)
-                {
-                    if (col.Key == xLabel)
-                        continue;
-
-                    if (col.Value.GetType() != typeof(double)
-                    || double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value))
-                        continue;
-
-                    string yLabel = col.Key;
-                    double yValue = (double)col.Value / (double)normalizeValues[yLabel];
-
-                    maxValues[yLabel] = maxValues.ContainsKey(yLabel)
-                        ? Math.Max(maxValues[yLabel], yValue)
-                        : yValue;
-
-                    double dd = (yValue - maxValues[yLabel]) / maxValues[yLabel];
-
-                    if (!allSeries.ContainsKey(yLabel))
+                var eqSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
+                    ? new AreaSeries
                     {
-                        var newSeries = yLabel == row.Skip(1).First().Key
-                            ? new AreaSeries
-                            {
-                                Color = navColor,
-                                Fill = navColor,
-                                ConstantY2 = 1.0,
-                            }
-                            : new LineSeries
-                            {
-                                Color = benchColor,
-                            };
-                        newSeries.Title = yLabel;
-                        newSeries.IsVisible = true;
-                        newSeries.XAxisKey = "x";
-                        newSeries.YAxisKey = "y";
-                        allSeries[yLabel] = newSeries;
-
-                        var ddSeries = yLabel == row.Skip(1).First().Key
-                            ? new AreaSeries
-                            {
-                                Color = navColor,
-                                Fill = navColor,
-                            }
-                            : new LineSeries
-                            {
-                                Color = benchColor,
-                            };
-                        // ddSeries.Title = "DD(" + yLabel + ")";
-                        ddSeries.IsVisible = true;
-                        ddSeries.XAxisKey = "x";
-                        ddSeries.YAxisKey = "dd";
-                        allSeries["dd" + yLabel] = ddSeries;
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
                     }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
 
-                    allSeries[yLabel].Points.Add(new DataPoint(
-                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
-                        (double)yValue));
+                plotModel.Series.Add(eqSeries);
 
-                    allSeries["dd" + yLabel].Points.Add(new DataPoint(
-                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
+                var ddSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
+                    ? new AreaSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                        Fill = color,
+                    }
+                    : new LineSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(ddSeries);
+
+                double max = 0.0;
+                double y0 = START_VALUE(yLabel);
+
+                foreach (var point in series)
+                {
+                    var x = point.Key;
+                    var y = point.Value;
+                    max = Math.Max(max, y);
+                    double dd = (y - max) / max;
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(x),
+                        (double)y / y0));
+
+                    ddSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(x),
                         100.0 * dd));
                 }
             }
-
-            //===== add series to plot model
-            foreach (var series in allSeries)
-                plotModel.Series.Add(series.Value);
 
             return plotModel;
         }
@@ -442,79 +403,98 @@ namespace TuringTrader.Simulator
         /// <returns>table model</returns>
         private List<Dictionary<string, object>> RenderMetrics()
         {
+            // TODO: this code needs some cleanup!
+            // we want to make sure that meaningful metrics 
+            // are generated for an arbitrary number of series
+
             var retvalue = new List<Dictionary<string, object>>();
+            Dictionary<string, object> row = null;
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Simulation Start" },
-                { UNI_LABEL, string.Format("{0:MM/dd/yyyy}", START_DATE) },
-                { NAV_LABEL, string.Format("{0:C2}", NAV_START) },
-                { BENCH_LABEL_XAML, string.Format("{0:C2}", BENCH_START) } });
+            row = new Dictionary<String, object>();
+            row[METRIC_LABEL] = "Simulation Start";
+            row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", START_DATE);
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:C2}", START_VALUE(label));
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Simulation End" },
-                { UNI_LABEL, string.Format("{0:MM/dd/yyyy}", END_DATE) },
-                { NAV_LABEL, string.Format("{0:C2}", NAV_END) },
-                { BENCH_LABEL_XAML, string.Format("{0:C2}", BENCH_END) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Simulation End";
+            row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", END_DATE);
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:C2}", END_VALUE(label));
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Simulation Period" },
-                { UNI_LABEL, string.Format("{0:F1} years", YEARS) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Simulation Period";
+            row[UNI_LABEL] = string.Format("{0:F1} years", YEARS);
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Compound Annual Growth Rate" },
-                { NAV_LABEL, string.Format("{0:P2}", NAV_CAGR) },
-                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_CAGR) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Compound Annual Growth Rate";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:P2}", CAGR(label));
+            retvalue.Add(row);
 
 #if false
             // testing only, should be same as CAGR
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Average Return (Annualized)" },
-                { NAV_LABEL, string.Format("{0:P2}", Math.Exp(12.0 * NAV_AVG_MONTHLY_RET) - 1.0) },
-                { BENCH_LABEL_XAML, string.Format("{0:P2}", Math.Exp(12.0 * BENCH_AVG_MONTHLY_RET) - 1.0) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Average Return (Monthly, Annualized)";
+            foreach (var label in _getLabels())
+                row[label] = string.Format("{0:P2}", Math.Sqrt(12.0) * _getStdMonthlyReturns(label));
+            retvalue.Add(row);
 #endif
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Standard Deviation of Returns (Annualized)" },
-                { NAV_LABEL, string.Format("{0:P2}", Math.Exp(Math.Sqrt(12.0) * NAV_STDEV_MONTHLY_RET) - 1.0) },
-                { BENCH_LABEL_XAML, string.Format("{0:P2}", Math.Exp(Math.Sqrt(12.0) * BENCH_STDEV_MONTHLY_RET) - 1.0)} });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:P2}",
+                    Math.Exp(Math.Sqrt(12.0 * MONTHLY_RETURNS(label).Values.Average(r => r * r))) - 1.0);
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Maximum Drawdown" },
-                { NAV_LABEL, string.Format("{0:P2}", NAV_MDD) },
-                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_MDD) } });
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Maximum Flat Period" },
-                { NAV_LABEL, string.Format("{0} days", NAV_MAX_FLAT) },
-                { BENCH_LABEL_XAML, string.Format("{0} days", BENCH_MAX_FLAT) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Maximum Drawdown";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:P2}", MDD(label));
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Sharpe Ratio" },
-                { NAV_LABEL, string.Format("{0:F2}", NAV_SHARPE) },
-                { BENCH_LABEL_XAML, string.Format("{0:F2}", BENCH_SHARPE) } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Maximum Flat Days";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0} days", MAX_FLAT_DAYS(label));
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Beta" },
-                { NAV_LABEL, string.Format("{0:F2}", BETA) },
-                { BENCH_LABEL_XAML, "n/a" } });
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Sharpe Ratio (Monthly, Annualized)";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:F2}", SHARPE_RATIO(label));
+            retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Ulcer Index" },
-                { NAV_LABEL, string.Format("{0:P2}", NAV_ULCER_INDEX) },
-                { BENCH_LABEL_XAML, string.Format("{0:P2}", BENCH_ULCER_INDEX) } });
+            if (NUM_Y_LABELS >= 2)
+            {
+                row = new Dictionary<string, object>();
+                row[METRIC_LABEL] = "Beta (Monthly)";
+                foreach (var label in ALL_Y_LABELS)
+                    row[label] = label == BENCH_Y_LABEL
+                        ? "- benchmark -"
+                        : string.Format("{0:F2}", BETA(label, BENCH_Y_LABEL));
+                retvalue.Add(row);
 
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Ulcer Performance Index (Martin Ratio)" },
-                { NAV_LABEL, string.Format("{0:F2}", NAV_UPI) },
-                { BENCH_LABEL_XAML, string.Format("{0:F2}", BENCH_UPI) } });
+            }
 
-#if false
-            retvalue.Add(new Dictionary<string, object> {
-                { METRIC_LABEL, "Information Ratio" },
-                { NAV_LABEL, string.Format("{0:F2}", NAV_INFORMATION_RATIO) },
-                { BENCH_LABEL_XAML, "n/a" } });
-#endif
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Ulcer Index";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:P2}", ULCER_INDEX(label));
+            retvalue.Add(row);
 
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Ulcer Performance Index (Martin Ratio)";
+            foreach (var label in ALL_Y_LABELS)
+                row[label] = string.Format("{0:F2}", ULCER_PERFORMANCE_INDEX(label));
+            retvalue.Add(row);
+
+            // Information Ratio
             // Sortino Ratio
             // Calmar Ratio
             // Fouse Ratio
@@ -531,52 +511,36 @@ namespace TuringTrader.Simulator
         /// <returns>OxyPlot model</returns>
         private PlotModel RenderAnnualColumns()
         {
-            //===== get plot data
-            var chartData = PlotData.First().Value;
-            var nav = chartData
-                .First() // first row
-                .Skip(1) // second column
-                .First()
-                .Key;
-            var bench = chartData
-                .First() // first row
-                .Skip(2) // third column
-                .First()
-                .Key;
-
             //===== create annual bars
-            Dictionary<int, Tuple<double, double>> annualBars = new Dictionary<int, Tuple<double, double>>();
-
-            DateTime timePrev = default(DateTime);
-            double navPrev = 0.0;
-            double benchPrev = 0.0;
-            DateTime timeLast = (DateTime)chartData.Last().First().Value;
-
-            foreach (var row in chartData)
+            Dictionary<int, Dictionary<string, double>> yearlyBars = new Dictionary<int, Dictionary<string, double>>();
+            foreach (var label in ALL_Y_LABELS)
             {
-                DateTime timeNow = (DateTime)row.First().Value;
-                double navNow = (double)row[nav];
-                double benchNow = (double)row[bench];
+                var series = GET_SERIES(label);
+                DateTime last = series.Last().Key;
 
-                if (timePrev == default(DateTime))
+                double? prevValue = null;
+                DateTime prevTime = default(DateTime);
+                foreach (var point in series)
                 {
-                    timePrev = timeNow;
-                    navPrev = navNow;
-                    benchPrev = benchNow;
-                }
+                    if (prevValue == null)
+                    {
+                        prevValue = point.Value;
+                        prevTime = point.Key;
+                    }
 
-                if (timeNow.Date.Year != timePrev.Date.Year
-                || timeNow == timeLast)
-                {
-                    int year = timePrev.Date.Year;
-                    double navGain = 100.0 * (navNow / navPrev - 1.0);
-                    double benchGain = 100.0 * (benchNow / benchPrev - 1.0);
+                    if (prevTime.Date.Year < point.Key.Date.Year
+                    || point.Key == last)
+                    {
+                        int year = prevTime.Year;
+                        double pnl = 100.0 * (point.Value / (double)prevValue - 1.0);
 
-                    annualBars.Add(year, new Tuple<double, double>(navGain, benchGain));
+                        if (!yearlyBars.ContainsKey(year))
+                            yearlyBars[year] = new Dictionary<string, double>();
 
-                    timePrev = timeNow;
-                    navPrev = navNow;
-                    benchPrev = benchNow;
+                        yearlyBars[year][label] = pnl;
+                        prevValue = point.Value;
+                        prevTime = point.Key;
+                    }
                 }
             }
 
@@ -600,39 +564,46 @@ namespace TuringTrader.Simulator
             plotModel.Axes.Add(xAxis);
             plotModel.Axes.Add(yAxis);
 
+            foreach (var y in yearlyBars.Keys)
+                xAxis.Labels.Add(y.ToString());
+
             //===== create series
-            OxyColor navColor = _seriesColors[0];
-            OxyColor benchColor = _seriesColors[1];
-
-            var navSeries = new ColumnSeries();
-            navSeries.Title = nav;
-            navSeries.IsVisible = true;
-            navSeries.XAxisKey = "x";
-            navSeries.YAxisKey = "y";
-            navSeries.FillColor = navColor;
-
-            var benchSeries = new ColumnSeries();
-            benchSeries.Title = bench;
-            benchSeries.IsVisible = true;
-            benchSeries.XAxisKey = "x";
-            benchSeries.YAxisKey = "y";
-            benchSeries.FillColor = benchColor;
-
-            foreach (var row in annualBars)
+            for (int i = 0; i < NUM_Y_LABELS; i++)
             {
-                int year = row.Key;
-                double navGain = row.Value.Item1;
-                double benchGain = row.Value.Item2;
+                string yLabel = ALL_Y_LABELS[i];
+                var color = _seriesColors[i];
 
-                xAxis.Labels.Add(year.ToString());
+                var colSeries = (yLabel == FIRST_Y_LABEL || NUM_Y_LABELS > 2)
+                    ? new ColumnSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        FillColor = color,
+                    }
+                    : new ColumnSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        StrokeColor = color,
+                        StrokeThickness = 1,
+                        FillColor = OxyColors.White,
+                    };
 
-                navSeries.Items.Add(new ColumnItem(navGain));
-                benchSeries.Items.Add(new ColumnItem(benchGain));
+                plotModel.Series.Add(colSeries);
+
+                foreach (var y in yearlyBars.Keys)
+                {
+                    var pnl = yearlyBars[y].ContainsKey(yLabel)
+                        ? yearlyBars[y][yLabel]
+                        : 0.0;
+
+                    colSeries.Items.Add(new ColumnItem(pnl));
+                }
             }
-
-            //===== add series to plot model
-            plotModel.Series.Add(navSeries);
-            plotModel.Series.Add(benchSeries);
 
             return plotModel;
         }
@@ -640,6 +611,11 @@ namespace TuringTrader.Simulator
         #region private PlotModel RenderReturnDistribution()
         private PlotModel RenderReturnDistribution()
         {
+            //===== create distributions
+            Dictionary<string, List<double>> distributions = new Dictionary<string, List<double>>();
+            foreach (var label in ALL_Y_LABELS)
+                distributions[label] = DISTR_DAILY_RETURNS(label);
+
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = RETURN_DISTRIBUTION;
@@ -660,46 +636,45 @@ namespace TuringTrader.Simulator
             plotModel.Axes.Add(yAxis);
 
             //===== create series
-            OxyColor navColor = _seriesColors[0];
-            OxyColor benchColor = _seriesColors[1];
-
-            var navSeries = new AreaSeries
+            for (int s = 0; s < NUM_Y_LABELS; s++)
             {
-                Color = navColor,
-                Fill = navColor,
-                ConstantY2 = 0.0,
-            };
-            navSeries.Title = NAV_LABEL;
-            navSeries.IsVisible = true;
-            navSeries.XAxisKey = "x";
-            navSeries.YAxisKey = "y";
+                string yLabel = distributions.Keys.Skip(s).First();
+                OxyColor color = _seriesColors[s];
 
-            for (int i = 0; i < NAV_DISTRIBUTION.Count; i++)
-            {
-                double p = (double)i / NAV_DISTRIBUTION.Count;
-                if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
-                    navSeries.Points.Add(new DataPoint(100.0 * p, 100.0 * NAV_DISTRIBUTION[i]));
+                var distrSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
+                ? new AreaSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(distrSeries);
+
+                List<double> distribution = distributions[yLabel];
+
+                for (int i = 0; i < distribution.Count; i++)
+                {
+                    double p = (double)i / distribution.Count;
+
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        distrSeries.Points.Add(new DataPoint(
+                            100.0 * p, 
+                            100.0 * distribution[i]));
+                }
             }
-
-            var benchSeries = new LineSeries
-            {
-                Color = benchColor,
-            };
-            benchSeries.Title = BENCH_LABEL;
-            benchSeries.IsVisible = true;
-            benchSeries.XAxisKey = "x";
-            benchSeries.YAxisKey = "y";
-
-            for (int i = 0; i < BENCH_DISTRIBUTION.Count; i++)
-            {
-                double p = (double)i / BENCH_DISTRIBUTION.Count;
-                if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
-                    benchSeries.Points.Add(new DataPoint(100.0 * p, 100.0 * BENCH_DISTRIBUTION[i]));
-            }
-
-            //===== add series
-            plotModel.Series.Add(navSeries);
-            plotModel.Series.Add(benchSeries);
 
             return plotModel;
         }
@@ -707,9 +682,65 @@ namespace TuringTrader.Simulator
         #region private PlotModel RenderMonteCarlo()
         private PlotModel RenderMonteCarlo()
         {
+            //===== create distributions
+            Dictionary<string, List<double>> distributions = new Dictionary<string, List<double>>();
+            foreach (var label in ALL_Y_LABELS)
+                distributions[label] = DISTR_DAILY_RETURNS(label);
+
+            //===== create Monte-Carlo simulations
+            Random rnd = new Random();
+            Dictionary<string, List<double>> allCagr = new Dictionary<string, List<double>>();
+            Dictionary<string, List<double>> allMdd = new Dictionary<string, List<double>>();
+            foreach (var s in distributions.Keys)
+            {
+                List<double> distribution = distributions[s];
+                List<double> simsCagr = new List<double>();
+                List<double> simsMdd = new List<double>();
+
+                for (int n = 0; n < NUM_MONTE_CARLO_SIMS; n++)
+                {
+                    //--- create new equity curve
+                    List<double> equityCurve = new List<double>();
+                    equityCurve.Add(1.0);
+
+                    for (int t = 0; t < distribution.Count; t++)
+                    {
+                        int idx = rnd.Next(distribution.Count);
+                        double logReturn = distribution[idx];
+
+                        equityCurve.Add(equityCurve.Last() * Math.Exp(logReturn));
+                    }
+
+                    //--- calculate CAGR
+                    double cagr = Math.Pow(equityCurve.Last(), 1.0 / YEARS) - 1.0;
+                    simsCagr.Add(cagr);
+
+                    //--- calculate MDD
+                    double peak = 0.0;
+                    double mdd = 0.0;
+
+                    foreach (var nav in equityCurve)
+                    {
+                        peak = Math.Max(peak, nav);
+                        mdd = Math.Max(mdd, (peak - nav) / peak);
+                    }
+
+                    simsMdd.Add(mdd);
+                }
+
+                //--- create distributions
+                allCagr[s] = simsCagr
+                    .OrderBy(x => x)
+                    .ToList();
+
+                allMdd[s] = simsMdd
+                    .OrderBy(x => x)
+                    .ToList();
+            }
+
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
-            plotModel.Title = "Monte Carlo Analysis of Returns and Drawdowns"; //MONTE_CARLO;
+            plotModel.Title = "Monte-Carlo Analysis of Returns and Drawdowns";
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
@@ -736,164 +767,115 @@ namespace TuringTrader.Simulator
             plotModel.Axes.Add(yAxis1);
             plotModel.Axes.Add(yAxis2);
 
-            OxyColor navColor = _seriesColors[0];
-            OxyColor benchColor = _seriesColors[1];
-
-            //===== run Monte Carlo simulations (one block for strategy, one block for benchmark)
-            Random rnd = new Random();
-
-            for (int i = 0; i < 2; i++)
+            //===== add series
+            for (int s = 0; s < NUM_Y_LABELS; s++)
             {
-                List<double> distribution = i == 0
-                    ? NAV_DISTRIBUTION
-                    : BENCH_DISTRIBUTION;
+                string yLabel = distributions.Keys.Skip(s).First();
+                OxyColor color = _seriesColors[s];
 
-                List<double> simsCagr = new List<double>();
-                List<double> simsMdd = new List<double>();
-
-                for (int n = 0; n < NUM_MONTE_CARLO_SIMS; n++)
+                //--- CAGR
+                var cagrSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
+                ? new AreaSeries
                 {
-                    //--- create equity curve
-                    List<double> equityCurve = new List<double>();
-                    equityCurve.Add(1.0);
-
-                    for (int t = 0; t < distribution.Count; t++)
-                    {
-                        int idx = rnd.Next(distribution.Count);
-                        double logReturn = distribution[idx];
-
-                        equityCurve.Add(equityCurve.Last() * Math.Exp(logReturn));
-                    }
-
-                    double cagr = Math.Pow(equityCurve.Last(), 1.0 / YEARS) - 1.0;
-                    simsCagr.Add(100.0 * cagr);
-
-                    //--- calculate MDD
-                    double peak = 0.0;
-                    double mdd = 0.0;
-
-                    foreach (var nav in equityCurve)
-                    {
-                        peak = Math.Max(peak, nav);
-                        mdd = Math.Max(mdd, (peak - nav) / peak);
-                    }
-
-                    simsMdd.Add(100.0 * mdd);
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
                 }
-
-                //--- create distributions
-                var distrCagr = simsCagr
-                    .OrderBy(c => c)
-                    .ToList();
-
-                var distrMdd = simsMdd
-                    .OrderBy(m => m)
-                    .ToList();
-
-                //===== plot series
-
-                //--- cagr
-                var cagrSeries = i == 0
-                    ? new AreaSeries
-                    {
-                        Color = navColor,
-                        Fill = navColor,
-                        ConstantY2 = 0.0,
-                    }
-                    : new LineSeries
-                    {
-                        Color = benchColor,
-                    };
-                cagrSeries.Title = i == 0 ? NAV_LABEL : BENCH_LABEL;
-                cagrSeries.IsVisible = true;
-                cagrSeries.XAxisKey = "x";
-                cagrSeries.YAxisKey = "y1";
-
-                for (int x = 0; x < distrCagr.Count; x++)
+                : new LineSeries
                 {
-                    double p = (double)x / distrCagr.Count;
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(cagrSeries);
+
+                List<double> distrCagr = allCagr[yLabel];
+                for (int i = 0; i < distrCagr.Count; i++)
+                {
+                    double p = (double)i / distrCagr.Count;
+
                     if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
-                        cagrSeries.Points.Add(new DataPoint(100.0 * p, distrCagr[x]));
+                        cagrSeries.Points.Add(new DataPoint(
+                            100.0 * p,
+                            100.0 * distrCagr[i]));
                 }
 
-                //--- mdd
-                var mddSeries = i == 0
-                    ? new AreaSeries
-                    {
-                        Color = navColor,
-                        Fill = navColor,
-                        ConstantY2 = 0.0,
-                    }
-                    : new LineSeries
-                    {
-                        Color = benchColor,
-                    };
-                mddSeries.IsVisible = true;
-                mddSeries.XAxisKey = "x";
-                mddSeries.YAxisKey = "y2";
-
-                for (int x = 0; x < distrMdd.Count; x++)
+                //--- MDD
+                var mddSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
+                ? new AreaSeries
                 {
-                    double p = (double)x / distrMdd.Count;
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(mddSeries);
+
+                List<double> distrMdd = allMdd[yLabel];
+                for (int i = 0; i < distrMdd.Count; i++)
+                {
+                    double p = (double)i / distrMdd.Count;
+
                     if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
-                        mddSeries.Points.Add(new DataPoint(100.0 * p, -distrMdd[x]));
+                        mddSeries.Points.Add(new DataPoint(
+                            100.0 * p,
+                            -100.0 * distrMdd[i]));
                 }
 
-                //--- cagr marker
-                double findProbability(List<double> distr, double val)
+                //--- CAGR marker
+                var cagrMarker = new ScatterSeries
                 {
-                    var less = distr
-                        .Where(v => v <= val)
-                        .ToList();
-                    var more = distr
-                        .Where(v => v >= val)
-                        .ToList();
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    MarkerType = MarkerType.Circle,
+                    MarkerSize = 5,
+                    MarkerStroke = color,
+                    MarkerFill = OxyColors.White,
+                };
 
-                    var pLess = (double)less.Count() / distr.Count;
-                    var vLess = less.Max();
-                    var pMore = 1.0 - (double)more.Count() / distr.Count;
-                    var vMore = more.Min();
+                plotModel.Series.Add(cagrMarker);
 
-                    double p = pLess;
-
-                    if (val > vLess)
-                        p += (val - vLess) / (vMore - vLess) * (pMore - pLess);
-
-                    return p;
-                }
-
-                var cagrMarker = new ScatterSeries();
-                cagrMarker.IsVisible = true;
-                cagrMarker.XAxisKey = "x";
-                cagrMarker.YAxisKey = "y1";
-                cagrMarker.MarkerType = MarkerType.Circle;
-                cagrMarker.MarkerSize = 5;
-                cagrMarker.MarkerStroke = mddSeries.Color;
-                cagrMarker.MarkerFill = OxyColors.White;
-
-                var cagrValue = i == 0 ? 100.0 * NAV_CAGR : 100.0 * BENCH_CAGR;
-                var cagrProb = findProbability(distrCagr, cagrValue);
-                cagrMarker.Points.Add(new ScatterPoint(100.0 * cagrProb, cagrValue));
+                var cagrValue = CAGR(yLabel);
+                var cagrProb = DISTR_RET_PROBABILITY(distrCagr, cagrValue);
+                cagrMarker.Points.Add(new ScatterPoint(100.0 * cagrProb, 100.0 * cagrValue));
 
                 //--- mdd marker
-                var mddMarker = new ScatterSeries();
-                mddMarker.IsVisible = true;
-                mddMarker.XAxisKey = "x";
-                mddMarker.YAxisKey = "y2";
-                mddMarker.MarkerType = MarkerType.Circle;
-                mddMarker.MarkerSize = 5;
-                mddMarker.MarkerStroke = mddSeries.Color;
-                mddMarker.MarkerFill = OxyColors.White;
+                var mddMarker = new ScatterSeries
+                {
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    MarkerType = MarkerType.Circle,
+                    MarkerSize = 5,
+                    MarkerStroke = color,
+                    MarkerFill = OxyColors.White,
+                };
 
-                var mddValue = i == 0 ? 100.0 * NAV_MDD : 100.0 * BENCH_MDD;
-                var mddProb = findProbability(distrMdd, mddValue);
-                mddMarker.Points.Add(new ScatterPoint(100.0 * mddProb, -mddValue));
-
-                //===== add series
-                plotModel.Series.Add(cagrSeries);
-                plotModel.Series.Add(mddSeries);
-                plotModel.Series.Add(cagrMarker);
                 plotModel.Series.Add(mddMarker);
+
+                var mddValue = MDD(yLabel);
+                var mddProb = DISTR_RET_PROBABILITY(distrMdd, mddValue);
+                mddMarker.Points.Add(new ScatterPoint(100.0 * mddProb, -100.0 * mddValue));
             }
 
             return plotModel;
