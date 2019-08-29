@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -281,6 +282,56 @@ namespace TuringTrader
         }
         #endregion
 
+        #region public void SaveAsPng(string chartToSave, string pngFilePath)
+        public void SaveAsPng(string chartToSave, string pngFilePath)
+        {
+            PlotModel model = (PlotModel)GetModel(chartToSave);
+
+            OxyPlot.Wpf.PngExporter.Export(model,
+                pngFilePath,
+                1280, 1024,
+                OxyColors.White);
+        }
+        #endregion
+        #region public void SaveAsCsv(string chartToSave, string csvFilePath)
+        public void SaveAsCsv(string chartToSave, string csvFilePath)
+        {
+            using (StreamWriter sw = new StreamWriter(csvFilePath))
+            {
+
+                List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)GetModel(chartToSave);
+
+                List<string> columns = tableModel
+                    .SelectMany(row => row.Keys)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var col in columns)
+                {
+                    sw.Write("{0},", col);
+                }
+                sw.WriteLine("");
+
+                foreach (var row in tableModel)
+                {
+                    foreach (var col in columns)
+                    {
+                        if (row.ContainsKey(col))
+                        {
+                            sw.Write("\"{0}\",", row[col].ToString());
+                        }
+                        else
+                        {
+                            sw.Write(",");
+                        }
+                    }
+
+                    sw.WriteLine("");
+                }
+            }
+        }
+        #endregion
+
         #region public Dictionary<string, List<Dictionary<string, object>>> PlotData
         /// <summary>
         /// Property holding PlotData from Plotter object
@@ -303,7 +354,7 @@ namespace TuringTrader
             }
         }
         #endregion
-        #region public abstract object RenderChart(string selectedChart)
+        #region public abstract object GetModel(string selectedChart)
         /// <summary>
         /// Abstract method to render chart to model.
         /// </summary>

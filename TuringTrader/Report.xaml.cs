@@ -157,12 +157,7 @@ namespace TuringTrader.Simulator
             saveFileDialog.Filter = "PNG file (*.png)|*.png";
 
             if (saveFileDialog.ShowDialog() == true)
-            {
-                PngExporter.Export(this.Chart.ActualModel, 
-                    saveFileDialog.FileName, 
-                    1280, 1024, 
-                    OxyColors.White);
-            }
+                _template.SaveAsPng(SelectedChart, saveFileDialog.FileName);
         }
         #endregion
         #region private void SaveAsCsv(object sender, RoutedEventArgs e)
@@ -172,42 +167,7 @@ namespace TuringTrader.Simulator
             saveFileDialog.Filter = "CSV file (*.csv)|*.csv";
 
             if (saveFileDialog.ShowDialog() == true)
-            {
-                using (StreamWriter sw = new StreamWriter(saveFileDialog.FileName))
-                {
-
-                    object model = _template.GetModel(_selectedChart);
-                    List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)model;
-
-                    List<string> columns = tableModel
-                        .SelectMany(row => row.Keys)
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var col in columns)
-                    {
-                        sw.Write("{0},", col);
-                    }
-                    sw.WriteLine("");
-
-                    foreach (var row in tableModel)
-                    {
-                        foreach (var col in columns)
-                        {
-                            if (row.ContainsKey(col))
-                            {
-                                sw.Write("\"{0}\",", row[col].ToString());
-                            }
-                            else
-                            {
-                                sw.Write(",");
-                            }
-                        }
-
-                        sw.WriteLine("");
-                    }
-                }
-            }
+                _template.SaveAsCsv(SelectedChart, saveFileDialog.FileName);
         }
         #endregion
     }
