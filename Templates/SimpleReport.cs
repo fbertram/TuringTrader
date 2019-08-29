@@ -49,6 +49,7 @@ namespace TuringTrader.Simulator
         private const int NUM_MONTE_CARLO_SIMS = 1000;
         #endregion
         #region internal helpers
+        private string FIRST_CHART_NAME => PlotData.First().Key;
         private List<Dictionary<string, object>> FIRST_CHART => PlotData.First().Value;
 
         private string X_LABEL => FIRST_CHART.First().First().Key; 
@@ -516,31 +517,35 @@ namespace TuringTrader.Simulator
             foreach (var label in ALL_Y_LABELS)
             {
                 var series = GET_SERIES(label);
-                DateTime last = series.Last().Key;
+                DateTime lastTime = series.Last().Key;
 
-                double? prevValue = null;
-                DateTime prevTime = default(DateTime);
+                int? currentYear = null;
+                double prevYearClose = 0.0;
+                double prevDayClose = 0.0;
                 foreach (var point in series)
                 {
-                    if (prevValue == null)
+                    if (currentYear == null)
                     {
-                        prevValue = point.Value;
-                        prevTime = point.Key;
+                        currentYear = point.Key.Year;
+                        prevDayClose = point.Value;
+                        prevYearClose = point.Value;
                     }
 
-                    if (prevTime.Date.Year < point.Key.Date.Year
-                    || point.Key == last)
+                    if (currentYear < point.Key.Date.Year
+                    || point.Key == lastTime)
                     {
-                        int year = prevTime.Year;
-                        double pnl = 100.0 * (point.Value / (double)prevValue - 1.0);
+                        double refValue = point.Key == lastTime ? point.Value : prevDayClose;
+                        double pnl = 100.0 * (refValue / (double)prevYearClose - 1.0);
 
-                        if (!yearlyBars.ContainsKey(year))
-                            yearlyBars[year] = new Dictionary<string, double>();
+                        if (!yearlyBars.ContainsKey((int)currentYear))
+                            yearlyBars[(int)currentYear] = new Dictionary<string, double>();
 
-                        yearlyBars[year][label] = pnl;
-                        prevValue = point.Value;
-                        prevTime = point.Key;
+                        yearlyBars[(int)currentYear][label] = pnl;
+                        prevYearClose = prevDayClose;
+                        currentYear = point.Key.Year;
                     }
+
+                    prevDayClose = point.Value;
                 }
             }
 
