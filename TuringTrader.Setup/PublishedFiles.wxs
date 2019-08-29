@@ -214,11 +214,8 @@
             <Component Id="cmp2AEB1D8B013BA9A730B011D0C259995F" Directory="BINFOLDER" Guid="*">
                 <File Id="fil75BE3DD33690026580A76C74059F921D" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmp57CBBC6DBD34B4D7DB2BC3A0688FDD6A" Directory="BINFOLDER" Guid="*">
-                <File Id="filB28471BBC1CF6E8FEC80D4CA3DC081AF" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.30373.dll" />
-            </Component>
-            <Component Id="cmp5F2ADB7B567C88791AC30D8A24322015" Directory="BINFOLDER" Guid="*">
-                <File Id="fil4AD2E36F915ACF5C78CAA35DB554152E" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.32702.dll" />
+            <Component Id="cmpE162EF74406BBE168B549696A4C5BA5B" Directory="BINFOLDER" Guid="*">
+                <File Id="fil8CB0C55728400DBD89F823DCF3E9A1C6" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.37902.dll" />
             </Component>
             <Component Id="cmpAF28CE66C6DA6E2E7F469E603E9CD404" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5A3F401CAE73B190C6C3DB8367EC383D" KeyPath="yes" Source="$(var.SourceDir)\mscordbi.dll" />
@@ -252,9 +249,6 @@
             </Component>
             <Component Id="cmp0BC74D2B200C0EC82440449C196330DF" Directory="BINFOLDER" Guid="*">
                 <File Id="filB472956290160C7C33E4CD088A84E0B3" KeyPath="yes" Source="$(var.SourceDir)\PenImc_cor3.dll" />
-            </Component>
-            <Component Id="cmpDB41474006606629411CF31E3C6B2FA6" Directory="BINFOLDER" Guid="*">
-                <File Id="fil56478A0F9DB00D5FEE68037A50DE0508" KeyPath="yes" Source="$(var.SourceDir)\PresentationCore-CommonResources.dll" />
             </Component>
             <Component Id="cmp1136B5A6A5C79E1E54711906B7E02AF3" Directory="BINFOLDER" Guid="*">
                 <File Id="filB0AD9AF95CF68E898FC85435C5EE6CA5" KeyPath="yes" Source="$(var.SourceDir)\PresentationCore.dll" />
@@ -306,15 +300,6 @@
             </Component>
             <Component Id="cmp714BA032F1F4C640E2661C4876328787" Directory="BINFOLDER" Guid="*">
                 <File Id="filCD98B9AB9EDE397168F7E457CD3A7D3C" KeyPath="yes" Source="$(var.SourceDir)\sni.dll" />
-            </Component>
-            <Component Id="cmp1DA5502D65EC21B90E7A852D7A576676" Directory="BINFOLDER" Guid="*">
-                <File Id="filFB3DA89C33613672D72BFFC7D2CC0E98" KeyPath="yes" Source="$(var.SourceDir)\sos.dll" />
-            </Component>
-            <Component Id="cmp9C4B2D3FB06A3F2D91ECFA7F576D1395" Directory="BINFOLDER" Guid="*">
-                <File Id="filEFDFEEF82CCB41A2B0D1F56209ED4660" KeyPath="yes" Source="$(var.SourceDir)\SOS.NETCore.dll" />
-            </Component>
-            <Component Id="cmpCDA3957C43D3314EA56E3AA14293A05A" Directory="BINFOLDER" Guid="*">
-                <File Id="fil0BE47BCA71F30F444E9B174DDCD73E83" KeyPath="yes" Source="$(var.SourceDir)\sos_amd64_amd64_4.700.19.30373.dll" />
             </Component>
             <Component Id="cmpD839918CC813B33CEDD38D41ED1EF9C0" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5EB25AD5999ED902E5700B46B19BE7CB" KeyPath="yes" Source="$(var.SourceDir)\SOS_README.md" />
@@ -936,9 +921,6 @@
             </Component>
             <Component Id="cmpA23A2E49127366C2C0E829CF57687558" Directory="BINFOLDER" Guid="*">
                 <File Id="fil4B3ED69E8BC56BDFAEB371A2788A4682" KeyPath="yes" Source="$(var.SourceDir)\TuringTrader.Simulator.pdb" />
-            </Component>
-            <Component Id="cmp2EDC235396B09E9C77F8C9F87EDCB628" Directory="BINFOLDER" Guid="*">
-                <File Id="filEFA1844F864A66E3294D9F06D51E0307" KeyPath="yes" Source="$(var.SourceDir)\TuringTrader.Simulator.xml" />
             </Component>
             <Component Id="cmp582B2A8E74DEC0314A4336231AEFD8DF" Directory="BINFOLDER" Guid="*">
                 <File Id="fil2355D72B296C21BF59B59A84865AA741" KeyPath="yes" Source="$(var.SourceDir)\ucrtbase.dll" />
