@@ -4,3 +4,6 @@ devenv TuringTrader.sln /Build "Release|x64" /Project TuringTrader
 devenv TuringTrader.sln /Build "Release|x64" /Project BooksAndPubs
 dotnet publish TuringTrader\TuringTrader.csproj /p:PublishProfile=FolderProfile
 devenv TuringTrader.sln /Build "Release|x64" /Project TuringTrader.Setup
+pushd DocFX
+docfx
+popd
