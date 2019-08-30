@@ -40,8 +40,11 @@ namespace TuringTrader
     /// </summary>
     public abstract class ReportTemplate
     {
-        #region protected OxyColor[] _seriesColors
-        protected OxyColor[] _seriesColors =
+        #region protected OxyColor[] SeriesColors
+        /// <summary>
+        /// collection of pretty colors
+        /// </summary>
+        protected OxyColor[] SeriesColors =
         {
             OxyColor.FromRgb(68, 114, 196),  // blue
             OxyColor.FromRgb(237, 125, 49),  // orange
@@ -68,6 +71,11 @@ namespace TuringTrader
         #endregion
 
         #region protected object RenderTable(string selectedChart)
+        /// <summary>
+        /// render chart as table
+        /// </summary>
+        /// <param name="selectedChart">chart to render</param>
+        /// <returns>table model</returns>
         protected object RenderTable(string selectedChart)
         {
             return PlotData[selectedChart];
@@ -76,7 +84,7 @@ namespace TuringTrader
         #endregion
         #region protected PlotModel RenderSimple(string selectedChart)
         /// <summary>
-        /// Render x/y line chart.
+        /// Render simple x/y line chart.
         /// </summary>
         /// <param name="selectedChart"></param>
         /// <returns>plot model</returns>
@@ -139,7 +147,7 @@ namespace TuringTrader
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
-                        newSeries.Color = _seriesColors[allSeries.Count % _seriesColors.Count()];
+                        newSeries.Color = SeriesColors[allSeries.Count % SeriesColors.Count()];
                         allSeries[yLabel] = newSeries;
                     }
 
@@ -223,7 +231,7 @@ namespace TuringTrader
                         newSeries.YAxisKey = "y";
                         newSeries.MarkerType = MarkerType.Circle;
                         newSeries.MarkerSize = 2;
-                        newSeries.MarkerStroke = _seriesColors[allSeries.Count % _seriesColors.Count()];
+                        newSeries.MarkerStroke = SeriesColors[allSeries.Count % SeriesColors.Count()];
                         newSeries.MarkerFill = newSeries.MarkerStroke;
                         allSeries[yLabel] = newSeries;
                     }
@@ -281,8 +289,49 @@ namespace TuringTrader
             return false;
         }
         #endregion
+        #region protected bool IsScatter(string selectedChart)
+        /// <summary>
+        /// Determine if we should render as scatter plot.
+        /// </summary>
+        /// <param name="selectedChart">selected chart</param>
+        /// <returns>true for scatter</returns>
+        protected bool IsScatter(string selectedChart)
+        {
+            var chartData = PlotData[selectedChart];
+
+            object prevX = null;
+
+            foreach (var row in chartData)
+            {
+                object curX = row.First().Value;
+
+                if (prevX == null)
+                    prevX = curX;
+
+                // note how we cast everything to double here,
+                // unless it is DateTime:
+                if (curX.GetType() == typeof(DateTime))
+                {
+                    if ((DateTime)curX < (DateTime)prevX)
+                        return true;
+                }
+                else
+                {
+                    if ((double)curX < (double)prevX)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+        #endregion
 
         #region public void SaveAsPng(string chartToSave, string pngFilePath)
+        /// <summary>
+        /// save chart as PNG
+        /// </summary>
+        /// <param name="chartToSave">chart to save</param>
+        /// <param name="pngFilePath">path to PNG</param>
         public void SaveAsPng(string chartToSave, string pngFilePath)
         {
             PlotModel model = (PlotModel)GetModel(chartToSave);
@@ -294,6 +343,11 @@ namespace TuringTrader
         }
         #endregion
         #region public void SaveAsCsv(string chartToSave, string csvFilePath)
+        /// <summary>
+        /// save table as CSV
+        /// </summary>
+        /// <param name="chartToSave">chart to save</param>
+        /// <param name="csvFilePath">path to CSV</param>
         public void SaveAsCsv(string chartToSave, string csvFilePath)
         {
             using (StreamWriter sw = new StreamWriter(csvFilePath))

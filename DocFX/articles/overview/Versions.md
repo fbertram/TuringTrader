@@ -7,6 +7,7 @@
     - avoid exceptions to speed up FRED load
     - add StitchedDataSource
   - native reports
+    - add feature to detect scatter plots
     - add new SimpleReport template featuring improved metrics, annual return bar chart, and Monte-Carlo simulation
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
   - documentation
