@@ -26,8 +26,11 @@ see https://dotnet.microsoft.com/download/dotnet-core/3.0
 - .NET Core 3 SDK, Preview 6 or later
 - WiX Toolset version 3.11
 - WiX Toolset Visual Studio 2019 Extension
+- DocFX toolset version 2.43.2.0
 
 ### Build Steps
+
+Here are the individual steps to build TuringTrader from source:
 
 - Install TuringTrader from binary distribution
 - Open TuringTrader solution in Visual Studio
@@ -35,6 +38,9 @@ see https://dotnet.microsoft.com/download/dotnet-core/3.0
 - Publish TuringTrader application
 - Build BooksAndPubs project (will link against the binary version installed)
 - Build setup project
+- Build documentation
+
+The project also contains a script for a single-click build. See SINGLE_CLICK_BUILD.bat at the repository root!
 
 
 
