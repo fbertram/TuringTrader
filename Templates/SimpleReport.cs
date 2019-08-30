@@ -331,7 +331,7 @@ namespace TuringTrader.Simulator
             {
                 string yLabel = ALL_Y_LABELS[i];
                 var series = GET_SERIES(yLabel);
-                var color = _seriesColors[i];
+                var color = SeriesColors[i];
 
                 var eqSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
                     ? new AreaSeries
@@ -576,7 +576,7 @@ namespace TuringTrader.Simulator
             for (int i = 0; i < NUM_Y_LABELS; i++)
             {
                 string yLabel = ALL_Y_LABELS[i];
-                var color = _seriesColors[i];
+                var color = SeriesColors[i];
 
                 var colSeries = (yLabel == FIRST_Y_LABEL || NUM_Y_LABELS > 2)
                     ? new ColumnSeries
@@ -644,7 +644,7 @@ namespace TuringTrader.Simulator
             for (int s = 0; s < NUM_Y_LABELS; s++)
             {
                 string yLabel = distributions.Keys.Skip(s).First();
-                OxyColor color = _seriesColors[s];
+                OxyColor color = SeriesColors[s];
 
                 var distrSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
                 ? new AreaSeries
@@ -776,7 +776,7 @@ namespace TuringTrader.Simulator
             for (int s = 0; s < NUM_Y_LABELS; s++)
             {
                 string yLabel = distributions.Keys.Skip(s).First();
-                OxyColor color = _seriesColors[s];
+                OxyColor color = SeriesColors[s];
 
                 //--- CAGR
                 var cagrSeries = (yLabel == FIRST_Y_LABEL && NUM_Y_LABELS <= 2)
@@ -936,6 +936,8 @@ namespace TuringTrader.Simulator
                 default:
                     if (IsTable(selectedChart))
                         return RenderTable(selectedChart);
+                    else if (IsScatter(selectedChart))
+                        return RenderScatter(selectedChart);
                     else
                         return RenderSimple(selectedChart);
             }
