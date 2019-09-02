@@ -7,14 +7,15 @@
     - avoid exceptions to speed up FRED load
     - add StitchedDataSource
   - native reports
-    - add feature to detect scatter plots
-    - add new SimpleReport template featuring improved metrics, annual return bar chart, and Monte-Carlo simulation
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
+    - add scatter plots to SimpleChart and SimpleReport
+    - improve SimpleReport template: improved metrics, annual return bar chart, and Monte-Carlo simulation
   - documentation
     - add QSG article for SimpleReport
   - build environment
-    - add single-click build script
     - update to MSVC 16.3.0 Preview 2.0
+    - add single-click build script
+	- make sure XML documentation is installed for TuringTrader.Simulator.dll
 - 0.9
   - 0.9b3 - August 02, 2019
     - fix issues on systems using non-U.S. localizations
