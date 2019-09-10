@@ -159,7 +159,7 @@ namespace BooksAndPubs
     #region 3-Day High/Low
     public class Connors_HighProbEtfTrading_3DayHighLow : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "3-Day High/Low Strategy"; } }
+        public override string Name => "3-Day High/Low Strategy";
 
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
@@ -220,7 +220,7 @@ namespace BooksAndPubs
     #region RSI 25 & RSI 75
     public class Connors_HighProbEtfTrading_Rsi25Rsi75 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "RSI 25 & RSI 75 Strategy"; } }
+        public override string Name => "RSI 25 & RSI 75 Strategy";
 
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;
@@ -284,7 +284,7 @@ namespace BooksAndPubs
     #region R3
     public class Connors_HighProbEtfTrading_R3 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "R3 Strategy"; } }
+        public override string Name => "R3 Strategy";
 
         [OptimizerParam(50, 70, 5)]
         public int ENTRY_MAX_RSI_2_LONG = 60;
@@ -360,7 +360,7 @@ namespace BooksAndPubs
     #region %b
     public class Connors_HighProbEtfTrading_PercentB : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "%b Strategy"; } }
+        public override string Name => "%b Strategy";
 
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_BB_LONG = 20;
@@ -426,7 +426,7 @@ namespace BooksAndPubs
     #region MDU and MDD
     public class Connors_HighProbEtfTrading_MduMdd : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "MDU and MDD Strategy"; } }
+        public override string Name => "MDU and MDD Strategy";
 
         [OptimizerParam(3, 6, 1)]
         public int ENTRY_MIN_UP_DN = 4;
@@ -489,7 +489,7 @@ namespace BooksAndPubs
     #region RSI 10/6 & RSI 90/94
     public class Connors_HighProbEtfTrading_Rsi1006Rsi9094 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "RSI 10/6 & RSI 90/94 Strategy"; } }
+        public override string Name => "RSI 10/6 & RSI 90/94 Strategy";
 
         [OptimizerParam(5, 10, 1)]
         public int ENTRY_MAX_RSI_LONG = 10;
@@ -552,7 +552,7 @@ namespace BooksAndPubs
     #region TPS
     public class Connors_HighProbEtfTrading_Tps : Connors_HighProbEtfTrading_Core
     {
-        public override string Name { get { return "TPS Strategy"; } }
+        public override string Name => "TPS Strategy";
 
         [OptimizerParam(10, 40, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;

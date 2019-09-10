@@ -338,7 +338,9 @@ namespace TuringTrader
 
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
-                1280, 1024,
+                //1280, 1024, // Felix' odd one
+                //1920, 1080, // 1080p
+                1280, 720, // 720p
                 OxyColors.White);
         }
         #endregion

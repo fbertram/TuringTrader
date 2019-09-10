@@ -37,7 +37,7 @@ namespace BooksAndPubs
     #region Weekly Rotation Core
     public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
     {
-        public override string Name { get { return "WR Strategy"; } }
+        public override string Name => "WR Strategy";
 
         #region inputs
         protected abstract List<string> UNIVERSE
@@ -181,7 +181,7 @@ namespace BooksAndPubs
     #region Mean Reversion Core
     public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
     {
-        public override string Name { get { return ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy"; } }
+        public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
         #region inputs
         protected abstract List<string> UNIVERSE

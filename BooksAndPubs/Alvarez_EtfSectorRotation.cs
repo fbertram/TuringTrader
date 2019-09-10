@@ -33,7 +33,7 @@ namespace BooksAndPubs
 {
     public class Alvarez_EtfSectorRotation : Algorithm
     {
-        public override string Name { get { return "ETF Sector Rotation"; } }
+        public override string Name => "ETF Sector Rotation";
 
         private static readonly string[] UNIVERSE =
         {

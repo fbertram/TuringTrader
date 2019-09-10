@@ -36,7 +36,7 @@ namespace TuringTrader.BooksAndPubs
 {
     public abstract class Clenov_StocksOnTheMove_Core : Algorithm
     {
-        public override string Name { get { return "Stocks on the Move"; } }
+        public override string Name => "Stocks on the Move";
 
         #region inputs
         [OptimizerParam(63, 252, 21)]

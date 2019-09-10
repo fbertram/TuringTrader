@@ -37,7 +37,7 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Antonacci_DualMomentumInvesting : Algorithm
     {
-        public override string Name { get { return "Dual Momentum Strategy"; } }
+        public override string Name => "Dual Momentum Strategy"; 
 
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
