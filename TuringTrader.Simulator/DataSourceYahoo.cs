@@ -255,6 +255,7 @@ namespace TuringTrader.Simulator
                 {
                     string meta = getMeta();
 
+                    try
                     {
                         string tmp1 = meta.Substring(meta.IndexOf("<h1"));
                         string tmp2 = tmp1.Substring(0, tmp1.IndexOf("h1>"));
@@ -265,6 +266,12 @@ namespace TuringTrader.Simulator
                         tmp4 = tmp4.Replace("&amp;", "&");
 
                         Info[DataSourceParam.name] = tmp4;
+                    }
+                    catch
+                    {
+                        // failed to load/parse website
+                        Output.WriteLine("{0}: failed to parse meta for {1}", GetType().Name, Info[DataSourceParam.symbolYahoo]);
+                        Info[DataSourceParam.name] = info[DataSourceParam.ticker];
                     }
                 }
             }
