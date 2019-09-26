@@ -29,6 +29,7 @@
 #define ENABLE_ALGO
 #define ENABLE_CSV
 #define ENABLE_YAHOO
+#define ENABLE_SPLICE
 
 #region libraries
 using System;
@@ -291,6 +292,7 @@ namespace TuringTrader.Simulator
                     { DataSourceParam.symbolStooq, "{0}"},
                     { DataSourceParam.symbolTiingo, "{0}"},
                     { DataSourceParam.symbolInteractiveBrokers, "{0}"},
+                    { DataSourceParam.symbolSplice, "{0}"},
                 };
 
                 string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
@@ -335,6 +337,7 @@ namespace TuringTrader.Simulator
                 DataSourceParam.symbolInteractiveBrokers,
                 DataSourceParam.symbolFred,
                 DataSourceParam.symbolTiingo,
+                DataSourceParam.symbolSplice,
             };
 
             foreach (var field in updateWithTicker)
@@ -472,6 +475,7 @@ namespace TuringTrader.Simulator
             defaultIfUndefined(DataSourceParam.symbolIqfeed);
             defaultIfUndefined(DataSourceParam.symbolTiingo);
             defaultIfUndefined(DataSourceParam.symbolInteractiveBrokers);
+            defaultIfUndefined(DataSourceParam.symbolSplice);
 
             //===== instantiate data source
             string dataSource = infos[DataSourceParam.dataFeed].ToLower();
@@ -532,8 +536,15 @@ namespace TuringTrader.Simulator
             }
             else
 #endif
+#if ENABLE_SPLICE
+            if (dataSource.Contains("splice"))
+            {
+                return new DataSourceSplice(infos);
+            }
+            else
+#endif
 
-            throw new Exception("DataSource: can't instantiate data source");
+                throw new Exception("DataSource: can't instantiate data source");
         }
         #endregion
     }

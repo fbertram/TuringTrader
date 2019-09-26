@@ -163,6 +163,11 @@ namespace TuringTrader.Simulator
         /// price multiplier for data updater
         /// </summary>
         dataUpdaterPriceMultiplier,
+
+        /// <summary>
+        /// symbol list for data splice
+        /// </summary>
+        symbolSplice,
     };
 }
 

@@ -47,6 +47,8 @@ namespace TuringTrader.Simulator
         {
             if (IsTable(selectedChart))
                 return RenderTable(selectedChart);
+            else if (IsScatter(selectedChart))
+                return RenderScatter(selectedChart);
             else
                 return RenderSimple(selectedChart);
         }

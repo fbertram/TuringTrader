@@ -129,11 +129,11 @@ namespace TuringTrader.BooksAndPubs
                     // create plots on Sheet 1
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
                     // create holdings on Sheet 2
-                    _plotter.SelectChart(Name + " holdings", "date");
+                    _plotter.SelectChart("Strategy Holdings", "date");
                     _plotter.SetX(SimTime[0]);
                     foreach (var i in Positions.Keys)
                         _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
@@ -143,7 +143,7 @@ namespace TuringTrader.BooksAndPubs
             //----- post processing
 
             // create trading log on Sheet 3
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -170,6 +170,7 @@ namespace TuringTrader.BooksAndPubs
     #region Mama Bear
     public class Livingston_MuscularPortfolios_MamaBear : Livingston_MuscularPortfolios
     {
+        public override string Name { get { return "Mama Bear Strategy"; } }
         public Livingston_MuscularPortfolios_MamaBear()
         {
             _etfMenu = new HashSet<string>()
@@ -221,6 +222,7 @@ namespace TuringTrader.BooksAndPubs
     #region Papa Bear - incomplete, instruments need to be extended for longer simulation
     public class Livingston_MuscularPortfolios_PapaBear : Livingston_MuscularPortfolios
     {
+        public override string Name { get { return "Papa Bear Strategy"; } }
         public Livingston_MuscularPortfolios_PapaBear()
         {
             _etfMenu = new HashSet<string>()

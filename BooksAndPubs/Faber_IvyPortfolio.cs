@@ -146,11 +146,11 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("NAV", NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
                     // holdings on Sheet 2
-                    _plotter.SelectChart(Name + " holdings", "date");
+                    _plotter.SelectChart("Strategy Holdings", "date");
                     _plotter.SetX(SimTime[0]);
                     foreach (var i in Positions.Keys)
                     {
@@ -162,7 +162,7 @@ namespace TuringTrader.BooksAndPubs
             //----- post processing
 
             // create trading log on Sheet 3
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);
@@ -189,6 +189,8 @@ namespace TuringTrader.BooksAndPubs
     #region Ivy 5 Timing
     public class Faber_IvyPortfolio_5_Timing : Faber_IvyPortfolio
     {
+        public override string Name { get { return "Ivy 5 Timing Strategy"; } }
+
         private static readonly string _safeInstrument = "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
 
         public Faber_IvyPortfolio_5_Timing()
@@ -237,6 +239,8 @@ namespace TuringTrader.BooksAndPubs
     #region Ivy 5 Rotation
     public class Faber_IvyPortfolio_5_Rotation : Faber_IvyPortfolio
     {
+        public override string Name { get { return "Ivy 5 Rotation Strategy"; } }
+
         private static readonly string _safeInstrument = "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
 
         public Faber_IvyPortfolio_5_Rotation()
@@ -279,6 +283,8 @@ namespace TuringTrader.BooksAndPubs
     #region Ivy 10 Timing
     public class Faber_IvyPortfolio_10_Timing : Faber_IvyPortfolio
     {
+        public override string Name { get { return "Ivy 10 Timing Strategy"; } }
+
         private static readonly string _safeInstrument = "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
         public Faber_IvyPortfolio_10_Timing()
         {
@@ -346,6 +352,8 @@ namespace TuringTrader.BooksAndPubs
     #region Ivy 10 Rotation
     public class Faber_IvyPortfolio_10_Rotation : Faber_IvyPortfolio
     {
+        public override string Name { get { return "Ivy 10 Rotation Strategy"; } }
+
         private static readonly string _safeInstrument = "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
 
         public Faber_IvyPortfolio_10_Rotation()

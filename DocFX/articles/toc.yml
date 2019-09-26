@@ -16,6 +16,8 @@
   href: Demo07.md
 - name: Data Setup
   href: DataSetup.md
+- name: Using the SimpleReport Template
+  href: SimpleReport.md
 - name: Creating a DLL
   href: CreateDlls.md
 - name: Creating an Application

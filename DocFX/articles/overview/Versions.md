@@ -1,13 +1,37 @@
 # Version History
 
-- 0.9b1 - July 2019
-  We are excited about the release of our first beta! Here is a brief summary of the new features:
-  - available as a binary distribution with standard Windows Setup
-  - based on .NET Core 3
-  - ability to run algorithms directly from source
-  - C#-based output rendering
-  - new data sources for FRED, Tiingo, and Yahoo; implicit data source descriptors
-  - many UI improvements
-  - rewritten quick start guide
+- 0.xxx - development branch
+  - simulator
+    - remove PendingOrders duplicate from SimCore
+  - data sources
+    - avoid exceptions to speed up FRED load
+    - add StitchedDataSource
+  - native reports
+    - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
+    - add scatter plots to SimpleChart and SimpleReport
+    - improve SimpleReport template: improved metrics, annual return bar chart, and Monte-Carlo simulation
+  - documentation
+    - add QSG article for SimpleReport
+  - build environment
+    - update to MSVC 16.3.0 Preview 2.0
+    - add single-click build script
+	- make sure XML documentation is installed for TuringTrader.Simulator.dll
+- 0.9
+  - 0.9b3 - August 02, 2019
+    - fix issues on systems using non-U.S. localizations
+    - fix incorrect data source descriptor for ‘fake options’
+  - 0.9b2 - July 18, 2019
+    - fix exceptions related to data caching
+    - catch exceptions during optimization
+    - simplify data source descriptors for SPX, VIX, 60/40
+    - add the ability to do scatter plots
+  - 0.9b1 - July 08, 2019
+    - available as a binary distribution with standard Windows Setup
+    - based on .NET Core 3
+    - ability to run algorithms directly from source
+    - C#-based output rendering
+    - new data sources for FRED, Tiingo, and Yahoo
+    - implicit data source descriptors
+    - many UI improvements
+    - rewritten quick start guide
 - milestone 15 - May 14, 2019
-

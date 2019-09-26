@@ -61,6 +61,8 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Aeromir_ParkingTrade : Algorithm
     {
+        public override string Name => "Parking Trade"; 
+
         #region inputs
         private readonly double INITIAL_CASH = 1e6;
         private readonly double COMMISSION = 0.01;
@@ -111,15 +113,15 @@ namespace TuringTrader.BooksAndPubs
                 return;
 
             // plots on Sheet 1
-            _plotter.SelectChart("Aeromir Parking Trade", "date");
+            _plotter.SelectChart(Name, "Date");
             _plotter.SetX(SimTime[0]);
-            _plotter.Plot("NAV", NetAssetValue[0]);
-            _plotter.Plot("SPX", _underlyingInstrument.Close[0]);
+            _plotter.Plot(Name, NetAssetValue[0]);
+            _plotter.Plot(_underlyingInstrument.Name, _underlyingInstrument.Close[0]);
 
             // trade log on Sheet 2
             if (IsLastBar)
             {
-                _plotter.SelectChart("trades", "time");
+                _plotter.SelectChart("Strategy Trades", "time");
                 foreach (LogEntry entry in Log)
                 {
                     _plotter.SetX(entry.BarOfExecution.Time);

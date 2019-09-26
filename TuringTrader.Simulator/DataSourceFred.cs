@@ -318,6 +318,10 @@ namespace TuringTrader.Simulator
                                 + DateTime.Parse(Info[DataSourceParam.time], CultureInfo.InvariantCulture).TimeOfDay;
 
                             string valueString = (string)bar["value"];
+
+                            if (valueString == ".")
+                                continue; // missing value, avoid throwing exception here
+
                             double value;
                             try
                             {

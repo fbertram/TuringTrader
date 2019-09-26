@@ -38,6 +38,8 @@ namespace BooksAndPubs
 {
     public abstract class Keller_CAA : Algorithm
     {
+        public override string Name { get { return "CAA Strategy"; } }
+
         #region internal data
         //private readonly string BENCHMARK = "^SPX.index";
         private readonly string BENCHMARK = "@60_40";
@@ -127,10 +129,10 @@ namespace BooksAndPubs
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 _plotter.SelectChart(Name, "date");
                 _plotter.SetX(SimTime[0]);
-                _plotter.Plot("NAV", NetAssetValue[0]);
-                _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                _plotter.Plot(Name, NetAssetValue[0]);
+                _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
 
-                _plotter.SelectChart(Name + " holdings", "date");
+                _plotter.SelectChart("Strategy Holdings", "date");
                 _plotter.SetX(SimTime[0]);
                 foreach (var n in universe)
                 {
@@ -141,7 +143,7 @@ namespace BooksAndPubs
 
             //---------- post-processing
 
-            _plotter.SelectChart(Name + " trades", "date");
+            _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
                 _plotter.SetX(entry.BarOfExecution.Time);

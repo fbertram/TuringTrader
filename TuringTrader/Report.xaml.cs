@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,8 +37,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -87,9 +90,11 @@ namespace TuringTrader.Simulator
                     PlotModel plotModel = (PlotModel)model;
 
                     Chart.Visibility = Visibility.Visible;
+                    ChartSave.IsEnabled = true;
                     Chart.Model = plotModel;
 
                     Table.Visibility = Visibility.Hidden;
+                    TableSave.IsEnabled = false;
                     Table.Columns.Clear();
                     Table.Items.Clear();
                 }
@@ -99,9 +104,11 @@ namespace TuringTrader.Simulator
                     List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)model;
 
                     Chart.Visibility = Visibility.Hidden;
+                    ChartSave.IsEnabled = false;
                     Chart.Model = null;
 
                     Table.Visibility = Visibility.Visible;
+                    TableSave.IsEnabled = true;
                     Table.Columns.Clear();
                     Table.Items.Clear();
 
@@ -140,6 +147,27 @@ namespace TuringTrader.Simulator
             string tmp = GlobalSettings.MostRecentAlgorithm.Substring(0, GlobalSettings.MostRecentAlgorithm.Length - 1);
             string strategyName = tmp.Substring(tmp.LastIndexOf('/') + 1);
             Title = "Strategy Report - " + strategyName;
+        }
+        #endregion
+
+        #region private void SaveAsPng(object sender, RoutedEventArgs e)
+        private void SaveAsPng(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "PNG file (*.png)|*.png";
+
+            if (saveFileDialog.ShowDialog() == true)
+                _template.SaveAsPng(SelectedChart, saveFileDialog.FileName);
+        }
+        #endregion
+        #region private void SaveAsCsv(object sender, RoutedEventArgs e)
+        private void SaveAsCsv(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "CSV file (*.csv)|*.csv";
+
+            if (saveFileDialog.ShowDialog() == true)
+                _template.SaveAsCsv(SelectedChart, saveFileDialog.FileName);
         }
         #endregion
     }

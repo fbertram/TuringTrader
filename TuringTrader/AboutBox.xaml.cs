@@ -77,7 +77,10 @@ namespace TuringTrader
 
             string commitUrl = (hashIndex < 0)
                 ? "https://github.com/fbertram/TuringTrader/releases/tag/" + _gitVersion + "/"
-                : "https://github.com/fbertram/TuringTrader/commit/" + _gitVersion.Substring(hashIndex + 2) + "/";
+                // https://github.com/fbertram/TuringTrader/tree/1ac5737
+                : "https://github.com/fbertram/TuringTrader/tree/" + _gitVersion.Substring(hashIndex + 2) + "/";
+            //  // https://github.com/fbertram/TuringTrader/commit/1ac5737/
+            //  //: "https://github.com/fbertram/TuringTrader/commit/" + _gitVersion.Substring(hashIndex + 2) + "/";
 #else
             // https://bitbucket.org/
             // https://bitbucket.org/fbertram/fub_tradingsimulator/commits/all

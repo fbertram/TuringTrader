@@ -40,9 +40,12 @@ namespace TuringTrader.Simulator
         static private RegistryKey OpenSubKey(string sub, bool writable = false)
         {
             var assy = Assembly.GetEntryAssembly();
-            var assyName = assy != null
+
+            // make sure we have a proper assembly name.
+            // testhost uses 'TuringTrader'
+            var assyName = assy != null && assy.GetName().Name != "testhost"
                 ? assy.GetName().Name
-                : "TuringTrader"; // unit tests don't have an entry assembly
+                : "TuringTrader";
 
             string subKey = "Software"
                 + "\\" + assyName

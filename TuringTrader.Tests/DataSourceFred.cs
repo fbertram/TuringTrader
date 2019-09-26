@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Simulator;
 #endregion
 
 namespace SimulatorEngine.Tests
@@ -38,7 +39,7 @@ namespace SimulatorEngine.Tests
         [TestMethod]
         public void Test_DataRetrieval()
         {
-            var ds = DataSourceFromBars.New("fred:GDPC1");
+            var ds = DataSource.New("fred:GDPC1");
 
             ds.LoadData(DateTime.Parse("09/30/2018"), DateTime.Parse("01/03/2019"));
 

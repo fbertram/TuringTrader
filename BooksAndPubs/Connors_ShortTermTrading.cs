@@ -74,6 +74,9 @@ namespace BooksAndPubs
 
             foreach (var s in SimTimes)
             {
+                if (!HasInstrument(MARKET) || !HasInstrument(VOLATILITY))
+                    continue;
+
                 _market = _market ?? FindInstrument(MARKET);
                 _volatility = _volatility ?? FindInstrument(VOLATILITY);
 #if INCLUDE_TRIN_STRATEGY
@@ -104,8 +107,8 @@ namespace BooksAndPubs
                     // plot to chart
                     _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("nav", NetAssetValue[0]);
-                    _plotter.Plot(_market.Symbol, _market.Close[0]);
+                    _plotter.Plot(Name, NetAssetValue[0]);
+                    _plotter.Plot(_market.Name, _market.Close[0]);
                 }
             }
 
@@ -119,7 +122,7 @@ namespace BooksAndPubs
                     .GroupPositions(Log, true)
                     .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-                _plotter.SelectChart(Name + " positions", "entry date");
+                _plotter.SelectChart("Strategy Positions", "entry date");
                 foreach (var trade in tradeLog)
                 {
                     _plotter.SetX(trade.Entry.BarOfExecution.Time);
@@ -154,6 +157,8 @@ namespace BooksAndPubs
     #region The 2-period RSI under 5 on the S&P 500
     public class Connors_ShortTermTrading_RsiUnder5 : Connors_ShortTermTrading_Core
     {
+        public override string Name => "2-Period RSI Under 5 Strategy";
+
         [OptimizerParam(0, 20, 1)]
         public virtual int ENTRY_MAX_RSI { get; set; } = 5;
 
@@ -193,6 +198,8 @@ namespace BooksAndPubs
     #region Cumulative RSIs Strategy
     public class Connors_ShortTermTrading_CumulativeRsi : Connors_ShortTermTrading_Core
     {
+        public override string Name => "Cumulative RSIs Strategy";
+
         [OptimizerParam(1, 5, 1)]
         public virtual int CUM_RSI_DAYS { get; set; } = 2;
 
@@ -239,6 +246,8 @@ namespace BooksAndPubs
     #region Chapter 10: Double 7's Strategy
     public class Connors_ShortTermTrading_Double7 : Connors_ShortTermTrading_Core
     {
+        public override string Name => "Double 7's Strategy";
+
         [OptimizerParam(5, 10, 1)]
         public virtual int DOUBLE_DAYS { get; set; } = 7;
 
@@ -278,6 +287,8 @@ namespace BooksAndPubs
     #region 1. VIX Stretches Strategy
     public class Connors_ShortTermTrading_VixStretches : Connors_ShortTermTrading_Core
     {
+        public override string Name => "VIX Stretches Strategy";
+
         [OptimizerParam(2, 5, 1)]
         public virtual int LE1_MIN_VIX_DAYS { get; set; } = 3;
 
@@ -322,6 +333,8 @@ namespace BooksAndPubs
     #region 2. VIX RSI Strategy
     public class Connors_ShortTermTrading_VixRsi : Connors_ShortTermTrading_Core
     {
+        public override string Name => "VIX RSI Strategy";
+
         [OptimizerParam(75, 100, 5)]
         public virtual int LE2_MIN_VIX_RSI { get; set; } = 90;
 
@@ -368,7 +381,9 @@ namespace BooksAndPubs
 #if INCLUDE_TRIN_STRATEGY
     public class Connors_ShortTermTrading_Trin : Connors_ShortTermTrading_Core
     {
-        [OptimizerParam(45, 75, 5)]
+        public override string Name => "TRIN Strategy";
+
+    [OptimizerParam(45, 75, 5)]
         public virtual int LE3_MAX_MKT_RSI { get; set; } = 50;
 
         [OptimizerParam(1, 5, 1)]
@@ -415,6 +430,8 @@ namespace BooksAndPubs
     #region 4. One More Market Timing Strategy with Cumulative RSIs
     public class Connors_ShortTermTrading_MoreCumulativeRsi : Connors_ShortTermTrading_Core
     {
+        public override string Name => "More Cumulative RSI Strategy";
+
         [OptimizerParam(1, 5, 1)]
         public virtual int LE4_RSI_CUM_DAYS { get; set; } = 2;
 
@@ -455,6 +472,8 @@ namespace BooksAndPubs
     #region 5. Trading on the Short Side - The S&P Short Strategy
     public class Connors_ShortTermTrading_ShortSide : Connors_ShortTermTrading_Core
     {
+        public override string Name => "Short Strategy";
+
         [OptimizerParam(2, 7, 1)]
         public virtual int LE5_MIN_MKT_UP { get; set; } = 4;
 

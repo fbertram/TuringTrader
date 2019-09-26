@@ -398,7 +398,7 @@ namespace TuringTrader.Simulator
 #endregion
 
             //---------- API
-#region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
+            #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
             /// <summary>
             /// Create and initialize new data source for CSV files.
             /// </summary>
@@ -419,8 +419,8 @@ namespace TuringTrader.Simulator
                 && !Directory.Exists(Info[DataSourceParam.dataPath]))
                     Directory.CreateDirectory(Info[DataSourceParam.dataPath]);
             }
-#endregion
-#region override public void LoadData(DateTime startTime, DateTime endTime)
+            #endregion
+            #region override public void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
@@ -466,7 +466,7 @@ namespace TuringTrader.Simulator
 
                 Data = data;
             }
-#endregion
+            #endregion
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        DataSourceYahoo
-// Description: unit test for Yahoo data source
-// History:     2019vi02, FUB, created
+// Name:        TestDataSourceSplice
+// Description: unit test for splice data source
+// History:     2019ix26, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              https://www.bertram.solutions
@@ -34,20 +34,23 @@ using TuringTrader.Simulator;
 namespace SimulatorEngine.Tests
 {
     [TestClass]
-    public class DataSourceYahoo
+    public class DataSourceSplice
     {
         [TestMethod]
         public void Test_DataRetrieval()
         {
-            var ds = DataSource.New("yahoo:msft");
+            var ds = DataSource.New("splice:SPY,$SPXTR");
 
-            ds.LoadData(DateTime.Parse("01/01/2019"), DateTime.Parse("01/12/2019"));
+            ds.LoadData(DateTime.Parse("01/01/1988"), DateTime.Parse("01/01/2019"));
 
-            Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("microsoft"));
-            Assert.IsTrue(((DateTime)ds.FirstTime).Date == DateTime.Parse("03/13/1986"));
+            Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("s&p 500"));
+
+            // TODO: add something sensical here
+
+            //Assert.IsTrue(((DateTime)ds.FirstTime).Date == DateTime.Parse("03/13/1986"));
             //Assert.IsTrue(((DateTime)ds.LastTime).Date == DateTime.Parse("01/11/2019"));
-            Assert.IsTrue(ds.Data.Count() == 8);
-            Assert.IsTrue(Math.Abs(ds.Data.Last().Close / ds.Data.First().Open - 102.36056 / 99.12445) < 1e-3);
+            //Assert.IsTrue(ds.Data.Count() == 8);
+            //Assert.IsTrue(Math.Abs(ds.Data.Last().Close / ds.Data.First().Open - 102.36056 / 99.12445) < 1e-3);
         }
     }
 }
