@@ -109,8 +109,9 @@ namespace BooksAndPubs
                     _plotter.SelectChart("Strategy Leverage", "entry date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("% long", Positions.Keys.Sum(i => Math.Max(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
-                    _plotter.Plot("% short", Positions.Keys.Sum(i => -Math.Min(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
-                    _plotter.Plot("% total", Positions.Keys.Sum(i => Math.Abs(i.Position) * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("% short", Positions.Keys.Sum(i => Math.Min(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
+                    //_plotter.Plot("% total", Positions.Keys.Sum(i => Math.Abs(i.Position) * i.Close[0]) / NetAssetValue[0]);
+                    //_plotter.Plot("% total", Positions.Keys.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                 }
             }
 
@@ -553,6 +554,8 @@ namespace BooksAndPubs
     public class Connors_HighProbEtfTrading_Tps : Connors_HighProbEtfTrading_Core
     {
         public override string Name => "TPS Strategy";
+
+        new public int AGGRESSIVE_ON => 1;
 
         [OptimizerParam(10, 40, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;

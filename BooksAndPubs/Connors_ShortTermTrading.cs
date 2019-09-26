@@ -74,6 +74,9 @@ namespace BooksAndPubs
 
             foreach (var s in SimTimes)
             {
+                if (!HasInstrument(MARKET) || !HasInstrument(VOLATILITY))
+                    continue;
+
                 _market = _market ?? FindInstrument(MARKET);
                 _volatility = _volatility ?? FindInstrument(VOLATILITY);
 #if INCLUDE_TRIN_STRATEGY
