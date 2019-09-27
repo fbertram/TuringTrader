@@ -72,11 +72,7 @@ namespace TuringTrader.BooksAndPubs
 
                 // skip, if there are any missing instruments
                 // we want to make sure our strategy has all instruments available
-                bool instrumentsMissing = _etfMenu
-                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
-                    .Count() > 0;
-
-                if (instrumentsMissing)
+                if (!HasInstruments(_etfMenu))
                     continue;
 
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
@@ -231,21 +227,21 @@ namespace TuringTrader.BooksAndPubs
                 // simulation period, leading to skewed results
 
                 //--- equities
-                "VTV",  // Vanguard Value Index ETF
-                "VUG",  // Vanguard Growth Index ETF
-                "VIOV", // Vanguard S&P Small-Cap 600 Value Index ETF
-                "VIOG", // Vanguard S&P Small-Cap 600 Growth Index ETF
-                "VEA",  // Vanguard Developed Markets Index ETF
-                "VWO",  // Vanguard Emerging Market Stock Index ETF
+                "splice:VTV,yahoo:VVIAX",       // Vanguard Value Index ETF
+                "splice:VUG,yahoo:VIGAX",       // Vanguard Growth Index ETF
+                "splice:VIOV,VBR,yahoo:VSIAX",  // Vanguard S&P Small-Cap 600 Value Index ETF
+                "splice:VIOG,VBK,yahoo:VSGAX",  // Vanguard S&P Small-Cap 600 Growth Index ETF
+                "splice:VEA,yahoo:VTMGX",       // Vanguard Developed Markets Index ETF
+                "splice:VWO,yahoo:VEMAX",       // Vanguard Emerging Market Stock Index ETF
                 //--- hard assets
-                "VNQ",  // Vanguard Real Estate Index ETF
-                "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
-                "IAU",  // iShares Gold ETF
+                "splice:VNQ,yahoo:VGSLX",       // Vanguard Real Estate Index ETF
+                "splice:PDBC,DBC",              // Invesco Optimum Yield Diversified Commodity Strategy ETF
+                "IAU",                          // iShares Gold ETF
                 //--- fixed-income
-                "EDV",  // Vanguard Extended Duration ETF
-                "VGIT", // Vanguard Intermediate-Term Treasury Index ETF
-                "VCLT", // Vanguard Long-Term Corporate Bond Index ETF
-                "BNDX", // Vanguard Total International Bond Index ETF
+                "splice:EDV,TLT",               // Vanguard Extended Duration ETF
+                "splice:VGIT,IEF",              // Vanguard Intermediate-Term Treasury Index ETF
+                "splice:VCLT,IGLB,USIG",        // Vanguard Long-Term Corporate Bond Index ETF
+                "splice:BNDX,IBND,BWX",         // Vanguard Total International Bond Index ETF
             };
         }
 
