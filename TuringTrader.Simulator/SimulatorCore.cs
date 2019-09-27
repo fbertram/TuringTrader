@@ -396,6 +396,14 @@ namespace TuringTrader.Simulator
                     hasData[source] = enumData[source].MoveNext();
                 }
 
+#if false
+                Output.WriteLine("Data source summary:");
+                foreach (var ds in _dataSources)
+                {
+                    Output.WriteLine("    {0}: {1:MM/dd/yyyy} - {2:MM/dd/yyyy}", ds.Info[DataSourceParam.name], ds.FirstTime, ds.LastTime);
+                }
+#endif
+
                 // reset trade log
                 Log.Clear();
 

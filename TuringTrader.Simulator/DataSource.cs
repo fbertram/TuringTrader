@@ -394,10 +394,9 @@ namespace TuringTrader.Simulator
             //===== optional: data source specified as part of nickname
             else
             {
-                string[] tmp = nickname.Split(':');
-
-                infos[DataSourceParam.dataFeed] = nickname; // TODO: do we need to use a substring here?
-                infos[DataSourceParam.nickName2] = tmp[1];
+                var idx = nickname.IndexOf(':');
+                infos[DataSourceParam.dataFeed] = nickname.Substring(0, idx);
+                infos[DataSourceParam.nickName2] = nickname.Substring(idx + 1);
             }
 
             //===== fill in defaults, as required

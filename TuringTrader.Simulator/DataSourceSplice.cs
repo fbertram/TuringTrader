@@ -72,7 +72,7 @@ namespace TuringTrader.Simulator
                 List<Bar> retrievalFunction()
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName]));
+                    //Output.Write(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName]));
 
                     // load data from specified data sources
                     // and save as list of bars, in reverse order
@@ -89,7 +89,7 @@ namespace TuringTrader.Simulator
                         d.LoadData(startTime, endTime);
                         dsBars[nick] = d.Data.Reverse().ToList();
 
-                        Output.WriteLine("{0}: {1} data range {2:MM/dd/yyyy}, {3:MM/dd/yyyy}", GetType().Name, nick, d.FirstTime, d.LastTime);
+                        //Output.WriteLine("{0}: {1} data range {2:MM/dd/yyyy}, {3:MM/dd/yyyy}", GetType().Name, nick, d.FirstTime, d.LastTime);
                     }
 
                     Info[DataSourceParam.name] = name;
@@ -166,7 +166,7 @@ namespace TuringTrader.Simulator
                     bars.Reverse();
 
                     DateTime t2 = DateTime.Now;
-                    Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    //Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                     return bars;
                 };
