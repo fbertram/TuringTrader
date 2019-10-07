@@ -45,10 +45,13 @@ namespace TuringTrader.Simulator
             /// <param name="info">info dictionary</param>
             public DataSourceAlgorithm(Dictionary<DataSourceParam, string> info) : base(info)
             {
+#if false
                 _algoName = Info[DataSourceParam.dataFeed]
                     .Split(':')
                     .Last();
-
+#else
+                _algoName = Info[DataSourceParam.symbolAlgo];
+#endif
                 var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
 
                 if (algo == null)

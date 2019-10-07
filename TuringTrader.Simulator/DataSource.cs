@@ -293,6 +293,7 @@ namespace TuringTrader.Simulator
                     { DataSourceParam.symbolTiingo, "{0}"},
                     { DataSourceParam.symbolInteractiveBrokers, "{0}"},
                     { DataSourceParam.symbolSplice, "{0}"},
+                    { DataSourceParam.symbolAlgo, "{0}"},
                 };
 
                 string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
@@ -338,6 +339,7 @@ namespace TuringTrader.Simulator
                 DataSourceParam.symbolFred,
                 DataSourceParam.symbolTiingo,
                 DataSourceParam.symbolSplice,
+                DataSourceParam.symbolAlgo,
             };
 
             foreach (var field in updateWithTicker)
@@ -475,6 +477,7 @@ namespace TuringTrader.Simulator
             defaultIfUndefined(DataSourceParam.symbolTiingo);
             defaultIfUndefined(DataSourceParam.symbolInteractiveBrokers);
             defaultIfUndefined(DataSourceParam.symbolSplice);
+            defaultIfUndefined(DataSourceParam.symbolAlgo);
 
             //===== instantiate data source
             string dataSource = infos[DataSourceParam.dataFeed].ToLower();
