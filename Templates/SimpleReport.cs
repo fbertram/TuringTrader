@@ -474,7 +474,7 @@ namespace TuringTrader.Simulator
             if (NUM_Y_LABELS >= 2)
             {
                 row = new Dictionary<string, object>();
-                row[METRIC_LABEL] = "Beta (Monthly)";
+                row[METRIC_LABEL] = "Beta (To Benchmark, Monthly)";
                 foreach (var label in ALL_Y_LABELS)
                     row[label] = label == BENCH_Y_LABEL
                         ? "- benchmark -"
