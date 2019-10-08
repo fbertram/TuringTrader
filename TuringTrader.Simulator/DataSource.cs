@@ -221,6 +221,43 @@ namespace TuringTrader.Simulator
     }
 
     /// <summary>
+    /// Base class for universes, providing an enumerable for constituents,
+    /// and a method of checking if an instrument was a constituent at a
+    /// specific point in time.
+    /// </summary>
+    public abstract class Universe
+    {
+        #region static public Universe New(string nickname)
+        /// <summary>
+        /// Create new universe object
+        /// </summary>
+        /// <param name="nickname">universe nickname</param>
+        /// <returns>universe object</returns>
+        static public Universe New(string nickname)
+        {
+            return DataSourceCollection.NewUniverse(nickname);
+        }
+        #endregion
+
+        #region abstract public IEnumerable<string> Constituents
+        /// <summary>
+        /// Return universe constituents.
+        /// </summary>
+        /// <returns>enumerable with nicknames</returns>
+        abstract public IEnumerable<string> Constituents { get; }
+        #endregion
+        #region abstract public bool IsConstituent(string nickname, DateTime timestamp);
+        /// <summary>
+        /// Determine if instrument is constituent of universe.
+        /// </summary>
+        /// <param name="nickname">nickname of instrument to look for</param>
+        /// <param name="timestamp">timestamp to check</param>
+        /// <returns>true, if constituent of universe</returns>
+        abstract public bool IsConstituent(string nickname, DateTime timestamp);
+        #endregion
+    }
+
+    /// <summary>
     /// Collection of data source implementations. There is no need for
     /// application developers to interact with this class directly.
     /// </summary>
@@ -547,6 +584,17 @@ namespace TuringTrader.Simulator
 #endif
 
                 throw new Exception("DataSource: can't instantiate data source");
+        }
+        #endregion
+        #region static public Universe NewUniverse(string nickname)
+        /// <summary>
+        /// Create new universe object.
+        /// </summary>
+        /// <param name="nickname">universe nickname</param>
+        /// <returns>universe object</returns>
+        static public Universe NewUniverse(string nickname)
+        {
+            return new UniverseNorgate(nickname);
         }
         #endregion
     }

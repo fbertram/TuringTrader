@@ -294,23 +294,6 @@ namespace TuringTrader.Simulator
             };
         }
         #endregion
-        /*#region protected void CloneSimSetup()
-        /// <summary>
-        /// Clone simulator core setup: simulator time frame, data sources,
-        /// commission settings.
-        /// </summary>
-        protected void CloneSimSetup(SimulatorCore copyFrom)
-        {
-            WarmupStartTime = copyFrom.WarmupStartTime;
-            StartTime = copyFrom.StartTime;
-            EndTime = copyFrom.EndTime;
-
-            CommissionPerShare = copyFrom.CommissionPerShare;
-
-            foreach (DataSource dataSource in copyFrom._dataSources)
-                AddDataSource(dataSource);
-        }
-        #endregion*/
         #region public string Name
         /// <summary>
         /// Return class type name. This method will return the name of the
@@ -581,6 +564,17 @@ namespace TuringTrader.Simulator
                     return;
 
             _dataSources.Add(DataSource.New(nickLower));
+        }
+        #endregion
+        #region protected void AddDataSources(IEnumerable<string> nicknames)
+        /// <summary>
+        /// Add multiple data sources at once.
+        /// </summary>
+        /// <param name="nicknames">enumerable of nicknames</param>
+        protected void AddDataSources(IEnumerable<string> nicknames)
+        {
+            foreach (var nickname in nicknames)
+                AddDataSource(nickname);
         }
         #endregion
         #region protected void AddDataSource(DataSource dataSource)

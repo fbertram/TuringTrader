@@ -3,7 +3,7 @@
 // Name:        DataSourceNorgate
 // Description: Data source for Norgate Data.
 //              Tested w/ Norgate Data API 4.1.5.27.
-// History:     2019i06, FUB, created
+// History:     2019i06, FUB, created.
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              https://www.bertram.solutions
@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,91 +34,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using NDU = NorgateData.DataAccess;
+using NDW = NorgateData.WatchListLibrary;
 #endregion
 
 namespace TuringTrader.Simulator
 {
     public partial class DataSourceCollection
     {
-        private class DataSourceNorgate : DataSource
+        #region Norgate DLL loading helpers
+        private static class NorgateHelpers
         {
-            #region internal data
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
             private static object _lockUnresolved = new object();
-            #endregion
-            #region internal helpers
-            private void SetName()
-            {
-                // no proper name given, try to retrieve from Norgate
-                string ticker = Info[DataSourceParam.symbolNorgate];
-                Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
-            }
-            private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
-            {
-                DateTime barTime = norgate.Date.Date
-                    + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
 
-                return new Bar(
-                                Info[DataSourceParam.ticker], barTime,
-                                (double)norgate.Open * priceMultiplier, 
-                                (double)norgate.High * priceMultiplier, 
-                                (double)norgate.Low * priceMultiplier, 
-                                (double)norgate.Close * priceMultiplier, 
-                                (long)norgate.Volume, true,
-                                0.0, 0.0, 0, 0, false,
-                                default(DateTime), 0.0, false);
-            }
-            private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
-            {
-                if (!isAPIAvaliable)
-                    throw new Exception("DataSourceNorgate: Norgata Data Updater not installed");
-
-                //--- Norgate setup
-                NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
-                    ? NDU.AdjustmentType.TotalReturn
-                    : NDU.AdjustmentType.CapitalSpecial;
-                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
-
-                //--- run NDU as required
-            #if false
-                // this should work, but seems broken as of 01/09/2019
-                DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
-            #else
-                List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
-                NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
-                DateTime dbTimeStamp = q
-                    .Select(ohlc => ohlc.Date)
-                    .OrderByDescending(d => d)
-                    .First();
-            #endif
-
-                if (endTime > dbTimeStamp)
-                    RunNDU();
-
-                //--- get data from Norgate
-                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
-
-                //--- copy to TuringTrader bars
-                double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
-                    ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
-                    : 1.0;
-
-                foreach (var ohlc in norgateData)
-                {
-                    // Norgate bars only have dates, no time.
-                    // we need to make sure that we won't return bars
-                    // outside of the requested range, as otherwise
-                    // the simulator's IsLastBar will be incorrect
-                    Bar bar = CreateBar(ohlc, priceMultiplier);
-
-                    if (bar.Time >= startTime && bar.Time <= endTime)
-                        data.Add(bar);
-                }
-            }
-
-            private static void RunNDU()
+            public static void RunNDU()
             {
                 if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
                 {
@@ -131,7 +62,7 @@ namespace TuringTrader.Simulator
                     ndu.WaitForExit();
                 }
             }
-            private static void HandleUnresovledAssemblies()
+            public static void HandleUnresovledAssemblies()
             {
                 lock (_lockUnresolved)
                 {
@@ -144,7 +75,7 @@ namespace TuringTrader.Simulator
                     }
                 }
             }
-            private static Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+            public static Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
             {
                 string actualassemblyname = new AssemblyName(args.Name).Name;
 
@@ -158,11 +89,11 @@ namespace TuringTrader.Simulator
                 return null;  // this is bad, means the API could not be loaded and will probably throw a program wide exception 
             }
 
-            private static bool isNDUInstalled
+            public static bool isNDUInstalled
             {
                 get { return checkForNDUInstallKey(); }
             }
-            private static string actualAPILocation
+            public static string actualAPILocation
             {
                 get
                 {
@@ -182,7 +113,7 @@ namespace TuringTrader.Simulator
                     return result;
                 }
             }
-            private static bool isAPIAvaliable
+            public static bool isAPIAvaliable
             {
                 get
                 {
@@ -196,7 +127,7 @@ namespace TuringTrader.Simulator
                     }
                 }
             }
-            private static bool getNDUBinPath(out string binPath)
+            public static bool getNDUBinPath(out string binPath)
             {
                 bool result = false;
                 binPath = "";
@@ -228,7 +159,7 @@ namespace TuringTrader.Simulator
                 }
                 return result;
             }
-            private static bool checkForNDUInstallKey()
+            public static bool checkForNDUInstallKey()
             {
                 bool result = false;
                 try
@@ -259,6 +190,83 @@ namespace TuringTrader.Simulator
                 }
                 return result;
             }
+        }
+        #endregion
+
+        private class DataSourceNorgate : DataSource
+        {
+            #region internal data
+            #endregion
+            #region internal helpers
+            private void SetName()
+            {
+                // no proper name given, try to retrieve from Norgate
+                string ticker = Info[DataSourceParam.symbolNorgate];
+                Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
+            }
+            private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
+            {
+                DateTime barTime = norgate.Date.Date
+                    + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
+
+                return new Bar(
+                                Info[DataSourceParam.ticker], barTime,
+                                (double)norgate.Open * priceMultiplier, 
+                                (double)norgate.High * priceMultiplier, 
+                                (double)norgate.Low * priceMultiplier, 
+                                (double)norgate.Close * priceMultiplier, 
+                                (long)norgate.Volume, true,
+                                0.0, 0.0, 0, 0, false,
+                                default(DateTime), 0.0, false);
+            }
+            private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
+            {
+                if (!NorgateHelpers.isAPIAvaliable)
+                    throw new Exception("DataSourceNorgate: Norgata Data Updater not installed");
+
+                //--- Norgate setup
+                NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
+                    ? NDU.AdjustmentType.TotalReturn
+                    : NDU.AdjustmentType.CapitalSpecial;
+                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
+
+                //--- run NDU as required
+            #if false
+                // this should work, but seems broken as of 01/09/2019
+                DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
+            #else
+                List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
+                NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
+                DateTime dbTimeStamp = q
+                    .Select(ohlc => ohlc.Date)
+                    .OrderByDescending(d => d)
+                    .First();
+            #endif
+
+                if (endTime > dbTimeStamp)
+                    NorgateHelpers.RunNDU();
+
+                //--- get data from Norgate
+                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
+                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
+
+                //--- copy to TuringTrader bars
+                double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
+                    ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
+                    : 1.0;
+
+                foreach (var ohlc in norgateData)
+                {
+                    // Norgate bars only have dates, no time.
+                    // we need to make sure that we won't return bars
+                    // outside of the requested range, as otherwise
+                    // the simulator's IsLastBar will be incorrect
+                    Bar bar = CreateBar(ohlc, priceMultiplier);
+
+                    if (bar.Time >= startTime && bar.Time <= endTime)
+                        data.Add(bar);
+                }
+            }
             #endregion
 
             //---------- API
@@ -270,7 +278,7 @@ namespace TuringTrader.Simulator
             public DataSourceNorgate(Dictionary<DataSourceParam, string> info) : base(info)
             {
                 // make sure Norgate api is properly loaded
-                HandleUnresovledAssemblies();
+                NorgateHelpers.HandleUnresovledAssemblies();
 
                 if (info[DataSourceParam.name] == info[DataSourceParam.nickName])
                 {
@@ -316,7 +324,128 @@ namespace TuringTrader.Simulator
             }
             #endregion
         }
+
+        private class UniverseNorgate : Universe
+        {
+            #region internal data
+            private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
+            {
+                { "$SPX", "S&P 500 Current & Past"},
+            };
+            private string _nickname;
+            // Norgate dll is loaded *while* first instance is created
+            private object /*NDW.Watchlist*/ _watchlist;
+            private object /*NDW.SecurityList*/ _constituents;
+            private Dictionary<int, object /*List<NDU.RecIndicator>*/> _constituentsTimeSeries 
+                = new Dictionary<int, object /*List<NDU.RecIndicator>*/>();
+            #endregion
+            #region internal helpers
+            private void getWatchlist()
+            {
+                // this code cannot be in the same method
+                // that calls HandleUnresolvedAssemblies
+                NDW.Watchlist watchlist;
+                var success = NDU.Api.GetWatchlist(_watchlistNames[_nickname], out watchlist);
+                _watchlist = watchlist;
+            }
+            #endregion
+
+            #region public UniverseNorgate(string nickname)
+            public UniverseNorgate(string nickname)
+            {
+                // make sure Norgate api is properly loaded
+                NorgateHelpers.HandleUnresovledAssemblies();
+
+                if (!_watchlistNames.ContainsKey(nickname))
+                    throw new Exception(string.Format("{0}: no watchlist found for '{1}'", GetType().Name, nickname));
+
+                _nickname = nickname;
+                getWatchlist();
+            }
+            #endregion
+
+            //---------- API
+            #region abstract public IEnumerable<string> Constituents()
+            /// <summary>
+            /// Return universe constituents.
+            /// </summary>
+            /// <returns>enumerable with nicknames</returns>
+            override public IEnumerable<string> Constituents
+            {
+                get
+                {
+                    NDW.Watchlist watchlist = (NDW.Watchlist)_watchlist;
+
+                    if (_constituents == null)
+                    {
+                        NDW.SecurityList constituents1;
+                        var success = watchlist.GetSecurityList(out constituents1);
+                        _constituents = constituents1;
+                    }
+
+                    NDW.SecurityList constituents = (NDW.SecurityList)_constituents;
+                    foreach (var security in constituents)
+                    {
+                        yield return "norgate:" + security.Symbol;
+                    }
+
+                    yield break;
+                }
+            }
+            #endregion
+            #region abstract public bool IsConstituent(string nickname, DateTime timestamp);
+            /// <summary>
+            /// Determine if instrument is constituent of universe.
+            /// </summary>
+            /// <param name="nickname">nickname of instrument to look for</param>
+            /// <param name="timestamp">timestamp to check</param>
+            /// <returns>true, if constituent of universe</returns>
+            override public bool IsConstituent(string nickname, DateTime timestamp)
+            {
+                int idx = nickname.Contains(":") ? nickname.IndexOf(":") : -1;
+                string datasource = idx > 0 ? nickname.Substring(0, idx - 1).ToLower() : "";
+                string symbol = nickname.Substring(idx + 1);
+
+                if (datasource.Length > 0 && !datasource.Contains("norgate)"))
+                    return false;
+
+                if (_constituents == null)
+                {
+                    var dummy = Constituents.First();
+                }
+                NDW.SecurityList constituents = (NDW.SecurityList)_constituents;
+                NDW.Security security = constituents
+                    .Where(c => c.Symbol == symbol)
+                    .FirstOrDefault();
+
+                if (security == null)
+                    return false;
+
+                if (!_constituentsTimeSeries.ContainsKey(security.AssetID))
+                {
+                    List<NDU.RecIndicator> timeSeries1;
+                    var success = NDU.Api.GetIndexConstituentTimeSeries(
+                        security.AssetID, out timeSeries1, _nickname,
+                        DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture),
+                        DateTime.Now.Date,
+                        NDU.PaddingType.None);
+                    _constituentsTimeSeries[security.AssetID] = timeSeries1;
+                }
+
+                List<NDU.RecIndicator> timeSeries = (List<NDU.RecIndicator>)_constituentsTimeSeries[security.AssetID];
+                var isConstituent = timeSeries
+                    .Where(r => r.Date <= timestamp.Date)
+                    .OrderByDescending(r => r.Date)
+                    .FirstOrDefault();
+
+                return isConstituent != null
+                    ? (isConstituent.value != 0.0 ? true : false)
+                    : false;
+            }
+            #endregion
+        }
     }
+
 }
 
 //==============================================================================
