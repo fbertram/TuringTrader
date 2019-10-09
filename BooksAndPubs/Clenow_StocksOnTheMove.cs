@@ -23,6 +23,11 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// USE_NORGATE_UNIVERSE
+// defined: using survivorship-free universe through Norgate Data
+// undefined: using fixed test univese
+//#define USE_NORGATE_UNIVERSE
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -34,9 +39,251 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Clenov_StocksOnTheMove_Core : Algorithm
+    #region TestUniverse - beware of survivorship bias!
+    class TestUniverse : Universe
+    {
+        public override IEnumerable<string> Constituents => new List<string>()
+        {
+            "AAL",
+            "AAPL",
+            "ABBV",
+            "ABT",
+            //"ABX",
+            "ACN",
+            "ADBE",
+            "ADI",
+            "ADP",
+            "ADSK",
+            "AIG",
+            "AKAM",
+            "ALL",
+            "ALXN",
+            "AMAT",
+            "AMGN",
+            "AMZN",
+            "APA",
+            //"APC",
+            "ATVI",
+            "AVGO",
+            "AXP",
+            "BA",
+            "BAC",
+            "BBBY",
+            "BHP",
+            "BIDU",
+            "BIIB",
+            "BK",
+            "BMY",
+            "BP",
+            "BRK.A",
+            "BRK.B",
+            "C",
+            //"CA.x",
+            "CAT",
+            "CELG",
+            "CERN",
+            "CF",
+            "CHK",
+            "CHKP",
+            "CHRW",
+            "CHTR",
+            "CL",
+            "CLF",
+            "CMCSA",
+            "CMI",
+            "COF",
+            "COP",
+            "COST",
+            "CRM",
+            "CSCO",
+            "CTSH",
+            "CTXS",
+            "CVS",
+            "CVX",
+            "DE",
+            "DIS",
+            "DISCA",
+            "DISCK",
+            "DISH",
+            "DLTR",
+            //"DTV",
+            "DVN",
+            "EA",
+            "EBAY",
+            "EMR",
+            "EOG",
+            //"ESRX.X",
+            "EXC",
+            "EXPD",
+            "F",
+            "FAST",
+            "FB",
+            "FCX",
+            "FDX",
+            "FISV",
+            //"TFCF.X",
+            //"TFCFA.X",
+            "GD",
+            "GE",
+            "GILD",
+            "GLW",
+            "GM",
+            "GOOG",
+            "GOOGL",
+            "GRMN",
+            "GS",
+            "HAL",
+            "HD",
+            "HES",
+            "HON",
+            "HPQ",
+            "HSIC",
+            "IBM",
+            "ILMN",
+            "INTC",
+            "INTU",
+            "ISRG",
+            "ITUB",
+            "JCP",
+            "JNJ",
+            "JPM",
+            "KLAC",
+            "KMI",
+            "KO",
+            "LBTYA",
+            "LBTYK",
+            "LLY",
+            "LMT",
+            "LOW",
+            "LRCX",
+            "LVS",
+            "M",
+            "MA",
+            "MAR",
+            "MAT",
+            "MCD",
+            "MDLZ",
+            "MDT",
+            "MET",
+            "MMM",
+            "MNST",
+            "MO",
+            //"MON.X",
+            "MOS",
+            "MRK",
+            "MS",
+            "MSFT",
+            "MU",
+            "MYL",
+            "NEM",
+            "NFLX",
+            "NKE",
+            "NLY",
+            "NOV",
+            "NSC",
+            "NTAP",
+            "NVDA",
+            "NWSA",
+            "NXPI",
+            "ORCL",
+            "ORLY",
+            "OXY",
+            "PAYX",
+            "PBR",
+            "PCAR",
+            "PEP",
+            "PFE",
+            "PG",
+            "PM",
+            "PRU",
+            "QCOM",
+            "REGN",
+            "RIG",
+            "ROST",
+            "RTN",
+            "SBAC",
+            "SBUX",
+            "SINA",
+            "SIRI",
+            "SLB",
+            "SO",
+            "SPG",
+            "SRCL",
+            "STX",
+            "SYMC",
+            "T",
+            "TGT",
+            "TRIP",
+            "TSCO",
+            "TSLA",
+            //"TWX.X",
+            "TXN",
+            "UNH",
+            "UNP",
+            "UPS",
+            "USB",
+            "UTX",
+            "V",
+            "VALE",
+            "VIAB",
+            "VLO",
+            "VOD",
+            "VRSK",
+            "VRTX",
+            "VZ",
+            "WBA",
+            "WDC",
+            "WFC",
+            "WMT",
+            "WYNN",
+            "X",
+            "XLNX",
+            "XOM",
+            //"ALTR.X",
+            //"ANR.X",
+            //"BHI.X",
+            //"BRCM.X",
+            //"CAM.X",
+            //"CMCSK.X",
+            //"COV.X",
+            //"DELL.X",
+            //"DD.X",
+            //"DOW.X",
+            //"EMC.X",
+            //"EP.X",
+            //"GMCR.X",
+            //"LLTC.X",
+            //"LMCA.X",
+            //"LMCK.X",
+            //"LVNTA.X",
+            //"MHS.X",
+            //"MJN.X",
+            //"PCLN.X",
+            //"POT.X",
+            //"PSE.X",
+            //"QVCA.X",
+            //"SNDK.X",
+            //"SPLS.X",
+            //"STJ.X",
+            //"TWC.X",
+            //"VIP.X",
+            //"WAG.X",
+            //"WFM.X",
+            //"WLP.X",
+            //"WLT.X",
+            //"YHOO.X",
+        };
+        public override bool IsConstituent(string nickname, DateTime timestamp)
+        {
+            return true;
+        }
+    }
+    #endregion
+
+    public class Clenov_StocksOnTheMove : Algorithm
     {
         public override string Name => "Stocks on the Move";
+
 
         #region inputs
         [OptimizerParam(63, 252, 21)]
@@ -54,15 +301,21 @@ namespace TuringTrader.BooksAndPubs
         [OptimizerParam(63, 252, 21)]
         public int INDEX_FLT = 200;
 
-        // Clenow uses 20 here. We need to use a higher number,
-        // as we are using a much smaller universe.
         [OptimizerParam(5, 50, 5)]
-        public int TOP_PCNT = 25;
+        public int TOP_PCNT = 20;
+
+        public int RISK_BPS = 10;
         #endregion
         #region private data
         private readonly string BENCHMARK = "$SPX";
-        protected abstract List<string> UNIVERSE { get; }
         private readonly double INITIAL_FUNDS = 100000;
+#if USE_NORGATE_UNIVERSE
+        // this is the proper way of doing things
+        private Universe UNIVERSE = Universe.New("$SPX");
+#else
+        // this if for testing only
+        private Universe UNIVERSE = new TestUniverse();
+#endif
         private Plotter _plotter = new Plotter();
         #endregion
 
@@ -72,90 +325,107 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             // set simulation time frame
-            WarmupStartTime = DateTime.Parse("01/01/2005", CultureInfo.InvariantCulture);
-            StartTime = DateTime.Parse("01/01/2008", CultureInfo.InvariantCulture);
+#if false
+            // matching Clenow's charts
+            WarmupStartTime = DateTime.Parse("01/01/1998", CultureInfo.InvariantCulture);
+            StartTime = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
+#else
+            WarmupStartTime = DateTime.Parse("01/01/2006", CultureInfo.InvariantCulture);
+            StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+#endif
 
             // set account value
             Deposit(INITIAL_FUNDS);
-            CommissionPerShare = 0.015;
+            //CommissionPerShare = 0.015; not sure if Clenow is considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
-            foreach (string nickname in UNIVERSE)
-                AddDataSource(nickname);
+            AddDataSources(UNIVERSE.Constituents);
 
             //---------- simulation
+
+            Instrument benchmark = null;
 
             // loop through all bars
             foreach (DateTime simTime in SimTimes)
             {
-                // determine active instruments
-                var activeInstruments = Instruments
-                    .Where(i => UNIVERSE.Contains(i.Nickname)
-                            && i.Time[0] == simTime)
-                    .ToList();
+                benchmark = benchmark ?? FindInstrument(BENCHMARK);
 
                 // calculate indicators
                 // store to list, to make sure indicators are evaluated
                 // exactly once per bar
-                var instrumentEvaluation = activeInstruments
+                // do this on all available instruments, to make sure we
+                // have valid data available when instruments become
+                // constituents of our universe
+                var instrumentEvaluation = Instruments
                     .Select(i => new
                     {
                         instrument = i,
                         regression = i.Close.LogRegression(MOM_PERIOD),
                         maxMove = i.Close.LogReturn().AbsValue().Highest(MOM_PERIOD),
-                        avg100 = i.Close.EMA(INSTR_FLT),
+                        avg100 = i.Close.SMA(INSTR_FLT),
                         atr20 = i.AverageTrueRange(ATR_PERIOD),
                     })
                     .ToList();
 
-                // 1) rank instruments by volatility-adjusted momentum
-                // 2) determine position size with risk equal to 10-basis points
-                //    of NAV per instrument, based on 20-day ATR
-                // 3) disqualify instruments, when
-                //    - trading below 100-day moving average
-                //    - negative momentum
-                //    - maximum move > 15%
-                var instrumentRanking = instrumentEvaluation
-                    .OrderByDescending(e => e.regression.Slope[0] * e.regression.R2[0])
-                    .Select(e => new
-                    {
-                        instrument = e.instrument,
-                        positionSize = (e.maxMove[0] < Math.Log(MAX_MOVE / 100.0)
-                                && e.instrument.Close[0] > e.avg100[0]
-                                && e.regression.Slope[0] > 0.0)
-                            ? 0.001 / e.atr20[0] * e.instrument.Close[0]
-                            : 0.0,
-                    })
-                    .ToList();
-
-                // assign equity, until we run out of cash,
-                // or we are no longer in the top-ranking 20%
-                var instrumentEquity = Enumerable.Range(0, instrumentRanking.Count)
-                    .ToDictionary(
-                        i => instrumentRanking[i].instrument,
-                        i => i <= TOP_PCNT / 100.0 * instrumentRanking.Count
-                            ? Math.Min(
-                                instrumentRanking[i].positionSize,
-                                Math.Max(0.0, 1.0 - instrumentRanking.Take(i).Sum(r => r.positionSize)))
-                            : 0.0);
-
                 // index filter: only buy any shares, while S&P-500 is trading above its 200-day moving average
-                var indexFilter = FindInstrument(BENCHMARK).Close
-                    .Divide(FindInstrument(BENCHMARK).Close.EMA(INDEX_FLT));
+                bool allowNewEntries = FindInstrument(BENCHMARK).Close[0] > FindInstrument(BENCHMARK).Close.SMA(INDEX_FLT)[0];
 
                 // trade once per week
-                // this is a slight simplification from Clenow's suggestion to change positions
+                // this is a slight simplification from Clenow's suggestion to adjust positions
                 // every week, and adjust position sizes only every other week
-                if (SimTime[0].DayOfWeek >= DayOfWeek.Wednesday && SimTime[1].DayOfWeek < DayOfWeek.Wednesday)
+                if (SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday)
                 {
-                    foreach (Instrument instrument in instrumentEquity.Keys)
+                    //*** CAUTION: no indicator calcualtions within this if statement! ***
+
+                    // disqualify instruments, if
+                    //    - not a constituent of the universe
+                    //    - trading below 100-day moving average
+                    //    - negative momentum
+                    //    - maximum move > 15%
+                    var filteredInstruments = instrumentEvaluation
+                        .Where(e => UNIVERSE.IsConstituent(e.instrument.Nickname, SimTime[0])
+                            && e.instrument.Close[0] > e.avg100[0]
+                            && e.regression.Slope[0] > 0.0
+                            && e.maxMove[0] < Math.Log(MAX_MOVE / 100.0))
+                        .ToList();
+
+                    // 1) rank instruments by volatility-adjusted momentum
+                    // 2) determine position size with risk equal to 10-basis points
+                    //    of NAV per instrument, based on 20-day ATR
+                    var instrumentRanking = filteredInstruments
+                        .OrderByDescending(e => e.regression.Slope[0] * e.regression.R2[0])
+                        .Select(e => new
+                        {
+                            instrument = e.instrument,
+                            positionSize = RISK_BPS / 10000.0 / e.atr20[0] * e.instrument.Close[0],
+                        })
+                        .ToList();
+
+                    // select the top-ranking 20% from our filtered list
+                    var topPercent = instrumentRanking
+                        .Take((int)Math.Round(TOP_PCNT / 100.0 * instrumentRanking.Count))
+                        .ToList();
+
+                    // assign equity, until we run out of cash
+                    var instrumentEquity = Enumerable.Range(0, topPercent.Count)
+                        .ToDictionary(
+                            i => topPercent[i].instrument,
+                            i => Math.Min(
+                                topPercent[i].positionSize,
+                                Math.Max(0.0, 1.0 - topPercent.Take(i).Sum(r => r.positionSize))));
+
+                    // loop through all instruments and submit trades
+                    foreach (Instrument instrument in Instruments)
                     {
                         int currentShares = instrument.Position;
-                        int targetShares = (int)Math.Round(NetAssetValue[0] * instrumentEquity[instrument] / instrument.Close[0]);
+                        int targetShares = instrumentEquity.ContainsKey(instrument)
+                            ? (int)Math.Round(NetAssetValue[0] * instrumentEquity[instrument] / instrument.Close[0])
+                            : 0;
 
-                        if (indexFilter[0] < 0.0)
+                        if (!allowNewEntries)
                             targetShares = Math.Min(targetShares, currentShares);
 
                         instrument.Trade(targetShares - currentShares);
@@ -175,7 +445,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(FindInstrument(BENCHMARK).Name, FindInstrument(BENCHMARK).Close[0]);
+                    _plotter.Plot(benchmark.Name, benchmark.Close[0]);
                 }
             }
 
@@ -203,252 +473,10 @@ namespace TuringTrader.BooksAndPubs
         public override void Report()
         {
             _plotter.OpenWith("SimpleReport");
+            //_plotter.OpenWith("SimpleChart");
         }
         #endregion
     }
-
-    #region 200 of the most liquid US stocks
-    public class Clenov_StocksOnTheMove : Clenov_StocksOnTheMove_Core
-    {
-        protected override List<string> UNIVERSE
-        {
-            get
-            {
-                return new List<string>()
-                {
-                    "AAL",
-                    "AAPL",
-                    "ABBV",
-                    "ABT",
-                    //"ABX",
-                    "ACN",
-                    "ADBE",
-                    "ADI",
-                    "ADP",
-                    "ADSK",
-                    "AIG",
-                    "AKAM",
-                    "ALL",
-                    "ALXN",
-                    "AMAT",
-                    "AMGN",
-                    "AMZN",
-                    "APA",
-                    //"APC",
-                    "ATVI",
-                    "AVGO",
-                    "AXP",
-                    "BA",
-                    "BAC",
-                    "BBBY",
-                    "BHP",
-                    "BIDU",
-                    "BIIB",
-                    "BK",
-                    "BMY",
-                    "BP",
-                    "BRK.A",
-                    "BRK.B",
-                    "C",
-                    //"CA.x",
-                    "CAT",
-                    "CELG",
-                    "CERN",
-                    "CF",
-                    "CHK",
-                    "CHKP",
-                    "CHRW",
-                    "CHTR",
-                    "CL",
-                    "CLF",
-                    "CMCSA",
-                    "CMI",
-                    "COF",
-                    "COP",
-                    "COST",
-                    "CRM",
-                    "CSCO",
-                    "CTSH",
-                    "CTXS",
-                    "CVS",
-                    "CVX",
-                    "DE",
-                    "DIS",
-                    "DISCA",
-                    "DISCK",
-                    "DISH",
-                    "DLTR",
-                    "DTV",
-                    "DVN",
-                    "EA",
-                    "EBAY",
-                    "EMR",
-                    "EOG",
-                    //"ESRX.X",
-                    "EXC",
-                    "EXPD",
-                    "F",
-                    "FAST",
-                    "FB",
-                    "FCX",
-                    "FDX",
-                    "FISV",
-                    //"TFCF.X",
-                    //"TFCFA.X",
-                    "GD",
-                    "GE",
-                    "GILD",
-                    "GLW",
-                    "GM",
-                    "GOOG",
-                    "GOOGL",
-                    "GRMN",
-                    "GS",
-                    "HAL",
-                    "HD",
-                    "HES",
-                    "HON",
-                    "HPQ",
-                    "HSIC",
-                    "IBM",
-                    "ILMN",
-                    "INTC",
-                    "INTU",
-                    "ISRG",
-                    "ITUB",
-                    "JCP",
-                    "JNJ",
-                    "JPM",
-                    "KLAC",
-                    "KMI",
-                    "KO",
-                    "LBTYA",
-                    "LBTYK",
-                    "LLY",
-                    "LMT",
-                    "LOW",
-                    "LRCX",
-                    "LVS",
-                    "M",
-                    "MA",
-                    "MAR",
-                    "MAT",
-                    "MCD",
-                    "MDLZ",
-                    "MDT",
-                    "MET",
-                    "MMM",
-                    "MNST",
-                    "MO",
-                    //"MON.X",
-                    "MOS",
-                    "MRK",
-                    "MS",
-                    "MSFT",
-                    "MU",
-                    "MYL",
-                    "NEM",
-                    "NFLX",
-                    "NKE",
-                    "NLY",
-                    "NOV",
-                    "NSC",
-                    "NTAP",
-                    "NVDA",
-                    "NWSA",
-                    "NXPI",
-                    "ORCL",
-                    "ORLY",
-                    "OXY",
-                    "PAYX",
-                    "PBR",
-                    "PCAR",
-                    "PEP",
-                    "PFE",
-                    "PG",
-                    "PM",
-                    "PRU",
-                    "QCOM",
-                    "REGN",
-                    "RIG",
-                    "ROST",
-                    "RTN",
-                    "SBAC",
-                    "SBUX",
-                    "SINA",
-                    "SIRI",
-                    "SLB",
-                    "SO",
-                    "SPG",
-                    "SRCL",
-                    "STX",
-                    "SYMC",
-                    "T",
-                    "TGT",
-                    "TRIP",
-                    "TSCO",
-                    "TSLA",
-                    //"TWX.X",
-                    "TXN",
-                    "UNH",
-                    "UNP",
-                    "UPS",
-                    "USB",
-                    "UTX",
-                    "V",
-                    "VALE",
-                    "VIAB",
-                    "VLO",
-                    "VOD",
-                    "VRSK",
-                    "VRTX",
-                    "VZ",
-                    "WBA",
-                    "WDC",
-                    "WFC",
-                    "WMT",
-                    "WYNN",
-                    "X",
-                    "XLNX",
-                    "XOM",
-                    //"ALTR.X",
-                    //"ANR.X",
-                    //"BHI.X",
-                    //"BRCM.X",
-                    //"CAM.X",
-                    //"CMCSK.X",
-                    //"COV.X",
-                    //"DELL.X",
-                    //"DD.X",
-                    //"DOW.X",
-                    //"EMC.X",
-                    //"EP.X",
-                    //"GMCR.X",
-                    //"LLTC.X",
-                    //"LMCA.X",
-                    //"LMCK.X",
-                    //"LVNTA.X",
-                    //"MHS.X",
-                    //"MJN.X",
-                    //"PCLN.X",
-                    //"POT.X",
-                    //"PSE.X",
-                    //"QVCA.X",
-                    //"SNDK.X",
-                    //"SPLS.X",
-                    //"STJ.X",
-                    //"TWC.X",
-                    //"VIP.X",
-                    //"WAG.X",
-                    //"WFM.X",
-                    //"WLP.X",
-                    //"WLT.X",
-                    //"YHOO.X",
-                };
-            }
-        }
-    }
-    #endregion
 }
 
 //==============================================================================
