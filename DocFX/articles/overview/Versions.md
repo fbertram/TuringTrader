@@ -13,6 +13,7 @@
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
     - add scatter plots to SimpleChart and SimpleReport
     - improve SimpleReport template: improved metrics, annual return bar chart, and Monte-Carlo simulation
+	- fix issue where SimpleReport did not show metrics
   - documentation
     - add QSG article for SimpleReport
   - build environment
