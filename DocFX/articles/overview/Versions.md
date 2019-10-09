@@ -8,6 +8,7 @@
   - data sources
     - avoid exceptions to speed up FRED load
     - add splice data source
+	- add universe functionality
   - native reports
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
     - add scatter plots to SimpleChart and SimpleReport

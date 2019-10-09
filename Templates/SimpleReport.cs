@@ -142,7 +142,7 @@ namespace TuringTrader.Simulator
         // FIXME: somehow we need to escape the carrot, as XAML treats it
         //        as a special character
         // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
-        //private string BENCH_LABEL_XAML { get { return BENCH_LABEL.Replace("^", string.Empty); } }
+        private string XAML_LABEL(string raw) { return raw.Replace("^", string.Empty); }
 
         private Dictionary<DateTime, double> _rfMonthlyYield = null;
         private Dictionary<DateTime, double> RF_MONTHLY_RETURNS
@@ -415,14 +415,14 @@ namespace TuringTrader.Simulator
             row[METRIC_LABEL] = "Simulation Start";
             row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", START_DATE);
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:C2}", START_VALUE(label));
+                row[XAML_LABEL(label)] = string.Format("{0:C2}", START_VALUE(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Simulation End";
             row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", END_DATE);
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:C2}", END_VALUE(label));
+                row[XAML_LABEL(label)] = string.Format("{0:C2}", END_VALUE(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
@@ -433,7 +433,7 @@ namespace TuringTrader.Simulator
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Compound Annual Growth Rate";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:P2}", CAGR(label));
+                row[XAML_LABEL(label)] = string.Format("{0:P2}", CAGR(label));
             retvalue.Add(row);
 
 #if false
@@ -441,14 +441,14 @@ namespace TuringTrader.Simulator
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Average Return (Monthly, Annualized)";
             foreach (var label in _getLabels())
-                row[label] = string.Format("{0:P2}", Math.Sqrt(12.0) * _getStdMonthlyReturns(label));
+                row[XAML_LABEL(label)] = string.Format("{0:P2}", Math.Sqrt(12.0) * _getStdMonthlyReturns(label));
             retvalue.Add(row);
 #endif
 
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:P2}",
+                row[XAML_LABEL(label)] = string.Format("{0:P2}",
                     Math.Exp(Math.Sqrt(12.0 * MONTHLY_RETURNS(label).Values.Average(r => r * r))) - 1.0);
             retvalue.Add(row);
 
@@ -456,19 +456,19 @@ namespace TuringTrader.Simulator
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Maximum Drawdown";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:P2}", MDD(label));
+                row[XAML_LABEL(label)] = string.Format("{0:P2}", MDD(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Maximum Flat Days";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0} days", MAX_FLAT_DAYS(label));
+                row[XAML_LABEL(label)] = string.Format("{0} days", MAX_FLAT_DAYS(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Sharpe Ratio (Monthly, Annualized)";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:F2}", SHARPE_RATIO(label));
+                row[XAML_LABEL(label)] = string.Format("{0:F2}", SHARPE_RATIO(label));
             retvalue.Add(row);
 
             if (NUM_Y_LABELS >= 2)
@@ -476,7 +476,7 @@ namespace TuringTrader.Simulator
                 row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = "Beta (To Benchmark, Monthly)";
                 foreach (var label in ALL_Y_LABELS)
-                    row[label] = label == BENCH_Y_LABEL
+                    row[XAML_LABEL(label)] = label == BENCH_Y_LABEL
                         ? "- benchmark -"
                         : string.Format("{0:F2}", BETA(label, BENCH_Y_LABEL));
                 retvalue.Add(row);
@@ -486,13 +486,13 @@ namespace TuringTrader.Simulator
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Ulcer Index";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:P2}", ULCER_INDEX(label));
+                row[XAML_LABEL(label)] = string.Format("{0:P2}", ULCER_INDEX(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Ulcer Performance Index (Martin Ratio)";
             foreach (var label in ALL_Y_LABELS)
-                row[label] = string.Format("{0:F2}", ULCER_PERFORMANCE_INDEX(label));
+                row[XAML_LABEL(label)] = string.Format("{0:F2}", ULCER_PERFORMANCE_INDEX(label));
             retvalue.Add(row);
 
             // Information Ratio
