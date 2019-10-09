@@ -284,7 +284,6 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Stocks on the Move";
 
-
         #region inputs
         [OptimizerParam(63, 252, 21)]
         public int MOM_PERIOD = 90;
@@ -338,7 +337,7 @@ namespace TuringTrader.BooksAndPubs
 
             // set account value
             Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; not sure if Clenow is considering commissions
+            CommissionPerShare = 0.015; // not sure if Clenow is considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
@@ -359,7 +358,7 @@ namespace TuringTrader.BooksAndPubs
                 // do this on all available instruments, to make sure we
                 // have valid data available when instruments become
                 // constituents of our universe
-                var instrumentEvaluation = Instruments
+                var instrumentIndicators = Instruments
                     .Select(i => new
                     {
                         instrument = i,
@@ -378,14 +377,12 @@ namespace TuringTrader.BooksAndPubs
                 // every week, and adjust position sizes only every other week
                 if (SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday)
                 {
-                    //*** CAUTION: no indicator calcualtions within this if statement! ***
-
                     // disqualify instruments, if
                     //    - not a constituent of the universe
                     //    - trading below 100-day moving average
                     //    - negative momentum
                     //    - maximum move > 15%
-                    var filteredInstruments = instrumentEvaluation
+                    var availableInstruments = instrumentIndicators
                         .Where(e => UNIVERSE.IsConstituent(e.instrument.Nickname, SimTime[0])
                             && e.instrument.Close[0] > e.avg100[0]
                             && e.regression.Slope[0] > 0.0
@@ -395,7 +392,7 @@ namespace TuringTrader.BooksAndPubs
                     // 1) rank instruments by volatility-adjusted momentum
                     // 2) determine position size with risk equal to 10-basis points
                     //    of NAV per instrument, based on 20-day ATR
-                    var instrumentRanking = filteredInstruments
+                    var rankedInstruments = availableInstruments
                         .OrderByDescending(e => e.regression.Slope[0] * e.regression.R2[0])
                         .Select(e => new
                         {
@@ -405,24 +402,24 @@ namespace TuringTrader.BooksAndPubs
                         .ToList();
 
                     // select the top-ranking 20% from our filtered list
-                    var topPercent = instrumentRanking
-                        .Take((int)Math.Round(TOP_PCNT / 100.0 * instrumentRanking.Count))
+                    var topInstruments = rankedInstruments
+                        .Take((int)Math.Round(TOP_PCNT / 100.0 * rankedInstruments.Count))
                         .ToList();
 
                     // assign equity, until we run out of cash
-                    var instrumentEquity = Enumerable.Range(0, topPercent.Count)
+                    var instrumentRelativeEquity = Enumerable.Range(0, topInstruments.Count)
                         .ToDictionary(
-                            i => topPercent[i].instrument,
+                            i => topInstruments[i].instrument,
                             i => Math.Min(
-                                topPercent[i].positionSize,
-                                Math.Max(0.0, 1.0 - topPercent.Take(i).Sum(r => r.positionSize))));
+                                topInstruments[i].positionSize,
+                                Math.Max(0.0, 1.0 - topInstruments.Take(i).Sum(r => r.positionSize))));
 
                     // loop through all instruments and submit trades
                     foreach (Instrument instrument in Instruments)
                     {
                         int currentShares = instrument.Position;
-                        int targetShares = instrumentEquity.ContainsKey(instrument)
-                            ? (int)Math.Round(NetAssetValue[0] * instrumentEquity[instrument] / instrument.Close[0])
+                        int targetShares = instrumentRelativeEquity.ContainsKey(instrument)
+                            ? (int)Math.Round(NetAssetValue[0] * instrumentRelativeEquity[instrument] / instrument.Close[0])
                             : 0;
 
                         if (!allowNewEntries)
@@ -431,7 +428,7 @@ namespace TuringTrader.BooksAndPubs
                         instrument.Trade(targetShares - currentShares);
                     }
 
-                    string message = instrumentEquity
+                    string message = instrumentRelativeEquity
                         .Where(i => i.Value != 0.0)
                         .Aggregate(string.Format("{0:MM/dd/yyyy}: ", SimTime[0]),
                             (prev, next) => prev + string.Format("{0}={1:P2} ", next.Key.Symbol, next.Value));
@@ -473,7 +470,6 @@ namespace TuringTrader.BooksAndPubs
         public override void Report()
         {
             _plotter.OpenWith("SimpleReport");
-            //_plotter.OpenWith("SimpleChart");
         }
         #endregion
     }
