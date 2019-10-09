@@ -26,7 +26,17 @@
 // USE_NORGATE_UNIVERSE
 // defined: using survivorship-free universe through Norgate Data
 // undefined: using fixed test univese
-//#define USE_NORGATE_UNIVERSE
+#define USE_NORGATE_UNIVERSE
+
+// USE_CLENOWS_RANGE
+// defined: use the simulation range covered by Clenow's book
+// undefined: use simulation range from 2007 to last week
+#define USE_CLENOWS_RANGE
+
+// USE_CLENOWS_CHARTS
+// defined: produce chart, similar to Clenow's
+// undefined: produce TuringTrader-style report
+//#define PRODUCE_CLENOWS_CHART
 
 #region libraries
 using System;
@@ -324,7 +334,7 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             // set simulation time frame
-#if false
+#if USE_CLENOWS_RANGE
             // matching Clenow's charts
             WarmupStartTime = DateTime.Parse("01/01/1998", CultureInfo.InvariantCulture);
             StartTime = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
@@ -337,7 +347,7 @@ namespace TuringTrader.BooksAndPubs
 
             // set account value
             Deposit(INITIAL_FUNDS);
-            CommissionPerShare = 0.015; // not sure if Clenow is considering commissions
+            //CommissionPerShare = 0.015; // not sure if Clenow is considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
@@ -377,42 +387,51 @@ namespace TuringTrader.BooksAndPubs
                 // every week, and adjust position sizes only every other week
                 if (SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday)
                 {
-                    // disqualify instruments, if
-                    //    - not a constituent of the universe
+                    // select our universe constituents
+                    var universeConstituents = instrumentIndicators
+                        .Where(e => e.instrument.IsConstituent(UNIVERSE))
+                        .ToList();
+
+                    // rank by volatility-adjusted momentum and pick top 20%
+                    var topRankedInstruments = universeConstituents
+                        .OrderByDescending(e => (Math.Exp(252.0 * e.regression.Slope[0]) - 1.0) * e.regression.R2[0])
+                        .Take((int)Math.Round(TOP_PCNT / 100.0 * universeConstituents.Count))
+                        .ToList();
+
+                    // disqualify
                     //    - trading below 100-day moving average
                     //    - negative momentum
                     //    - maximum move > 15%
-                    var availableInstruments = instrumentIndicators
-                        .Where(e => e.instrument.IsConstituent(UNIVERSE)
-                            && e.instrument.Close[0] > e.avg100[0]
+                    var availableInstruments = topRankedInstruments
+                        .Where(e => e.instrument.Close[0] > e.avg100[0]
                             && e.regression.Slope[0] > 0.0
                             && e.maxMove[0] < Math.Log(MAX_MOVE / 100.0))
                         .ToList();
 
-                    // 1) rank instruments by volatility-adjusted momentum
-                    // 2) determine position size with risk equal to 10-basis points
-                    //    of NAV per instrument, based on 20-day ATR
-                    var rankedInstruments = availableInstruments
-                        .OrderByDescending(e => e.regression.Slope[0] * e.regression.R2[0])
+                    // calculate position sizes
+                    var positionSizes = availableInstruments
                         .Select(e => new
                         {
                             instrument = e.instrument,
-                            positionSize = RISK_BPS / 10000.0 / e.atr20[0] * e.instrument.Close[0],
+                            positionSize = RISK_BPS * 0.0001 / e.atr20[0] * e.instrument.Close[0],
                         })
                         .ToList();
 
-                    // select the top-ranking 20% from our filtered list
-                    var topInstruments = rankedInstruments
-                        .Take((int)Math.Round(TOP_PCNT / 100.0 * rankedInstruments.Count))
-                        .ToList();
-
                     // assign equity, until we run out of cash
-                    var instrumentRelativeEquity = Enumerable.Range(0, topInstruments.Count)
-                        .ToDictionary(
-                            i => topInstruments[i].instrument,
-                            i => Math.Min(
-                                topInstruments[i].positionSize,
-                                Math.Max(0.0, 1.0 - topInstruments.Take(i).Sum(r => r.positionSize))));
+                    var instrumentRelativeEquity = Instruments.ToDictionary(i => i, i => 0.0);
+                    double availableEquity = 1.0;
+                    foreach (var i in positionSizes)
+                    {
+                        if (i.positionSize <= availableEquity)
+                        {
+                            instrumentRelativeEquity[i.instrument] = i.positionSize;
+                            availableEquity -= i.positionSize;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
 
                     // loop through all instruments and submit trades
                     foreach (Instrument instrument in Instruments)
@@ -439,10 +458,18 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
+#if PRODUCE_CLENOWS_CHART
+                    _plotter.SelectChart(Name, "date");
+                    _plotter.SetX(SimTime[0]);
+                    _plotter.Plot(Name, NetAssetValue[0] / INITIAL_FUNDS);
+                    _plotter.Plot(benchmark.Name, benchmark.Close[0] / 1250.0);
+                    _plotter.Plot("Cash", Cash / NetAssetValue[0]);
+#else
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(Name, NetAssetValue[0]);
                     _plotter.Plot(benchmark.Name, benchmark.Close[0]);
+#endif
                 }
             }
 
@@ -465,13 +492,17 @@ namespace TuringTrader.BooksAndPubs
                 //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
         }
-        #endregion
-        #region public override void Report()
+#endregion
+#region public override void Report()
         public override void Report()
         {
+#if PRODUCE_CLENOWS_CHART
+            _plotter.OpenWith("SimpleChart");
+#else
             _plotter.OpenWith("SimpleReport");
+#endif
         }
-        #endregion
+#endregion
     }
 }
 
