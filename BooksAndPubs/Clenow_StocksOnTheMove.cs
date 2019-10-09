@@ -383,7 +383,7 @@ namespace TuringTrader.BooksAndPubs
                     //    - negative momentum
                     //    - maximum move > 15%
                     var availableInstruments = instrumentIndicators
-                        .Where(e => UNIVERSE.IsConstituent(e.instrument.Nickname, SimTime[0])
+                        .Where(e => e.instrument.IsConstituent(UNIVERSE)
                             && e.instrument.Close[0] > e.avg100[0]
                             && e.regression.Slope[0] > 0.0
                             && e.maxMove[0] < Math.Log(MAX_MOVE / 100.0))

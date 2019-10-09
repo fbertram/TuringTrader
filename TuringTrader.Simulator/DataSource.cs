@@ -258,6 +258,27 @@ namespace TuringTrader.Simulator
     }
 
     /// <summary>
+    /// Extension methods for Universe.
+    /// </summary>
+    public static class UniverseExtension
+    {
+        /// <summary>
+        /// Determine if instrument is constituent of universe.
+        /// Note: must not be used on stale instruments!
+        /// </summary>
+        /// <param name="instrument">instrument to test</param>
+        /// <param name="universe">universe to test</param>
+        /// <returns>true, if constituent of universe</returns>
+        public static bool IsConstituent(this Instrument instrument, Universe universe)
+        {
+            string nickname = instrument.Nickname;
+            DateTime timestamp = instrument.Time[0];
+
+            return universe.IsConstituent(nickname, timestamp);
+        }
+    }
+
+    /// <summary>
     /// Collection of data source implementations. There is no need for
     /// application developers to interact with this class directly.
     /// </summary>
