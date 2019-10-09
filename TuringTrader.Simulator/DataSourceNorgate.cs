@@ -222,7 +222,7 @@ namespace TuringTrader.Simulator
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
                 if (!NorgateHelpers.isAPIAvaliable)
-                    throw new Exception("DataSourceNorgate: Norgata Data Updater not installed");
+                    throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
 
                 //--- Norgate setup
                 NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
@@ -303,7 +303,7 @@ namespace TuringTrader.Simulator
                 List<Bar> retrievalFunction()
                 {
                     DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceNorgate: loading data for {0}...", Info[DataSourceParam.nickName]));
+                    Output.Write(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
 
                     List<Bar> bars = new List<Bar>();
 
@@ -317,8 +317,8 @@ namespace TuringTrader.Simulator
 
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
 
-                if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceParam.nickName]));
+                if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
+                    throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName2]));
 
                 Data = data;
             }
@@ -336,8 +336,8 @@ namespace TuringTrader.Simulator
             // Norgate dll is loaded *while* first instance is created
             private object /*NDW.Watchlist*/ _watchlist;
             private object /*NDW.SecurityList*/ _constituents;
-            private Dictionary<int, object /*List<NDU.RecIndicator>*/> _constituentsTimeSeries 
-                = new Dictionary<int, object /*List<NDU.RecIndicator>*/>();
+            private Dictionary<int, object/*List<NDU.RecIndicator>*/> _constituentsTimeSeries = new Dictionary<int, object>();
+            private Dictionary<int, int> _consituentsTimeSeriesIndex = new Dictionary<int, int>();
             #endregion
             #region internal helpers
             private void getWatchlist()
@@ -386,7 +386,7 @@ namespace TuringTrader.Simulator
                     NDW.SecurityList constituents = (NDW.SecurityList)_constituents;
                     foreach (var security in constituents)
                     {
-                        yield return "norgate:" + security.Symbol;
+                        yield return "norgate#accept_no_data:" + security.Symbol;
                     }
 
                     yield break;
@@ -406,7 +406,7 @@ namespace TuringTrader.Simulator
                 string datasource = idx > 0 ? nickname.Substring(0, idx - 1).ToLower() : "";
                 string symbol = nickname.Substring(idx + 1);
 
-                if (datasource.Length > 0 && !datasource.Contains("norgate)"))
+                if (datasource.Length > 0 && !datasource.Contains("norgate"))
                     return false;
 
                 if (_constituents == null)
@@ -431,16 +431,28 @@ namespace TuringTrader.Simulator
                         NDU.PaddingType.None);
                     _constituentsTimeSeries[security.AssetID] = timeSeries1;
                 }
-
                 List<NDU.RecIndicator> timeSeries = (List<NDU.RecIndicator>)_constituentsTimeSeries[security.AssetID];
-                var isConstituent = timeSeries
-                    .Where(r => r.Date <= timestamp.Date)
-                    .OrderByDescending(r => r.Date)
-                    .FirstOrDefault();
 
-                return isConstituent != null
-                    ? (isConstituent.value != 0.0 ? true : false)
-                    : false;
+                // no index? set to zero
+                int index = _consituentsTimeSeriesIndex.ContainsKey(security.AssetID)
+                    ? _consituentsTimeSeriesIndex[security.AssetID]
+                    : 0;
+
+                // index too far? reset to zero
+                if (timeSeries[index].Date.Date > timestamp.Date)
+                    index = 0;
+
+                // advance index as required
+                while (index < timeSeries.Count - 1
+                && timeSeries[Math.Min(index + 1, timeSeries.Count - 1)].Date.Date < timestamp.Date)
+                    index++;
+
+                // reached end of indices
+                // this shouldn't matter, as the simulator core removes stale instruments
+                if (timeSeries[index].Date.Date < timestamp.Date && index == timeSeries.Count - 1)
+                    return false;
+
+                return timeSeries[index].value != 0.0 ? true : false;
             }
             #endregion
         }
