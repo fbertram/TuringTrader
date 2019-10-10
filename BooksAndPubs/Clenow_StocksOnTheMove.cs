@@ -24,19 +24,19 @@
 //==============================================================================
 
 // USE_NORGATE_UNIVERSE
-// defined: using survivorship-free universe through Norgate Data
-// undefined: using fixed test univese
+// defined: use survivorship-free universe through Norgate Data
+// undefined: use fixed test univese with hefty survivorship bias
 #define USE_NORGATE_UNIVERSE
 
 // USE_CLENOWS_RANGE
-// defined: use the simulation range covered by Clenow's book
-// undefined: use simulation range from 2007 to last week
-#define USE_CLENOWS_RANGE
+// defined: match simulation range to Clenow's book
+// undefined: simulate from 2007 to last week
+//#define USE_CLENOWS_RANGE
 
-// USE_CLENOWS_CHARTS
-// defined: produce chart, similar to Clenow's
+// REPRODUCE_CLENOWS_CHART
+// defined: produce chart matching the book
 // undefined: produce TuringTrader-style report
-//#define PRODUCE_CLENOWS_CHART
+//#define REPRODUCE_CLENOWS_CHART
 
 #region libraries
 using System;
@@ -49,7 +49,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    #region TestUniverse - beware of survivorship bias!
+    #region TestUniverse
     class TestUniverse : Universe
     {
         public override IEnumerable<string> Constituents => new List<string>()
@@ -313,7 +313,8 @@ namespace TuringTrader.BooksAndPubs
         [OptimizerParam(5, 50, 5)]
         public int TOP_PCNT = 20;
 
-        public int RISK_BPS = 10;
+        [OptimizerParam(5, 50, 5)]
+        public int RISK_PER_STOCK = 10;
         #endregion
         #region private data
         private readonly string BENCHMARK = "$SPX";
@@ -347,7 +348,7 @@ namespace TuringTrader.BooksAndPubs
 
             // set account value
             Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; // not sure if Clenow is considering commissions
+            //CommissionPerShare = 0.015; // Clenow is not considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
@@ -356,11 +357,14 @@ namespace TuringTrader.BooksAndPubs
             //---------- simulation
 
             Instrument benchmark = null;
+            double? benchmark0 = null;
 
             // loop through all bars
             foreach (DateTime simTime in SimTimes)
             {
                 benchmark = benchmark ?? FindInstrument(BENCHMARK);
+                if (benchmark0 == null && TradingDays == 1)
+                    benchmark0 = benchmark.Open[0];
 
                 // calculate indicators
                 // store to list, to make sure indicators are evaluated
@@ -373,14 +377,18 @@ namespace TuringTrader.BooksAndPubs
                     {
                         instrument = i,
                         regression = i.Close.LogRegression(MOM_PERIOD),
-                        maxMove = i.Close.LogReturn().AbsValue().Highest(MOM_PERIOD),
+                        maxMove = i.TrueRange().Divide(i.Close).Highest(MOM_PERIOD),
                         avg100 = i.Close.SMA(INSTR_FLT),
                         atr20 = i.AverageTrueRange(ATR_PERIOD),
                     })
                     .ToList();
 
                 // index filter: only buy any shares, while S&P-500 is trading above its 200-day moving average
-                bool allowNewEntries = FindInstrument(BENCHMARK).Close[0] > FindInstrument(BENCHMARK).Close.SMA(INDEX_FLT)[0];
+                // NOTE: the 10-day SMA on the benchmark is _not_ mentioned in
+                //       the book. We added it here, to compensate for the
+                //       simplified re-balancing schedule.
+                bool allowNewEntries = FindInstrument(BENCHMARK).Close.SMA(10)[0] 
+                    > FindInstrument(BENCHMARK).Close.SMA(INDEX_FLT)[0];
 
                 // trade once per week
                 // this is a slight simplification from Clenow's suggestion to adjust positions
@@ -400,12 +408,10 @@ namespace TuringTrader.BooksAndPubs
 
                     // disqualify
                     //    - trading below 100-day moving average
-                    //    - negative momentum
                     //    - maximum move > 15%
                     var availableInstruments = topRankedInstruments
                         .Where(e => e.instrument.Close[0] > e.avg100[0]
-                            && e.regression.Slope[0] > 0.0
-                            && e.maxMove[0] < Math.Log(MAX_MOVE / 100.0))
+                            && e.maxMove[0] < MAX_MOVE / 100.0)
                         .ToList();
 
                     // calculate position sizes
@@ -413,7 +419,7 @@ namespace TuringTrader.BooksAndPubs
                         .Select(e => new
                         {
                             instrument = e.instrument,
-                            positionSize = RISK_BPS * 0.0001 / e.atr20[0] * e.instrument.Close[0],
+                            positionSize = RISK_PER_STOCK * 0.0001 / e.atr20[0] * e.instrument.Close[0],
                         })
                         .ToList();
 
@@ -434,17 +440,16 @@ namespace TuringTrader.BooksAndPubs
                     }
 
                     // loop through all instruments and submit trades
-                    foreach (Instrument instrument in Instruments)
+                    foreach (Instrument instrument in instrumentRelativeEquity.Keys)
                     {
                         int currentShares = instrument.Position;
-                        int targetShares = instrumentRelativeEquity.ContainsKey(instrument)
-                            ? (int)Math.Round(NetAssetValue[0] * instrumentRelativeEquity[instrument] / instrument.Close[0])
-                            : 0;
 
-                        if (!allowNewEntries)
-                            targetShares = Math.Min(targetShares, currentShares);
+                        int targetSharesPreFilter = (int)Math.Round(NetAssetValue[0] * instrumentRelativeEquity[instrument] / instrument.Close[0]);
+                        int targetShares = allowNewEntries
+                            ? targetSharesPreFilter
+                            : Math.Min(currentShares, targetSharesPreFilter);
 
-                        instrument.Trade(targetShares - currentShares);
+                        instrument.Trade(targetShares - currentShares, OrderType.openNextBar);
                     }
 
                     string message = instrumentRelativeEquity
@@ -458,11 +463,12 @@ namespace TuringTrader.BooksAndPubs
                 // create plots on Sheet 1
                 if (TradingDays > 0)
                 {
-#if PRODUCE_CLENOWS_CHART
+#if REPRODUCE_CLENOWS_CHART
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(Name, NetAssetValue[0] / INITIAL_FUNDS);
-                    _plotter.Plot(benchmark.Name, benchmark.Close[0] / 1250.0);
+                    _plotter.Plot(benchmark.Name, benchmark.Close[0] / benchmark0);
+                    _plotter.Plot(benchmark.Name + " 200-day moving average", benchmark.Close.SMA(200)[0] / benchmark0);
                     _plotter.Plot("Cash", Cash / NetAssetValue[0]);
 #else
                     _plotter.SelectChart(Name, "date");
@@ -492,17 +498,17 @@ namespace TuringTrader.BooksAndPubs
                 //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
         }
-#endregion
-#region public override void Report()
+        #endregion
+        #region public override void Report()
         public override void Report()
         {
-#if PRODUCE_CLENOWS_CHART
+#if REPRODUCE_CLENOWS_CHART
             _plotter.OpenWith("SimpleChart");
 #else
             _plotter.OpenWith("SimpleReport");
 #endif
         }
-#endregion
+        #endregion
     }
 }
 
