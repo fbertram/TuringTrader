@@ -37,6 +37,12 @@ namespace NorgateData.DataAccess
         public RecOHLC(DateTime date, float? open, float? high, float? low, float? close, float? volume, float? aux1, float? aux2, float? aux3, int? status) { }
     }
 
+    public class RecIndicator
+    {
+        public DateTime Date;
+        public double? value;
+    }
+
     public class OperationResult
     {
         public static readonly OperationResult Success;
@@ -80,6 +86,38 @@ namespace NorgateData.DataAccess
         public static OperationResult GetData(string symbol, out List<RecOHLC> result, DateTime fromDate, DateTime toDate) { result = null; return null; }
         public static string GetSecurityName(Int32 symbol) { return default(string); }
         public static string GetSecurityName(string symbol) { return default(string); }
+        public static OperationResult GetWatchlist(string watchlistName, out WatchListLibrary.Watchlist watchlist) { watchlist = null; return null; }
+        public static OperationResult GetIndexConstituentTimeSeries(int assetid, out List<RecIndicator> indexConstituentTimeSeries, string indexname, DateTime startdate, DateTime enddate, PaddingType paddingSetting) { indexConstituentTimeSeries = null;  return null; }
+    }
+}
+
+namespace NorgateData.WatchListLibrary
+{
+    public enum WatchListType
+    {
+        Dynamic = 0,
+        Static = 1,
+        Set = 2,
+        Defaults = 3
+    }
+
+    public class Security
+    {
+        public int AssetID;
+
+        public string Symbol { get; set; }
+        public string Name { get; set; }
+    }
+    public class SecurityList : List<Security>, IList<Security>, ICollection<Security>, IEnumerable<Security>
+    {
+    }
+
+    public class Watchlist
+    {
+        public string Name;
+        public WatchListType WatchListType;
+
+        public DataAccess.OperationResult GetSecurityList(out SecurityList items) { items = null;  return null; }
     }
 }
 

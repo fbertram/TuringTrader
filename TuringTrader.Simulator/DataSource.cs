@@ -221,6 +221,64 @@ namespace TuringTrader.Simulator
     }
 
     /// <summary>
+    /// Base class for universes, providing an enumerable for constituents,
+    /// and a method of checking if an instrument was a constituent at a
+    /// specific point in time.
+    /// </summary>
+    public abstract class Universe
+    {
+        #region static public Universe New(string nickname)
+        /// <summary>
+        /// Create new universe object
+        /// </summary>
+        /// <param name="nickname">universe nickname</param>
+        /// <returns>universe object</returns>
+        static public Universe New(string nickname)
+        {
+            return DataSourceCollection.NewUniverse(nickname);
+        }
+        #endregion
+
+        #region abstract public IEnumerable<string> Constituents
+        /// <summary>
+        /// Return universe constituents.
+        /// </summary>
+        /// <returns>enumerable with nicknames</returns>
+        abstract public IEnumerable<string> Constituents { get; }
+        #endregion
+        #region abstract public bool IsConstituent(string nickname, DateTime timestamp);
+        /// <summary>
+        /// Determine if instrument is constituent of universe.
+        /// </summary>
+        /// <param name="nickname">nickname of instrument to look for</param>
+        /// <param name="timestamp">timestamp to check</param>
+        /// <returns>true, if constituent of universe</returns>
+        abstract public bool IsConstituent(string nickname, DateTime timestamp);
+        #endregion
+    }
+
+    /// <summary>
+    /// Extension methods for Universe.
+    /// </summary>
+    public static class UniverseExtension
+    {
+        /// <summary>
+        /// Determine if instrument is constituent of universe.
+        /// Note: must not be used on stale instruments!
+        /// </summary>
+        /// <param name="instrument">instrument to test</param>
+        /// <param name="universe">universe to test</param>
+        /// <returns>true, if constituent of universe</returns>
+        public static bool IsConstituent(this Instrument instrument, Universe universe)
+        {
+            string nickname = instrument.Nickname;
+            DateTime timestamp = instrument.Time[0];
+
+            return universe.IsConstituent(nickname, timestamp);
+        }
+    }
+
+    /// <summary>
     /// Collection of data source implementations. There is no need for
     /// application developers to interact with this class directly.
     /// </summary>
@@ -293,6 +351,7 @@ namespace TuringTrader.Simulator
                     { DataSourceParam.symbolTiingo, "{0}"},
                     { DataSourceParam.symbolInteractiveBrokers, "{0}"},
                     { DataSourceParam.symbolSplice, "{0}"},
+                    { DataSourceParam.symbolAlgo, "{0}"},
                 };
 
                 string infoPathName = Path.Combine(DataPath, "_defaults_.inf");
@@ -338,6 +397,7 @@ namespace TuringTrader.Simulator
                 DataSourceParam.symbolFred,
                 DataSourceParam.symbolTiingo,
                 DataSourceParam.symbolSplice,
+                DataSourceParam.symbolAlgo,
             };
 
             foreach (var field in updateWithTicker)
@@ -475,6 +535,7 @@ namespace TuringTrader.Simulator
             defaultIfUndefined(DataSourceParam.symbolTiingo);
             defaultIfUndefined(DataSourceParam.symbolInteractiveBrokers);
             defaultIfUndefined(DataSourceParam.symbolSplice);
+            defaultIfUndefined(DataSourceParam.symbolAlgo);
 
             //===== instantiate data source
             string dataSource = infos[DataSourceParam.dataFeed].ToLower();
@@ -544,6 +605,17 @@ namespace TuringTrader.Simulator
 #endif
 
                 throw new Exception("DataSource: can't instantiate data source");
+        }
+        #endregion
+        #region static public Universe NewUniverse(string nickname)
+        /// <summary>
+        /// Create new universe object.
+        /// </summary>
+        /// <param name="nickname">universe nickname</param>
+        /// <returns>universe object</returns>
+        static public Universe NewUniverse(string nickname)
+        {
+            return new UniverseNorgate(nickname);
         }
         #endregion
     }

@@ -433,15 +433,24 @@ namespace TuringTrader.Indicators
                 // coefficient of determination
                 // https://en.wikipedia.org/wiki/Coefficient_of_determination
                 // f = a + b * x
+                // SStot = sum((y - avg(y))^2)
                 // SSreg = sum((f - avg(y))^2)
                 // SSres = sum((y - f)^2)
+                // R2 = 1 - SSres / SStot
+                //    = SSreg / SStot
 
+                double totalSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                    .Sum(x => Math.Pow(_series[-x] - avgY, 2));
                 double regressionSumOfSquares = Enumerable.Range(-_n + 1, _n)
                     .Sum(x => Math.Pow(a + b * x - avgY, 2));
-                double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
-                    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
-                double r2 = regressionSumOfSquares != 0.0
-                    ? 1.0 - Math.Min(1.0, residualSumOfSquares / regressionSumOfSquares)
+                //double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                //    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
+
+                // NOTE: this is debatable. we are returning r2 = 0.0, 
+                //       when it is actually NaN
+                double r2 = totalSumOfSquares != 0.0
+                    //? 1.0 - residualSumOfSquares / totalSumOfSquares
+                    ? regressionSumOfSquares / totalSumOfSquares
                     : 0.0;
 
                 (Slope as TimeSeries<double>).Value = b;

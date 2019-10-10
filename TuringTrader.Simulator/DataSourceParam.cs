@@ -168,6 +168,11 @@ namespace TuringTrader.Simulator
         /// symbol list for data splice
         /// </summary>
         symbolSplice,
+
+        /// <summary>
+        /// symbol for sub-classed algorithms
+        /// </summary>
+        symbolAlgo,
     };
 }
 

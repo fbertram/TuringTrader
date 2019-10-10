@@ -6,23 +6,23 @@ On this page, we have collected answers to frequently asked questions about Turi
 
 ### Can TuringTrader run on intraday bars?
 
-TuringTrader does not know about bar length. It can therefore run on any defined time frame, but not ticks. However, any orders in TuringTrader are only valid for one bar, which might be a bit tediuous. As we don’t use intraday bars for our own purposes, we can’t promise when that’s going to change.
+TuringTrader does not know about bar length. It can therefore run on any defined time frame, but not ticks. However, any orders in TuringTrader are only valid for one bar, which might be a bit tedious. As we don’t use intraday bars for our own purposes, we can’t promise when that’s going to change.
 
 ### Can TuringTrader perform live trading?
 
-Yes, we actually use TuringTrader at Bertram Solutions to run all of our [model portfolios](https://www.bertram.solutions/investment-advice/model-portfolios/). However, TuringTrader’s model is different from what you’ve seen with other platforms, as the transition from backtest to live trading is performed explictly: (1) Run a backtest from the past, all the way to today’s close. (2) Watch the *IsLastBar* flag, and transition to live when it’s set. (3) Pull the current account status and positions through the broker interface, and calculate orders based on the account, and the status of the backtest.
+Yes, we actually use TuringTrader at Bertram Solutions to run all of our [model portfolios](https://www.bertram.solutions/investment-advice/model-portfolios/). However, TuringTrader’s model is different from what you’ve seen with other platforms, as the transition from backtest to live trading is performed explicitly: (1) Run a backtest from the past, all the way to today’s close. (2) Watch the *IsLastBar* flag, and transition to live when it’s set. (3) Pull the current account status and positions through the broker interface, and calculate orders based on the account, and the status of the backtest.
 
 ### Does TuringTrader run on Linux or Mac?
 
-We coded TuringTrader in C#, using [ .NET Core](https://docs.microsoft.com/en-us/dotnet/core/), which potentially runs on Linux or Mac. However, we are using the Windows Desktop SDK, which won't. We currently don't have the resources to work on changing that. If you'd like to help, [please reach out](https://www.turingtrader.org/about/)!
+We coded TuringTrader in C#, using [ .NET Core](https://docs.microsoft.com/en-us/dotnet/core/), which potentially runs on Linux or Mac. However, TuringTrader is a WPF application using the Windows Desktop SDK, which is not available on other platforms. We currently don't have the resources to work on changing that. If you'd like to help, [please reach out](https://www.turingtrader.org/about/)!
 
-### Will there be a charting front-end for TuringTrader?
+### Will there be an interactive charting front-end for TuringTrader?
 
-No, we are not planning to do that, as we are quite happy with the way how we interact with Excel and R. However, if you are interested in starting a separate open-source project implementing a graphical frontend, we would certainly endorse that project, and contribute to it. [Please reach out!](https://www.turingtrader.org/about/)
+No, we are not planning to do that, as we are quite happy with the way TuringTrader runs and creates reports. However, we might add a feature in the not too distant future, allowing strategies to ask for user input. If you are interested in starting a separate open-source project for an interactive charting frontend, we would certainly endorse that project, and contribute to it. [Please reach out!](https://www.turingtrader.org/about/)
 
-### Will there be a binary version?
+### Is there a binary version?
 
-Yes, we are planning to do that. However, the priority of the standalone version ranks lower than some of the features we have planned for the sim core. Right now, we believe this might happen in Fall 2019, but can’t promise yet. Stay tuned!
+Yes, there is. Did you check the download section?
 
 ### Can you add feature XYZ?
 
@@ -32,7 +32,7 @@ That depends. If it is a feature that is on our shortlist of things to do, we wi
 
 ### How can I contribute to the TuringTrader project?
 
-We love to hear from you, and include your contributions into the project. However, in order for us to keep the ability to also grant license exceptions, we need to fully isolate 3rd party contributions from code we own. Please [reach out](https://www.turingtrader.org/about/)!
+We love to hear from you, and include your contributions into the project. However, in order for us to keep the ability to also grant license exceptions, we need to properly isolate 3rd party contributions from code we own. It's not difficult to do, just something we need to talk about. Please [reach out](https://www.turingtrader.org/about/)!
 
 ### Can I use TuringTrader for commercial projects?
 

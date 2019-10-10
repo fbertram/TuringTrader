@@ -124,6 +124,12 @@ namespace TuringTrader.Simulator
 
         private static IEnumerable<AlgorithmInfo> _enumDllAlgorithms(string dllPath)
         {
+#if true
+            // enumerate algorithms from entry assembly
+            var entry = Assembly.GetEntryAssembly();
+            foreach (var type in _enumAssyAlgorithms(entry))
+                yield return type;
+#endif
             DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
 
             if (!dirInfo.Exists)
@@ -206,7 +212,7 @@ namespace TuringTrader.Simulator
         }
 #endregion
 
-#region public static List<Type> GetAllAlgorithms()
+        #region public static List<Type> GetAllAlgorithms()
         /// <summary>
         /// Return list of all known TuringTrader algorithms
         /// </summary>
@@ -231,8 +237,8 @@ namespace TuringTrader.Simulator
                     .ToList()
                 : allAlgorithms;
         }
-#endregion
-#region public static Algorithm InstantiateAlgorithm(string algorithmName)
+        #endregion
+        #region public static Algorithm InstantiateAlgorithm(string algorithmName)
         /// <summary>
         /// Instantiate TuringTrader algorithm
         /// </summary>
@@ -253,8 +259,8 @@ namespace TuringTrader.Simulator
 
             return InstantiateAlgorithm(matchingAlgorithms.First());
         }
-#endregion
-#region public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
+        #endregion
+        #region public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
         /// <summary>
         /// Instantiate TuringTrader algorithm
         /// </summary>
@@ -299,7 +305,7 @@ namespace TuringTrader.Simulator
                 return algo;
             }
         }
-#endregion
+        #endregion
     }
 }
 
