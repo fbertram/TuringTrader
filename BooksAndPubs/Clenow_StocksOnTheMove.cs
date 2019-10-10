@@ -26,7 +26,7 @@
 // USE_NORGATE_UNIVERSE
 // defined: use survivorship-free universe through Norgate Data
 // undefined: use fixed test univese with hefty survivorship bias
-#define USE_NORGATE_UNIVERSE
+//#define USE_NORGATE_UNIVERSE
 
 // USE_CLENOWS_RANGE
 // defined: match simulation range to Clenow's book
@@ -290,7 +290,7 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
-    public class Clenov_StocksOnTheMove : Algorithm
+    public class Clenow_StocksOnTheMove : Algorithm
     {
         public override string Name => "Stocks on the Move";
 
@@ -337,12 +337,12 @@ namespace TuringTrader.BooksAndPubs
             // set simulation time frame
 #if USE_CLENOWS_RANGE
             // matching Clenow's charts
-            WarmupStartTime = DateTime.Parse("01/01/1998", CultureInfo.InvariantCulture);
             StartTime = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
+            WarmupStartTime = StartTime - TimeSpan.FromDays(180);
             EndTime = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
 #else
-            WarmupStartTime = DateTime.Parse("01/01/2006", CultureInfo.InvariantCulture);
             StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            WarmupStartTime = StartTime - TimeSpan.FromDays(180);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 #endif
 
