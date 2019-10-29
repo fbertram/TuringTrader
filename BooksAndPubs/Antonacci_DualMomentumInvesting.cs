@@ -30,6 +30,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -154,8 +155,8 @@ namespace TuringTrader.BooksAndPubs
                     }
 
                     // if momentum of any instrument drops below that of a T-Bill,
-                    // we use the safe instrument
-                    // these 2 lines swap T-Bills for the safe instrument:
+                    // we use the safe instrument instead
+                    // swap T-Bills for the safe instrument:
                     if (SAFE_INSTR != ABS_BENCHM)
                     {
                         instrumentWeights[FindInstrument(SAFE_INSTR)] = instrumentWeights[FindInstrument(ABS_BENCHM)];
@@ -164,15 +165,14 @@ namespace TuringTrader.BooksAndPubs
 
                     _alloc.LastUpdate = SimTime[0];
 
-                    foreach (var instrumentWeight in instrumentWeights)
+                    foreach (var nick in assets)
                     {
-                        if (assets.Contains(instrumentWeight.Key.Nickname))
-                            _alloc.Allocation[instrumentWeight.Key] = instrumentWeight.Value;
+                        var asset = FindInstrument(nick);
+                        _alloc.Allocation[asset] = instrumentWeights[asset];
 
-                        int targetShares = (int)Math.Floor(instrumentWeight.Value * NetAssetValue[0] / instrumentWeight.Key.Close[0]);
-                        int currentShares = instrumentWeight.Key.Position;
-
-                        Order newOrder = instrumentWeight.Key.Trade(targetShares - currentShares);
+                        int targetShares = (int)Math.Floor(instrumentWeights[asset] * NetAssetValue[0] / asset.Close[0]);
+                        int currentShares = asset.Position;
+                        Order newOrder = asset.Trade(targetShares - currentShares);
 
                         if (newOrder != null)
                         {
