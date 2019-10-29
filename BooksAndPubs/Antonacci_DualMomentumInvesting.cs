@@ -37,15 +37,22 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Antonacci_DualMomentumInvesting : Algorithm
     {
-        public override string Name => "Dual Momentum Strategy"; 
+        public override string Name => "Dual Momentum"; 
 
         #region internal data
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
         private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
         #endregion
         #region instruments
+        // this is the benchmark to measure absolute momentum:
+        private static string ABS_BENCHM = "BIL"; // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+
+        // the safe instrument, in case we fall below the absolute benchmark:
+        private static string SAFE_INSTR = "AGG"; // iShares Core U.S. Aggregate Bond ETF
+
         private static readonly HashSet<HashSet<string>> _assetClasses = new HashSet<HashSet<string>>
         {
             //--- equity
@@ -53,28 +60,34 @@ namespace TuringTrader.BooksAndPubs
                 "VTI",   // Vanguard Total Stock Market Index ETF
                 "VEU",   // Vanguard FTSE All World ex US ETF
                 // could use SPY/ EFA here
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
+                ABS_BENCHM,
             },
             //--- credit
             new HashSet<string> {
                 "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
-                //"CIU.ETF" => changed to IGIB in 06/2018
+                //"CIU" => changed to IGIB in 06/2018
                 "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
+                ABS_BENCHM,
             },
             //--- real estate
             new HashSet<string> {
                 "VNQ",   // Vanguard Real Estate Index ETF
                 "REM",   // iShares Mortgage Real Estate ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
+                ABS_BENCHM,
             },
             //--- economic stress
             new HashSet<string> {
                 "GLD",   // SPDR Gold Shares ETF
                 "TLT",   // iShares 20+ Year Treasury Bond ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
+                ABS_BENCHM,
             },
         };
+        #endregion
+        #region ctor
+        public Antonacci_DualMomentumInvesting()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
@@ -82,16 +95,25 @@ namespace TuringTrader.BooksAndPubs
         {
             //----- initialization
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
             AddDataSource(BENCHMARK);
             foreach (HashSet<string> assetClass in _assetClasses)
                 foreach (string nick in assetClass)
                     AddDataSource(nick);
+            AddDataSource(SAFE_INSTR);
+
+            List<string> assets = _assetClasses
+                .SelectMany(c => c)
+                .Distinct()
+                .Where(nick => nick != ABS_BENCHM)
+                .ToList();
+            assets.Add(SAFE_INSTR);
 
             Deposit(INITIAL_FUNDS);
-            CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
+            CommissionPerShare = Globals.COMMISSION; // it is unclear, if the book considers commissions
 
             //----- simulation loop
 
@@ -102,27 +124,18 @@ namespace TuringTrader.BooksAndPubs
                 // the 3 individual momentums
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
-                        i => 0.3333
-                            * (4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                            + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                            + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
+                        i => i.Close[0] / i.Close[252] - 1.0);
 
                 // skip if there are any missing instruments
-                // we want to make sure our strategy has all instruments available
-                bool instrumentsMissing = _assetClasses
-                    .SelectMany(c => c)
-                    .Distinct()
-                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
-                    .Count() > 0;
-
-                if (instrumentsMissing)
+                if (!HasInstruments(_assetClasses.SelectMany(c => c).Distinct())
+                || !HasInstrument(BENCHMARK) || !HasInstrument(SAFE_INSTR))
                     continue;
 
                 // create empty structure for instrument weights
                 Dictionary<Instrument, double> instrumentWeights = Instruments
                     .ToDictionary(i => i, i => 0.0);
 
-                // loop through all asset classes
+                // loop through all asset classes, and find the top-ranked one
                 foreach (HashSet<string> assetClass in _assetClasses)
                 {
                     List<Instrument> assetClassInstruments = assetClass
@@ -140,11 +153,25 @@ namespace TuringTrader.BooksAndPubs
                     instrumentWeights[bestInstrument] += 1.0 / _assetClasses.Count;
                 }
 
+                // if momentum of any instrument drops below that of a T-Bill,
+                // we use the safe instrument
+                // these 2 lines swap T-Bills for the safe instrument:
+                if (SAFE_INSTR != ABS_BENCHM)
+                {
+                    instrumentWeights[FindInstrument(SAFE_INSTR)] = instrumentWeights[FindInstrument(ABS_BENCHM)];
+                    instrumentWeights[FindInstrument(ABS_BENCHM)] = 0.0;
+                }
+
                 // execute trades once per month
                 if (SimTime[0].Month != SimTime[1].Month)
                 {
+                    _alloc.LastUpdate = SimTime[0];
+
                     foreach (var instrumentWeight in instrumentWeights)
                     {
+                        if (assets.Contains(instrumentWeight.Key.Nickname))
+                            _alloc.Allocation[instrumentWeight.Key] = instrumentWeight.Value;
+
                         int targetShares = (int)Math.Floor(instrumentWeight.Value * NetAssetValue[0] / instrumentWeight.Key.Close[0]);
                         int currentShares = instrumentWeight.Key.Position;
 
@@ -173,7 +200,7 @@ namespace TuringTrader.BooksAndPubs
 
             //----- post processing
 
-            // create trading log on Sheet 2
+            // create sheet w/ trading log
             _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
@@ -188,6 +215,9 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
                 _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
+
+            // create sheet w/ asset allocation
+            _alloc.ToPlotter(_plotter);
         }
         #endregion
         #region public override void Report()

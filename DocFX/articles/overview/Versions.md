@@ -22,6 +22,8 @@
     - update to MSVC 16.3.0 Preview 2.0
     - add single-click build script
     - make sure XML documentation is installed for TuringTrader.Simulator.dll
+  - miscellaneous
+    - optional feature to pass algorithm parent into plotter object
 - 0.9
   - 0.9b3 - August 02, 2019
     - fix issues on systems using non-U.S. localizations

@@ -26,7 +26,7 @@
 // USE_NORGATE_UNIVERSE
 // defined: use survivorship-free universe through Norgate Data
 // undefined: use fixed test univese with hefty survivorship bias
-//#define USE_NORGATE_UNIVERSE
+#define USE_NORGATE_UNIVERSE
 
 // USE_CLENOWS_RANGE
 // defined: match simulation range to Clenow's book
@@ -50,7 +50,7 @@ using TuringTrader.Simulator;
 namespace TuringTrader.BooksAndPubs
 {
     #region TestUniverse
-    class TestUniverse : Universe
+    class ClenowTestUniverse : Universe
     {
         public override IEnumerable<string> Constituents => new List<string>()
         {
@@ -320,13 +320,18 @@ namespace TuringTrader.BooksAndPubs
         private readonly string BENCHMARK = "$SPX";
         private readonly double INITIAL_FUNDS = 100000;
 #if USE_NORGATE_UNIVERSE
-        // this is the proper way of doing things
         private Universe UNIVERSE = Universe.New("$SPX");
 #else
-        // this if for testing only
         private Universe UNIVERSE = new TestUniverse();
 #endif
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Clenow_StocksOnTheMove()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
@@ -341,14 +346,14 @@ namespace TuringTrader.BooksAndPubs
             WarmupStartTime = StartTime - TimeSpan.FromDays(180);
             EndTime = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
 #else
-            StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
-            WarmupStartTime = StartTime - TimeSpan.FromDays(180);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 #endif
 
             // set account value
             Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; // Clenow is not considering commissions
+            CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
@@ -440,8 +445,13 @@ namespace TuringTrader.BooksAndPubs
                     }
 
                     // loop through all instruments and submit trades
+                    _alloc.LastUpdate = SimTime[0];
+                    _alloc.Allocation.Clear();
                     foreach (Instrument instrument in instrumentRelativeEquity.Keys)
                     {
+                        if (instrumentRelativeEquity[instrument] > 0.005)
+                            _alloc.Allocation[instrument] = instrumentRelativeEquity[instrument];
+
                         int currentShares = instrument.Position;
 
                         int targetSharesPreFilter = (int)Math.Round(NetAssetValue[0] * instrumentRelativeEquity[instrument] / instrument.Close[0]);
@@ -456,7 +466,7 @@ namespace TuringTrader.BooksAndPubs
                         .Where(i => i.Value != 0.0)
                         .Aggregate(string.Format("{0:MM/dd/yyyy}: ", SimTime[0]),
                             (prev, next) => prev + string.Format("{0}={1:P2} ", next.Key.Symbol, next.Value));
-                    if (!IsOptimizing)
+                    if (!IsOptimizing && (EndTime - SimTime[0]).TotalDays < 30)
                         Output.WriteLine(message);
                 }
 
@@ -497,6 +507,9 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
                 //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
+
+            // separate sheet w/ target allocation
+            _alloc.ToPlotter(_plotter);
         }
         #endregion
         #region public override void Report()

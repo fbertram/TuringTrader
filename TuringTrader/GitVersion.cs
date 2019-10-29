@@ -1,3 +1,3 @@
 public static class GitInfo { public static string Version = @" 
-git version not set
+v0.10b3-1-g9fe4627
 "; } 

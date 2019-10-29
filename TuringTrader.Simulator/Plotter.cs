@@ -23,12 +23,9 @@
 
 #region libraries
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System.Linq;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -50,6 +47,7 @@ namespace TuringTrader.Simulator
         private Dictionary<string, List<string>> AllLabels = new Dictionary<string, List<string>>();
         private List<string> CurrentLabels = null;
         private List<Dictionary<string, object>> CurrentData = null;
+        public Algorithm ParentAlgorithm { get; private set; }
         #endregion
         #region internal helpers
         private string AddQuotesAsRequired(string value)
@@ -93,7 +91,10 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Create and initialize logger object.
         /// </summary>
-        public Plotter() { }
+        public Plotter(Algorithm parentAlgorithm = null) 
+        {
+            ParentAlgorithm = parentAlgorithm;
+        }
         #endregion
         #region public void Clear()
         /// <summary>
