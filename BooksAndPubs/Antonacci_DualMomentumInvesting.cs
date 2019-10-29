@@ -99,18 +99,17 @@ namespace TuringTrader.BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            AddDataSource(BENCHMARK);
-            foreach (HashSet<string> assetClass in _assetClasses)
-                foreach (string nick in assetClass)
-                    AddDataSource(nick);
-            AddDataSource(SAFE_INSTR);
-
+            // list of assets we can trade
             List<string> assets = _assetClasses
                 .SelectMany(c => c)
                 .Distinct()
                 .Where(nick => nick != ABS_BENCHM)
                 .ToList();
             assets.Add(SAFE_INSTR);
+
+            AddDataSources(assets);
+            AddDataSource(ABS_BENCHM);
+            AddDataSource(BENCHMARK);
 
             Deposit(INITIAL_FUNDS);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if the book considers commissions
@@ -120,51 +119,49 @@ namespace TuringTrader.BooksAndPubs
             foreach (DateTime simTime in SimTimes)
             {
                 // evaluate momentum for all known instruments
-                // it is not 100% clear, how Antonacci is weighting
-                // the 3 individual momentums
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
                     .ToDictionary(i => i,
                         i => i.Close[0] / i.Close[252] - 1.0);
 
                 // skip if there are any missing instruments
-                if (!HasInstruments(_assetClasses.SelectMany(c => c).Distinct())
-                || !HasInstrument(BENCHMARK) || !HasInstrument(SAFE_INSTR))
+                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK) || !HasInstrument(ABS_BENCHM))
                     continue;
 
-                // create empty structure for instrument weights
-                Dictionary<Instrument, double> instrumentWeights = Instruments
-                    .ToDictionary(i => i, i => 0.0);
-
-                // loop through all asset classes, and find the top-ranked one
-                foreach (HashSet<string> assetClass in _assetClasses)
-                {
-                    List<Instrument> assetClassInstruments = assetClass
-                        .Select(n => FindInstrument(n))
-                        .ToList();
-
-                    // find the instrument with the highest momentum
-                    // in each asset class
-                    var bestInstrument = assetClassInstruments
-                        .OrderByDescending(i => instrumentMomentum[i])
-                        .Take(1)
-                        .First();
-
-                    // sum up the weights (because the safe instrument is duplicated)
-                    instrumentWeights[bestInstrument] += 1.0 / _assetClasses.Count;
-                }
-
-                // if momentum of any instrument drops below that of a T-Bill,
-                // we use the safe instrument
-                // these 2 lines swap T-Bills for the safe instrument:
-                if (SAFE_INSTR != ABS_BENCHM)
-                {
-                    instrumentWeights[FindInstrument(SAFE_INSTR)] = instrumentWeights[FindInstrument(ABS_BENCHM)];
-                    instrumentWeights[FindInstrument(ABS_BENCHM)] = 0.0;
-                }
-
                 // execute trades once per month
+                // CAUTION: do not calculate indicators within this block
                 if (SimTime[0].Month != SimTime[1].Month)
                 {
+                    // create empty structure for instrument weights
+                    Dictionary<Instrument, double> instrumentWeights = Instruments
+                    .ToDictionary(i => i, i => 0.0);
+
+                    // loop through all asset classes, and find the top-ranked one
+                    foreach (HashSet<string> assetClass in _assetClasses)
+                    {
+                        List<Instrument> assetClassInstruments = assetClass
+                            .Select(n => FindInstrument(n))
+                            .ToList();
+
+                        // find the instrument with the highest momentum
+                        // in each asset class
+                        var bestInstrument = assetClassInstruments
+                            .OrderByDescending(i => instrumentMomentum[i])
+                            .Take(1)
+                            .First();
+
+                        // sum up the weights (because the safe instrument is duplicated)
+                        instrumentWeights[bestInstrument] += 1.0 / _assetClasses.Count;
+                    }
+
+                    // if momentum of any instrument drops below that of a T-Bill,
+                    // we use the safe instrument
+                    // these 2 lines swap T-Bills for the safe instrument:
+                    if (SAFE_INSTR != ABS_BENCHM)
+                    {
+                        instrumentWeights[FindInstrument(SAFE_INSTR)] = instrumentWeights[FindInstrument(ABS_BENCHM)];
+                        instrumentWeights[FindInstrument(ABS_BENCHM)] = 0.0;
+                    }
+
                     _alloc.LastUpdate = SimTime[0];
 
                     foreach (var instrumentWeight in instrumentWeights)
@@ -186,7 +183,7 @@ namespace TuringTrader.BooksAndPubs
                     }
                 }
 
-                // create plots on Sheet 1
+                // plot nav and benchmark
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 if (TradingDays > 0)
