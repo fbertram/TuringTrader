@@ -39,7 +39,8 @@ namespace TuringTrader.BooksAndPubs
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
         private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
 
         protected struct AssetClass
         {
@@ -52,23 +53,32 @@ namespace TuringTrader.BooksAndPubs
 
         protected abstract double ScoringFunc(Instrument i);
         #endregion
+        #region ctor
+        public Faber_IvyPortfolio()
+        {
+            _plotter = new Plotter(this);
+        }
+        #endregion
 
         #region public override void Run()
         public override void Run()
         {
             //----- initialization
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+
+            var assets = _assetClasses
+                .SelectMany(c => c.assets)
+                .Distinct()
+                .ToList();
 
             AddDataSource(BENCHMARK);
-            foreach (AssetClass assetClass in _assetClasses)
-                foreach (string nick in assetClass.assets)
-                    AddDataSource(nick);
+            AddDataSources(assets);
 
             Deposit(INITIAL_FUNDS);
-
-            _plotter.Clear();
+            CommissionPerShare = Globals.COMMISSION; // Faber does not consider commissions
 
             //----- simulation loop
 
@@ -82,20 +92,14 @@ namespace TuringTrader.BooksAndPubs
 
                 // skip if there are any missing instruments,
                 // we want to make sure our strategy has all instruemnts available
-                bool instrumentsMissing = _assetClasses
-                    .SelectMany(c => c.assets)
-                    .Distinct()
-                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
-                    .Count() > 0;
-
-                if (instrumentsMissing)
+                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK))
                     continue;
 
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 // create empty structure for instrument weights
-                Dictionary<Instrument, double> instrumentWeights = Instruments
-                    .ToDictionary(i => i, i => 0.0);
+                Dictionary<Instrument, double> instrumentWeights = assets
+                    .ToDictionary(nick => FindInstrument(nick), nick => 0.0);
 
                 // loop through all asset classes
                 foreach (AssetClass assetClass in _assetClasses)
@@ -119,15 +123,16 @@ namespace TuringTrader.BooksAndPubs
                         .Sum(a => a.weight);
                     double equityUnit = NetAssetValue[0] / totalWeight;
 
+                    _alloc.LastUpdate = SimTime[0];
                     string message = string.Format("{0:MM/dd/yyyy}: ", SimTime[0]);
-                    foreach (var instrumentWeight in instrumentWeights)
+                    foreach (var i in instrumentWeights.Keys)
                     {
-                        message += string.Format("{0} = {1:P2}, ", instrumentWeight.Key.Symbol, instrumentWeight.Value);
-                        //message += string.Format("{0:P2}, ", instrumentMomentum[instrumentWeight.Key]);
-                        int targetShares = (int)Math.Floor(instrumentWeight.Value * equityUnit / instrumentWeight.Key.Close[0]);
-                        int currentShares = instrumentWeight.Key.Position;
+                        _alloc.Allocation[i] = instrumentWeights[i] / totalWeight;
+                        message += string.Format("{0} = {1:P2}, ", i.Symbol, instrumentWeights[i]);
 
-                        Order newOrder = instrumentWeight.Key.Trade(targetShares - currentShares);
+                        int targetShares = (int)Math.Floor(instrumentWeights[i] * equityUnit / i.Close[0]);
+                        int currentShares = i.Position;
+                        Order newOrder = i.Trade(targetShares - currentShares);
 
                         if (newOrder != null)
                         {
@@ -137,11 +142,11 @@ namespace TuringTrader.BooksAndPubs
                         }
                     }
 
-                    if (TradingDays > 0)
+                    if (TradingDays > 0 && !IsOptimizing && (EndTime - SimTime[0]).TotalDays < 31)
                         Output.WriteLine(message);
                 }
 
-                // create plots on Sheet 1
+                // plot NAV vs benchmark
                 if (TradingDays > 0)
                 {
                     _plotter.SelectChart(Name, "date");
@@ -152,8 +157,9 @@ namespace TuringTrader.BooksAndPubs
                     // holdings on Sheet 2
                     _plotter.SelectChart("Strategy Holdings", "date");
                     _plotter.SetX(SimTime[0]);
-                    foreach (var i in Positions.Keys)
+                    foreach (var nick in assets)
                     {
+                        Instrument i = FindInstrument(nick);
                         _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
                     }
                 }
@@ -161,7 +167,10 @@ namespace TuringTrader.BooksAndPubs
 
             //----- post processing
 
-            // create trading log on Sheet 3
+            // table w/ target allocation
+            _alloc.ToPlotter(_plotter);
+
+            // table w/ trading log
             _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)
             {
@@ -230,7 +239,7 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] > i.Close.EMA(210)[0]
+            return i.Close[0] > i.Close.SMA(210)[0]
                 ? 1.0
                 : -1.0;
         }
@@ -271,7 +280,7 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] > i.Close.EMA(210)[0]
+            return i.Close[0] > i.Close.SMA(210)[0]
                 ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
                         + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
                         + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
@@ -343,7 +352,7 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] > i.Close.EMA(210)[0]
+            return i.Close[0] > i.Close.SMA(210)[0]
                 ? 1.0
                 : -1.0;
         }
@@ -392,7 +401,7 @@ namespace TuringTrader.BooksAndPubs
             if (i.Nickname == _safeInstrument)
                 return 0.0;
 
-            return i.Close[0] > i.Close.EMA(210)[0]
+            return i.Close[0] > i.Close.SMA(210)[0]
                 ? (4.0 * (i.Close[0] / i.Close[63] - 1.0)
                         + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
                         + 1.0 * (i.Close[0] / i.Close[252] - 1.0))
