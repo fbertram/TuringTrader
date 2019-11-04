@@ -37,25 +37,24 @@ using TuringTrader.Simulator;
 
 namespace BooksAndPubs
 {
-    public abstract class Keller_DAA : Algorithm
+    public abstract class Keller_DAA_Core : Algorithm
     {
-        public override string Name { get { return "DAA Strategy"; } }
+        public override string Name => "Keller's DAA";
 
+        #region inputs
+        protected abstract List<string> riskyUniverse { get; }
+        protected abstract List<string> cashUniverse { get; }
+        protected abstract List<string> protectiveUniverse { get; }
+        protected abstract int T { get; } // (risky) top parameter
+        protected abstract int B { get; } // breadth parameter
+        #endregion
         #region internal data
-        private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
-        private Instrument _benchmark = null;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
-
-        protected List<string> riskyUniverse = null;
-        protected List<string> cashUniverse = null;
-        protected List<string> protectiveUniverse = null;
-        protected int T = 0; // (risky) top parameter
-        protected int B = 0; // breadth parameter
         #endregion
         #region ctor
-        public Keller_DAA()
+        public Keller_DAA_Core()
         {
             _plotter = new Plotter(this);
         }
@@ -66,18 +65,17 @@ namespace BooksAndPubs
         {
             //----- initialization
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION; // paper does not consider trade commissions
 
             AddDataSources(riskyUniverse);
             AddDataSources(cashUniverse);
             AddDataSources(protectiveUniverse);
             AddDataSource(BENCHMARK);
-
-            Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; // paper does not consider trade commissions
-
-            _plotter.Clear();
 
             //----- simulation loop
 
@@ -95,10 +93,10 @@ namespace BooksAndPubs
 
                 // skip if there are any missing instruments
                 // we want to make sure our strategy has all instruments available
-                if (!HasInstruments(riskyUniverse) || !HasInstruments(cashUniverse) || !HasInstruments(protectiveUniverse))
+                if (!HasInstruments(riskyUniverse)
+                || !HasInstruments(cashUniverse)
+                || !HasInstruments(protectiveUniverse))
                     continue;
-
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 // rebalance once per month
                 // CAUTION: no indicator calculations within this block!
@@ -154,55 +152,25 @@ namespace BooksAndPubs
                     }
                 }
 
-                if (TradingDays > 0)
+                // plotter output
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // create plots on Sheet 1
-                    _plotter.SelectChart(Name, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
-
-                    // holdings on Sheet 2
-                    _plotter.SelectChart("Strategy Holdings", "date");
-                    _plotter.SetX(SimTime[0]);
-                    foreach (var i in Instruments)
-                        if (riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname))
-                         _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
-
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    _plotter.AddStrategyHoldings(this, Instruments
+                        .Where(i => riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname)));
                 }
             }
 
             //----- post processing
 
-            _alloc.ToPlotter(_plotter);
-
-            // create trading log on Sheet 3
-            _plotter.SelectChart("Strategy Trades", "date");
-            foreach (LogEntry entry in Log)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
 
-            // calculate Keller ratio
-            double R = Math.Exp(
-                252.0 / TradingDays * Math.Log(NetAssetValue[0] / INITIAL_FUNDS));
-            double K50 = NetAssetValueMaxDrawdown < 0.5 && R > 0.0
-                ? R * (1.0 - NetAssetValueMaxDrawdown / (1.0 - NetAssetValueMaxDrawdown))
-                : 0.0;
-            double K25 = NetAssetValueMaxDrawdown < 0.25 && R > 0.0
-                ? R * (1.0 - 2.0 * NetAssetValueMaxDrawdown / (1.0 - 2 * NetAssetValueMaxDrawdown))
-                : 0.0;
-
-            FitnessValue = K25;
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -214,42 +182,39 @@ namespace BooksAndPubs
     }
 
     #region DAA-G4 - has subpar risk/ return
-    public class Keller_DAA_G4 : Keller_DAA
+    public class Keller_DAA_G4 : Keller_DAA_Core
     {
-        public Keller_DAA_G4()
+        public override string Name => "Keller's DAA-G4";
+        protected override List<string> riskyUniverse => new List<string>
         {
-            riskyUniverse = new List<string>
-            {
-                "SPY", // SPDR S&P 500 ETF
-                "VEA", // Vanguard FTSE Developed Markets ETF
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND", // Vanguard Total Bond Market ETF
-            };
+            "SPY", // SPDR S&P 500 ETF
+            "VEA", // Vanguard FTSE Developed Markets ETF
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND", // Vanguard Total Bond Market ETF
+        };
 
-            cashUniverse = new List<string>
-            {
-                "SHY", // iShares 1-3 Year Treasury Bond ETF
-                "IEF", // iShares 7-10 Year Treasury Bond ETF
-                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
-            };
+        protected override List<string> cashUniverse => new List<string>
+        {
+            "SHY", // iShares 1-3 Year Treasury Bond ETF
+            "IEF", // iShares 7-10 Year Treasury Bond ETF
+            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+        };
 
-            protectiveUniverse = new List<string>
-            {
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND"  // Vanguard Total Bond Market ETF
-            };
+        protected override List<string> protectiveUniverse => new List<string>
+        {
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND"  // Vanguard Total Bond Market ETF
+        };
 
-            T = 2; // (risky) top parameter
-            B = 1; // breadth parameter
-        }
+        protected override int T => 2; // (risky) top parameter
+        protected override int B => 1; // breadth parameter
     }
     #endregion
     #region DAA-G6 - instead of DAA-G4, we use DAA-G6
-    public class Keller_DAA_G6 : Keller_DAA
+    public class Keller_DAA_G6 : Keller_DAA_Core
     {
-        public Keller_DAA_G6()
-        {
-            riskyUniverse = new List<string>
+        public override string Name => "Keller's DAA-G6";
+        protected override List<string> riskyUniverse => new List<string>
             {
                     "SPY", // SPDR S&P 500 ETF
                     "VEA", // Vanguard FTSE Developed Markets ETF
@@ -259,161 +224,152 @@ namespace BooksAndPubs
                     "HYG"  // iShares iBoxx High Yield Corporate Bond ETF
             };
 
-            cashUniverse = new List<string>
+        protected override List<string> cashUniverse => new List<string>
             {
                     "SHY", // iShares 1-3 Year Treasury Bond ETF
                     "IEF", // iShares 7-10 Year Treasury Bond ETF
                     "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
-            protectiveUniverse = new List<string>
+        protected override List<string> protectiveUniverse => new List<string>
             {
                     "VWO", // Vanguard FTSE Emerging Markets ETF
                     "BND"  // Vanguard Total Bond Market ETF
             };
 
-            T = 6; // (risky) top parameter
-            B = 2; // breadth parameter
-        }
+        protected override int T => 6; // (risky) top parameter
+        protected override int B => 2; // breadth parameter
     }
     #endregion
     #region DAA-G12 - this is the 'standard' DAA
-    public class Keller_DAA_G12 : Keller_DAA
+    public class Keller_DAA_G12 : Keller_DAA_Core
     {
-        public Keller_DAA_G12()
+        public override string Name => "Keller's DAA-G12";
+        protected override List<string> riskyUniverse => new List<string>
         {
-            riskyUniverse = new List<string>
-            {
-                "SPY", // SPDR S&P 500 ETF
-                "IWM", // iShares Russell 2000 ETF
-                "QQQ", // Invesco Nasdaq-100 ETF
-                "VGK", // Vanguard FTSE Europe ETF
-                "EWJ", // iShares MSCI Japan ETF
-                "VWO", // Vanguard MSCI Emerging Markets ETF
-                "VNQ", // Vanguard Real Estate ETF
-                "GSG", // iShares S&P GSCI Commodity-Indexed Trust
-                "GLD", // SPDR Gold Trust ETF
-                "TLT", // iShares 20+ Year Treasury Bond ETF
-                "HYG", // iShares iBoxx High Yield Corporate Bond ETF
-                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
-            };
+            "SPY", // SPDR S&P 500 ETF
+            "IWM", // iShares Russell 2000 ETF
+            "QQQ", // Invesco Nasdaq-100 ETF
+            "VGK", // Vanguard FTSE Europe ETF
+            "EWJ", // iShares MSCI Japan ETF
+            "VWO", // Vanguard MSCI Emerging Markets ETF
+            "VNQ", // Vanguard Real Estate ETF
+            "GSG", // iShares S&P GSCI Commodity-Indexed Trust
+            "GLD", // SPDR Gold Trust ETF
+            "TLT", // iShares 20+ Year Treasury Bond ETF
+            "HYG", // iShares iBoxx High Yield Corporate Bond ETF
+            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+        };
 
-            cashUniverse = new List<string>
-            {
-                "SHY", // iShares 1-3 Year Treasury Bond ETF
-                "IEF", // iShares 7-10 Year Treasury Bond ETF
-                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
-            };
+        protected override List<string> cashUniverse => new List<string>
+        {
+            "SHY", // iShares 1-3 Year Treasury Bond ETF
+            "IEF", // iShares 7-10 Year Treasury Bond ETF
+            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+        };
 
-            protectiveUniverse = new List<string>
-            {
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND"  // Vanguard Total Bond Market ETF
-            };
+        protected override List<string> protectiveUniverse => new List<string>
+        {
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND"  // Vanguard Total Bond Market ETF
+        };
 
-            T = 6; // (risky) top parameter
-            B = 2; // breadth parameter
+        protected override int T => 6; // (risky) top parameter
+        protected override int B => 2; // breadth parameter
     }
-}
     #endregion
 
     #region DAA1-G4 - aggressive G4
-    public class Keller_DAA1_G4 : Keller_DAA
+    public class Keller_DAA1_G4 : Keller_DAA_Core
     {
-        public Keller_DAA1_G4()
+        public override string Name => "Keller's DAA1-G4";
+        protected override List<string> riskyUniverse => new List<string>
         {
-            riskyUniverse = new List<string>
-            {
-                "SPY", // SPDR S&P 500 ETF
-                "VEA", // Vanguard FTSE Developed Markets ETF
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND", // Vanguard Total Bond Market ETF
-            };
+            "SPY", // SPDR S&P 500 ETF
+            "VEA", // Vanguard FTSE Developed Markets ETF
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND", // Vanguard Total Bond Market ETF
+        };
 
-            cashUniverse = new List<string>
-            {
-                "SHV", // iShares Short Treasury Bond ETF
-                "IEF", // iShares 7-10 Year Treasury Bond ETF
-                "UST"  // ProShares Ultra 7-10 Year Treasury ETF
-            };
+        protected override List<string> cashUniverse => new List<string>
+        {
+            "SHV", // iShares Short Treasury Bond ETF
+            "IEF", // iShares 7-10 Year Treasury Bond ETF
+            "UST"  // ProShares Ultra 7-10 Year Treasury ETF
+        };
 
-            protectiveUniverse = new List<string>
-            {
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND"  // Vanguard Total Bond Market ETF
-            };
+        protected override List<string> protectiveUniverse => new List<string>
+        {
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND"  // Vanguard Total Bond Market ETF
+        };
 
-            T = 4; // (risky) top parameter
-            B = 1; // breadth parameter
-        }
+        protected override int T => 4; // (risky) top parameter
+        protected override int B => 1; // breadth parameter
     }
     #endregion
     #region DAA1-G12 - aggressive G12
-    public class Keller_DAA1_G12 : Keller_DAA
+    public class Keller_DAA1_G12 : Keller_DAA_Core
     {
-        public Keller_DAA1_G12()
+        public override string Name => "Keller's DAA1-G12";
+        protected override List<string> riskyUniverse => new List<string>
         {
-            riskyUniverse = new List<string>
-            {
-                "SPY", // SPDR S&P 500 ETF
-                "IWM", // iShares Russell 2000 ETF
-                "QQQ", // Invesco Nasdaq-100 ETF
-                "VGK", // Vanguard FTSE Europe ETF
-                "EWJ", // iShares MSCI Japan ETF
-                "VWO", // Vanguard MSCI Emerging Markets ETF
-                "VNQ", // Vanguard Real Estate ETF
-                "GSG", // iShares S&P GSCI Commodity-Indexed Trust
-                "GLD", // SPDR Gold Trust ETF
-                "TLT", // iShares 20+ Year Treasury Bond ETF
-                "HYG", // iShares iBoxx High Yield Corporate Bond ETF
-                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
-            };
+            "SPY", // SPDR S&P 500 ETF
+            "IWM", // iShares Russell 2000 ETF
+            "QQQ", // Invesco Nasdaq-100 ETF
+            "VGK", // Vanguard FTSE Europe ETF
+            "EWJ", // iShares MSCI Japan ETF
+            "VWO", // Vanguard MSCI Emerging Markets ETF
+            "VNQ", // Vanguard Real Estate ETF
+            "GSG", // iShares S&P GSCI Commodity-Indexed Trust
+            "GLD", // SPDR Gold Trust ETF
+            "TLT", // iShares 20+ Year Treasury Bond ETF
+            "HYG", // iShares iBoxx High Yield Corporate Bond ETF
+            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+        };
 
-            cashUniverse = new List<string>
-            {
-                "SHY", // iShares 1-3 Year Treasury Bond ETF
-                "IEF", // iShares 7-10 Year Treasury Bond ETF
-                "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
-            };
+        protected override List<string> cashUniverse => new List<string>
+        {
+            "SHY", // iShares 1-3 Year Treasury Bond ETF
+            "IEF", // iShares 7-10 Year Treasury Bond ETF
+            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+        };
 
-            protectiveUniverse = new List<string>
-            {
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND"  // Vanguard Total Bond Market ETF
-            };
+        protected override List<string> protectiveUniverse => new List<string>
+        {
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND"  // Vanguard Total Bond Market ETF
+        };
 
-            T = 2; // (risky) top parameter
-            B = 1; // breadth parameter
-        }
+        protected override int T => 2; // (risky) top parameter
+        protected override int B => 1; // breadth parameter
     }
     #endregion
     #region DAA1-U1 - minimalistic version
-    public class Keller_DAA1_U1 : Keller_DAA
+    public class Keller_DAA1_U1 : Keller_DAA_Core
     {
-        public Keller_DAA1_U1()
+        public override string Name => "Keller's DAA1-U1";
+        protected override List<string> riskyUniverse => new List<string>
         {
-            riskyUniverse = new List<string>
-            {
-                "SPY", // SPDR S&P 500 ETF
-            };
+            "SPY", // SPDR S&P 500 ETF
+        };
 
-            cashUniverse = new List<string>
-            {
-                "SHV", // iShares Short Treasury Bond ETF
-                "IEF", // iShares 7-10 Year Treasury Bond ETF
-                "UST"  // ProShares Ultra 7-10 Year Treasury ETF
-            };
+        protected override List<string> cashUniverse => new List<string>
+        {
+            "SHV", // iShares Short Treasury Bond ETF
+            "IEF", // iShares 7-10 Year Treasury Bond ETF
+            "UST"  // ProShares Ultra 7-10 Year Treasury ETF
+        };
 
-            protectiveUniverse = new List<string>
-            {
-                "VWO", // Vanguard FTSE Emerging Markets ETF
-                "BND"  // Vanguard Total Bond Market ETF
-            };
+        protected override List<string> protectiveUniverse => new List<string>
+        {
+            "VWO", // Vanguard FTSE Emerging Markets ETF
+            "BND"  // Vanguard Total Bond Market ETF
+        };
 
-            T = 1; // (risky) top parameter
-            B = 1; // breadth parameter
-        }
-}
+        protected override int T => 1; // (risky) top parameter
+        protected override int B => 1; // breadth parameter
+    }
     #endregion
 }
 

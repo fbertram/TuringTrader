@@ -44,7 +44,6 @@ namespace BooksAndPubs
         public virtual int AGGRESSIVE_ON { get; set; } = 0;
         #endregion
         #region internal data
-        private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
@@ -68,10 +67,10 @@ namespace BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            AddDataSource(MARKET);
-
-            Deposit(INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
+
+            AddDataSource(MARKET);
 
             //========== simulation loop ==========
 
@@ -113,56 +112,23 @@ namespace BooksAndPubs
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // plot NAV and benchmakr
-                    _plotter.SelectChart(Name, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_market.Name, _market.Close[0]);
-
-                    _plotter.SelectChart("Strategy Leverage", "entry date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("% long", Positions.Keys.Sum(i => Math.Max(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
-                    _plotter.Plot("% short", Positions.Keys.Sum(i => Math.Min(0, i.Position) * i.Close[0]) / NetAssetValue[0]);
-                    //_plotter.Plot("% total", Positions.Keys.Sum(i => Math.Abs(i.Position) * i.Close[0]) / NetAssetValue[0]);
-                    //_plotter.Plot("% total", Positions.Keys.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.AddNavAndBenchmark(this, _market);
+                    _plotter.AddStrategyHoldings(this, _market);
                 }
             }
 
             //========== post processing ==========
 
-            //----- add target allocation
-            _alloc.ToPlotter(_plotter);
-
-            //----- print position log, grouped as LIFO
-
             if (!IsOptimizing)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
 
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -178,7 +144,7 @@ namespace BooksAndPubs
     #region 3-Day High/Low
     public class Connors_HighProbEtfTrading_3DayHighLow : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "3-Day High/Low Strategy";
+        public override string Name => "Connors' 3-Day High/Low";
 
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
@@ -239,7 +205,7 @@ namespace BooksAndPubs
     #region RSI 25 & RSI 75
     public class Connors_HighProbEtfTrading_Rsi25Rsi75 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "RSI 25 & RSI 75 Strategy";
+        public override string Name => "Connors' RSI 25 & RSI 75";
 
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_RSI_LONG = 25;
@@ -303,7 +269,7 @@ namespace BooksAndPubs
     #region R3
     public class Connors_HighProbEtfTrading_R3 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "R3 Strategy";
+        public override string Name => "Connors' R3";
 
         [OptimizerParam(50, 70, 5)]
         public int ENTRY_MAX_RSI_2_LONG = 60;
@@ -379,7 +345,7 @@ namespace BooksAndPubs
     #region %b
     public class Connors_HighProbEtfTrading_PercentB : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "%b Strategy";
+        public override string Name => "Connors' %b";
 
         [OptimizerParam(10, 30, 5)]
         public int ENTRY_MAX_BB_LONG = 20;
@@ -445,7 +411,7 @@ namespace BooksAndPubs
     #region MDU and MDD
     public class Connors_HighProbEtfTrading_MduMdd : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "MDU and MDD Strategy";
+        public override string Name => "Connors' MDU and MDD";
 
         [OptimizerParam(3, 6, 1)]
         public int ENTRY_MIN_UP_DN = 4;
@@ -508,7 +474,7 @@ namespace BooksAndPubs
     #region RSI 10/6 & RSI 90/94
     public class Connors_HighProbEtfTrading_Rsi1006Rsi9094 : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "RSI 10/6 & RSI 90/94 Strategy";
+        public override string Name => "Connors' RSI 10/6 & RSI 90/94";
 
         [OptimizerParam(5, 10, 1)]
         public int ENTRY_MAX_RSI_LONG = 10;
@@ -571,7 +537,7 @@ namespace BooksAndPubs
     #region TPS
     public class Connors_HighProbEtfTrading_Tps : Connors_HighProbEtfTrading_Core
     {
-        public override string Name => "TPS Strategy";
+        public override string Name => "Connors' TPS";
 
         new public int AGGRESSIVE_ON => 1;
 

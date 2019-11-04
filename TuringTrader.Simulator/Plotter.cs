@@ -47,6 +47,10 @@ namespace TuringTrader.Simulator
         private Dictionary<string, List<string>> AllLabels = new Dictionary<string, List<string>>();
         private List<string> CurrentLabels = null;
         private List<Dictionary<string, object>> CurrentData = null;
+
+        /// <summary>
+        /// Parent algorithm of plotter object, may be null.
+        /// </summary>
         public Algorithm ParentAlgorithm { get; private set; }
         #endregion
         #region internal helpers

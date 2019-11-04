@@ -44,7 +44,6 @@ namespace BooksAndPubs
 #if INCLUDE_TRIN_STRATEGY
         private static readonly string TRIN = "#SPXTRIN";
 #endif
-        private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
@@ -70,14 +69,14 @@ namespace BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
+
             AddDataSource(MARKET);
             AddDataSource(VOLATILITY);
 #if INCLUDE_TRIN_STRATEGY
             AddDataSource(TRIN);
 #endif
-
-            Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = Globals.COMMISSION;
 
             //========== simulation loop ==========
 
@@ -118,49 +117,23 @@ namespace BooksAndPubs
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // plot NAV vs benchmark
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_market.Name, _market.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, _market);
+                    _plotter.AddStrategyHoldings(this, _market);
                 }
             }
 
             //========== post processing ==========
 
-            //----- add target allocation
-            _alloc.ToPlotter(_plotter);
-
-            //----- print position log, grouped as LIFO
-
             if (!IsOptimizing)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
 
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -176,7 +149,7 @@ namespace BooksAndPubs
     #region The 2-period RSI under 5 on the S&P 500
     public class Connors_ShortTermTrading_RsiUnder5 : Connors_ShortTermTrading_Core
     {
-        public override string Name => "2-Period RSI Under 5 Strategy";
+        public override string Name => "Connors' 2-Period RSI Under 5";
 
         [OptimizerParam(0, 20, 1)]
         public virtual int ENTRY_MAX_RSI { get; set; } = 5;
@@ -217,7 +190,7 @@ namespace BooksAndPubs
     #region Cumulative RSIs Strategy
     public class Connors_ShortTermTrading_CumulativeRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Cumulative RSIs Strategy";
+        public override string Name => "Connors' Cumulative RSIs";
 
         [OptimizerParam(1, 5, 1)]
         public virtual int CUM_RSI_DAYS { get; set; } = 2;
@@ -265,7 +238,7 @@ namespace BooksAndPubs
     #region Chapter 10: Double 7's Strategy
     public class Connors_ShortTermTrading_Double7 : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Double 7's Strategy";
+        public override string Name => "Connors' Double 7's";
 
         [OptimizerParam(5, 10, 1)]
         public virtual int DOUBLE_DAYS { get; set; } = 7;
@@ -306,7 +279,7 @@ namespace BooksAndPubs
     #region 1. VIX Stretches Strategy
     public class Connors_ShortTermTrading_VixStretches : Connors_ShortTermTrading_Core
     {
-        public override string Name => "VIX Stretches Strategy";
+        public override string Name => "Connors' VIX Stretches";
 
         [OptimizerParam(2, 5, 1)]
         public virtual int LE1_MIN_VIX_DAYS { get; set; } = 3;
@@ -352,7 +325,7 @@ namespace BooksAndPubs
     #region 2. VIX RSI Strategy
     public class Connors_ShortTermTrading_VixRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "VIX RSI Strategy";
+        public override string Name => "VIX RSI";
 
         [OptimizerParam(75, 100, 5)]
         public virtual int LE2_MIN_VIX_RSI { get; set; } = 90;
@@ -400,7 +373,7 @@ namespace BooksAndPubs
 #if INCLUDE_TRIN_STRATEGY
     public class Connors_ShortTermTrading_Trin : Connors_ShortTermTrading_Core
     {
-        public override string Name => "TRIN Strategy";
+        public override string Name => "Connors' TRIN";
 
     [OptimizerParam(45, 75, 5)]
         public virtual int LE3_MAX_MKT_RSI { get; set; } = 50;
@@ -449,7 +422,7 @@ namespace BooksAndPubs
     #region 4. One More Market Timing Strategy with Cumulative RSIs
     public class Connors_ShortTermTrading_MoreCumulativeRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "More Cumulative RSI Strategy";
+        public override string Name => "Connors' More Cumulative RSI";
 
         [OptimizerParam(1, 5, 1)]
         public virtual int LE4_RSI_CUM_DAYS { get; set; } = 2;
@@ -491,7 +464,7 @@ namespace BooksAndPubs
     #region 5. Trading on the Short Side - The S&P Short Strategy
     public class Connors_ShortTermTrading_ShortSide : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Short Strategy";
+        public override string Name => "Connors' Short";
 
         [OptimizerParam(2, 7, 1)]
         public virtual int LE5_MIN_MKT_UP { get; set; } = 4;

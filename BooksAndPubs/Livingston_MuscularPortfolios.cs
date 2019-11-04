@@ -37,49 +37,56 @@ namespace TuringTrader.BooksAndPubs
 {
     public abstract class Livingston_MuscularPortfolios : Algorithm
     {
+        #region inputs
+        protected abstract HashSet<string> ETF_MENU { get; }
+        protected abstract double MOMENTUM(Instrument i);
+        #endregion
         #region internal data
-        private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
-        private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
-
-        protected HashSet<string> _etfMenu = null;
-        protected abstract double _momentum(Instrument i);
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Livingston_MuscularPortfolios()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region override public void Run()
         override public void Run()
         {
-            //----- algorithm setup
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            //========== initialization ==========
+
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION; // the book does not deduct commissions
 
             AddDataSource(BENCHMARK);
-            foreach (string nick in _etfMenu)
+            foreach (string nick in ETF_MENU)
                 AddDataSource(nick);
 
-            Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; // the book does not deduct commissions
+            //========== simulation loop ==========
 
-            //----- simulation loop
             foreach (DateTime simTime in SimTimes)
             {
                 // calculate momentum w/ algorithm-specific helper function
                 var evaluation = Instruments
                     .ToDictionary(
                         i => i,
-                        i => _momentum(i));
+                        i => MOMENTUM(i));
 
                 // skip, if there are any missing instruments
                 // we want to make sure our strategy has all instruments available
-                if (!HasInstruments(_etfMenu))
+                if (!HasInstruments(ETF_MENU))
                     continue;
-
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 // find our trading instruments
                 var instruments = Instruments
-                    .Where(i => _etfMenu.Contains(i.Nickname));
+                    .Where(i => ETF_MENU.Contains(i.Nickname));
 
                 // rank, and select top-3 instruments
                 const int numHold = 3;
@@ -97,8 +104,12 @@ namespace TuringTrader.BooksAndPubs
                 if (SimTime[0].Month != SimTime[1].Month
                     && maxOff > 0.20)
                 {
+                    _alloc.LastUpdate = SimTime[0];
+
                     foreach (Instrument i in instruments)
                     {
+                        _alloc.Allocation[i] = top3.Contains(i) ? targetPercentage : 0.0;
+
                         // determine current and target shares per instrument...
                         double targetEquity = (top3.Contains(i) ? targetPercentage : 0.0) * NetAssetValue[0];
                         int targetShares = (int)Math.Floor(targetEquity / i.Close[0]);
@@ -120,39 +131,23 @@ namespace TuringTrader.BooksAndPubs
                     }
                 }
 
-                if (SimTime[0] >= StartTime)
+                // plotter output
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // create plots on Sheet 1
-                    _plotter.SelectChart(Name, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
-
-                    // create holdings on Sheet 2
-                    _plotter.SelectChart("Strategy Holdings", "date");
-                    _plotter.SetX(SimTime[0]);
-                    foreach (var i in Positions.Keys)
-                        _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    _plotter.AddStrategyHoldings(this, ETF_MENU.Select(nick => FindInstrument(nick)));
                 }
             }
+            //========== post processing ==========
 
-            //----- post processing
-
-            // create trading log on Sheet 3
-            _plotter.SelectChart("Strategy Trades", "date");
-            foreach (LogEntry entry in Log)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
+
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -166,49 +161,46 @@ namespace TuringTrader.BooksAndPubs
     #region Mama Bear
     public class Livingston_MuscularPortfolios_MamaBear : Livingston_MuscularPortfolios
     {
-        public override string Name { get { return "Mama Bear Strategy"; } }
-        public Livingston_MuscularPortfolios_MamaBear()
+        public override string Name => "Livingston's Mama Bear";
+        protected override HashSet<string> ETF_MENU => new HashSet<string>()
         {
-            _etfMenu = new HashSet<string>()
-            {
-    #if false
-                // note that some instruments have not been around
-                // until 2014, making this hard to simulate
+#if false
+            // note that some instruments have not been around
+            // until 2014, making this hard to simulate
 
-                //--- equities
-                "VONE", // Vanguard Russell 1000 ETF
-                "VIOO", // Vanguard Small-Cap 600 ETF
-                "VEA",  // Vanguard FTSE Developed Markets ETF
-                "VWO",  // Vanguard FTSE Emerging Markets ETF
-                //--- hard assets
-                "VNQ",  // Vanguard Real Estate ETF
-                "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
-                "IAU",  // iShares Gold Trust
-                //--- fixed-income
-                "VGLT", // Vanguard Long-Term Govt. Bond ETF
-                "SHV",  // iShares Short-Term Treasury ETF
-    #else
-                // the book mentions that CXO is using different ETFs
-                // we use these, to simulate back to 2007
+            //--- equities
+            "VONE", // Vanguard Russell 1000 ETF
+            "VIOO", // Vanguard Small-Cap 600 ETF
+            "VEA",  // Vanguard FTSE Developed Markets ETF
+            "VWO",  // Vanguard FTSE Emerging Markets ETF
+            //--- hard assets
+            "VNQ",  // Vanguard Real Estate ETF
+            "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
+            "IAU",  // iShares Gold Trust
+            //--- fixed-income
+            "VGLT", // Vanguard Long-Term Govt. Bond ETF
+            "SHV",  // iShares Short-Term Treasury ETF
+#else
+            // the book mentions that CXO is using different ETFs
+            // we use these, to simulate back to 2007
             
-                //--- equities
-                "SPY", // SPDR S&P 500 Trust ETF
-                "IWM", // iShares Russell 2000 ETF
-                "EFA", // iShares MSCI EAFE ETF
-                "EEM", // iShares MSCI Emerging Markets ETF
-                //--- hard assets
-                "VNQ", // Vanguard Real Estate ETF
-                "DBC", // Invesco DB Commodity Index Tracking ETF
-                "GLD", // SPDR Gold Shares ETF
-                //--- fixed income
-                "TLT", // iShares 20+ Year Treasury Bond ETF
-                // Cash... substituted by T-Bill, to make strategy work
-                "BIL"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
-    #endif
-            };
-        }
+            //--- equities
+            "SPY", // SPDR S&P 500 Trust ETF
+            "IWM", // iShares Russell 2000 ETF
+            "EFA", // iShares MSCI EAFE ETF
+            "EEM", // iShares MSCI Emerging Markets ETF
+            //--- hard assets
+            "VNQ", // Vanguard Real Estate ETF
+            "DBC", // Invesco DB Commodity Index Tracking ETF
+            "GLD", // SPDR Gold Shares ETF
+            //--- fixed income
+            "TLT", // iShares 20+ Year Treasury Bond ETF
+            // Cash... substituted by T-Bill, to make strategy work
+            "BIL"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+#endif
+        };
 
-        protected override double _momentum(Instrument i)
+        protected override double MOMENTUM(Instrument i)
         {
             // simple 5-month momentum
             return i.Close[0] / i.Close[5 * 21] - 1.0;
@@ -218,34 +210,31 @@ namespace TuringTrader.BooksAndPubs
     #region Papa Bear - incomplete, instruments need to be extended for longer simulation
     public class Livingston_MuscularPortfolios_PapaBear : Livingston_MuscularPortfolios
     {
-        public override string Name { get { return "Papa Bear Strategy"; } }
-        public Livingston_MuscularPortfolios_PapaBear()
+        public override string Name => "Livingston's Papa Bear Strategy";
+        protected override HashSet<string> ETF_MENU => new HashSet<string>()
         {
-            _etfMenu = new HashSet<string>()
-            {
-                // note that some instruments have not been around for the whole
-                // simulation period, leading to skewed results
+            // note that some instruments have not been around for the whole
+            // simulation period, leading to skewed results
 
-                //--- equities
-                "splice:VTV,yahoo:VVIAX",       // Vanguard Value Index ETF
-                "splice:VUG,yahoo:VIGAX",       // Vanguard Growth Index ETF
-                "splice:VIOV,VBR,yahoo:VSIAX",  // Vanguard S&P Small-Cap 600 Value Index ETF
-                "splice:VIOG,VBK,yahoo:VSGAX",  // Vanguard S&P Small-Cap 600 Growth Index ETF
-                "splice:VEA,yahoo:VTMGX",       // Vanguard Developed Markets Index ETF
-                "splice:VWO,yahoo:VEMAX",       // Vanguard Emerging Market Stock Index ETF
-                //--- hard assets
-                "splice:VNQ,yahoo:VGSLX",       // Vanguard Real Estate Index ETF
-                "splice:PDBC,DBC",              // Invesco Optimum Yield Diversified Commodity Strategy ETF
-                "IAU",                          // iShares Gold ETF
-                //--- fixed-income
-                "splice:EDV,TLT",               // Vanguard Extended Duration ETF
-                "splice:VGIT,IEF",              // Vanguard Intermediate-Term Treasury Index ETF
-                "splice:VCLT,IGLB,USIG",        // Vanguard Long-Term Corporate Bond Index ETF
-                "splice:BNDX,IBND,BWX",         // Vanguard Total International Bond Index ETF
-            };
-        }
+            //--- equities
+            "splice:VTV,yahoo:VVIAX",       // Vanguard Value Index ETF
+            "splice:VUG,yahoo:VIGAX",       // Vanguard Growth Index ETF
+            "splice:VIOV,VBR,yahoo:VSIAX",  // Vanguard S&P Small-Cap 600 Value Index ETF
+            "splice:VIOG,VBK,yahoo:VSGAX",  // Vanguard S&P Small-Cap 600 Growth Index ETF
+            "splice:VEA,yahoo:VTMGX",       // Vanguard Developed Markets Index ETF
+            "splice:VWO,yahoo:VEMAX",       // Vanguard Emerging Market Stock Index ETF
+            //--- hard assets
+            "splice:VNQ,yahoo:VGSLX",       // Vanguard Real Estate Index ETF
+            "splice:PDBC,DBC",              // Invesco Optimum Yield Diversified Commodity Strategy ETF
+            "IAU",                          // iShares Gold ETF
+            //--- fixed-income
+            "splice:EDV,TLT",               // Vanguard Extended Duration ETF
+            "splice:VGIT,IEF",              // Vanguard Intermediate-Term Treasury Index ETF
+            "splice:VCLT,IGLB,USIG",        // Vanguard Long-Term Corporate Bond Index ETF
+            "splice:BNDX,IBND,BWX",         // Vanguard Total International Bond Index ETF
+        };
 
-        protected override double _momentum(Instrument i)
+        protected override double MOMENTUM(Instrument i)
         {
             // average momentum over 3, 6, and 12 months
             return (4.0 * (i.Close[0] / i.Close[63] - 1.0)

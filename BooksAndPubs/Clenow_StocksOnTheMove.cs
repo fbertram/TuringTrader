@@ -26,7 +26,7 @@
 // USE_NORGATE_UNIVERSE
 // defined: use survivorship-free universe through Norgate Data
 // undefined: use fixed test univese with hefty survivorship bias
-#define USE_NORGATE_UNIVERSE
+//#define USE_NORGATE_UNIVERSE
 
 // USE_CLENOWS_RANGE
 // defined: match simulation range to Clenow's book
@@ -292,7 +292,7 @@ namespace TuringTrader.BooksAndPubs
 
     public class Clenow_StocksOnTheMove : Algorithm
     {
-        public override string Name => "Stocks on the Move";
+        public override string Name => "Clenow's Stocks on the Move";
 
         #region inputs
         [OptimizerParam(63, 252, 21)]
@@ -318,11 +318,10 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region private data
         private readonly string BENCHMARK = "$SPX";
-        private readonly double INITIAL_FUNDS = 100000;
 #if USE_NORGATE_UNIVERSE
         private Universe UNIVERSE = Universe.New("$SPX");
 #else
-        private Universe UNIVERSE = new TestUniverse();
+        private Universe UNIVERSE = new ClenowTestUniverse();
 #endif
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
@@ -337,7 +336,7 @@ namespace TuringTrader.BooksAndPubs
         #region public override void Run()
         public override void Run()
         {
-            //---------- initialization
+            //========== initialization ==========
 
             // set simulation time frame
 #if USE_CLENOWS_RANGE
@@ -352,14 +351,14 @@ namespace TuringTrader.BooksAndPubs
 #endif
 
             // set account value
-            Deposit(INITIAL_FUNDS);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
             AddDataSources(UNIVERSE.Constituents);
 
-            //---------- simulation
+            //========== simulation loop ==========
 
             Instrument benchmark = null;
             double? benchmark0 = null;
@@ -398,6 +397,7 @@ namespace TuringTrader.BooksAndPubs
                 // trade once per week
                 // this is a slight simplification from Clenow's suggestion to adjust positions
                 // every week, and adjust position sizes only every other week
+                // CAUTION: no indicator calculations within this block!
                 if (SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday)
                 {
                     // select our universe constituents
@@ -481,35 +481,28 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot(benchmark.Name + " 200-day moving average", benchmark.Close.SMA(200)[0] / benchmark0);
                     _plotter.Plot("Cash", Cash / NetAssetValue[0]);
 #else
-                    _plotter.SelectChart(Name, "date");
+                    _plotter.AddNavAndBenchmark(this, benchmark);
+                    //_plotter.AddStrategyHoldings(this, universeConstituents);
+
+                    // plot strategy exposure
+                    _plotter.SelectChart("Strategy Exposure", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(benchmark.Name, benchmark.Close[0]);
+                    _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Number of Stocks", (double)Positions.Count);
 #endif
                 }
             }
 
-            //----- post processing
+            //========== post processing ==========
 
-            // print position log, grouped as LIFO
-            var tradeLog = LogAnalysis
-                .GroupPositions(Log, true)
-                .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-            _plotter.SelectChart("Strategy Positions", "entry date");
-            foreach (var trade in tradeLog)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(trade.Entry.BarOfExecution.Time.Date);
-                _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time.Date);
-                _plotter.Plot("Symbol", trade.Symbol);
-                _plotter.Plot("Quantity", trade.Quantity);
-                _plotter.Plot("% Profit", trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
-                _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
 
-            // separate sheet w/ target allocation
-            _alloc.ToPlotter(_plotter);
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()

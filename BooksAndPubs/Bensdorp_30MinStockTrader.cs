@@ -25,12 +25,12 @@
 // USE_NORGATE_UNIVERSE
 // defined: use survivorship-free universe through Norgate Data
 // undefined: use fixed test univese with hefty survivorship bias
-#define USE_NORGATE_UNIVERSE
+//#define USE_NORGATE_UNIVERSE
 
 // USE_BENSDORPS_RANGE
 // defined: match simulation range to Bensdorp's book
 // undefined: simulate from 2007 to last week
-#define USE_BENSDORPS_RANGE
+//#define USE_BENSDORPS_RANGE
 
 #region libraries
 using System;
@@ -281,7 +281,7 @@ namespace TuringTrader.BooksAndPubs
     #region Weekly Rotation Core
     public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
     {
-        public override string Name => "WR Strategy";
+        public override string Name => "Bensdorp's Weekly Rotation";
 
         #region inputs
         protected abstract Universe UNIVERSE { get; set; }
@@ -294,7 +294,6 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         private static readonly string BENCHMARK = "$SPX";
-        private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
@@ -323,11 +322,11 @@ namespace TuringTrader.BooksAndPubs
             EndTime = Globals.END_TIME;
 #endif
 
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
+
             AddDataSources(UNIVERSE.Constituents);
             AddDataSource(BENCHMARK);
-
-            Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = Globals.COMMISSION;
 
             //========== simulation loop ==========
 
@@ -412,54 +411,28 @@ namespace TuringTrader.BooksAndPubs
 
                 if (!IsOptimizing)
                 {
-                    // plot to chart
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    //_plotter.AddStrategyHoldings(this, universe);
 
-                    // additional indicators
-                    _plotter.SelectChart("Strategy Leverage", "date");
+                    // plot strategy exposure
+                    _plotter.SelectChart("Strategy Exposure", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                 }
             }
 
             //========== post processing ==========
 
-            //----- print position log, grouped as LIFO
-
             if (!IsOptimizing)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
             }
 
-            // add sheet w/ target allocation
-            _alloc.ToPlotter(_plotter);
-
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
-#endregion
+        #endregion
         #region public override void Report()
         public override void Report()
         {
@@ -786,7 +759,7 @@ namespace TuringTrader.BooksAndPubs
 #if USE_NORGATE_UNIVERSE
         protected override Universe UNIVERSE { get; set; } = Universe.New("$SPX");
 #else
-        protected override Universe UNIVERSE { get; set; } = new TestUniverse();
+        protected override Universe UNIVERSE { get; set; } = new BensdorpTestUniverse();
 #endif
     }
     #endregion
@@ -796,7 +769,7 @@ namespace TuringTrader.BooksAndPubs
 #if USE_NORGATE_UNIVERSE
         protected override Universe UNIVERSE { get; set; } = Universe.New("$SPX");
 #else
-        protected override Universe UNIVERSE { get; set; } = new TestUniverse();
+        protected override Universe UNIVERSE { get; set; } = new BensdorpTestUniverse();
 #endif
     }
     #endregion
