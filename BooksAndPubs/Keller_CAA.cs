@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
@@ -44,12 +45,19 @@ namespace BooksAndPubs
         //private readonly string BENCHMARK = "^SPX.index";
         private readonly string BENCHMARK = "@60_40";
         private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
 
         protected double TVOL;
         protected List<string> RISKY_ASSETS;
         protected List<string> SAFE_ASSETS;
         private readonly double MAX_RISKY_ALLOC = 0.25;
+        #endregion
+        #region ctor
+        public Keller_CAA()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
@@ -110,8 +118,11 @@ namespace BooksAndPubs
                     Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
                     // adjust all positions
+                    _alloc.LastUpdate = SimTime[0];
                     foreach (var i in pf.Weights.Keys)
                     {
+                        _alloc.Allocation[i] = pf.Weights[i];
+
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * pf.Weights[i] / i.Close[0]);
                         int currentShares = i.Position;
 
@@ -142,6 +153,8 @@ namespace BooksAndPubs
             }
 
             //---------- post-processing
+
+            _alloc.ToPlotter(_plotter);
 
             _plotter.SelectChart("Strategy Trades", "date");
             foreach (LogEntry entry in Log)

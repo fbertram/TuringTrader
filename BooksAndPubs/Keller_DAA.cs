@@ -31,6 +31,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Simulator;
 #endregion
 
@@ -44,13 +45,20 @@ namespace BooksAndPubs
         private readonly double INITIAL_FUNDS = 100000;
         private readonly string BENCHMARK = "@60_40";
         private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
 
         protected List<string> riskyUniverse = null;
         protected List<string> cashUniverse = null;
         protected List<string> protectiveUniverse = null;
         protected int T = 0; // (risky) top parameter
         protected int B = 0; // breadth parameter
+        #endregion
+        #region ctor
+        public Keller_DAA()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
@@ -61,8 +69,9 @@ namespace BooksAndPubs
             StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
             EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
 
-            foreach (string nick in riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse))
-                AddDataSource(nick);
+            AddDataSources(riskyUniverse);
+            AddDataSources(cashUniverse);
+            AddDataSources(protectiveUniverse);
             AddDataSource(BENCHMARK);
 
             Deposit(INITIAL_FUNDS);
@@ -86,50 +95,52 @@ namespace BooksAndPubs
 
                 // skip if there are any missing instruments
                 // we want to make sure our strategy has all instruments available
-                bool instrumentsMissing = riskyUniverse.Concat(cashUniverse).Concat(protectiveUniverse)
-                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
-                    .Count() > 0;
-
-                if (instrumentsMissing)
+                if (!HasInstruments(riskyUniverse) || !HasInstruments(cashUniverse) || !HasInstruments(protectiveUniverse))
                     continue;
 
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
-                // find T top risky assets
-                IEnumerable<Instrument> topInstruments = Instruments
+                // rebalance once per month
+                // CAUTION: no indicator calculations within this block!
+                if (SimTime[0].Month != SimTime[1].Month)
+                {
+                    // find T top risky assets
+                    IEnumerable<Instrument> topInstruments = Instruments
                     .Where(i => riskyUniverse.Contains(i.Nickname))
                     .OrderByDescending(i => momentum13612W[i])
                     .Take(T);
 
-                // find single cash/ bond asset
-                Instrument cashInstrument = Instruments
-                    .Where(i => cashUniverse.Contains(i.Nickname))
-                    .OrderByDescending(i => momentum13612W[i])
-                    .First();
+                    // find single cash/ bond asset
+                    Instrument cashInstrument = Instruments
+                        .Where(i => cashUniverse.Contains(i.Nickname))
+                        .OrderByDescending(i => momentum13612W[i])
+                        .First();
 
-                // determine number of bad assets in canary universe
-                double b = Instruments
-                    .Where(i => protectiveUniverse.Contains(i.Nickname))
-                    .Sum(i => momentum13612W[i] < 0.0 ? 1.0 : 0.0);
+                    // determine number of bad assets in canary universe
+                    double b = Instruments
+                        .Where(i => protectiveUniverse.Contains(i.Nickname))
+                        .Sum(i => momentum13612W[i] < 0.0 ? 1.0 : 0.0);
 
-                // calculate cash fraction
-                //double CF = Math.Min(1.0, b / B) // standard calculation
-                double CF = Math.Min(1.0, 1.0 / T * Math.Floor(b * T / B)); // Easy Trading
+                    // calculate cash fraction
+                    //double CF = Math.Min(1.0, b / B) // standard calculation
+                    double CF = Math.Min(1.0, 1.0 / T * Math.Floor(b * T / B)); // Easy Trading
 
-                // set instrument weights
-                Dictionary<Instrument, double> weights = Instruments
-                    .ToDictionary(i => i, i => 0.0);
+                    // set instrument weights
+                    Dictionary<Instrument, double> weights = Instruments
+                        .ToDictionary(i => i, i => 0.0);
 
-                weights[cashInstrument] = CF;
+                    weights[cashInstrument] = CF;
 
-                foreach (Instrument i in topInstruments)
-                    weights[i] += (1.0 - CF) / T;
+                    foreach (Instrument i in topInstruments)
+                        weights[i] += (1.0 - CF) / T;
 
-                // rebalance once per month
-                if (SimTime[0].Month != SimTime[1].Month)
-                {
+                    _alloc.LastUpdate = SimTime[0];
+
                     foreach (Instrument i in Instruments)
                     {
+                        if (riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname))
+                            _alloc.Allocation[i] = weights[i];
+
                         int targetShares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
 
                         Order newOrder = i.Trade(targetShares - i.Position);
@@ -154,13 +165,16 @@ namespace BooksAndPubs
                     // holdings on Sheet 2
                     _plotter.SelectChart("Strategy Holdings", "date");
                     _plotter.SetX(SimTime[0]);
-                    foreach (var i in Positions.Keys)
-                        _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                    foreach (var i in Instruments)
+                        if (riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname))
+                         _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
 
                 }
             }
 
             //----- post processing
+
+            _alloc.ToPlotter(_plotter);
 
             // create trading log on Sheet 3
             _plotter.SelectChart("Strategy Trades", "date");

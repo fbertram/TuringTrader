@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
@@ -45,8 +46,15 @@ namespace BooksAndPubs
         #region internal data
         private static readonly double INITIAL_CAPITAL = 1e6;
 
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
         private Instrument _market;
+        #endregion
+        #region ctor
+        public Connors_HighProbEtfTrading_Core()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         protected abstract double Rules(Instrument i);
@@ -56,13 +64,14 @@ namespace BooksAndPubs
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
             AddDataSource(MARKET);
 
             Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = 0.015;
+            CommissionPerShare = Globals.COMMISSION;
 
             //========== simulation loop ==========
 
@@ -71,8 +80,12 @@ namespace BooksAndPubs
             foreach (var s in SimTimes)
             {
                 _market = _market ?? FindInstrument(MARKET);
+                if (!_alloc.Allocation.ContainsKey(_market))
+                    _alloc.Allocation[_market] = 0.0;
 
                 double percentToBuySell = Rules(_market);
+
+                _alloc.LastUpdate = SimTime[0];
 
                 //----- entries
 
@@ -83,6 +96,7 @@ namespace BooksAndPubs
                     int sharesToBuySell = (int)(Math.Sign(percentToBuySell) * Math.Floor(
                         Math.Abs(percentToBuySell) * NetAssetValue[0] / _market.Close[0]));
 
+                    _alloc.Allocation[_market] += percentToBuySell;
                     _market.Trade(sharesToBuySell, OrderType.closeThisBar);
                 }
 
@@ -93,6 +107,7 @@ namespace BooksAndPubs
                 {
                     // none of the algorithms attempt to gradually
                     // exit positions, so this is good enough
+                    _alloc.Allocation[_market] = 0.0;
                     _market.Trade(-_market.Position, OrderType.closeThisBar);
                 }
 
@@ -100,7 +115,7 @@ namespace BooksAndPubs
 
                 if (!IsOptimizing)
                 {
-                    // plot to chart
+                    // plot NAV and benchmakr
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(Name, NetAssetValue[0]);
@@ -116,6 +131,9 @@ namespace BooksAndPubs
             }
 
             //========== post processing ==========
+
+            //----- add target allocation
+            _alloc.ToPlotter(_plotter);
 
             //----- print position log, grouped as LIFO
 

@@ -306,6 +306,7 @@ namespace TuringTrader.BooksAndPubs
             _plotter = new Plotter(this);
         }
         #endregion
+
         #region public override void Run()
         public override void Run()
         {

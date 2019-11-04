@@ -28,6 +28,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
@@ -45,10 +46,17 @@ namespace BooksAndPubs
 #endif
         private static readonly double INITIAL_CAPITAL = 1e6;
 
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
         protected Instrument _market;
         protected Instrument _volatility;
         protected Instrument _trin;
+        #endregion
+        #region ctor
+        public Connors_ShortTermTrading_Core()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         protected abstract int Rules();
@@ -58,8 +66,9 @@ namespace BooksAndPubs
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
             AddDataSource(MARKET);
             AddDataSource(VOLATILITY);
@@ -68,7 +77,7 @@ namespace BooksAndPubs
 #endif
 
             Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = 0.015;
+            CommissionPerShare = Globals.COMMISSION;
 
             //========== simulation loop ==========
 
@@ -79,17 +88,23 @@ namespace BooksAndPubs
 
                 _market = _market ?? FindInstrument(MARKET);
                 _volatility = _volatility ?? FindInstrument(VOLATILITY);
+                if (!_alloc.Allocation.ContainsKey(_market))
+                    _alloc.Allocation[_market] = 0.0;
+
 #if INCLUDE_TRIN_STRATEGY
                 _trin = _trin ?? FindInstrument(TRIN);
 #endif
 
                 int buySell = Rules();
 
+                _alloc.LastUpdate = SimTime[0];
+
                 //----- enter positions
 
                 if (_market.Position == 0 && buySell != 0)
                 {
                     int numShares = buySell * (int)Math.Floor(NetAssetValue[0] / _market.Close[0]);
+                    _alloc.Allocation[_market] += buySell;
                     _market.Trade(numShares, OrderType.closeThisBar);
                 }
 
@@ -97,6 +112,7 @@ namespace BooksAndPubs
 
                 else if (_market.Position != 0 && buySell != 0)
                 {
+                    _alloc.Allocation[_market] = 0.0;
                     _market.Trade(-_market.Position, OrderType.closeThisBar);
                 }
 
@@ -104,7 +120,7 @@ namespace BooksAndPubs
 
                 if (!IsOptimizing)
                 {
-                    // plot to chart
+                    // plot NAV vs benchmark
                     _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(Name, NetAssetValue[0]);
@@ -113,6 +129,9 @@ namespace BooksAndPubs
             }
 
             //========== post processing ==========
+
+            //----- add target allocation
+            _alloc.ToPlotter(_plotter);
 
             //----- print position log, grouped as LIFO
 
