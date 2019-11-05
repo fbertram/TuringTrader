@@ -409,7 +409,7 @@ namespace TuringTrader.BooksAndPubs
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     //_plotter.AddStrategyHoldings(this, universe);

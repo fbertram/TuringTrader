@@ -126,7 +126,7 @@ namespace BooksAndPubs
 
             //========== post processing ==========
 
-            if (!IsOptimizing)
+            if (!IsOptimizing && TradingDays > 0)
             {
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
