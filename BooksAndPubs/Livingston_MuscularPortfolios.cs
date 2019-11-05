@@ -42,7 +42,7 @@ namespace TuringTrader.BooksAndPubs
         protected abstract double MOMENTUM(Instrument i);
         #endregion
         #region internal data
-        private readonly string BENCHMARK = "@60_40";
+        private readonly string BENCHMARK = Globals.BALANCED_PORTFOLIO;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion

@@ -317,7 +317,7 @@ namespace TuringTrader.BooksAndPubs
         public int RISK_PER_STOCK = 10;
         #endregion
         #region private data
-        private readonly string BENCHMARK = "$SPX";
+        private readonly string BENCHMARK = Globals.STOCK_MARKET;
 #if USE_NORGATE_UNIVERSE
         private Universe UNIVERSE = Universe.New("$SPX");
 #else

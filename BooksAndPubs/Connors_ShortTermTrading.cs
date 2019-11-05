@@ -39,7 +39,7 @@ namespace BooksAndPubs
     public abstract class Connors_ShortTermTrading_Core : Algorithm
     {
         #region internal data
-        private static readonly string MARKET = "$SPX";
+        private static readonly string MARKET = Globals.STOCK_MARKET;
         private static readonly string VOLATILITY = "$VIX";
 #if INCLUDE_TRIN_STRATEGY
         private static readonly string TRIN = "#SPXTRIN";

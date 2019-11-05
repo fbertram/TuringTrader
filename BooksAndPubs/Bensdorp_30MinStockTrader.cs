@@ -293,7 +293,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual int MAX_ENTRIES { get; set; } = 10;
         #endregion
         #region internal data
-        private static readonly string BENCHMARK = "$SPX";
+        private static readonly string BENCHMARK = Globals.STOCK_MARKET;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();

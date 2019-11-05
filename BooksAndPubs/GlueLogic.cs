@@ -45,6 +45,9 @@ namespace TuringTrader.BooksAndPubs
 
         public static double INITIAL_CAPITAL = 1e6;
         public static double COMMISSION = 0.015;
+
+        public static string STOCK_MARKET = "SPY";
+        public static string BALANCED_PORTFOLIO = "@60_40";
     }
     #endregion
     #region allocation tracker
