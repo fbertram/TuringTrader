@@ -110,6 +110,9 @@ namespace TuringTrader.Simulator
             AllData.Clear();
         }
         #endregion
+        #region public string Title
+        public string Title { get; set; }
+        #endregion
 
         //----- logging values
         #region public void SelectChart(string chartTitle, string xLabel)

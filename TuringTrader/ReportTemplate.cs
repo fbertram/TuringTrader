@@ -398,6 +398,20 @@ namespace TuringTrader
             set;
         }
         #endregion
+        #region public string PlotTitle
+        private string _plotTitle = null;
+        public string PlotTitle
+        {
+            set
+            {
+                _plotTitle = value;
+            }
+            get
+            {
+                return _plotTitle ?? PlotData.Keys.First();
+            }
+        }
+        #endregion
         #region public virtual IEnumerable<string> AvailableCharts
         /// <summary>
         /// Property providing list of available charts
