@@ -24,6 +24,7 @@
     - make sure XML documentation is installed for TuringTrader.Simulator.dll
   - miscellaneous
     - optional feature to pass algorithm parent into plotter object
+	- cleanup of showcase strategies
 - 0.9
   - 0.9b3 - August 02, 2019
     - fix issues on systems using non-U.S. localizations
