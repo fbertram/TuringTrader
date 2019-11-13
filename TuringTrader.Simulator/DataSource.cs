@@ -81,7 +81,7 @@ namespace TuringTrader.Simulator
             return DataSourceCollection.New(nickname);
         }
         #endregion
-        #region protected DataSource(Dictionary<DataSourceValue, string> info)
+        #region protected DataSource(Dictionary<DataSourceParam, string> info)
         /// <summary>
         /// Create and initialize data source object.
         /// </summary>
@@ -95,7 +95,7 @@ namespace TuringTrader.Simulator
         #endregion
 
         //----- data source info
-        #region public Dictionary<DataSourceValue, string> Info
+        #region public Dictionary<DataSourceParam, string> Info
         /// <summary>
         /// Data source info container.
         /// </summary>
@@ -262,6 +262,7 @@ namespace TuringTrader.Simulator
     /// </summary>
     public static class UniverseExtension
     {
+        #region public static bool IsConstituent(this Instrument instrument, Universe universe)
         /// <summary>
         /// Determine if instrument is constituent of universe.
         /// Note: must not be used on stale instruments!
@@ -276,6 +277,7 @@ namespace TuringTrader.Simulator
 
             return universe.IsConstituent(nickname, timestamp);
         }
+        #endregion
     }
 
     /// <summary>

@@ -29,7 +29,7 @@ using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     public class Alvarez_EtfSectorRotation : Algorithm
     {

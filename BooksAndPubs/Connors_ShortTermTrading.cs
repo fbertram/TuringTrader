@@ -33,7 +33,7 @@ using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     #region common algorithm core
     public abstract class Connors_ShortTermTrading_Core : Algorithm

@@ -35,7 +35,7 @@ using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     public abstract class Keller_CAA_Core : Algorithm
     {
