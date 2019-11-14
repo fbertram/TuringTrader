@@ -21,6 +21,11 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// USE_NORGATE_UNIVERSE
+// defined: use survivorship-free universe through Norgate Data
+// undefined: use fixed test univese with hefty survivorship bias
+//#define USE_NORGATE_UNIVERSE
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -48,6 +53,244 @@ namespace TuringTrader.BooksAndPubs
 
         public static string STOCK_MARKET = "SPY";
         public static string BALANCED_PORTFOLIO = "@60_40";
+
+#if USE_NORGATE_UNIVERSE
+        public static Universe LARGE_CAP_UNIVERSE = Universe.New("$SPX");
+#else
+        #region test universe
+        private class TestUniverse : Universe
+        {
+            private static List<string> NDX = new List<string>()
+        {
+            // Trade all US stocks, but filter out 
+            // * ETFs; 
+            // * stocks < $10; and 
+            // * average daily volume< 500,000 over last 50 days.
+
+            // here, we use Nasdaq 100, as of 03/21/2019
+            "AAL",
+            "AAPL",
+            "ADBE",
+            "ADI",
+            "ADP",
+            "ADSK",
+            "ALGN",
+            "ALXN",
+            "AMAT",
+            "AMD",
+            "AMGN",
+            "AMZN",
+            "ASML",
+            "ATVI",
+            "AVGO",
+            "BIDU",
+            "BIIB",
+            "BKNG",
+            "BMRN",
+            "CDNS",
+            "CELG",
+            "CERN",
+            "CHKP",
+            "CHTR",
+            "CMCSA",
+            "COST",
+            "CSCO",
+            "CSX",
+            "CTAS",
+            //"CTRP", // delisted
+            "CTSH",
+            "CTXS",
+            "DLTR",
+            "EA",
+            "EBAY",
+            "EXPE",
+            "FAST",
+            "FB",
+            "FISV",
+            "GILD",
+            "GOOG",
+            "GOOGL",
+            "HAS",
+            "HSIC",
+            "IDXX",
+            "ILMN",
+            "INCY",
+            "INTC",
+            "INTU",
+            "ISRG",
+            "JBHT",
+            "JD",
+            "KHC",
+            "KLAC",
+            "LBTYA",
+            "LBTYK",
+            "LRCX",
+            "LULU",
+            "MAR",
+            "MCHP",
+            "MDLZ",
+            "MELI",
+            "MNST",
+            "MSFT",
+            "MU",
+            "MXIM",
+            "MYL",
+            "NFLX",
+            "NTAP",
+            "NTES",
+            "NVDA",
+            "NXPI",
+            "ORLY",
+            "PAYX",
+            "PCAR",
+            "PEP",
+            "PYPL",
+            "QCOM",
+            "REGN",
+            "ROST",
+            "SBUX",
+            "SIRI",
+            "SNPS",
+            "SWKS",
+            //"SYMC", // delisted
+            //"TFCF", // delisted
+            //"TFCFA", // delisted
+            "TMUS",
+            "TSLA",
+            "TTWO",
+            "TXN",
+            "UAL",
+            "ULTA",
+            "VRSK",
+            "VRSN",
+            "VRTX",
+            "WBA",
+            "WDAY",
+            "WDC",
+            "WLTW",
+            "WYNN",
+            "XEL",
+            "XLNX",
+        };
+            private static List<string> OEX = new List<string>()
+        {
+            // Trade all US stocks, but filter out 
+            // * ETFs; 
+            // * stocks < $10; and 
+            // * average daily volume< 500,000 over last 50 days.
+
+            // here, we use S&P 100, as of 03/20/2019
+            "AAPL",
+            "ABBV",
+            "ABT",
+            "ACN",
+            "ADBE",
+            "AGN",
+            "AIG",
+            "ALL",
+            "AMGN",
+            "AMZN",
+            "AXP",
+            "BA",
+            "BAC",
+            "BIIB",
+            "BK",
+            "BKNG",
+            "BLK",
+            "BMY",
+            "BRK.B",
+            "C",
+            "CAT",
+            "CELG",
+            "CHTR",
+            "CL",
+            "CMCSA",
+            "COF",
+            "COP",
+            "COST",
+            "CSCO",
+            "CVS",
+            "CVX",
+            "DHR",
+            "DIS",
+            "DUK",
+            //"DWDP",
+            "EMR",
+            "EXC",
+            "F",
+            "FB",
+            "FDX",
+            "GD",
+            "GE",
+            "GILD",
+            "GM",
+            "GOOG",
+            "GOOGL",
+            "GS",
+            "HAL",
+            "HD",
+            "HON",
+            "IBM",
+            "INTC",
+            "JNJ",
+            "JPM",
+            "KHC",
+            "KMI",
+            "KO",
+            "LLY",
+            "LMT",
+            "LOW",
+            "MA",
+            "MCD",
+            "MDLZ",
+            "MDT",
+            "MET",
+            "MMM",
+            "MO",
+            "MRK",
+            "MS",
+            "MSFT",
+            "NEE",
+            "NFLX",
+            "NKE",
+            "NVDA",
+            "ORCL",
+            "OXY",
+            "PEP",
+            "PFE",
+            "PG",
+            "PM",
+            "PYPL",
+            "QCOM",
+            "RTN",
+            "SBUX",
+            "SLB",
+            "SO",
+            "SPG",
+            "T",
+            "TGT",
+            "TXN",
+            "UNH",
+            "UNP",
+            "UPS",
+            "USB",
+            "UTX",
+            "V",
+            "VZ",
+            "WBA",
+            "WFC",
+            "WMT",
+            "XOM",
+        };
+            public override IEnumerable<string> Constituents => NDX.Concat(OEX).ToList();
+            public override bool IsConstituent(string nickname, DateTime timestamp)
+            {
+                return true;
+            }
+        }
+        #endregion
+        public static Universe LARGE_CAP_UNIVERSE = new TestUniverse();
+#endif
     }
     #endregion
     #region allocation tracker
@@ -71,11 +314,11 @@ namespace TuringTrader.BooksAndPubs
             plotter.SelectChart(sim.Name, "Date");
             plotter.SetX(sim.SimTime[0]);
             plotter.Plot(sim.Name, sim.NetAssetValue[0]);
-            plotter.Plot(benchmark.Symbol, benchmark.Close[0]);
+            plotter.Plot(benchmark.Name, benchmark.Close[0]);
         }
         public static void AddTargetAllocation(this Plotter plotter, AllocationTracker alloc)
         {
-            plotter.SelectChart(string.Format("Asset Allocation as of {0:MM/dd/yyyy}", alloc.LastUpdate), "Name");
+            plotter.SelectChart(string.Format("Target Allocation as of {0:MM/dd/yyyy}", alloc.LastUpdate), "Name");
 
             foreach (Instrument i in alloc.Allocation.Keys.OrderByDescending(k => alloc.Allocation[k]))
             {
@@ -91,7 +334,7 @@ namespace TuringTrader.BooksAndPubs
             {
                 var pcnt = i.Position * i.Close[0] / sim.NetAssetValue[0];
 
-                plotter.SelectChart("Holdings over Time", "date");
+                plotter.SelectChart("Exposure", "date");
                 plotter.SetX(sim.SimTime[0]);
                 plotter.Plot(i.Symbol, pcnt);
             }
@@ -101,14 +344,14 @@ namespace TuringTrader.BooksAndPubs
         {
             var pcnt = asset.Position * asset.Close[0] / sim.NetAssetValue[0];
 
-            plotter.SelectChart("Holdings over Time", "date");
+            plotter.SelectChart("Exposure Chart", "date");
             plotter.SetX(sim.SimTime[0]);
             plotter.Plot(asset.Symbol, pcnt);
         }
 
         public static void AddOrderLog(this Plotter plotter, SimulatorCore sim)
         {
-            plotter.SelectChart("Strategy Orders", "date");
+            plotter.SelectChart("Order Log", "date");
             foreach (LogEntry entry in sim.Log)
             {
                 plotter.SetX(string.Format("{0:MM/dd/yyyy}", entry.BarOfExecution.Time));
@@ -130,7 +373,7 @@ namespace TuringTrader.BooksAndPubs
                 .GroupPositions(sim.Log, true)
                 .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-            plotter.SelectChart("Strategy Positions", "entry date");
+            plotter.SelectChart("Position Log", "entry date");
             foreach (var trade in tradeLog)
             {
                 plotter.SetX(string.Format("{0:MM/dd/yyyy}", trade.Entry.BarOfExecution.Time));
@@ -142,7 +385,48 @@ namespace TuringTrader.BooksAndPubs
                 plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
                 //plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
             }
+        }
 
+        public static void AddPnLHoldTime(this Plotter plotter, SimulatorCore sim)
+        {
+            var tradeLog = LogAnalysis
+                .GroupPositions(sim.Log, true)
+                .OrderBy(i => i.Entry.BarOfExecution.Time);
+
+            plotter.SelectChart("P&L vs Hold Time", "Days Held");
+            foreach (var trade in tradeLog)
+            {
+                plotter.SetX((trade.Exit.BarOfExecution.Time - trade.Entry.BarOfExecution.Time).TotalDays);
+                plotter.Plot("P&L", (trade.Quantity > 0 ? 100.0 : -100.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+            }
+        }
+
+        public static void AddMfeMae(this Plotter plotter, SimulatorCore sim)
+        {
+            var tradeLog = LogAnalysis
+                .GroupPositions(sim.Log, true)
+                .OrderBy(i => i.Entry.BarOfExecution.Time);
+
+            plotter.SelectChart("P&L vs Maximum Excursion", "Max Excursion");
+            foreach (var trade in tradeLog)
+            {
+                plotter.SetX(100.0 * (trade.HighestHigh / trade.Entry.FillPrice - 1.0));
+                plotter.Plot("P&L (Maximum Favorable Excursion)", 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+
+                plotter.SetX(100.0 * (trade.LowestLow / trade.Entry.FillPrice - 1.0));
+                plotter.Plot("P&L (Maximum Adverse Excursion)", 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+            }
+
+        }
+        public static void AddParameters(this Plotter plotter, Algorithm algo)
+        {
+            plotter.SelectChart("Parameters", "Name");
+            foreach (var param in algo.OptimizerParams.Keys)
+            {
+                plotter.SetX(algo.OptimizerParams[param].Name);
+                plotter.Plot("Value", algo.OptimizerParams[param].Value);
+
+            }
         }
     }
     #endregion

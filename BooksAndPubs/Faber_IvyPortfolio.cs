@@ -157,6 +157,9 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
             FitnessValue = this.CalcFitness();

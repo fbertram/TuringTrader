@@ -22,11 +22,6 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-// USE_NORGATE_UNIVERSE
-// defined: use survivorship-free universe through Norgate Data
-// undefined: use fixed test univese with hefty survivorship bias
-//#define USE_NORGATE_UNIVERSE
-
 // USE_BENSDORPS_RANGE
 // defined: match simulation range to Bensdorp's book
 // undefined: simulate from 2007 to last week
@@ -43,248 +38,14 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    //---------- test universe
-    #region test universe
-    class BensdorpTestUniverse: Universe
-    {
-        private static List<string> NDX = new List<string>()
-        {
-            // Trade all US stocks, but filter out 
-            // * ETFs; 
-            // * stocks < $10; and 
-            // * average daily volume< 500,000 over last 50 days.
-
-            // here, we use Nasdaq 100, as of 03/21/2019
-            "AAL",
-            "AAPL",
-            "ADBE",
-            "ADI",
-            "ADP",
-            "ADSK",
-            "ALGN",
-            "ALXN",
-            "AMAT",
-            "AMD",
-            "AMGN",
-            "AMZN",
-            "ASML",
-            "ATVI",
-            "AVGO",
-            "BIDU",
-            "BIIB",
-            "BKNG",
-            "BMRN",
-            "CDNS",
-            "CELG",
-            "CERN",
-            "CHKP",
-            "CHTR",
-            "CMCSA",
-            "COST",
-            "CSCO",
-            "CSX",
-            "CTAS",
-            "CTRP",
-            "CTSH",
-            "CTXS",
-            "DLTR",
-            "EA",
-            "EBAY",
-            "EXPE",
-            "FAST",
-            "FB",
-            "FISV",
-            "GILD",
-            "GOOG",
-            "GOOGL",
-            "HAS",
-            "HSIC",
-            "IDXX",
-            "ILMN",
-            "INCY",
-            "INTC",
-            "INTU",
-            "ISRG",
-            "JBHT",
-            "JD",
-            "KHC",
-            "KLAC",
-            "LBTYA",
-            "LBTYK",
-            "LRCX",
-            "LULU",
-            "MAR",
-            "MCHP",
-            "MDLZ",
-            "MELI",
-            "MNST",
-            "MSFT",
-            "MU",
-            "MXIM",
-            "MYL",
-            "NFLX",
-            "NTAP",
-            "NTES",
-            "NVDA",
-            "NXPI",
-            "ORLY",
-            "PAYX",
-            "PCAR",
-            "PEP",
-            "PYPL",
-            "QCOM",
-            "REGN",
-            "ROST",
-            "SBUX",
-            "SIRI",
-            "SNPS",
-            "SWKS",
-            "SYMC",
-            //"TFCF", // delisted
-            //"TFCFA", // delisted
-            "TMUS",
-            "TSLA",
-            "TTWO",
-            "TXN",
-            "UAL",
-            "ULTA",
-            "VRSK",
-            "VRSN",
-            "VRTX",
-            "WBA",
-            "WDAY",
-            "WDC",
-            "WLTW",
-            "WYNN",
-            "XEL",
-            "XLNX",
-        };
-        private static List<string> OEX = new List<string>()
-        {
-            // Trade all US stocks, but filter out 
-            // * ETFs; 
-            // * stocks < $10; and 
-            // * average daily volume< 500,000 over last 50 days.
-
-            // here, we use S&P 100, as of 03/20/2019
-            "AAPL",
-            "ABBV",
-            "ABT",
-            "ACN",
-            "ADBE",
-            "AGN",
-            "AIG",
-            "ALL",
-            "AMGN",
-            "AMZN",
-            "AXP",
-            "BA",
-            "BAC",
-            "BIIB",
-            "BK",
-            "BKNG",
-            "BLK",
-            "BMY",
-            "BRK.B",
-            "C",
-            "CAT",
-            "CELG",
-            "CHTR",
-            "CL",
-            "CMCSA",
-            "COF",
-            "COP",
-            "COST",
-            "CSCO",
-            "CVS",
-            "CVX",
-            "DHR",
-            "DIS",
-            "DUK",
-            //"DWDP",
-            "EMR",
-            "EXC",
-            "F",
-            "FB",
-            "FDX",
-            "GD",
-            "GE",
-            "GILD",
-            "GM",
-            "GOOG",
-            "GOOGL",
-            "GS",
-            "HAL",
-            "HD",
-            "HON",
-            "IBM",
-            "INTC",
-            "JNJ",
-            "JPM",
-            "KHC",
-            "KMI",
-            "KO",
-            "LLY",
-            "LMT",
-            "LOW",
-            "MA",
-            "MCD",
-            "MDLZ",
-            "MDT",
-            "MET",
-            "MMM",
-            "MO",
-            "MRK",
-            "MS",
-            "MSFT",
-            "NEE",
-            "NFLX",
-            "NKE",
-            "NVDA",
-            "ORCL",
-            "OXY",
-            "PEP",
-            "PFE",
-            "PG",
-            "PM",
-            "PYPL",
-            "QCOM",
-            "RTN",
-            "SBUX",
-            "SLB",
-            "SO",
-            "SPG",
-            "T",
-            "TGT",
-            "TXN",
-            "UNH",
-            "UNP",
-            "UPS",
-            "USB",
-            "UTX",
-            "V",
-            "VZ",
-            "WBA",
-            "WFC",
-            "WMT",
-            "XOM",
-        };
-        public override IEnumerable<string> Constituents => NDX.Concat(OEX).ToList();
-        public override bool IsConstituent(string nickname, DateTime timestamp)
-        {
-            return true;
-        }
-    }
-    #endregion
-
     //---------- core strategies
-    #region Weekly Rotation Core
-    public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
+    #region Weekly Rotation
+    public class Bensdorp_30MinStockTrader_WR : Algorithm
     {
         public override string Name => "Bensdorp's Weekly Rotation";
 
         #region inputs
-        protected abstract Universe UNIVERSE { get; set; }
+        protected Universe UNIVERSE = Globals.LARGE_CAP_UNIVERSE;
 
         [OptimizerParam(0, 100, 5)]
         public virtual int MAX_RSI { get; set; } = 50;
@@ -300,7 +61,7 @@ namespace TuringTrader.BooksAndPubs
         private Instrument _benchmark;
         #endregion
         #region ctor
-        public Bensdorp_30MinStockTrader_WR_Core()
+        public Bensdorp_30MinStockTrader_WR()
         {
             _plotter = new Plotter(this);
         }
@@ -415,7 +176,7 @@ namespace TuringTrader.BooksAndPubs
                     //_plotter.AddStrategyHoldings(this, universe);
 
                     // plot strategy exposure
-                    _plotter.SelectChart("Strategy Exposure", "Date");
+                    _plotter.SelectChart("Exposure Chart", "Date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                 }
@@ -428,6 +189,9 @@ namespace TuringTrader.BooksAndPubs
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
             FitnessValue = this.CalcFitness();
@@ -441,13 +205,13 @@ namespace TuringTrader.BooksAndPubs
         #endregion
     }
     #endregion
-    #region Mean Reversion Core
-    public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
+    #region Mean Reversion
+    public abstract class Bensdorp_30MinStockTrader_MRx : Algorithm
     {
         public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
         #region inputs
-        protected abstract Universe UNIVERSE { get; set; }
+        protected Universe UNIVERSE = Globals.LARGE_CAP_UNIVERSE;
 
         public abstract int ENTRY_DIR { get; set; }
 
@@ -485,7 +249,7 @@ namespace TuringTrader.BooksAndPubs
         private Instrument _benchmark;
         #endregion
         #region ctor
-        public Bensdorp_30MinStockTrader_MRx_Core()
+        public Bensdorp_30MinStockTrader_MRx()
         {
             _plotter = new Plotter(this);
         }
@@ -711,7 +475,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRL_Core : Bensdorp_30MinStockTrader_MRx_Core
+    public abstract class Bensdorp_30MinStockTrader_MRL : Bensdorp_30MinStockTrader_MRx
     {
         public override int ENTRY_DIR { get; set; } = 1;   // 1 = long
         public override int SMA_DAYS { get; set; } = 150; // 150 days
@@ -726,7 +490,7 @@ namespace TuringTrader.BooksAndPubs
         public override int MAX_HOLD_DAYS { get; set; } = 4;   // 4 days
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRS_Core : Bensdorp_30MinStockTrader_MRx_Core
+    public abstract class Bensdorp_30MinStockTrader_MRS : Bensdorp_30MinStockTrader_MRx
     {
         public override int ENTRY_DIR { get; set; } = -1;  // -1 = short
         public override int SMA_DAYS { get; set; } = 150; // 150 days
@@ -739,38 +503,6 @@ namespace TuringTrader.BooksAndPubs
         public override int MAX_RISK { get; set; } = 20;  // 20%
         public override int MAX_ENTRIES { get; set; } = 10;  // 10
         public override int MAX_HOLD_DAYS { get; set; } = 2;   // 2 days
-    }
-    #endregion
-
-    //---------- strategies
-    #region WR
-    public class Bensdorp_30MinStockTrader_WR : Bensdorp_30MinStockTrader_WR_Core
-    {
-#if USE_NORGATE_UNIVERSE
-        protected override Universe UNIVERSE { get; set; } = Universe.New("$SPX");
-#else
-        protected override Universe UNIVERSE { get; set; } = new BensdorpTestUniverse();
-#endif
-    }
-    #endregion
-    #region MRL
-    public class Bensdorp_30MinStockTrader_MRL : Bensdorp_30MinStockTrader_MRL_Core
-    {
-#if USE_NORGATE_UNIVERSE
-        protected override Universe UNIVERSE { get; set; } = Universe.New("$SPX");
-#else
-        protected override Universe UNIVERSE { get; set; } = new BensdorpTestUniverse();
-#endif
-    }
-    #endregion
-    #region MRS
-    public class Bensdorp_30MinStockTrader_MRS : Bensdorp_30MinStockTrader_MRS_Core
-    {
-#if USE_NORGATE_UNIVERSE
-        protected override Universe UNIVERSE { get; set; } = Universe.New("$SPX");
-#else
-        protected override Universe UNIVERSE { get; set; } = new BensdorpTestUniverse();
-#endif
     }
     #endregion
 }

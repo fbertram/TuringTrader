@@ -32,13 +32,13 @@ using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     #region common algorithm core
     public abstract class Connors_HighProbEtfTrading_Core : Algorithm
     {
         #region settings
-        protected virtual string MARKET { get; } = Globals.STOCK_MARKET;
+        public virtual string MARKET { get; set; } = Globals.STOCK_MARKET;
 
         [OptimizerParam(0, 1, 1)]
         public virtual int AGGRESSIVE_ON { get; set; } = 0;
@@ -88,9 +88,8 @@ namespace BooksAndPubs
 
                 //----- entries
 
-                if (_market.Position == 0 && percentToBuySell != 0.0
-                || _market.Position > 0 && percentToBuySell > 0
-                || _market.Position < 0 && percentToBuySell < 0)
+                if (_market.Position >= 0 && percentToBuySell > 0
+                || _market.Position <= 0 && percentToBuySell < 0)
                 {
                     int sharesToBuySell = (int)(Math.Sign(percentToBuySell) * Math.Floor(
                         Math.Abs(percentToBuySell) * NetAssetValue[0] / _market.Close[0]));
@@ -126,6 +125,9 @@ namespace BooksAndPubs
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
             FitnessValue = this.CalcFitness();
@@ -175,7 +177,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -195,7 +197,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
@@ -239,7 +241,7 @@ namespace BooksAndPubs
             {
                 _numPositions[i] = 1;
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -259,7 +261,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
@@ -315,7 +317,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -335,7 +337,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
@@ -381,7 +383,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -401,7 +403,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
@@ -444,7 +446,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -464,7 +466,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
@@ -507,7 +509,7 @@ namespace BooksAndPubs
                 _numPositions[i] = 1;
                 _entryPrices[i] = i.Close[0];
 
-                return i.Close[0] > sma200[0] ? 1.0 : -1.0;
+                return (i.Close[0] > sma200[0] ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             //----- exit positions
@@ -527,7 +529,7 @@ namespace BooksAndPubs
                 // make sure we increase position size only once
                 _numPositions[i]++;
 
-                return i.Position > 0 ? 1.0 : -1.0;
+                return (i.Position > 0 ? 1.0 : -1.0) / (1.0 + AGGRESSIVE_ON);
             }
 
             return 0.0;
