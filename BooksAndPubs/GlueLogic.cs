@@ -334,17 +334,19 @@ namespace TuringTrader.BooksAndPubs
             {
                 var pcnt = i.Position * i.Close[0] / sim.NetAssetValue[0];
 
-                plotter.SelectChart("Exposure", "date");
+                plotter.SelectChart("Exposure vs Time", "date");
                 plotter.SetX(sim.SimTime[0]);
                 plotter.Plot(i.Symbol, pcnt);
             }
+
+            plotter.Plot("Total", sim.Positions.Sum(p => Math.Abs(p.Value * p.Key.Close[0] / sim.NetAssetValue[0])));
         }
 
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, Instrument asset)
         {
             var pcnt = asset.Position * asset.Close[0] / sim.NetAssetValue[0];
 
-            plotter.SelectChart("Exposure Chart", "date");
+            plotter.SelectChart("Exposure vs Time", "date");
             plotter.SetX(sim.SimTime[0]);
             plotter.Plot(asset.Symbol, pcnt);
         }
@@ -396,8 +398,10 @@ namespace TuringTrader.BooksAndPubs
             plotter.SelectChart("P&L vs Hold Time", "Days Held");
             foreach (var trade in tradeLog)
             {
+                var pnl = (trade.Quantity > 0 ? 100.0 : -100.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
+                var label = pnl > 0.0 ? "Profit" : "Loss";
                 plotter.SetX((trade.Exit.BarOfExecution.Time - trade.Entry.BarOfExecution.Time).TotalDays);
-                plotter.Plot("P&L", (trade.Quantity > 0 ? 100.0 : -100.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+                plotter.Plot(label, pnl);
             }
         }
 
@@ -410,13 +414,15 @@ namespace TuringTrader.BooksAndPubs
             plotter.SelectChart("P&L vs Maximum Excursion", "Max Excursion");
             foreach (var trade in tradeLog)
             {
+                var pnl = 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
+                var label = pnl > 0.0 ? "Profit" : "Loss";
+
                 plotter.SetX(100.0 * (trade.HighestHigh / trade.Entry.FillPrice - 1.0));
-                plotter.Plot("P&L (Maximum Favorable Excursion)", 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+                plotter.Plot(label, pnl);
 
                 plotter.SetX(100.0 * (trade.LowestLow / trade.Entry.FillPrice - 1.0));
-                plotter.Plot("P&L (Maximum Adverse Excursion)", 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
+                plotter.Plot(label, pnl);
             }
-
         }
         public static void AddParameters(this Plotter plotter, Algorithm algo)
         {
