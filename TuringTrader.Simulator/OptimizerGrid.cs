@@ -50,8 +50,8 @@ namespace TuringTrader.Simulator
         private DateTime _startTime;
         #endregion
         #region internal helpers
-        #region private void RunIteration(bool firstRun = true)
-        private Algorithm RunIteration()
+        #region private void RunIteration()
+        private void RunIteration()
         {
             // create algorithm instance to run
             Algorithm instanceToRun = MasterInstance.Clone();
@@ -89,8 +89,6 @@ namespace TuringTrader.Simulator
                         Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
                 }
             });
-
-            return instanceToRun;
         }
         #endregion
         #region private void IterateLevel(int level)

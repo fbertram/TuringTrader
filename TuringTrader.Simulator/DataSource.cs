@@ -199,6 +199,31 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        //----- mapping to simulator instruments
+        #region public Instrument Instrument
+        private Instrument _instrument = null;
+        /// <summary>
+        /// Instrument associated with data source. Will return only first
+        /// one, in case there is a one-to-many relationship.
+        /// </summary>
+        public Instrument Instrument
+        {
+            get
+            {
+#if false
+                return _instrument ?? Simulator.Instruments
+                    .Where(i => i.DataSource == this)
+                    .FirstOrDefault();
+#else
+                _instrument = _instrument ?? Simulator.Instruments
+                    .Where(i => i.DataSource == this)
+                    .FirstOrDefault();
+                return _instrument;
+#endif
+            }
+        }
+        #endregion
+
         //----- fields to fill/ methods to override by actual implementation
         #region public IEnumerable<Bar> Data
         /// <summary>
@@ -218,6 +243,7 @@ namespace TuringTrader.Simulator
         /// <param name="endTime">end time stamp</param>
         abstract public void LoadData(DateTime startTime, DateTime endTime);
         #endregion
+
     }
 
     /// <summary>
@@ -622,5 +648,6 @@ namespace TuringTrader.Simulator
         #endregion
     }
 }
+
 //==============================================================================
 // end of file

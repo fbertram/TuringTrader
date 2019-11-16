@@ -515,6 +515,7 @@ namespace TuringTrader.Simulator
                 }
 
                 //----- attempt to free up resources
+                _dataSources.Clear();
                 _instruments.Clear();
                 Positions.Clear();
                 PendingOrders.Clear();
@@ -550,20 +551,24 @@ namespace TuringTrader.Simulator
         protected bool IsLastBar = false;
         #endregion
 
-        #region protected void AddDataSource(string nickname)
+        #region protected DataSource AddDataSource(string nickname)
         /// <summary>
-        /// Add data source. If the data source already exists, the call is ignored.
+        /// Create new data source and add to simulator. If the simulator 
+        /// already has a data source for the nickname, the call is ignored.
         /// </summary>
         /// <param name="nickname">nickname of data source</param>
-        protected void AddDataSource(string nickname)
+        /// <returns>newly created data source</returns>
+        protected DataSource AddDataSource(string nickname)
         {
             string nickLower = nickname; //.ToLower();
 
             foreach (DataSource source in _dataSources)
                 if (source.Info[DataSourceParam.nickName] == nickLower)
-                    return;
+                    return source;
 
-            _dataSources.Add(DataSource.New(nickLower));
+            DataSource newSource = DataSource.New(nickLower);
+            _dataSources.Add(newSource);
+            return newSource;
         }
         #endregion
         #region protected void AddDataSources(IEnumerable<string> nicknames)
