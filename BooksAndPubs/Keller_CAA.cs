@@ -37,7 +37,7 @@ using TuringTrader.Support;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Keller_CAA_Core : Algorithm
+    public abstract class Keller_CAA_Core : SubclassableAlgorithm
     {
         public override string Name => "Keller's CAA Strategy";
 
@@ -143,6 +143,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, universe.Select(nick => FindInstrument(nick)));
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 

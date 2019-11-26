@@ -38,7 +38,7 @@ namespace TuringTrader.BooksAndPubs
     public abstract class Connors_HighProbEtfTrading_Core : Algorithm
     {
         #region settings
-        public virtual string MARKET { get; set; } = Globals.STOCK_MARKET;
+        public virtual string MARKET { get; set; } = "SPY";
 
         [OptimizerParam(0, 1, 1)]
         public virtual int AGGRESSIVE_ON { get; set; } = 0;

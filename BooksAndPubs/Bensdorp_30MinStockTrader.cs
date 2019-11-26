@@ -40,7 +40,7 @@ namespace TuringTrader.BooksAndPubs
 {
     //---------- core strategies
     #region Weekly Rotation
-    public class Bensdorp_30MinStockTrader_WR : Algorithm
+    public class Bensdorp_30MinStockTrader_WR : SubclassableAlgorithm
     {
         public override string Name => "Bensdorp's Weekly Rotation";
 
@@ -179,6 +179,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart("Exposure Chart", "Date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 

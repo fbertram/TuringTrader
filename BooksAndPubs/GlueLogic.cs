@@ -88,7 +88,7 @@ namespace TuringTrader.BooksAndPubs
             "BKNG",
             "BMRN",
             "CDNS",
-            "CELG",
+            //"CELG",
             "CERN",
             "CHKP",
             "CHTR",
@@ -201,7 +201,7 @@ namespace TuringTrader.BooksAndPubs
             "BRK.B",
             "C",
             "CAT",
-            "CELG",
+            //"CELG",
             "CHTR",
             "CL",
             "CMCSA",
@@ -330,12 +330,12 @@ namespace TuringTrader.BooksAndPubs
 
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, IEnumerable<Instrument> assets)
         {
+            plotter.SelectChart("Exposure vs Time", "date");
+            plotter.SetX(sim.SimTime[0]);
+
             foreach (var i in assets)
             {
                 var pcnt = i.Position * i.Close[0] / sim.NetAssetValue[0];
-
-                plotter.SelectChart("Exposure vs Time", "date");
-                plotter.SetX(sim.SimTime[0]);
                 plotter.Plot(i.Symbol, pcnt);
             }
 

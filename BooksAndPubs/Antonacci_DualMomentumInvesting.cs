@@ -33,19 +33,41 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Antonacci_DualMomentumInvesting_Core : Algorithm
+    public abstract class Antonacci_DualMomentumInvesting_Core : SubclassableAlgorithm
     {
         public override string Name => "Antonacci's Dual Momentum";
 
         #region inputs
-        // this is the benchmark to measure absolute momentum:
-        protected abstract string ABS_BENCHM { get; }
-        // the safe instrument, in case we fall below the absolute benchmark:
-        protected abstract string SAFE_INSTR { get; }
-        protected abstract HashSet<HashSet<string>> ASSET_CLASSES { get; }
+        protected class AssetClass
+        {
+            public double weight = 1.0;
+            public bool setSafeInstrument = false;
+            public HashSet<string> assets;
+        }
+        /// <summary>
+        /// hash set of asset classes
+        /// </summary>
+        protected abstract HashSet<AssetClass> ASSET_CLASSES { get; }
+        /// <summary>
+        /// benchmark to measure absolute momentum
+        /// </summary>
+        protected virtual string ABS_MOMENTUM => "BIL"; // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+        /// <summary>
+        /// safe instrument
+        /// </summary>
+        protected virtual string SAFE_INSTR => "AGG"; // iShares Core U.S. Aggregate Bond ETF
+        /// <summary>
+        /// charting benchmark
+        /// </summary>
+        protected virtual string BENCHMARK => Globals.BALANCED_PORTFOLIO;
+        /// <summary>
+        /// momentum calculation
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        protected virtual double MOMENTUM(Instrument i) => i.Close[0] / i.Close[252] - 1.0;
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Globals.BALANCED_PORTFOLIO;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion
@@ -70,15 +92,17 @@ namespace TuringTrader.BooksAndPubs
 
             // assets we can trade
             List<string> assets = ASSET_CLASSES
-                .SelectMany(c => c)
+                .SelectMany(c => c.assets)
                 .Distinct()
-                .Where(nick => nick != ABS_BENCHM)
+                .Where(nick => nick != ABS_MOMENTUM)
                 .ToList();
             assets.Add(SAFE_INSTR);
 
             AddDataSources(assets);
-            AddDataSource(ABS_BENCHM);
+            AddDataSource(ABS_MOMENTUM);
             AddDataSource(BENCHMARK);
+
+            double totalWeights = ASSET_CLASSES.Sum(a => a.weight);
 
             //========== simulation loop ==========
 
@@ -86,11 +110,10 @@ namespace TuringTrader.BooksAndPubs
             {
                 // evaluate momentum for all known instruments
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
-                    .ToDictionary(i => i,
-                        i => i.Close[0] / i.Close[252] - 1.0);
+                    .ToDictionary(i => i, i => MOMENTUM(i));
 
                 // skip if there are any missing instruments
-                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK) || !HasInstrument(ABS_BENCHM))
+                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK) || !HasInstrument(ABS_MOMENTUM))
                     continue;
 
                 // execute trades once per month
@@ -102,26 +125,30 @@ namespace TuringTrader.BooksAndPubs
                     .ToDictionary(i => i, i => 0.0);
 
                     // loop through all asset classes, and find the top-ranked one
-                    foreach (HashSet<string> assetClass in ASSET_CLASSES)
+                    Instrument safeInstrument = FindInstrument(SAFE_INSTR);
+                    foreach (AssetClass assetClass in ASSET_CLASSES)
                     {
                         // find the instrument with the highest momentum
                         // in each asset class
-                        var bestInstrument = assetClass
+                        var bestInstrument = assetClass.assets
                             .Select(nick =>FindInstrument(nick))
                             .OrderByDescending(i => instrumentMomentum[i])
                             .Take(1)
                             .First();
 
                         // sum up the weights (because safe instrument is duplicated)
-                        instrumentWeights[bestInstrument] += 1.0 / ASSET_CLASSES.Count;
+                        instrumentWeights[bestInstrument] += assetClass.weight / totalWeights;
+
+                        if (assetClass.setSafeInstrument)
+                            safeInstrument = bestInstrument;
                     }
 
                     // if momentum of any instrument drops below that of a T-Bill,
                     // we use the safe instrument instead
                     // therefore, we swap T-Bills for the safe instrument:
-                    double pcntTbill = instrumentWeights[FindInstrument(ABS_BENCHM)];
-                    instrumentWeights[FindInstrument(ABS_BENCHM)] = 0.0;
-                    instrumentWeights[FindInstrument(SAFE_INSTR)] = pcntTbill;
+                    double pcntTbill = instrumentWeights[FindInstrument(ABS_MOMENTUM)];
+                    instrumentWeights[FindInstrument(ABS_MOMENTUM)] = 0.0;
+                    instrumentWeights[safeInstrument] += pcntTbill;
 
                     // submit orders
                     _alloc.LastUpdate = SimTime[0];
@@ -148,6 +175,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, assets.Select(nick => FindInstrument(nick)));
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 
@@ -174,40 +203,190 @@ namespace TuringTrader.BooksAndPubs
         #endregion
     }
 
-    #region strategy w/ 4 asset classes
-    public class Antonacci_DualMomentumInvesting : Antonacci_DualMomentumInvesting_Core
+    #region U.S. Stocks w/ Absolute Momentum
+    public class Antonacci_USStocksWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
     {
-        protected override string ABS_BENCHM => "BIL"; // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+        public override string Name => "Antonacci's U.S. Stocks w/ Absolute Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 1.0,
+                assets = new HashSet<string> {
+                    "SPY", // S&P 500
+                    ABS_MOMENTUM,
+                }
+            },
+        };
+        protected override string BENCHMARK => Globals.STOCK_MARKET;
+    }
+    #endregion
+    #region Global Equities Momentum
+    public class Antonacci_GlobalEquitiesMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Global Equities Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 1.0,
+                assets = new HashSet<string> {
+                    "SPY",  // S&P 500
+                    "ACWX", // ACWI ex U.S.
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+        protected override string BENCHMARK => Globals.STOCK_MARKET;
+    }
+    #endregion
+    #region Global Balanced Momentum
+    public class Antonacci_GlobalBalancedMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Global Balanced Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 0.7,
+                assets = new HashSet<string> {
+                    "SPY",  // S&P 500
+                    "ACWX", // ACWI ex U.S.
+                    ABS_MOMENTUM,
+                },
+            },
+            new AssetClass
+            {
+                weight = 0.3,
+                setSafeInstrument = true,
+                assets = new HashSet<string> {
+                    "TLT", // U.S. Long Treasury
+                    "BWX", // Global Government Bonds
+                    "HYG", // High Yield Bonds
+                    ABS_MOMENTUM,
+                },
+            }
+        };
+    }
+    #endregion
+    #region 5 asset class parity portfolio w/ absolute momentum
+    public class Antonacci_ParityWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Parity Portfolio w/ Absolute Momentum";
+        protected override string BENCHMARK => Globals.BALANCED_PORTFOLIO;
 
-        protected override string SAFE_INSTR => "AGG"; // iShares Core U.S. Aggregate Bond ETF
-
-        protected override HashSet<HashSet<string>> ASSET_CLASSES => new HashSet<HashSet<string>>
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             //--- equity
-            new HashSet<string> {
-                "VTI",   // Vanguard Total Stock Market Index ETF
-                "VEU",   // Vanguard FTSE All World ex US ETF
-                // could use SPY/ EFA here
-                ABS_BENCHM,
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    "VTI",   // Vanguard Total Stock Market Index ETF
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- treasury bond
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    "TLT",   // iShares 20+ Year Treasury Bond ETF
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- reit
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    "VNQ",   // Vanguard Real Estate Index ETF
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- credit bonds
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    //"HYG",   // iShares iBoxx High Yield Corporate Bond ETF
+                    //"CIU" => changed to IGIB in 06/2018
+                    "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- gold
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    "GLD",   // SPDR Gold Shares ETF
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+    }
+    #endregion
+    #region Dual Momentum Sector Rotation
+    public class Antonacci_DualMomentumSectorRotation : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Dual Momentum Sector Rotation";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            // note that we removed those ETFs with short history
+            new AssetClass { assets = new HashSet<string> { "XLB",  ABS_MOMENTUM } }, // Materials
+            //new AssetClass { assets = new HashSet<string> { "XLC",  ABS_MOMENTUM } }, // Communication Services
+            new AssetClass { assets = new HashSet<string> { "XLE",  ABS_MOMENTUM } }, // Energy
+            new AssetClass { assets = new HashSet<string> { "XLF",  ABS_MOMENTUM } }, // Financial
+            new AssetClass { assets = new HashSet<string> { "XLI",  ABS_MOMENTUM } }, // Industrial
+            new AssetClass { assets = new HashSet<string> { "XLK",  ABS_MOMENTUM } }, // Technology
+            new AssetClass { assets = new HashSet<string> { "XLP",  ABS_MOMENTUM } }, // Consumer Staples
+            //new AssetClass { assets = new HashSet<string> { "XLRE", ABS_MOMENTUM } }, // Real Estate
+            new AssetClass { assets = new HashSet<string> { "XLU",  ABS_MOMENTUM } }, // Utilities
+            new AssetClass { assets = new HashSet<string> { "XLV",  ABS_MOMENTUM } }, // Health Care
+            new AssetClass { assets = new HashSet<string> { "XLY",  ABS_MOMENTUM } }, // Consumer Discretionary
+        };
+        protected override string BENCHMARK => Globals.STOCK_MARKET;
+    }
+    #endregion
+    #region Dual Momentum w/ 4 asset pairs - as seen on Scott's Investments
+    public class Antonacci_4PairsDualMomentum: Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Dual Momentum w/ 4 Pairs";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            //--- equity
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    "VTI",   // Vanguard Total Stock Market Index ETF
+                    "VEU",   // Vanguard FTSE All World ex US ETF
+                    // could use SPY/ EFA here
+                    ABS_MOMENTUM,
+                },
             },
             //--- credit
-            new HashSet<string> {
-                "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
-                //"CIU" => changed to IGIB in 06/2018
-                "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
-                ABS_BENCHM,
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
+                    //"CIU" => changed to IGIB in 06/2018
+                    "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
+                    ABS_MOMENTUM,
+                },
             },
             //--- real estate
-            new HashSet<string> {
-                "VNQ",   // Vanguard Real Estate Index ETF
-                "REM",   // iShares Mortgage Real Estate ETF
-                ABS_BENCHM,
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    "VNQ",   // Vanguard Real Estate Index ETF
+                    "REM",   // iShares Mortgage Real Estate ETF
+                    ABS_MOMENTUM,
+                },
             },
             //--- economic stress
-            new HashSet<string> {
-                "GLD",   // SPDR Gold Shares ETF
-                "TLT",   // iShares 20+ Year Treasury Bond ETF
-                ABS_BENCHM,
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    "GLD",   // SPDR Gold Shares ETF
+                    "TLT",   // iShares 20+ Year Treasury Bond ETF
+                    ABS_MOMENTUM,
+                },
             },
         };
     }

@@ -35,7 +35,7 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Livingston_MuscularPortfolios : Algorithm
+    public abstract class Livingston_MuscularPortfolios : SubclassableAlgorithm
     {
         #region inputs
         protected abstract HashSet<string> ETF_MENU { get; }
@@ -136,6 +136,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, ETF_MENU.Select(nick => FindInstrument(nick)));
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
             //========== post processing ==========
