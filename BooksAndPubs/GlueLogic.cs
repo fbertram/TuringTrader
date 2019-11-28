@@ -41,18 +41,18 @@ namespace TuringTrader.BooksAndPubs
     /// <summary>
     /// constants used across all algorithms
     /// </summary>
-    static class Globals
+    public static class Globals
     {
-        public static DateTime WARMUP_START_TIME = DateTime.Parse("01/01/2006", CultureInfo.InvariantCulture);
-        public static DateTime START_TIME = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+        public static readonly DateTime WARMUP_START_TIME = DateTime.Parse("01/01/2006", CultureInfo.InvariantCulture);
+        public static readonly DateTime START_TIME = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
         //public static DateTime END_TIME = DateTime.Now.Date + TimeSpan.FromHours(16);
-        public static DateTime END_TIME = DateTime.Now.Date - TimeSpan.FromDays(5);
+        public static readonly DateTime END_TIME = DateTime.Now.Date - TimeSpan.FromDays(5);
 
-        public static double INITIAL_CAPITAL = 1e6;
-        public static double COMMISSION = 0.015;
+        public static readonly double INITIAL_CAPITAL = 1e6;
+        public static readonly double COMMISSION = 0.015;
 
-        public static string STOCK_MARKET = "SPY";
-        public static string BALANCED_PORTFOLIO = "@60_40";
+        public static readonly string STOCK_MARKET = "SPY";
+        public static readonly string BALANCED_PORTFOLIO = "@60_40";
 
 #if USE_NORGATE_UNIVERSE
         public static Universe LARGE_CAP_UNIVERSE = Universe.New("$SPX");
@@ -293,11 +293,26 @@ namespace TuringTrader.BooksAndPubs
 #endif
     }
     #endregion
+    #region global assets
+    public static class Assets
+    {
+        //----- stocks
+        public static readonly string STOCKS_US_LG_CAP = "splice:SPY,yahoo:VFINX";
+        public static readonly string STOCKS_XUS_LG_MID_CAP = "splice:ACWX,yahoo:SCINX";
+
+        //----- bonds
+        public static readonly string BONDS_US_TOTAL = "splice:AGG,yahoo:FUSGX";
+        public static readonly string BONDS_US_TBILL = "splice:BIL,yahoo:PRTBX";
+
+        //----- portfolios
+        public static readonly string PORTF_60_40 = "yahoo:VBINX";
+    }
+    #endregion
     #region allocation tracker
     /// <summary>
     /// helper class to track strategy target allocation
     /// </summary>
-    class AllocationTracker
+    public class AllocationTracker
     {
         public DateTime LastUpdate { get; set; }
         public Dictionary<Instrument, double> Allocation  = new Dictionary<Instrument, double>();
@@ -307,7 +322,7 @@ namespace TuringTrader.BooksAndPubs
     /// <summary>
     /// plotter extension functions
     /// </summary>
-    static class PlotterExtensions
+    public static class PlotterExtensions
     {
         public static void AddNavAndBenchmark(this Plotter plotter, SimulatorCore sim, Instrument benchmark)
         {
