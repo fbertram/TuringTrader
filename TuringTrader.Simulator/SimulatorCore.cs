@@ -571,15 +571,20 @@ namespace TuringTrader.Simulator
             return newSource;
         }
         #endregion
-        #region protected void AddDataSources(IEnumerable<string> nicknames)
+        #region protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
         /// <summary>
         /// Add multiple data sources at once.
         /// </summary>
         /// <param name="nicknames">enumerable of nicknames</param>
-        protected void AddDataSources(IEnumerable<string> nicknames)
+        /// <returns>enumerable of newly created data sources</returns>
+        protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
         {
+            List<DataSource> retval = new List<DataSource>();
+
             foreach (var nickname in nicknames)
-                AddDataSource(nickname);
+                retval.Add(AddDataSource(nickname));
+
+            return retval;
         }
         #endregion
         #region protected void AddDataSource(DataSource dataSource)
@@ -614,25 +619,50 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Check, if the we have an instrument with the given nickname
         /// </summary>
-        /// <param name="nickname"></param>
+        /// <param name="nickname">nickname to check</param>
         /// <returns>true, if instrument exists</returns>
         protected bool HasInstrument(string nickname)
         {
             return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
         }
         #endregion
+        #region protected bool HasInstrument(DataSource ds)
+        /// <summary>
+        /// Check if we have an instrument for the given datasource
+        /// </summary>
+        /// <param name="ds">data source to check</param>
+        /// <returns>true, if instrument exists</returns>
+        protected bool HasInstrument(DataSource ds)
+        {
+            return ds.Instrument != null;
+        }
+        #endregion
         #region protected bool HasInstruments(IEnumerable<string> nicknames)
         /// <summary>
-        /// Check, if we have a list of instruments with given nicknames
+        /// Check, if we have instruments for all given nicknames
         /// </summary>
-        /// <param name="nicknames"></param>
-        /// <returns>true, if all instruments exists</returns>
+        /// <param name="nicknames">enumerable with nick names</param>
+        /// <returns>true, if all instruments exist</returns>
         protected bool HasInstruments(IEnumerable<string> nicknames)
         {
             return nicknames
                 .Aggregate(
                     true,
                     (prev, nick) => prev && HasInstrument(nick));
+        }
+        #endregion
+        #region protected bool HasInstruments(IEnumerable<DataSource> sources)
+        /// <summary>
+        /// Check, if we have instruments for all given data sources
+        /// </summary>
+        /// <param name="sources">enumerable of data sources</param>
+        /// <returns>true, if all instruments exist</returns>
+        protected bool HasInstruments(IEnumerable<DataSource> sources)
+        {
+            return sources
+                .Aggregate(
+                    true,
+                    (prev, ds) => prev && HasInstrument(ds));
         }
         #endregion
         #region protected Instrument FindInstrument(string)

@@ -11,6 +11,7 @@
     - avoid exceptions to speed up FRED load
     - add splice data source
     - add universe functionality
+	- AddDataSource returns newly created DataSource
   - native reports
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
     - add scatter plots to SimpleChart and SimpleReport
@@ -23,7 +24,7 @@
     - add single-click build script
     - make sure XML documentation is installed for TuringTrader.Simulator.dll
   - miscellaneous
-    - optional feature to pass algorithm parent into plotter object
+    - optional feature to pass algorithm parent into Plotter object
 	- cleanup of showcase strategies
 - 0.9
   - 0.9b3 - August 02, 2019
