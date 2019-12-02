@@ -71,8 +71,8 @@ namespace TuringTrader.BooksAndPubs
         public int RISK_PER_STOCK = 10;
         #endregion
         #region private data
-        private readonly string BENCHMARK = Globals.STOCK_MARKET;
-        private Universe UNIVERSE = Globals.LARGE_CAP_UNIVERSE;
+        private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        private Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion

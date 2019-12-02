@@ -50,12 +50,16 @@ namespace TuringTrader.BooksAndPubs
 
         public static readonly double INITIAL_CAPITAL = 1e6;
         public static readonly double COMMISSION = 0.015;
-
-        public static readonly string STOCK_MARKET = "SPY";
-        public static readonly string BALANCED_PORTFOLIO = "@60_40";
-
+    }
+    #endregion
+    #region commonly used universes
+    /// <summary>
+    /// universes used across all algorithms
+    /// </summary>
+    public static class Universes
+    {
 #if USE_NORGATE_UNIVERSE
-        public static Universe LARGE_CAP_UNIVERSE = Universe.New("$SPX");
+        public static readonly Universe STOCKS_US_LG_CAP = Universe.New("$SPX");
 #else
         #region test universe
         private class TestUniverse : Universe
@@ -289,23 +293,51 @@ namespace TuringTrader.BooksAndPubs
             }
         }
         #endregion
-        public static Universe LARGE_CAP_UNIVERSE = new TestUniverse();
+        public static readonly Universe STOCKS_US_LG_CAP = new TestUniverse();
 #endif
+
     }
     #endregion
-    #region global assets
+    #region commonly used assets and proxies
+    /// <summary>
+    /// assets used across all algorithms
+    /// </summary>
     public static class Assets
     {
         //----- stocks
-        public static readonly string STOCKS_US_LG_CAP = "splice:SPY,yahoo:VFINX";
-        public static readonly string STOCKS_XUS_LG_MID_CAP = "splice:ACWX,yahoo:SCINX";
+        public static readonly string STOCKS_US_LG_CAP = "splice:SPY,VFINX";
+
+        public static readonly string STOCKS_US_SECT_MATERIALS = "XLB"; // Materials
+        public static readonly string STOCKS_US_SECT_COMMUNICATION = "XLC"; // Communication Services
+        public static readonly string STOCKS_US_SECT_ENERGY = "XLE"; // Energy
+        public static readonly string STOCKS_US_SECT_FINANCIAL = "XLF"; // Financial
+        public static readonly string STOCKS_US_SECT_INDUSTRIAL = "XLI"; // Industrial
+        public static readonly string STOCKS_US_SECT_TECHNOLOGY = "XLK"; // Technology
+        public static readonly string STOCKS_US_SECT_STAPLES = "XLP"; // Consumer Staples
+        public static readonly string STOCKS_US_SECT_REAL_ESTATE = "XLRE"; // Real Estate
+        public static readonly string STOCKS_US_SECT_UTILITIES = "XLU"; // Utilities
+        public static readonly string STOCKS_US_SECT_HEALTH_CARE = "XLV"; // Health Care
+        public static readonly string STOCKS_US_SECT_DISCRETIONARY = "XLY"; // Consumer Discretionary
+
+        public static readonly string STOCKS_WXUS_LG_MID_CAP = "splice:ACWX,SCINX";
 
         //----- bonds
-        public static readonly string BONDS_US_TOTAL = "splice:AGG,yahoo:FUSGX";
-        public static readonly string BONDS_US_TBILL = "splice:BIL,yahoo:PRTBX";
+        public static readonly string BONDS_US_TOTAL = "splice:AGG,FUSGX";
+        public static readonly string BONDS_US_TREAS_3M = "splice:BIL,PRTBX";
+        public static readonly string BONDS_US_TREAS_30Y = "TLT";  // long-term government bonds
+        public static readonly string BONDS_US_CORP_10Y = "IGIB"; // intermediate-term corporate bonds
+        public static readonly string BONDS_US_CORP_JUNK = "HYG";
 
+        public static readonly string BONDS_WRLD_TREAS = "BWX";
+
+        //----- real estate
+        public static readonly string REIT_US = "VNQ"; // Vanguard Real Estate Index ETF
+        public static readonly string MREIT_US = "REM"; // iShares Mortgage Real Estate ETF
+
+        //----- commodities
+        public static readonly string GOLD = "GLD"; // gold
         //----- portfolios
-        public static readonly string PORTF_60_40 = "yahoo:VBINX";
+        public static readonly string PORTF_60_40 = "VBINX";
     }
     #endregion
     #region allocation tracker

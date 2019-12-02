@@ -38,16 +38,16 @@ namespace TuringTrader.BooksAndPubs
     public abstract class Connors_HighProbEtfTrading_Core : Algorithm
     {
         #region settings
-        public virtual string MARKET { get; set; } = "SPY";
+        protected virtual string MARKET => "SPY";
 
         [OptimizerParam(0, 1, 1)]
         public virtual int AGGRESSIVE_ON { get; set; } = 0;
+
+        public virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
         #endregion
         #region internal data
-
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
-        private Instrument _market;
         #endregion
         #region ctor
         public Connors_HighProbEtfTrading_Core()
@@ -70,7 +70,7 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
 
-            AddDataSource(MARKET);
+            var market = AddDataSource(MARKET);
 
             //========== simulation loop ==========
 
@@ -78,43 +78,42 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (var s in SimTimes)
             {
-                _market = _market ?? FindInstrument(MARKET);
-                if (!_alloc.Allocation.ContainsKey(_market))
-                    _alloc.Allocation[_market] = 0.0;
+                if (!_alloc.Allocation.ContainsKey(market.Instrument))
+                    _alloc.Allocation[market.Instrument] = 0.0;
 
-                double percentToBuySell = Rules(_market);
+                double percentToBuySell = Rules(market.Instrument);
 
                 _alloc.LastUpdate = SimTime[0];
 
                 //----- entries
 
-                if (_market.Position >= 0 && percentToBuySell > 0
-                || _market.Position <= 0 && percentToBuySell < 0)
+                if (market.Instrument.Position >= 0 && percentToBuySell > 0
+                || market.Instrument.Position <= 0 && percentToBuySell < 0)
                 {
                     int sharesToBuySell = (int)(Math.Sign(percentToBuySell) * Math.Floor(
-                        Math.Abs(percentToBuySell) * NetAssetValue[0] / _market.Close[0]));
+                        Math.Abs(percentToBuySell) * NetAssetValue[0] / market.Instrument.Close[0]));
 
-                    _alloc.Allocation[_market] += percentToBuySell;
-                    _market.Trade(sharesToBuySell, OrderType.closeThisBar);
+                    _alloc.Allocation[market.Instrument] += percentToBuySell;
+                    market.Instrument.Trade(sharesToBuySell, ORDER_TYPE);
                 }
 
                 //----- exits
 
-                if (_market.Position > 0 && percentToBuySell < 0
-                || _market.Position < 0 && percentToBuySell > 0)
+                if (market.Instrument.Position > 0 && percentToBuySell < 0
+                || market.Instrument.Position < 0 && percentToBuySell > 0)
                 {
                     // none of the algorithms attempt to gradually
                     // exit positions, so this is good enough
-                    _alloc.Allocation[_market] = 0.0;
-                    _market.Trade(-_market.Position, OrderType.closeThisBar);
+                    _alloc.Allocation[market.Instrument] = 0.0;
+                    market.Instrument.Trade(-market.Instrument.Position, OrderType.closeThisBar);
                 }
 
                 //----- output
 
                 if (!IsOptimizing && TradingDays > 0)
                 {
-                    _plotter.AddNavAndBenchmark(this, _market);
-                    _plotter.AddStrategyHoldings(this, _market);
+                    _plotter.AddNavAndBenchmark(this, market.Instrument);
+                    _plotter.AddStrategyHoldings(this, market.Instrument);
                 }
             }
 

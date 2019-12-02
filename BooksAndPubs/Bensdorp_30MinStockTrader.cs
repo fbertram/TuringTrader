@@ -45,7 +45,7 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Bensdorp's Weekly Rotation";
 
         #region inputs
-        protected Universe UNIVERSE = Globals.LARGE_CAP_UNIVERSE;
+        protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
 
         [OptimizerParam(0, 100, 5)]
         public virtual int MAX_RSI { get; set; } = 50;
@@ -54,7 +54,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual int MAX_ENTRIES { get; set; } = 10;
         #endregion
         #region internal data
-        private static readonly string BENCHMARK = Globals.STOCK_MARKET;
+        private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
@@ -213,7 +213,7 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
         #region inputs
-        protected Universe UNIVERSE = Globals.LARGE_CAP_UNIVERSE;
+        protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
 
         public abstract int ENTRY_DIR { get; set; }
 

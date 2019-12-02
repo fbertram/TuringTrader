@@ -49,7 +49,7 @@ namespace TuringTrader.BooksAndPubs
         protected abstract int B { get; } // breadth parameter
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Globals.BALANCED_PORTFOLIO;
+        private readonly string BENCHMARK = Assets.PORTF_60_40;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion

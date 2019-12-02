@@ -51,15 +51,15 @@ namespace TuringTrader.BooksAndPubs
         /// <summary>
         /// benchmark to measure absolute momentum
         /// </summary>
-        protected virtual string ABS_MOMENTUM => "BIL"; // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
+        protected virtual string ABS_MOMENTUM => Assets.BONDS_US_TREAS_3M; // BIL - 1 to 3-Months U.S. Treasury Bills
         /// <summary>
         /// safe instrument
         /// </summary>
-        protected virtual string SAFE_INSTR => "AGG"; // iShares Core U.S. Aggregate Bond ETF
+        protected virtual string SAFE_INSTR => Assets.BONDS_US_TOTAL; // AGG - Aggregate Bond Market
         /// <summary>
         /// charting benchmark
         /// </summary>
-        protected virtual string BENCHMARK => Globals.BALANCED_PORTFOLIO;
+        protected virtual string BENCHMARK => Assets.PORTF_60_40; // 60/40 Portfolio
         /// <summary>
         /// momentum calculation
         /// </summary>
@@ -213,12 +213,12 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    "SPY", // S&P 500
+                    Assets.STOCKS_US_LG_CAP,
                     ABS_MOMENTUM,
                 }
             },
         };
-        protected override string BENCHMARK => Globals.STOCK_MARKET;
+        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
     }
     #endregion
     #region Global Equities Momentum
@@ -231,13 +231,13 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    "SPY",  // S&P 500
-                    "ACWX", // ACWI ex U.S.
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
                     ABS_MOMENTUM,
                 },
             },
         };
-        protected override string BENCHMARK => Globals.STOCK_MARKET;
+        protected override string BENCHMARK => Assets.PORTF_60_40;
     }
     #endregion
     #region Global Balanced Momentum
@@ -250,30 +250,30 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 0.7,
                 assets = new HashSet<string> {
-                    "SPY",  // S&P 500
-                    "ACWX", // ACWI ex U.S.
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
                     ABS_MOMENTUM,
                 },
             },
             new AssetClass
             {
                 weight = 0.3,
-                setSafeInstrument = true,
+                setSafeInstrument = true, // use this group as safe instrument
                 assets = new HashSet<string> {
-                    "TLT", // U.S. Long Treasury
-                    "BWX", // Global Government Bonds
-                    "HYG", // High Yield Bonds
+                    Assets.BONDS_US_TREAS_30Y,
+                    Assets.BONDS_WRLD_TREAS,
+                    Assets.BONDS_US_CORP_JUNK,
                     ABS_MOMENTUM,
                 },
             }
         };
     }
     #endregion
-    #region 5 asset class parity portfolio w/ absolute momentum
-    public class Antonacci_ParityWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
+    #region Parity Portfolio w/ Absolute Momentum
+    public class Antonacci_ParityPortfolioWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Antonacci's Parity Portfolio w/ Absolute Momentum";
-        protected override string BENCHMARK => Globals.BALANCED_PORTFOLIO;
+        protected override string BENCHMARK => Assets.PORTF_60_40;
 
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
@@ -281,7 +281,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    "VTI",   // Vanguard Total Stock Market Index ETF
+                    Assets.STOCKS_US_LG_CAP,
                     ABS_MOMENTUM,
                 },
             },
@@ -289,7 +289,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    "TLT",   // iShares 20+ Year Treasury Bond ETF
+                    Assets.BONDS_US_TREAS_30Y,
                     ABS_MOMENTUM,
                 },
             },
@@ -297,7 +297,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    "VNQ",   // Vanguard Real Estate Index ETF
+                    Assets.REIT_US,
                     ABS_MOMENTUM,
                 },
             },
@@ -305,9 +305,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    //"HYG",   // iShares iBoxx High Yield Corporate Bond ETF
-                    //"CIU" => changed to IGIB in 06/2018
-                    "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
+                    Assets.BONDS_US_CORP_10Y,
                     ABS_MOMENTUM,
                 },
             },
@@ -315,7 +313,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    "GLD",   // SPDR Gold Shares ETF
+                    Assets.GOLD,
                     ABS_MOMENTUM,
                 },
             },
@@ -329,19 +327,19 @@ namespace TuringTrader.BooksAndPubs
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             // note that we removed those ETFs with short history
-            new AssetClass { assets = new HashSet<string> { "XLB",  ABS_MOMENTUM } }, // Materials
-            //new AssetClass { assets = new HashSet<string> { "XLC",  ABS_MOMENTUM } }, // Communication Services
-            new AssetClass { assets = new HashSet<string> { "XLE",  ABS_MOMENTUM } }, // Energy
-            new AssetClass { assets = new HashSet<string> { "XLF",  ABS_MOMENTUM } }, // Financial
-            new AssetClass { assets = new HashSet<string> { "XLI",  ABS_MOMENTUM } }, // Industrial
-            new AssetClass { assets = new HashSet<string> { "XLK",  ABS_MOMENTUM } }, // Technology
-            new AssetClass { assets = new HashSet<string> { "XLP",  ABS_MOMENTUM } }, // Consumer Staples
-            //new AssetClass { assets = new HashSet<string> { "XLRE", ABS_MOMENTUM } }, // Real Estate
-            new AssetClass { assets = new HashSet<string> { "XLU",  ABS_MOMENTUM } }, // Utilities
-            new AssetClass { assets = new HashSet<string> { "XLV",  ABS_MOMENTUM } }, // Health Care
-            new AssetClass { assets = new HashSet<string> { "XLY",  ABS_MOMENTUM } }, // Consumer Discretionary
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_MATERIALS,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_COMMUNICATION,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_ENERGY,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_FINANCIAL,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_INDUSTRIAL,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_TECHNOLOGY,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_STAPLES,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_REAL_ESTATE, ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_UTILITIES,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_HEALTH_CARE,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_DISCRETIONARY,  ABS_MOMENTUM } },
         };
-        protected override string BENCHMARK => Globals.STOCK_MARKET;
+        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
     }
     #endregion
     #region Dual Momentum w/ 4 asset pairs - as seen on Scott's Investments
@@ -354,9 +352,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    "VTI",   // Vanguard Total Stock Market Index ETF
-                    "VEU",   // Vanguard FTSE All World ex US ETF
-                    // could use SPY/ EFA here
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
                     ABS_MOMENTUM,
                 },
             },
@@ -364,9 +361,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
-                    //"CIU" => changed to IGIB in 06/2018
-                    "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
+                    Assets.BONDS_US_CORP_JUNK,
+                    Assets.BONDS_US_CORP_10Y,
                     ABS_MOMENTUM,
                 },
             },
@@ -374,8 +370,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    "VNQ",   // Vanguard Real Estate Index ETF
-                    "REM",   // iShares Mortgage Real Estate ETF
+                    Assets.REIT_US,
+                    Assets.MREIT_US,
                     ABS_MOMENTUM,
                 },
             },
@@ -383,8 +379,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    "GLD",   // SPDR Gold Shares ETF
-                    "TLT",   // iShares 20+ Year Treasury Bond ETF
+                    Assets.GOLD,
+                    Assets.BONDS_US_TREAS_30Y,
                     ABS_MOMENTUM,
                 },
             },

@@ -40,9 +40,11 @@ namespace TuringTrader.BooksAndPubs
         #region inputs
         protected abstract HashSet<string> ETF_MENU { get; }
         protected abstract double MOMENTUM(Instrument i);
+
+        protected virtual double REBAL_TRIGGER => 0.20;
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Globals.BALANCED_PORTFOLIO;
+        private readonly string BENCHMARK = Assets.PORTF_60_40;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion
@@ -102,7 +104,7 @@ namespace TuringTrader.BooksAndPubs
 
                 // rebalance once per month, and only if we need adjustments exceeding 20%
                 if (SimTime[0].Month != SimTime[1].Month
-                    && maxOff > 0.20)
+                    && maxOff > REBAL_TRIGGER)
                 {
                     _alloc.LastUpdate = SimTime[0];
 
