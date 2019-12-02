@@ -210,16 +210,10 @@ namespace TuringTrader.Simulator
         {
             get
             {
-#if false
-                return _instrument ?? Simulator.Instruments
-                    .Where(i => i.DataSource == this)
-                    .FirstOrDefault();
-#else
                 _instrument = _instrument ?? Simulator.Instruments
                     .Where(i => i.DataSource == this)
                     .FirstOrDefault();
                 return _instrument;
-#endif
             }
         }
         #endregion

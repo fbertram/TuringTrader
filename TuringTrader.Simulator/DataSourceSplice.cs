@@ -45,7 +45,7 @@ namespace TuringTrader.Simulator
 
             #region public DataSourceSplice(Dictionary<DataSourceValue, string> info)
             /// <summary>
-            /// Create and initialize new data source for CSV files.
+            /// Create and initialize new splicing data source.
             /// </summary>
             /// <param name="info">info dictionary</param>
             public DataSourceSplice(Dictionary<DataSourceParam, string> info) : base(info)
@@ -92,6 +92,7 @@ namespace TuringTrader.Simulator
                         //Output.WriteLine("{0}: {1} data range {2:MM/dd/yyyy}, {3:MM/dd/yyyy}", GetType().Name, nick, d.FirstTime, d.LastTime);
                     }
 
+                    // BUGBUG: this won't work when data is cached
                     Info[DataSourceParam.name] = name;
                     Info[DataSourceParam.ticker] = ticker;
 
