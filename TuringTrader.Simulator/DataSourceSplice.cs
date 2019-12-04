@@ -54,6 +54,21 @@ namespace TuringTrader.Simulator
                     throw new Exception(string.Format("{0}: {1} missing mandatory symbolSplice key", GetType().Name, info[DataSourceParam.nickName]));
 
                 _symbols = info[DataSourceParam.symbolSplice].Split(",").ToList();
+
+#if true
+                string name = null;
+                string ticker = null;
+                foreach (var nick in _symbols)
+                {
+                    var d = DataSource.New(nick);
+
+                    name = name ?? d.Info[DataSourceParam.name];
+                    ticker = ticker ?? d.Info[DataSourceParam.ticker];
+                }
+
+                Info[DataSourceParam.name] = name;
+                Info[DataSourceParam.ticker] = ticker;
+#endif
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -86,15 +101,29 @@ namespace TuringTrader.Simulator
                         name = name ?? d.Info[DataSourceParam.name];
                         ticker = ticker ?? d.Info[DataSourceParam.ticker];
 
-                        d.LoadData(startTime, endTime);
-                        dsBars[nick] = d.Data.Reverse().ToList();
+                        try
+                        {
+                            d.LoadData(startTime, endTime);
+                            dsBars[nick] = d.Data.Reverse().ToList();
+                        }
+                        catch (Exception e)
+                        {
+                            Output.WriteLine("{0}: {1} failed to load {2}", this.GetType().Name, Info[DataSourceParam.nickName], nick);
+
+                            // add an empty list, if need be
+                            // this will be ignored further down during splicing
+                            if (!dsBars.ContainsKey(nick))
+                                dsBars[nick] = new List<Bar>();
+                        }
 
                         //Output.WriteLine("{0}: {1} data range {2:MM/dd/yyyy}, {3:MM/dd/yyyy}", GetType().Name, nick, d.FirstTime, d.LastTime);
                     }
 
+#if false
                     // BUGBUG: this won't work when data is cached
                     Info[DataSourceParam.name] = name;
                     Info[DataSourceParam.ticker] = ticker;
+#endif
 
                     // create enumerators for all data sources
                     Dictionary<string, IEnumerator<Bar>> dsEnums = new Dictionary<string, IEnumerator<Bar>>();

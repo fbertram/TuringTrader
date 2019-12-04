@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TuringTrader.VBA</RootNamespace>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BooksAndPubs\BooksAndPubs.csproj" />
+    <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
+  </ItemGroup>
+
+</Project>
