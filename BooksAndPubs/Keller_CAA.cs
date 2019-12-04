@@ -29,36 +29,48 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Keller_CAA : Algorithm
+    public abstract class Keller_CAA_Core : SubclassableAlgorithm
     {
-        public override string Name { get { return "CAA Strategy"; } }
+        public override string Name => "Keller's CAA Strategy";
 
+        #region inputs
+        protected abstract double TVOL { get; }
+        protected abstract List<string> RISKY_ASSETS { get; }
+        protected abstract List<string> SAFE_ASSETS { get;  }
+        protected virtual double MAX_RISKY_ALLOC => 0.25;
+        #endregion
         #region internal data
         //private readonly string BENCHMARK = "^SPX.index";
-        private readonly string BENCHMARK = "@60_40";
-        private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
-
-        protected double TVOL;
-        protected List<string> RISKY_ASSETS;
-        protected List<string> SAFE_ASSETS;
-        private readonly double MAX_RISKY_ALLOC = 0.25;
+        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Keller_CAA_Core()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
         public override void Run()
         {
-            //---------- initialization
+            //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
 
             // our universe consists of risky & safe assets
             var universe = RISKY_ASSETS
@@ -69,10 +81,7 @@ namespace BooksAndPubs
             foreach (var nick in universe)
                 AddDataSource(nick);
 
-            Deposit(1e6);
-            CommissionPerShare = 0.015;
-
-            //---------- simulation loop
+            //========== simulation loop ==========
 
             foreach (var simTime in SimTimes)
             {
@@ -110,8 +119,11 @@ namespace BooksAndPubs
                     Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
                     // adjust all positions
+                    _alloc.LastUpdate = SimTime[0];
                     foreach (var i in pf.Weights.Keys)
                     {
+                        _alloc.Allocation[i] = pf.Weights[i];
+
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * pf.Weights[i] / i.Close[0]);
                         int currentShares = i.Position;
 
@@ -126,37 +138,29 @@ namespace BooksAndPubs
                     }
                 }
 
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
-                _plotter.SelectChart(Name, "date");
-                _plotter.SetX(SimTime[0]);
-                _plotter.Plot(Name, NetAssetValue[0]);
-                _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
-
-                _plotter.SelectChart("Strategy Holdings", "date");
-                _plotter.SetX(SimTime[0]);
-                foreach (var n in universe)
+                // plotter output
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    var i = FindInstrument(n);
-                    _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    _plotter.AddStrategyHoldings(this, universe.Select(nick => FindInstrument(nick)));
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 
-            //---------- post-processing
+            //========== post processing ==========
 
-            _plotter.SelectChart("Strategy Trades", "date");
-            foreach (LogEntry entry in Log)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
+
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -168,26 +172,23 @@ namespace BooksAndPubs
     }
 
     #region N=8 universe
-    public abstract class Keller_CAA_N8 : Keller_CAA
+    public abstract class Keller_CAA_N8 : Keller_CAA_Core
     {
-        public Keller_CAA_N8()
+        protected override List<string> RISKY_ASSETS => new List<string>
         {
-            RISKY_ASSETS = new List<string>
-            {
-                "SPY", // S&P 500
-                "EFA", // EAFE
-                "EEM", // Emerging Markets
-                "QQQ", // US Technology Sector
-                "EWJ", // Japanese Equities
-                "HYG", // High Yield Bonds
-            };
+            "SPY", // S&P 500
+            "EFA", // EAFE
+            "EEM", // Emerging Markets
+            "QQQ", // US Technology Sector
+            "EWJ", // Japanese Equities
+            "HYG", // High Yield Bonds
+        };
 
-            SAFE_ASSETS = new List<string>
-            {
-                "IEF", // 10-Year Treasuries
-                "BIL", // T-Bills
-            };
-        }
+        protected override List<string> SAFE_ASSETS => new List<string>
+        {
+            "IEF", // 10-Year Treasuries
+            "BIL", // T-Bills
+        };
     }
     #endregion
     #region N=16 universe
@@ -286,19 +287,15 @@ namespace BooksAndPubs
     #region N=8, TV=5%
     public class Keller_CAA_N8_TV5 : Keller_CAA_N8
     {
-        public Keller_CAA_N8_TV5()
-        {
-            TVOL = 0.05;
-        }
+        public override string Name => "Keller's CAA-N=8-TV=5%";
+        protected override double TVOL => 0.05;
     }
     #endregion
     #region N=8, TV=10%
     public class Keller_CAA_N8_TV10 : Keller_CAA_N8
     {
-        public Keller_CAA_N8_TV10()
-        {
-            TVOL = 0.10;
-        }
+        public override string Name => "Keller's CAA-N=8-TV=10%";
+        protected override double TVOL => 0.10;
     }
     #endregion
 }

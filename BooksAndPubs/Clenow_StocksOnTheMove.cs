@@ -23,11 +23,6 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-// USE_NORGATE_UNIVERSE
-// defined: use survivorship-free universe through Norgate Data
-// undefined: use fixed test univese with hefty survivorship bias
-//#define USE_NORGATE_UNIVERSE
-
 // USE_CLENOWS_RANGE
 // defined: match simulation range to Clenow's book
 // undefined: simulate from 2007 to last week
@@ -49,250 +44,9 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    #region TestUniverse
-    class TestUniverse : Universe
-    {
-        public override IEnumerable<string> Constituents => new List<string>()
-        {
-            "AAL",
-            "AAPL",
-            "ABBV",
-            "ABT",
-            //"ABX",
-            "ACN",
-            "ADBE",
-            "ADI",
-            "ADP",
-            "ADSK",
-            "AIG",
-            "AKAM",
-            "ALL",
-            "ALXN",
-            "AMAT",
-            "AMGN",
-            "AMZN",
-            "APA",
-            //"APC",
-            "ATVI",
-            "AVGO",
-            "AXP",
-            "BA",
-            "BAC",
-            "BBBY",
-            "BHP",
-            "BIDU",
-            "BIIB",
-            "BK",
-            "BMY",
-            "BP",
-            "BRK.A",
-            "BRK.B",
-            "C",
-            //"CA.x",
-            "CAT",
-            "CELG",
-            "CERN",
-            "CF",
-            "CHK",
-            "CHKP",
-            "CHRW",
-            "CHTR",
-            "CL",
-            "CLF",
-            "CMCSA",
-            "CMI",
-            "COF",
-            "COP",
-            "COST",
-            "CRM",
-            "CSCO",
-            "CTSH",
-            "CTXS",
-            "CVS",
-            "CVX",
-            "DE",
-            "DIS",
-            "DISCA",
-            "DISCK",
-            "DISH",
-            "DLTR",
-            //"DTV",
-            "DVN",
-            "EA",
-            "EBAY",
-            "EMR",
-            "EOG",
-            //"ESRX.X",
-            "EXC",
-            "EXPD",
-            "F",
-            "FAST",
-            "FB",
-            "FCX",
-            "FDX",
-            "FISV",
-            //"TFCF.X",
-            //"TFCFA.X",
-            "GD",
-            "GE",
-            "GILD",
-            "GLW",
-            "GM",
-            "GOOG",
-            "GOOGL",
-            "GRMN",
-            "GS",
-            "HAL",
-            "HD",
-            "HES",
-            "HON",
-            "HPQ",
-            "HSIC",
-            "IBM",
-            "ILMN",
-            "INTC",
-            "INTU",
-            "ISRG",
-            "ITUB",
-            "JCP",
-            "JNJ",
-            "JPM",
-            "KLAC",
-            "KMI",
-            "KO",
-            "LBTYA",
-            "LBTYK",
-            "LLY",
-            "LMT",
-            "LOW",
-            "LRCX",
-            "LVS",
-            "M",
-            "MA",
-            "MAR",
-            "MAT",
-            "MCD",
-            "MDLZ",
-            "MDT",
-            "MET",
-            "MMM",
-            "MNST",
-            "MO",
-            //"MON.X",
-            "MOS",
-            "MRK",
-            "MS",
-            "MSFT",
-            "MU",
-            "MYL",
-            "NEM",
-            "NFLX",
-            "NKE",
-            "NLY",
-            "NOV",
-            "NSC",
-            "NTAP",
-            "NVDA",
-            "NWSA",
-            "NXPI",
-            "ORCL",
-            "ORLY",
-            "OXY",
-            "PAYX",
-            "PBR",
-            "PCAR",
-            "PEP",
-            "PFE",
-            "PG",
-            "PM",
-            "PRU",
-            "QCOM",
-            "REGN",
-            "RIG",
-            "ROST",
-            "RTN",
-            "SBAC",
-            "SBUX",
-            "SINA",
-            "SIRI",
-            "SLB",
-            "SO",
-            "SPG",
-            "SRCL",
-            "STX",
-            "SYMC",
-            "T",
-            "TGT",
-            "TRIP",
-            "TSCO",
-            "TSLA",
-            //"TWX.X",
-            "TXN",
-            "UNH",
-            "UNP",
-            "UPS",
-            "USB",
-            "UTX",
-            "V",
-            "VALE",
-            "VIAB",
-            "VLO",
-            "VOD",
-            "VRSK",
-            "VRTX",
-            "VZ",
-            "WBA",
-            "WDC",
-            "WFC",
-            "WMT",
-            "WYNN",
-            "X",
-            "XLNX",
-            "XOM",
-            //"ALTR.X",
-            //"ANR.X",
-            //"BHI.X",
-            //"BRCM.X",
-            //"CAM.X",
-            //"CMCSK.X",
-            //"COV.X",
-            //"DELL.X",
-            //"DD.X",
-            //"DOW.X",
-            //"EMC.X",
-            //"EP.X",
-            //"GMCR.X",
-            //"LLTC.X",
-            //"LMCA.X",
-            //"LMCK.X",
-            //"LVNTA.X",
-            //"MHS.X",
-            //"MJN.X",
-            //"PCLN.X",
-            //"POT.X",
-            //"PSE.X",
-            //"QVCA.X",
-            //"SNDK.X",
-            //"SPLS.X",
-            //"STJ.X",
-            //"TWC.X",
-            //"VIP.X",
-            //"WAG.X",
-            //"WFM.X",
-            //"WLP.X",
-            //"WLT.X",
-            //"YHOO.X",
-        };
-        public override bool IsConstituent(string nickname, DateTime timestamp)
-        {
-            return true;
-        }
-    }
-    #endregion
-
     public class Clenow_StocksOnTheMove : Algorithm
     {
-        public override string Name => "Stocks on the Move";
+        public override string Name => "Clenow's Stocks on the Move";
 
         #region inputs
         [OptimizerParam(63, 252, 21)]
@@ -317,22 +71,22 @@ namespace TuringTrader.BooksAndPubs
         public int RISK_PER_STOCK = 10;
         #endregion
         #region private data
-        private readonly string BENCHMARK = "$SPX";
-        private readonly double INITIAL_FUNDS = 100000;
-#if USE_NORGATE_UNIVERSE
-        // this is the proper way of doing things
-        private Universe UNIVERSE = Universe.New("$SPX");
-#else
-        // this if for testing only
-        private Universe UNIVERSE = new TestUniverse();
-#endif
-        private Plotter _plotter = new Plotter();
+        private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        private Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Clenow_StocksOnTheMove()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
         public override void Run()
         {
-            //---------- initialization
+            //========== initialization ==========
 
             // set simulation time frame
 #if USE_CLENOWS_RANGE
@@ -341,20 +95,20 @@ namespace TuringTrader.BooksAndPubs
             WarmupStartTime = StartTime - TimeSpan.FromDays(180);
             EndTime = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
 #else
-            StartTime = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
-            WarmupStartTime = StartTime - TimeSpan.FromDays(180);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 #endif
 
             // set account value
-            Deposit(INITIAL_FUNDS);
-            //CommissionPerShare = 0.015; // Clenow is not considering commissions
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             // add instruments
             AddDataSource(BENCHMARK);
             AddDataSources(UNIVERSE.Constituents);
 
-            //---------- simulation
+            //========== simulation loop ==========
 
             Instrument benchmark = null;
             double? benchmark0 = null;
@@ -393,6 +147,7 @@ namespace TuringTrader.BooksAndPubs
                 // trade once per week
                 // this is a slight simplification from Clenow's suggestion to adjust positions
                 // every week, and adjust position sizes only every other week
+                // CAUTION: no indicator calculations within this block!
                 if (SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday)
                 {
                     // select our universe constituents
@@ -440,8 +195,13 @@ namespace TuringTrader.BooksAndPubs
                     }
 
                     // loop through all instruments and submit trades
+                    _alloc.LastUpdate = SimTime[0];
+                    _alloc.Allocation.Clear();
                     foreach (Instrument instrument in instrumentRelativeEquity.Keys)
                     {
+                        if (instrumentRelativeEquity[instrument] > 0.005)
+                            _alloc.Allocation[instrument] = instrumentRelativeEquity[instrument];
+
                         int currentShares = instrument.Position;
 
                         int targetSharesPreFilter = (int)Math.Round(NetAssetValue[0] * instrumentRelativeEquity[instrument] / instrument.Close[0]);
@@ -456,7 +216,7 @@ namespace TuringTrader.BooksAndPubs
                         .Where(i => i.Value != 0.0)
                         .Aggregate(string.Format("{0:MM/dd/yyyy}: ", SimTime[0]),
                             (prev, next) => prev + string.Format("{0}={1:P2} ", next.Key.Symbol, next.Value));
-                    if (!IsOptimizing)
+                    if (!IsOptimizing && (EndTime - SimTime[0]).TotalDays < 30)
                         Output.WriteLine(message);
                 }
 
@@ -471,32 +231,31 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot(benchmark.Name + " 200-day moving average", benchmark.Close.SMA(200)[0] / benchmark0);
                     _plotter.Plot("Cash", Cash / NetAssetValue[0]);
 #else
-                    _plotter.SelectChart(Name, "date");
+                    _plotter.AddNavAndBenchmark(this, benchmark);
+                    //_plotter.AddStrategyHoldings(this, universeConstituents);
+
+                    // plot strategy exposure
+                    _plotter.SelectChart("Strategy Exposure", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(benchmark.Name, benchmark.Close[0]);
+                    _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Number of Stocks", (double)Positions.Count);
 #endif
                 }
             }
 
-            //----- post processing
+            //========== post processing ==========
 
-            // print position log, grouped as LIFO
-            var tradeLog = LogAnalysis
-                .GroupPositions(Log, true)
-                .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-            _plotter.SelectChart("Strategy Positions", "entry date");
-            foreach (var trade in tradeLog)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(trade.Entry.BarOfExecution.Time.Date);
-                _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time.Date);
-                _plotter.Plot("Symbol", trade.Symbol);
-                _plotter.Plot("Quantity", trade.Quantity);
-                _plotter.Plot("% Profit", trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
-                _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
+
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()

@@ -1,4 +1,4 @@
 name=60/40 Portfolio
 ticker=60/40
-symbolYahoo=VBINX
-dataFeed=Yahoo
+symbolAlgo=Benchmark_60_40
+dataFeed=algorithm

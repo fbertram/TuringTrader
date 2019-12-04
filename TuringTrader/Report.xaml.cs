@@ -82,50 +82,57 @@ namespace TuringTrader.Simulator
             {
                 _selectedChart = value;
 
-                object model = _template.GetModel(_selectedChart);
-
-                if (model.GetType() == typeof(PlotModel))
+                try
                 {
-                    // OxyPlot model
-                    PlotModel plotModel = (PlotModel)model;
+                    object model = _template.GetModel(_selectedChart);
 
-                    Chart.Visibility = Visibility.Visible;
-                    ChartSave.IsEnabled = true;
-                    Chart.Model = plotModel;
+                    if (model.GetType() == typeof(PlotModel))
+                    {
+                        // OxyPlot model
+                        PlotModel plotModel = (PlotModel)model;
 
-                    Table.Visibility = Visibility.Hidden;
-                    TableSave.IsEnabled = false;
-                    Table.Columns.Clear();
-                    Table.Items.Clear();
+                        Chart.Visibility = Visibility.Visible;
+                        ChartSave.IsEnabled = true;
+                        Chart.Model = plotModel;
+
+                        Table.Visibility = Visibility.Hidden;
+                        TableSave.IsEnabled = false;
+                        Table.Columns.Clear();
+                        Table.Items.Clear();
+                    }
+                    else
+                    {
+                        // List<Dictionary<string, object>>
+                        List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)model;
+
+                        Chart.Visibility = Visibility.Hidden;
+                        ChartSave.IsEnabled = false;
+                        Chart.Model = null;
+
+                        Table.Visibility = Visibility.Visible;
+                        TableSave.IsEnabled = true;
+                        Table.Columns.Clear();
+                        Table.Items.Clear();
+
+                        var columns = tableModel
+                            .SelectMany(row => row.Keys)
+                            .Distinct()
+                            .ToList();
+
+                        foreach (var c in columns)
+                            Table.Columns.Add(new DataGridTextColumn()
+                            {
+                                Header = c,
+                                Binding = new Binding(string.Format("[{0}]", c)),
+                            });
+
+                        foreach (var r in tableModel)
+                            Table.Items.Add(r);
+                    }
                 }
-                else
+                catch
                 {
-                    // List<Dictionary<string, object>>
-                    List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)model;
-
-                    Chart.Visibility = Visibility.Hidden;
-                    ChartSave.IsEnabled = false;
-                    Chart.Model = null;
-
-                    Table.Visibility = Visibility.Visible;
-                    TableSave.IsEnabled = true;
-                    Table.Columns.Clear();
-                    Table.Items.Clear();
-
-                    var columns = tableModel
-                        .SelectMany(row => row.Keys)
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var c in columns)
-                        Table.Columns.Add(new DataGridTextColumn()
-                        {
-                            Header = c,
-                            Binding = new Binding(string.Format("[{0}]", c)),
-                        });
-
-                    foreach (var r in tableModel)
-                        Table.Items.Add(r);
+                    Output.WriteLine("can't render {0}", value);
                 }
             }
         }

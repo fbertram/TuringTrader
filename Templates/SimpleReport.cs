@@ -886,6 +886,105 @@ namespace TuringTrader.Simulator
             return plotModel;
         }
         #endregion
+        #region private PlotModel RenderExposure()
+        private PlotModel RenderExposure(string selectedChart)
+        {
+            //===== get plot data
+            var chartData = PlotData[selectedChart];
+
+            string xLabel = chartData
+                .First()      // first row is as good as any
+                .First().Key; // first column is x-axis
+
+            object xValue = chartData
+                .First()        // first row is as good as any
+                .First().Value; // first column is x-axis
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = selectedChart;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = xValue.GetType() == typeof(DateTime)
+                ? new DateTimeAxis()
+                : new LinearAxis();
+            xAxis.Title = xLabel;
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Exposure [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            //===== create series
+            Dictionary<string, AreaSeries> allSeries = new Dictionary<string, AreaSeries>();
+
+            foreach (var row in chartData)
+            {
+                xValue = row[xLabel];
+
+                foreach (var col in row)
+                {
+                    if (col.Key == xLabel)
+                        continue;
+
+                    if (col.Value.GetType() != typeof(double)
+                    || double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value))
+                        continue;
+
+                    string yLabel = col.Key;
+                    double yValue = (double)col.Value;
+
+                    if (!allSeries.ContainsKey(yLabel))
+                    {
+                        var color = SeriesColors[allSeries.Count % SeriesColors.Count()];
+                        var newSeries = new AreaSeries
+                        {
+                            Title = yLabel,
+                            IsVisible = true,
+                            XAxisKey = "x",
+                            YAxisKey = "y",
+                            Color = color,
+                            Fill = color,
+                            //ConstantY2 = 0.0,
+                        };
+                        allSeries[yLabel] = newSeries;
+                    }
+
+                    double yStacked = 0.0;
+                    foreach (var col2 in row)
+                    {
+                        if (col2.Key == xLabel)
+                            continue;
+
+                        if (col2.Key == col.Key)
+                            break;
+
+                        yStacked += (double)col2.Value;
+                    }
+
+                    allSeries[col.Key].Points.Add(new DataPoint(
+                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
+                        100.0 * (yStacked + (double)yValue)));
+
+                    allSeries[col.Key].Points2.Add(new DataPoint(
+                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
+                        100.0 * (yStacked /*+ (double)yValue*/)));
+                }
+            }
+
+            //===== add series to plot model
+            foreach (var series in allSeries)
+                plotModel.Series.Add(series.Value);
+
+            return plotModel;
+        }
+        #endregion
 
         #region public override IEnumerable<string> AvailableCharts
         /// <summary>
@@ -932,6 +1031,9 @@ namespace TuringTrader.Simulator
 
                 case MONTE_CARLO:
                     return RenderMonteCarlo();
+
+                case "Exposure vs Time":
+                    return RenderExposure(selectedChart);
 
                 default:
                     if (IsTable(selectedChart))

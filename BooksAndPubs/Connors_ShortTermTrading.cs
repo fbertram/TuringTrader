@@ -28,120 +28,109 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     #region common algorithm core
     public abstract class Connors_ShortTermTrading_Core : Algorithm
     {
         #region internal data
-        private static readonly string MARKET = "$SPX";
-        private static readonly string VOLATILITY = "$VIX";
-#if INCLUDE_TRIN_STRATEGY
-        private static readonly string TRIN = "#SPXTRIN";
-#endif
-        private static readonly double INITIAL_CAPITAL = 1e6;
+        protected virtual string MARKET => "SPY";
+        protected virtual string VOLATILITY => "$VIX";
 
-        private Plotter _plotter = new Plotter();
-        protected Instrument _market;
-        protected Instrument _volatility;
-        protected Instrument _trin;
+        protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
+
+#if INCLUDE_TRIN_STRATEGY
+        private virtual string TRIN => "#SPXTRIN";
+#endif
+
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Connors_ShortTermTrading_Core()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
-        protected abstract int Rules();
+        protected abstract int Rules(Instrument market);
 
         #region public override void Run()
         public override void Run()
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
-            AddDataSource(MARKET);
-            AddDataSource(VOLATILITY);
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
+
+            var market = AddDataSource(MARKET);
+            var volatility = AddDataSource(VOLATILITY);
 #if INCLUDE_TRIN_STRATEGY
             AddDataSource(TRIN);
 #endif
-
-            Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = 0.015;
 
             //========== simulation loop ==========
 
             foreach (var s in SimTimes)
             {
-                if (!HasInstrument(MARKET) || !HasInstrument(VOLATILITY))
+                if (!HasInstrument(market) || !HasInstrument(volatility))
                     continue;
 
-                _market = _market ?? FindInstrument(MARKET);
-                _volatility = _volatility ?? FindInstrument(VOLATILITY);
-#if INCLUDE_TRIN_STRATEGY
-                _trin = _trin ?? FindInstrument(TRIN);
-#endif
+                if (!_alloc.Allocation.ContainsKey(market.Instrument))
+                    _alloc.Allocation[market.Instrument] = 0.0;
 
-                int buySell = Rules();
+                int buySell = Rules(market.Instrument);
+
+                _alloc.LastUpdate = SimTime[0];
 
                 //----- enter positions
 
-                if (_market.Position == 0 && buySell != 0)
+                if (market.Instrument.Position == 0 && buySell != 0)
                 {
-                    int numShares = buySell * (int)Math.Floor(NetAssetValue[0] / _market.Close[0]);
-                    _market.Trade(numShares, OrderType.closeThisBar);
+                    int numShares = buySell * (int)Math.Floor(NetAssetValue[0] / market.Instrument.Close[0]);
+                    _alloc.Allocation[market.Instrument] += buySell;
+                    market.Instrument.Trade(numShares, OrderType.closeThisBar);
                 }
 
                 //----- exit positions
 
-                else if (_market.Position != 0 && buySell != 0)
+                else if (market.Instrument.Position != 0 && buySell != 0)
                 {
-                    _market.Trade(-_market.Position, OrderType.closeThisBar);
+                    _alloc.Allocation[market.Instrument] = 0.0;
+                    market.Instrument.Trade(-market.Instrument.Position, ORDER_TYPE);
                 }
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // plot to chart
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_market.Name, _market.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, market.Instrument);
+                    _plotter.AddStrategyHoldings(this, market.Instrument);
                 }
             }
 
             //========== post processing ==========
 
-            //----- print position log, grouped as LIFO
-
-            if (!IsOptimizing)
+            if (!IsOptimizing && TradingDays > 0)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -157,24 +146,24 @@ namespace BooksAndPubs
     #region The 2-period RSI under 5 on the S&P 500
     public class Connors_ShortTermTrading_RsiUnder5 : Connors_ShortTermTrading_Core
     {
-        public override string Name => "2-Period RSI Under 5 Strategy";
+        public override string Name => "Connors' 2-Period RSI Under 5";
 
         [OptimizerParam(0, 20, 1)]
         public virtual int ENTRY_MAX_RSI { get; set; } = 5;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketSma5 = _market.Close.SMA(5);
-            var marketRsi2 = _market.Close.RSI(2);
+            var marketSma200 = market.Close.SMA(200);
+            var marketSma5 = market.Close.SMA(5);
+            var marketRsi2 = market.Close.RSI(2);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
+                if (market.Close[0] > marketSma200[0]
                 && marketRsi2[0] < ENTRY_MAX_RSI)
                 {
                     return 1;
@@ -185,7 +174,7 @@ namespace BooksAndPubs
 
             else
             {
-                if (_market.Close[0] > marketSma5[0])
+                if (market.Close[0] > marketSma5[0])
                 {
                     return -1;
                 }
@@ -198,7 +187,7 @@ namespace BooksAndPubs
     #region Cumulative RSIs Strategy
     public class Connors_ShortTermTrading_CumulativeRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Cumulative RSIs Strategy";
+        public override string Name => "Connors' Cumulative RSIs";
 
         [OptimizerParam(1, 5, 1)]
         public virtual int CUM_RSI_DAYS { get; set; } = 2;
@@ -209,19 +198,19 @@ namespace BooksAndPubs
         [OptimizerParam(50, 90, 5)]
         public virtual int EXIT_MIN_RSI { get; set; } = 65;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketRsi2 = _market.Close.RSI(2);
+            var marketSma200 = market.Close.SMA(200);
+            var marketRsi2 = market.Close.RSI(2);
             var marketCumRsi = marketRsi2.Sum(CUM_RSI_DAYS);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
+                if (market.Close[0] > marketSma200[0]
                 && marketCumRsi[0] < ENTRY_MAX_CUM_RSI)
                 {
                     return 1;
@@ -246,22 +235,22 @@ namespace BooksAndPubs
     #region Chapter 10: Double 7's Strategy
     public class Connors_ShortTermTrading_Double7 : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Double 7's Strategy";
+        public override string Name => "Connors' Double 7's";
 
         [OptimizerParam(5, 10, 1)]
         public virtual int DOUBLE_DAYS { get; set; } = 7;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
-            var marketSma200 = _market.Close.SMA(200);
-            var marketHi7 = _market.TypicalPrice().Highest(DOUBLE_DAYS);
-            var marketLo7 = _market.TypicalPrice().Lowest(DOUBLE_DAYS);
+            var marketSma200 = market.Close.SMA(200);
+            var marketHi7 = market.TypicalPrice().Highest(DOUBLE_DAYS);
+            var marketLo7 = market.TypicalPrice().Lowest(DOUBLE_DAYS);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
+                if (market.Close[0] > marketSma200[0]
                 && marketLo7[0] < marketLo7[1])
                 {
                     return 1;
@@ -287,7 +276,7 @@ namespace BooksAndPubs
     #region 1. VIX Stretches Strategy
     public class Connors_ShortTermTrading_VixStretches : Connors_ShortTermTrading_Core
     {
-        public override string Name => "VIX Stretches Strategy";
+        public override string Name => "Connors' VIX Stretches";
 
         [OptimizerParam(2, 5, 1)]
         public virtual int LE1_MIN_VIX_DAYS { get; set; } = 3;
@@ -298,23 +287,25 @@ namespace BooksAndPubs
         [OptimizerParam(50, 90, 5)]
         public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
+            Instrument volatility = FindInstrument(VOLATILITY);
+
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketRsi2 = _market.Close.RSI(2);
-            var volSma10 = _volatility.Close.SMA(10);
+            var marketSma200 = market.Close.SMA(200);
+            var marketRsi2 = market.Close.RSI(2);
+            var volSma10 = volatility.Close.SMA(10);
 
             var volStretch = Enumerable.Range(0, LE1_MIN_VIX_DAYS)
                 .Aggregate(true, (prev, idx) => prev
-                    && _volatility.Close[idx] > volSma10[idx] * (1.0 + LE1_MIN_VIX_PCNT / 100.0));
+                    && volatility.Close[idx] > volSma10[idx] * (1.0 + LE1_MIN_VIX_PCNT / 100.0));
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0] && volStretch)
+                if (market.Close[0] > marketSma200[0] && volStretch)
                     return 1;
             }
 
@@ -333,7 +324,7 @@ namespace BooksAndPubs
     #region 2. VIX RSI Strategy
     public class Connors_ShortTermTrading_VixRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "VIX RSI Strategy";
+        public override string Name => "Connors' VIX RSI";
 
         [OptimizerParam(75, 100, 5)]
         public virtual int LE2_MIN_VIX_RSI { get; set; } = 90;
@@ -344,22 +335,24 @@ namespace BooksAndPubs
         [OptimizerParam(50, 90, 5)]
         public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
+            Instrument volatility = FindInstrument(VOLATILITY);
+
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketRsi2 = _market.Close.RSI(2);
-            var volRsi2 = _volatility.Close.RSI(2);
+            var marketSma200 = market.Close.SMA(200);
+            var marketRsi2 = market.Close.RSI(2);
+            var volRsi2 = volatility.Close.RSI(2);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0]
+                if (market.Close[0] > marketSma200[0]
                 && marketRsi2[0] < LE2_MAX_MKT_RSI
                 && volRsi2[0] > LE2_MIN_VIX_RSI
-                && _volatility.Open[0] > _volatility.Close[1])
+                && volatility.Open[0] > volatility.Close[1])
                 {
                     return 1;
                 }
@@ -381,7 +374,7 @@ namespace BooksAndPubs
 #if INCLUDE_TRIN_STRATEGY
     public class Connors_ShortTermTrading_Trin : Connors_ShortTermTrading_Core
     {
-        public override string Name => "TRIN Strategy";
+        public override string Name => "Connors' TRIN";
 
     [OptimizerParam(45, 75, 5)]
         public virtual int LE3_MAX_MKT_RSI { get; set; } = 50;
@@ -430,7 +423,7 @@ namespace BooksAndPubs
     #region 4. One More Market Timing Strategy with Cumulative RSIs
     public class Connors_ShortTermTrading_MoreCumulativeRsi : Connors_ShortTermTrading_Core
     {
-        public override string Name => "More Cumulative RSI Strategy";
+        public override string Name => "Connors' More Cumulative RSI";
 
         [OptimizerParam(1, 5, 1)]
         public virtual int LE4_RSI_CUM_DAYS { get; set; } = 2;
@@ -441,19 +434,19 @@ namespace BooksAndPubs
         [OptimizerParam(50, 90, 5)]
         public virtual int LX_MIN_MKT_RSI { get; set; } = 65;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketRsi3 = _market.Close.RSI(3);
+            var marketSma200 = market.Close.SMA(200);
+            var marketRsi3 = market.Close.RSI(3);
             var marketCumRsi = marketRsi3.Sum(LE4_RSI_CUM_DAYS);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] > marketSma200[0] && marketCumRsi[0] < LE4_MAX_CUM_RSI)
+                if (market.Close[0] > marketSma200[0] && marketCumRsi[0] < LE4_MAX_CUM_RSI)
                     return 1;
             }
 
@@ -472,27 +465,27 @@ namespace BooksAndPubs
     #region 5. Trading on the Short Side - The S&P Short Strategy
     public class Connors_ShortTermTrading_ShortSide : Connors_ShortTermTrading_Core
     {
-        public override string Name => "Short Strategy";
+        public override string Name => "Connors' Short";
 
         [OptimizerParam(2, 7, 1)]
         public virtual int LE5_MIN_MKT_UP { get; set; } = 4;
 
-        protected override int Rules()
+        protected override int Rules(Instrument market)
         {
             //----- calculate indicators
 
-            var marketSma200 = _market.Close.SMA(200);
-            var marketSma5 = _market.Close.SMA(5);
+            var marketSma200 = market.Close.SMA(200);
+            var marketSma5 = market.Close.SMA(5);
 
             var marketUpDays = Enumerable.Range(0, LE5_MIN_MKT_UP)
                 .Aggregate(true, (prev, idx) => prev
-                    && _market.Close[idx] > _market.Close[idx + 1]);
+                    && market.Close[idx] > market.Close[idx + 1]);
 
             //----- enter positions
 
-            if (_market.Position == 0)
+            if (market.Position == 0)
             {
-                if (_market.Close[0] < marketSma200[0]
+                if (market.Close[0] < marketSma200[0]
                 && marketUpDays)
                 {
                     return -1;
@@ -503,8 +496,8 @@ namespace BooksAndPubs
 
             else
             {
-                if (_market.Close[0] < marketSma5[0]
-                || _market.Close[0] > marketSma200[0]) // this line is not in the book
+                if (market.Close[0] < marketSma5[0]
+                || market.Close[0] > marketSma200[0]) // this line is not in the book
                 {
                     return 1;
                 }

@@ -12,7 +12,8 @@
     <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>TuringTrader.BooksAndPubs</PackageId>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>x64</Platforms>
+    <RootNamespace>TuringTrader.BooksAndPubs</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

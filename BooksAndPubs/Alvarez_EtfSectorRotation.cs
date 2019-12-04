@@ -29,7 +29,7 @@ using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     public class Alvarez_EtfSectorRotation : Algorithm
     {
@@ -37,35 +37,33 @@ namespace BooksAndPubs
 
         private static readonly string[] UNIVERSE =
         {
-            "XLY", // consumer discretionary
-            "XLP", // consumer staples
-            "XLE", // energy
-            "XLF", // financials
-            "XLV", // health care
-            "XLI", // industrials
-            "XLB", // materials
-            "XLK", // technology
-            "XLU", // utilities
+            Assets.STOCKS_US_SECT_DISCRETIONARY,
+            Assets.STOCKS_US_SECT_STAPLES,
+            Assets.STOCKS_US_SECT_ENERGY,
+            Assets.STOCKS_US_SECT_FINANCIAL,
+            Assets.STOCKS_US_SECT_HEALTH_CARE,
+            Assets.STOCKS_US_SECT_INDUSTRIAL,
+            Assets.STOCKS_US_SECT_MATERIALS,
+            Assets.STOCKS_US_SECT_TECHNOLOGY,
+            Assets.STOCKS_US_SECT_UTILITIES,
+            //Assets.STOCKS_US_SECT_COMMUNICATION, // Communication Services
+            //Assets.STOCKS_US_SECT_REAL_ESTATE, // Real Estate
         };
-        private static readonly string SAFE_INSTRUMENT = "TLT"; // 20+ year treasury bonds
-        private static readonly string BENCHMARK = "$SPX"; // S&P 500
+        private static readonly string SAFE_INSTRUMENT = Assets.BONDS_US_TREAS_30Y;
+        private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
         private static readonly int RANK1_DAYS = 252;
         private static readonly int RANK2_DAYS = 126;
 
         private Plotter _plotter = new Plotter();
-        private List<Instrument> _universe = null;
-        private Instrument _safe_instrument = null;
-        private Instrument _benchmark = null;
 
         public override void Run()
         {
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
-            foreach (var nick in UNIVERSE)
-                AddDataSource(nick);
-            AddDataSource(SAFE_INSTRUMENT);
-            AddDataSource(BENCHMARK);
+            var universe = AddDataSources(UNIVERSE);
+            var safeInstrument = AddDataSource(SAFE_INSTRUMENT);
+            var benchmark = AddDataSource(BENCHMARK);
 
             Deposit(1e6);
             CommissionPerShare = 0.015;
@@ -73,52 +71,43 @@ namespace BooksAndPubs
             foreach (var s in SimTimes)
             {
                 //----- skip until all required instruments are valid
-                if (_universe == null)
-                {
-                    if (!HasInstrument(BENCHMARK)
-                    || !HasInstrument(SAFE_INSTRUMENT)
-                    || !HasInstruments(UNIVERSE))
-                        continue;
-                }
+                if (!HasInstruments(universe) 
+                || !HasInstrument(safeInstrument)
+                || !HasInstrument(benchmark))
+                    continue;
 
-                //----- memorize our instruments
-                _universe = _universe ?? Instruments
-                    .Where(i => UNIVERSE.Contains(i.Nickname))
-                    .ToList();
-                _safe_instrument = _safe_instrument ?? FindInstrument(SAFE_INSTRUMENT);
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
 
                 //----- memorize our momentum
                 // its good practice to do this, to make sure
                 // indicators are only evaluated once
-                var momentum1 = _universe
+                var momentum1 = universe
                     .ToDictionary(
-                        i => i,
-                        i => i.Close.Momentum(RANK1_DAYS)[0]);
+                        ds => ds.Instrument,
+                        ds => ds.Instrument.Close.Momentum(RANK1_DAYS)[0]);
 
-                var momentum2 = _universe
+                var momentum2 = universe
                     .ToDictionary(
-                        i => i,
-                        i => i.Close.Momentum(RANK2_DAYS)[0]);
+                        ds => ds.Instrument,
+                        ds => ds.Instrument.Close.Momentum(RANK2_DAYS)[0]);
 
                 //----- rank universe by momentum
-                var rank1 = _universe
-                    .OrderByDescending(i => momentum1[i])
-                    .Select((i, n) => new { instr = i, rank = n, mom = momentum1[i] })
+                var rank1 = universe
+                    .OrderByDescending(ds => momentum1[ds.Instrument])
+                    .Select((ds, n) => new { instr = ds.Instrument, rank = n, mom = momentum1[ds.Instrument] })
                     .ToDictionary(
                         i => i.instr,
                         i => i);
 
-                var rank2 = _universe
-                    .OrderByDescending(i => momentum2[i])
-                    .Select((i, n) => new { instr = i, rank = n, mom = momentum2[i] })
+                var rank2 = universe
+                    .OrderByDescending(ds => momentum2[ds.Instrument])
+                    .Select((ds, n) => new { instr = ds.Instrument, rank = n, mom = momentum2[ds.Instrument] })
                     .ToDictionary(
                         i => i.instr,
                         i => i);
 
-                var rank3 = _universe
-                    .OrderBy(i => 1.001 * rank1[i].rank + rank2[i].rank) // use rank1 as tie break
-                    .Select((i, n) => new { instr = i, rank = n, sum = 1.001 * rank1[i].rank + rank2[i].rank })
+                var rank3 = universe
+                    .OrderBy(ds => 1.001 * rank1[ds.Instrument].rank + rank2[ds.Instrument].rank) // use rank1 as tie break
+                    .Select((ds, n) => new { instr = ds.Instrument, rank = n, sum = 1.001 * rank1[ds.Instrument].rank + rank2[ds.Instrument].rank })
                     .ToDictionary(
                         i => i.instr,
                         i => i);
@@ -127,7 +116,7 @@ namespace BooksAndPubs
 #if true
                 // this is what Cesar Alvarez seems to be describing
                 // in his blog post. however, the results are nowhere close
-                // to what he has published.
+                // to what he  published.
                 var top2 = rank3
                     .OrderBy(i => i.Value.rank)
                     .Take(2)
@@ -149,14 +138,14 @@ namespace BooksAndPubs
 #endif
 
                 //----- assign weights
-                var weights = _universe
+                var weights = universe
                     .ToDictionary(
-                        i => i,
-                        i => top2.ContainsKey(i)
-                            ? (i.Close[0] > i.Close[252] ? 0.5 : 0.0)
+                        ds => ds.Instrument,
+                        ds => top2.ContainsKey(ds.Instrument)
+                            ? (ds.Instrument.Close[0] > ds.Instrument.Close[252] ? 0.5 : 0.0)
                             : 0.0);
 
-                weights[_safe_instrument] = 1.0 - weights.Sum(i => i.Value);
+                weights[safeInstrument.Instrument] = 1.0 - weights.Sum(i => i.Value);
 
                 //----- trade instruments
                 if (SimTime[0].Month != SimTime[1].Month)
@@ -172,12 +161,12 @@ namespace BooksAndPubs
                 _plotter.SelectChart(Name, "Date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot(Name, NetAssetValue[0]);
-                _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
+                _plotter.Plot(benchmark.Instrument.Name, benchmark.Instrument.Close[0]);
 
                 _plotter.SelectChart("Strategy Positions", "Date");
                 _plotter.SetX(SimTime[0]);
-                foreach (var i in _universe)
-                    _plotter.Plot(i.Symbol, i.Position * i.Close[0] / NetAssetValue[0]);
+                foreach (var ds in universe)
+                    _plotter.Plot(ds.Instrument.Symbol, ds.Instrument.Position * ds.Instrument.Close[0] / NetAssetValue[0]);
             }
         }
 

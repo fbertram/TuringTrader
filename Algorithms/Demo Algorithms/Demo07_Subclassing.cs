@@ -38,14 +38,7 @@ namespace Demos
         private static readonly string SPX = "$SPX";
         private Plotter _plotter = new Plotter();
 
-        //public override string Name => "Demo 07 child algorithm"; // not supported by dynamic compiler, yet
-        /*public override string Name
-        {
-            get
-            {
-                return "Demo 07 child algorithm";
-            }
-        }*/
+        public override string Name => "Demo 07: SPX/10";
 
         public override void Run()
         {

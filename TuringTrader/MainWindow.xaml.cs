@@ -259,7 +259,15 @@ namespace TuringTrader
         private void LoadMostRecentAlgorithm()
         {
             string mostRecentAlgorithm = GlobalSettings.MostRecentAlgorithm;
-            SelectAlgo(mostRecentAlgorithm);
+
+            try
+            {
+                SelectAlgo(mostRecentAlgorithm);
+            }
+            catch(Exception e)
+            {
+                Output.WriteLine("Failed to instantiate {0}", mostRecentAlgorithm);
+            }
         }
         private void UpdateParameterDisplay()
         {

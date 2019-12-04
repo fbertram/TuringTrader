@@ -304,9 +304,7 @@ namespace TuringTrader
             foreach (var row in chartData)
             {
                 object curX = row.First().Value;
-
-                if (prevX == null)
-                    prevX = curX;
+                prevX = prevX ?? curX;
 
                 // note how we cast everything to double here,
                 // unless it is DateTime:
@@ -320,6 +318,8 @@ namespace TuringTrader
                     if ((double)curX < (double)prevX)
                         return true;
                 }
+
+                prevX = curX;
             }
 
             return false;
@@ -396,6 +396,20 @@ namespace TuringTrader
         {
             get;
             set;
+        }
+        #endregion
+        #region public string PlotTitle
+        private string _plotTitle = null;
+        public string PlotTitle
+        {
+            set
+            {
+                _plotTitle = value;
+            }
+            get
+            {
+                return _plotTitle ?? PlotData.Keys.First();
+            }
         }
         #endregion
         #region public virtual IEnumerable<string> AvailableCharts

@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		DocFX\articles\overview\Versions.md = DocFX\articles\overview\Versions.md
 	EndProjectSection
 EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "TuringTrader.VBA", "TuringTrader.VBA\TuringTrader.VBA.vbproj", "{5B44C46D-B76E-4439-876C-6EF4898CCA26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -45,6 +47,10 @@ Global
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Debug|x64.Build.0 = Debug|x64
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.ActiveCfg = Release|x64
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.Build.0 = Release|x64
+		{5B44C46D-B76E-4439-876C-6EF4898CCA26}.Debug|x64.ActiveCfg = Debug|x64
+		{5B44C46D-B76E-4439-876C-6EF4898CCA26}.Debug|x64.Build.0 = Debug|x64
+		{5B44C46D-B76E-4439-876C-6EF4898CCA26}.Release|x64.ActiveCfg = Release|x64
+		{5B44C46D-B76E-4439-876C-6EF4898CCA26}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

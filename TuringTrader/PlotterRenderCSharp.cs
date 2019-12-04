@@ -77,6 +77,7 @@ namespace TuringTrader
 
                 ReportTemplate template = (ReportTemplate)Activator.CreateInstance(templateType);
                 template.PlotData = plotter.AllData;
+                template.PlotTitle = plotter.Title;
 
                 //----- open dialog
                 var report = new Report(template);

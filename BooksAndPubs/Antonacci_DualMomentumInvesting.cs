@@ -26,129 +26,140 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
 {
-    public class Antonacci_DualMomentumInvesting : Algorithm
+    public abstract class Antonacci_DualMomentumInvesting_Core : SubclassableAlgorithm
     {
-        public override string Name => "Dual Momentum Strategy"; 
+        public override string Name => "Antonacci's Dual Momentum";
 
-        #region internal data
-        private readonly double INITIAL_FUNDS = 100000;
-        private readonly string BENCHMARK = "@60_40";
-        private Instrument _benchmark = null;
-        private Plotter _plotter = new Plotter();
-        #endregion
-        #region instruments
-        private static readonly HashSet<HashSet<string>> _assetClasses = new HashSet<HashSet<string>>
+        #region inputs
+        protected class AssetClass
         {
-            //--- equity
-            new HashSet<string> {
-                "VTI",   // Vanguard Total Stock Market Index ETF
-                "VEU",   // Vanguard FTSE All World ex US ETF
-                // could use SPY/ EFA here
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
-            },
-            //--- credit
-            new HashSet<string> {
-                "HYG",   // iShares iBoxx High Yield Corporate Bond ETF
-                //"CIU.ETF" => changed to IGIB in 06/2018
-                "IGIB",  // iShares Intermediate-Term Corporate Bond ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
-            },
-            //--- real estate
-            new HashSet<string> {
-                "VNQ",   // Vanguard Real Estate Index ETF
-                "REM",   // iShares Mortgage Real Estate ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
-            },
-            //--- economic stress
-            new HashSet<string> {
-                "GLD",   // SPDR Gold Shares ETF
-                "TLT",   // iShares 20+ Year Treasury Bond ETF
-                "SHY",   // iShares 1-3 Year Treasury Bond ETF
-            },
-        };
+            public double weight = 1.0;
+            public bool setSafeInstrument = false;
+            public HashSet<string> assets;
+        }
+        /// <summary>
+        /// hash set of asset classes
+        /// </summary>
+        protected abstract HashSet<AssetClass> ASSET_CLASSES { get; }
+        /// <summary>
+        /// benchmark to measure absolute momentum
+        /// </summary>
+        protected virtual string ABS_MOMENTUM => Assets.BONDS_US_TREAS_3M; // BIL - 1 to 3-Months U.S. Treasury Bills
+        /// <summary>
+        /// safe instrument
+        /// </summary>
+        protected virtual string SAFE_INSTR => Assets.BONDS_US_TOTAL; // AGG - Aggregate Bond Market
+        /// <summary>
+        /// charting benchmark
+        /// </summary>
+        protected virtual string BENCHMARK => Assets.PORTF_60_40; // 60/40 Portfolio
+        /// <summary>
+        /// momentum calculation
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        protected virtual double MOMENTUM(Instrument i) => i.Close[0] / i.Close[252] - 1.0;
+        #endregion
+        #region internal data
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
+        #endregion
+        #region ctor
+        public Antonacci_DualMomentumInvesting_Core()
+        {
+            _plotter = new Plotter(this);
+        }
         #endregion
 
         #region public override void Run()
         public override void Run()
         {
-            //----- initialization
+            //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
 
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
+
+            // assets we can trade
+            List<string> assets = ASSET_CLASSES
+                .SelectMany(c => c.assets)
+                .Distinct()
+                .Where(nick => nick != ABS_MOMENTUM)
+                .ToList();
+            assets.Add(SAFE_INSTR);
+
+            AddDataSources(assets);
+            AddDataSource(ABS_MOMENTUM);
             AddDataSource(BENCHMARK);
-            foreach (HashSet<string> assetClass in _assetClasses)
-                foreach (string nick in assetClass)
-                    AddDataSource(nick);
 
-            Deposit(INITIAL_FUNDS);
-            CommissionPerShare = 0.015; // it is unclear, if the book considers commissions
+            double totalWeights = ASSET_CLASSES.Sum(a => a.weight);
 
-            //----- simulation loop
+            //========== simulation loop ==========
 
             foreach (DateTime simTime in SimTimes)
             {
                 // evaluate momentum for all known instruments
-                // it is not 100% clear, how Antonacci is weighting
-                // the 3 individual momentums
                 Dictionary<Instrument, double> instrumentMomentum = Instruments
-                    .ToDictionary(i => i,
-                        i => 0.3333
-                            * (4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                            + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                            + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
+                    .ToDictionary(i => i, i => MOMENTUM(i));
 
                 // skip if there are any missing instruments
-                // we want to make sure our strategy has all instruments available
-                bool instrumentsMissing = _assetClasses
-                    .SelectMany(c => c)
-                    .Distinct()
-                    .Where(n => Instruments.Where(i => i.Nickname == n).Count() == 0)
-                    .Count() > 0;
-
-                if (instrumentsMissing)
+                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK) || !HasInstrument(ABS_MOMENTUM))
                     continue;
 
-                // create empty structure for instrument weights
-                Dictionary<Instrument, double> instrumentWeights = Instruments
-                    .ToDictionary(i => i, i => 0.0);
-
-                // loop through all asset classes
-                foreach (HashSet<string> assetClass in _assetClasses)
-                {
-                    List<Instrument> assetClassInstruments = assetClass
-                        .Select(n => FindInstrument(n))
-                        .ToList();
-
-                    // find the instrument with the highest momentum
-                    // in each asset class
-                    var bestInstrument = assetClassInstruments
-                        .OrderByDescending(i => instrumentMomentum[i])
-                        .Take(1)
-                        .First();
-
-                    // sum up the weights (because the safe instrument is duplicated)
-                    instrumentWeights[bestInstrument] += 1.0 / _assetClasses.Count;
-                }
-
                 // execute trades once per month
+                // CAUTION: do not calculate indicators within this block!
                 if (SimTime[0].Month != SimTime[1].Month)
                 {
-                    foreach (var instrumentWeight in instrumentWeights)
-                    {
-                        int targetShares = (int)Math.Floor(instrumentWeight.Value * NetAssetValue[0] / instrumentWeight.Key.Close[0]);
-                        int currentShares = instrumentWeight.Key.Position;
+                    // create empty structure for instrument weights
+                    Dictionary<Instrument, double> instrumentWeights = Instruments
+                    .ToDictionary(i => i, i => 0.0);
 
-                        Order newOrder = instrumentWeight.Key.Trade(targetShares - currentShares);
+                    // loop through all asset classes, and find the top-ranked one
+                    Instrument safeInstrument = FindInstrument(SAFE_INSTR);
+                    foreach (AssetClass assetClass in ASSET_CLASSES)
+                    {
+                        // find the instrument with the highest momentum
+                        // in each asset class
+                        var bestInstrument = assetClass.assets
+                            .Select(nick =>FindInstrument(nick))
+                            .OrderByDescending(i => instrumentMomentum[i])
+                            .Take(1)
+                            .First();
+
+                        // sum up the weights (because safe instrument is duplicated)
+                        instrumentWeights[bestInstrument] += assetClass.weight / totalWeights;
+
+                        if (assetClass.setSafeInstrument)
+                            safeInstrument = bestInstrument;
+                    }
+
+                    // if momentum of any instrument drops below that of a T-Bill,
+                    // we use the safe instrument instead
+                    // therefore, we swap T-Bills for the safe instrument:
+                    double pcntTbill = instrumentWeights[FindInstrument(ABS_MOMENTUM)];
+                    instrumentWeights[FindInstrument(ABS_MOMENTUM)] = 0.0;
+                    instrumentWeights[safeInstrument] += pcntTbill;
+
+                    // submit orders
+                    _alloc.LastUpdate = SimTime[0];
+                    foreach (var nick in assets)
+                    {
+                        var asset = FindInstrument(nick);
+                        _alloc.Allocation[asset] = instrumentWeights[asset];
+
+                        int targetShares = (int)Math.Floor(instrumentWeights[asset] * NetAssetValue[0] / asset.Close[0]);
+                        int currentShares = asset.Position;
+                        Order newOrder = asset.Trade(targetShares - currentShares);
 
                         if (newOrder != null)
                         {
@@ -159,35 +170,29 @@ namespace TuringTrader.BooksAndPubs
                     }
                 }
 
-                // create plots on Sheet 1
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
-
-                if (TradingDays > 0)
+                // plotter output
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    _plotter.SelectChart(Name, "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Symbol, _benchmark.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    _plotter.AddStrategyHoldings(this, assets.Select(nick => FindInstrument(nick)));
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 
-            //----- post processing
+            //========== post processing ==========
 
-            // create trading log on Sheet 2
-            _plotter.SelectChart("Strategy Trades", "date");
-            foreach (LogEntry entry in Log)
+            if (!IsOptimizing)
             {
-                _plotter.SetX(entry.BarOfExecution.Time);
-                _plotter.Plot("action", entry.Action);
-                _plotter.Plot("type", entry.InstrumentType);
-                _plotter.Plot("instr", entry.Symbol);
-                _plotter.Plot("qty", entry.OrderTicket.Quantity);
-                _plotter.Plot("fill", entry.FillPrice);
-                _plotter.Plot("gross", -entry.OrderTicket.Quantity * entry.FillPrice);
-                _plotter.Plot("commission", -entry.Commission);
-                _plotter.Plot("net", -entry.OrderTicket.Quantity * entry.FillPrice - entry.Commission);
-                _plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                //_plotter.AddParameters(this);
             }
+
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -197,6 +202,191 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
     }
+
+    #region U.S. Stocks w/ Absolute Momentum
+    public class Antonacci_USStocksWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's U.S. Stocks w/ Absolute Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 1.0,
+                assets = new HashSet<string> {
+                    Assets.STOCKS_US_LG_CAP,
+                    ABS_MOMENTUM,
+                }
+            },
+        };
+        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
+    }
+    #endregion
+    #region Global Equities Momentum
+    public class Antonacci_GlobalEquitiesMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Global Equities Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 1.0,
+                assets = new HashSet<string> {
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+        protected override string BENCHMARK => Assets.PORTF_60_40;
+    }
+    #endregion
+    #region Global Balanced Momentum
+    public class Antonacci_GlobalBalancedMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Global Balanced Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 0.7,
+                assets = new HashSet<string> {
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    ABS_MOMENTUM,
+                },
+            },
+            new AssetClass
+            {
+                weight = 0.3,
+                setSafeInstrument = true, // use this group as safe instrument
+                assets = new HashSet<string> {
+                    Assets.BONDS_US_TREAS_30Y,
+                    Assets.BONDS_WRLD_TREAS,
+                    Assets.BONDS_US_CORP_JUNK,
+                    ABS_MOMENTUM,
+                },
+            }
+        };
+    }
+    #endregion
+    #region Parity Portfolio w/ Absolute Momentum
+    public class Antonacci_ParityPortfolioWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Parity Portfolio w/ Absolute Momentum";
+        protected override string BENCHMARK => Assets.PORTF_60_40;
+
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            //--- equity
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    Assets.STOCKS_US_LG_CAP,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- treasury bond
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    Assets.BONDS_US_TREAS_30Y,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- reit
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    Assets.REIT_US,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- credit bonds
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    Assets.BONDS_US_CORP_10Y,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- gold
+            new AssetClass {
+                weight = 0.2,
+                assets = new HashSet<string> {
+                    Assets.GOLD,
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+    }
+    #endregion
+    #region Dual Momentum Sector Rotation
+    public class Antonacci_DualMomentumSectorRotation : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Dual Momentum Sector Rotation";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            // note that we removed those ETFs with short history
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_MATERIALS,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_COMMUNICATION,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_ENERGY,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_FINANCIAL,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_INDUSTRIAL,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_TECHNOLOGY,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_STAPLES,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_REAL_ESTATE, ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_UTILITIES,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_HEALTH_CARE,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_DISCRETIONARY,  ABS_MOMENTUM } },
+        };
+        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
+    }
+    #endregion
+    #region Dual Momentum w/ 4 asset pairs - as seen on Scott's Investments
+    public class Antonacci_4PairsDualMomentum: Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Antonacci's Dual Momentum w/ 4 Pairs";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            //--- equity
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    Assets.STOCKS_US_LG_CAP,
+                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- credit
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    Assets.BONDS_US_CORP_JUNK,
+                    Assets.BONDS_US_CORP_10Y,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- real estate
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    Assets.REIT_US,
+                    Assets.MREIT_US,
+                    ABS_MOMENTUM,
+                },
+            },
+            //--- economic stress
+            new AssetClass {
+                weight = 0.25,
+                assets = new HashSet<string> {
+                    Assets.GOLD,
+                    Assets.BONDS_US_TREAS_30Y,
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+    }
+    #endregion
 }
 
 //==============================================================================

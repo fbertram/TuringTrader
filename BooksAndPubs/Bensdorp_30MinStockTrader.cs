@@ -22,6 +22,11 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// USE_BENSDORPS_RANGE
+// defined: match simulation range to Bensdorp's book
+// undefined: simulate from 2007 to last week
+//#define USE_BENSDORPS_RANGE
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -31,17 +36,16 @@ using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
-namespace BooksAndPubs
+namespace TuringTrader.BooksAndPubs
 {
     //---------- core strategies
-    #region Weekly Rotation Core
-    public abstract class Bensdorp_30MinStockTrader_WR_Core : Algorithm
+    #region Weekly Rotation
+    public class Bensdorp_30MinStockTrader_WR : SubclassableAlgorithm
     {
-        public override string Name => "WR Strategy";
+        public override string Name => "Bensdorp's Weekly Rotation";
 
         #region inputs
-        protected abstract List<string> UNIVERSE
-        { get; }
+        protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
 
         [OptimizerParam(0, 100, 5)]
         public virtual int MAX_RSI { get; set; } = 50;
@@ -50,26 +54,40 @@ namespace BooksAndPubs
         public virtual int MAX_ENTRIES { get; set; } = 10;
         #endregion
         #region internal data
-        private static readonly string BENCHMARK = "$SPX";
-        private static readonly double INITIAL_CAPITAL = 1e6;
+        private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
 
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
+        private AllocationTracker _alloc = new AllocationTracker();
         private Instrument _benchmark;
         #endregion
+        #region ctor
+        public Bensdorp_30MinStockTrader_WR()
+        {
+            _plotter = new Plotter(this);
+        }
+        #endregion
+
         #region public override void Run()
         public override void Run()
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/2008", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+#if USE_BENSDORPS_RANGE
+            // matching range in the book
+            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
+            EndTime = DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
+#else
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+#endif
 
-            foreach (var n in UNIVERSE)
-                AddDataSource(n);
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
+
+            AddDataSources(UNIVERSE.Constituents);
             AddDataSource(BENCHMARK);
-
-            Deposit(INITIAL_CAPITAL);
-            CommissionPerShare = 0.015;
 
             //========== simulation loop ==========
 
@@ -79,14 +97,14 @@ namespace BooksAndPubs
 
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 var universe = Instruments
-                    .Where(i => i != _benchmark)
-                     .ToList();
+                    .Where(i => i.IsConstituent(UNIVERSE))
+                    .ToList();
 
                 //----- calculate indicators
 
-                // make sure to calculate indicators for the 
-                // full universe on every single bar
-                var indicators = universe
+                // calculate indicators for all known instruments,
+                // as they might enter the universe any time
+                var indicators = Instruments
                     .ToDictionary(
                         i => i,
                         i => new
@@ -105,17 +123,46 @@ namespace BooksAndPubs
 
                 if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek) // open positions on Monday
                 {
-                    // sort candidates by ROC to find entries
-                    var entries = filtered
+                    // sort by momentum
+                    var ranked = universe
+                        .Where(i => _benchmark.Close[0] > smaBand[0])
                         .OrderByDescending(i => indicators[i].roc[0])
+                        .ToList();
+
+                    // enter: top-ranked momentum and low RSI
+                    var entry = ranked
+                        .Where(i => indicators[i].rsi[0] < MAX_RSI)
                         .Take(MAX_ENTRIES)
                         .ToList();
 
-                    foreach (var i in universe)
+                    // hold: top-ranked momentum
+                    var hold = ranked
+                        .Take(MAX_ENTRIES)
+                        .ToList();
+
+                    // keep those we have identified as 'hold'
+                    var nextHoldings = Instruments
+                        .Where(i => i.Position != 0 
+                            && hold.Contains(i))
+                        .ToList();
+
+                    // fill up, until we reach MAX_ENTRIES
+                    nextHoldings = nextHoldings
+                        //.Concat(entry.Take(MAX_ENTRIES - nextHoldings.Count))
+                        .Concat(entry.Where(i => !nextHoldings.Contains(i)).Take(MAX_ENTRIES - nextHoldings.Count))
+                        .ToList();
+
+                    _alloc.LastUpdate = SimTime[0];
+                    _alloc.Allocation.Clear();
+                    foreach (var i in Instruments)
                     {
-                        int targetShares = entries.Contains(i)
-                            ? (int)Math.Floor(NetAssetValue[0] / MAX_ENTRIES / i.Close[0])
-                            : 0;
+                        double targetPercentage = nextHoldings.Contains(i)
+                            ? 1.0 / MAX_ENTRIES
+                            : 0.0;
+                        int targetShares = (int)Math.Floor(NetAssetValue[0] * targetPercentage / i.Close[0]);
+
+                        if (targetPercentage != 0.0)
+                            _alloc.Allocation[i] = targetPercentage;
 
                         i.Trade(targetShares - i.Position);
                     }
@@ -123,51 +170,33 @@ namespace BooksAndPubs
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // plot to chart
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    //_plotter.AddStrategyHoldings(this, universe);
 
-                    // additional indicators
-                    _plotter.SelectChart("Strategy Leverage", "date");
+                    // plot strategy exposure
+                    _plotter.SelectChart("Exposure Chart", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+
+                    if (IsSubclassed) AddSubclassedBar();
                 }
             }
 
             //========== post processing ==========
 
-            //----- print position log, grouped as LIFO
-
             if (!IsOptimizing)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (trade.Quantity > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
         #endregion
         #region public override void Report()
@@ -178,72 +207,72 @@ namespace BooksAndPubs
         #endregion
     }
     #endregion
-    #region Mean Reversion Core
-    public abstract class Bensdorp_30MinStockTrader_MRx_Core : Algorithm
+    #region Mean Reversion
+    public abstract class Bensdorp_30MinStockTrader_MRx : Algorithm
     {
         public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
         #region inputs
-        protected abstract List<string> UNIVERSE
-        { get; }
+        protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
 
-        public abstract int ENTRY_DIR
-        { get; set; }
+        public abstract int ENTRY_DIR { get; set; }
 
-        public abstract int SMA_DAYS
-        { get; set; }
+        public abstract int SMA_DAYS { get; set; }
 
         [OptimizerParam(0, 100, 5)]
-        public abstract int MIN_ADX
-        { get; set; }
+        public abstract int MIN_ADX { get; set; }
 
         [OptimizerParam(200, 500, 50)]
-        public abstract int MIN_ATR
-        { get; set; }
+        public abstract int MIN_ATR { get; set; }
 
         [OptimizerParam(0, 100, 5)]
-        public abstract int MINMAX_RSI
-        { get; set; }
+        public abstract int MINMAX_RSI { get; set; }
 
         [OptimizerParam(200, 500, 50)]
-        public abstract int STOP_LOSS
-        { get; set; }
+        public abstract int STOP_LOSS { get; set; }
 
         [OptimizerParam(200, 500, 50)]
-        public abstract int PROFIT_TARGET
-        { get; set; }
+        public abstract int PROFIT_TARGET { get; set; }
 
-        public abstract int MAX_CAP
-        { get; set; }
+        public abstract int MAX_CAP { get; set; }
 
-        public abstract int MAX_RISK
-        { get; set; }
+        public abstract int MAX_RISK { get; set; }
 
         [OptimizerParam(1, 10, 1)]
-        public abstract int MAX_ENTRIES
-        { get; set; }
+        public abstract int MAX_ENTRIES { get; set; }
 
-        public abstract int MAX_HOLD_DAYS
-        { get; set; }
+        public abstract int MAX_HOLD_DAYS { get; set; }
         #endregion
         #region internal data
         private static readonly string BENCHMARK = "$SPX";
         private static readonly double INITIAL_CAPITAL = 1e6;
 
-        private Plotter _plotter = new Plotter();
+        private Plotter _plotter;
         private Instrument _benchmark;
         #endregion
-
+        #region ctor
+        public Bensdorp_30MinStockTrader_MRx()
+        {
+            _plotter = new Plotter(this);
+        }
+        #endregion
         #region public override void Run()
         public override void Run()
         {
             //========== initialization ==========
 
-            StartTime = DateTime.Parse("01/01/2008");
-            EndTime = DateTime.Now.Date - TimeSpan.FromDays(5);
+#if USE_BENSDORPS_RANGE
+            // matching range in the book
+            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
+            EndTime = DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
+#else
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME;
+#endif
 
-            foreach (var n in UNIVERSE)
-                AddDataSource(n);
+            AddDataSources(UNIVERSE.Constituents);
             AddDataSource(BENCHMARK);
 
             Deposit(INITIAL_CAPITAL);
@@ -268,14 +297,15 @@ namespace BooksAndPubs
 
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 var universe = Instruments
-                    .Where(i => i != _benchmark)
-                     .ToList();
+                    .Where(i => i.IsConstituent(UNIVERSE))
+                    .ToList();
 
                 //----- calculate indicators
 
-                // make sure to calculate indicators for the 
-                // full universe on every single bar
-                var indicators = universe
+                // make sure to calculate indicators for all
+                // known instruments, as they may enter the universe
+                // at any time
+                var indicators = Instruments
                     .ToDictionary(
                         i => i,
                         i => new
@@ -438,7 +468,7 @@ namespace BooksAndPubs
             if (!IsOptimizing)
                 Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
         }
-        #endregion
+#       endregion
         #region public override void Report()
         public override void Report()
         {
@@ -447,7 +477,7 @@ namespace BooksAndPubs
         #endregion
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRL_Core : Bensdorp_30MinStockTrader_MRx_Core
+    public abstract class Bensdorp_30MinStockTrader_MRL : Bensdorp_30MinStockTrader_MRx
     {
         public override int ENTRY_DIR { get; set; } = 1;   // 1 = long
         public override int SMA_DAYS { get; set; } = 150; // 150 days
@@ -462,7 +492,7 @@ namespace BooksAndPubs
         public override int MAX_HOLD_DAYS { get; set; } = 4;   // 4 days
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRS_Core : Bensdorp_30MinStockTrader_MRx_Core
+    public abstract class Bensdorp_30MinStockTrader_MRS : Bensdorp_30MinStockTrader_MRx
     {
         public override int ENTRY_DIR { get; set; } = -1;  // -1 = short
         public override int SMA_DAYS { get; set; } = 150; // 150 days
@@ -475,279 +505,6 @@ namespace BooksAndPubs
         public override int MAX_RISK { get; set; } = 20;  // 20%
         public override int MAX_ENTRIES { get; set; } = 10;  // 10
         public override int MAX_HOLD_DAYS { get; set; } = 2;   // 2 days
-    }
-    #endregion
-
-    //---------- universes
-    #region universes
-    partial class Universes
-    {
-        public static List<string> NDX = new List<string>()
-        {
-            // Trade all US stocks, but filter out 
-            // * ETFs; 
-            // * stocks < $10; and 
-            // * average daily volume< 500,000 over last 50 days.
-
-            // here, we use Nasdaq 100, as of 03/21/2019
-            "AAL",
-            "AAPL",
-            "ADBE",
-            "ADI",
-            "ADP",
-            "ADSK",
-            "ALGN",
-            "ALXN",
-            "AMAT",
-            "AMD",
-            "AMGN",
-            "AMZN",
-            "ASML",
-            "ATVI",
-            "AVGO",
-            "BIDU",
-            "BIIB",
-            "BKNG",
-            "BMRN",
-            "CDNS",
-            "CELG",
-            "CERN",
-            "CHKP",
-            "CHTR",
-            "CMCSA",
-            "COST",
-            "CSCO",
-            "CSX",
-            "CTAS",
-            "CTRP",
-            "CTSH",
-            "CTXS",
-            "DLTR",
-            "EA",
-            "EBAY",
-            "EXPE",
-            "FAST",
-            "FB",
-            "FISV",
-            "GILD",
-            "GOOG",
-            "GOOGL",
-            "HAS",
-            "HSIC",
-            "IDXX",
-            "ILMN",
-            "INCY",
-            "INTC",
-            "INTU",
-            "ISRG",
-            "JBHT",
-            "JD",
-            "KHC",
-            "KLAC",
-            "LBTYA",
-            "LBTYK",
-            "LRCX",
-            "LULU",
-            "MAR",
-            "MCHP",
-            "MDLZ",
-            "MELI",
-            "MNST",
-            "MSFT",
-            "MU",
-            "MXIM",
-            "MYL",
-            "NFLX",
-            "NTAP",
-            "NTES",
-            "NVDA",
-            "NXPI",
-            "ORLY",
-            "PAYX",
-            "PCAR",
-            "PEP",
-            "PYPL",
-            "QCOM",
-            "REGN",
-            "ROST",
-            "SBUX",
-            "SIRI",
-            "SNPS",
-            "SWKS",
-            "SYMC",
-            //"TFCF", // delisted
-            //"TFCFA", // delisted
-            "TMUS",
-            "TSLA",
-            "TTWO",
-            "TXN",
-            "UAL",
-            "ULTA",
-            "VRSK",
-            "VRSN",
-            "VRTX",
-            "WBA",
-            "WDAY",
-            "WDC",
-            "WLTW",
-            "WYNN",
-            "XEL",
-            "XLNX",
-        };
-        public static List<string> OEX = new List<string>()
-        {
-            // Trade all US stocks, but filter out 
-            // * ETFs; 
-            // * stocks < $10; and 
-            // * average daily volume< 500,000 over last 50 days.
-
-            // here, we use S&P 100, as of 03/20/2019
-            "AAPL",
-            "ABBV",
-            "ABT",
-            "ACN",
-            "ADBE",
-            "AGN",
-            "AIG",
-            "ALL",
-            "AMGN",
-            "AMZN",
-            "AXP",
-            "BA",
-            "BAC",
-            "BIIB",
-            "BK",
-            "BKNG",
-            "BLK",
-            "BMY",
-            "BRK.B",
-            "C",
-            "CAT",
-            "CELG",
-            "CHTR",
-            "CL",
-            "CMCSA",
-            "COF",
-            "COP",
-            "COST",
-            "CSCO",
-            "CVS",
-            "CVX",
-            "DHR",
-            "DIS",
-            "DUK",
-            //"DWDP",
-            "EMR",
-            "EXC",
-            "F",
-            "FB",
-            "FDX",
-            "GD",
-            "GE",
-            "GILD",
-            "GM",
-            "GOOG",
-            "GOOGL",
-            "GS",
-            "HAL",
-            "HD",
-            "HON",
-            "IBM",
-            "INTC",
-            "JNJ",
-            "JPM",
-            "KHC",
-            "KMI",
-            "KO",
-            "LLY",
-            "LMT",
-            "LOW",
-            "MA",
-            "MCD",
-            "MDLZ",
-            "MDT",
-            "MET",
-            "MMM",
-            "MO",
-            "MRK",
-            "MS",
-            "MSFT",
-            "NEE",
-            "NFLX",
-            "NKE",
-            "NVDA",
-            "ORCL",
-            "OXY",
-            "PEP",
-            "PFE",
-            "PG",
-            "PM",
-            "PYPL",
-            "QCOM",
-            "RTN",
-            "SBUX",
-            "SLB",
-            "SO",
-            "SPG",
-            "T",
-            "TGT",
-            "TXN",
-            "UNH",
-            "UNP",
-            "UPS",
-            "USB",
-            "UTX",
-            "V",
-            "VZ",
-            "WBA",
-            "WFC",
-            "WMT",
-            "XOM",
-        };
-    }
-    #endregion
-
-    //---------- strategies
-    #region WR (NDX + OEX)
-    public class Bensdorp_30MinStockTrader_WR_NDX_OEX : Bensdorp_30MinStockTrader_WR_Core
-    {
-        protected override List<string> UNIVERSE
-        {
-            get
-            {
-                return Universes.NDX
-                    .Concat(Universes.OEX)
-                    .ToList();
-            }
-        }
-    }
-    #endregion
-    #region MRL (NDX + OEX)
-    public class Bensdorp_30MinStockTrader_MRL_NDX_OEX : Bensdorp_30MinStockTrader_MRL_Core
-    {
-        protected override List<string> UNIVERSE
-        {
-            get
-            {
-                return Universes.NDX
-                    .Concat(Universes.OEX)
-                    .ToList();
-            }
-        }
-    }
-    #endregion
-    #region MRS (NDX + OEX)
-    public class Bensdorp_30MinStockTrader_MRS_NDX_OEX : Bensdorp_30MinStockTrader_MRS_Core
-    {
-        protected override List<string> UNIVERSE
-        {
-            get
-            {
-                return Universes.NDX
-                    .Concat(Universes.OEX)
-                    .ToList();
-            }
-        }
     }
     #endregion
 }

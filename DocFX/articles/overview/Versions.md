@@ -11,17 +11,25 @@
     - avoid exceptions to speed up FRED load
     - add splice data source
     - add universe functionality
+	- AddDataSource returns newly created DataSource
   - native reports
     - improve reports rendering: nicer plot colors, improved table layout, add feature to save as PNG and CSV
     - add scatter plots to SimpleChart and SimpleReport
     - improve SimpleReport template: improved metrics, annual return bar chart, and Monte-Carlo simulation
     - fix issue where SimpleReport did not show metrics
+    - add ability to render stacked chart for target allocation
   - documentation
     - add QSG article for SimpleReport
   - build environment
     - update to MSVC 16.3.0 Preview 2.0
     - add single-click build script
     - make sure XML documentation is installed for TuringTrader.Simulator.dll
+  - miscellaneous
+	  - optional feature to pass algorithm parent into Plotter object
+	- cleanup of showcase strategies
+	  - closer track the original sources
+	  - simplify customization
+	  - standardize assets
 - 0.9
   - 0.9b3 - August 02, 2019
     - fix issues on systems using non-U.S. localizations
