@@ -2,6 +2,12 @@
 
 On this page, we have collected answers to frequently asked questions about TuringTrader. If we didn’t answer your question here, please [give us a holler](https://www.turingtrader.org/about/)!
 
+## Status
+
+### Is TuringTrader production quality?
+
+Pretty much. We have used TuringTrader to develop and test more than 100 algorithms, covering many different styles. We are using TuringTrader in production at [Bertram Solutions](http://www.bertram.solutions) and [TuringTrader.com](http://www.turingtrader.com). We have done consulting for a local hedge fund and simulated strategies for them, and we are working with other interested people around the world. Most important of all, we are fully committed to keep this going for the foreseeable future.
+
 ## Features
 
 ### Can TuringTrader run on intraday bars?
@@ -10,7 +16,7 @@ TuringTrader does not know about bar length. It can therefore run on any defined
 
 ### Can TuringTrader perform live trading?
 
-Yes, we actually use TuringTrader at Bertram Solutions to run all of our [model portfolios](https://www.bertram.solutions/investment-advice/model-portfolios/). However, TuringTrader’s model is different from what you’ve seen with other platforms, as the transition from backtest to live trading is performed explicitly: (1) Run a backtest from the past, all the way to today’s close. (2) Watch the *IsLastBar* flag, and transition to live when it’s set. (3) Pull the current account status and positions through the broker interface, and calculate orders based on the account, and the status of the backtest.
+Yes. We actually use TuringTrader at [Bertram Solutions](http://www.bertram.solutions/) to run all of our model portfolios. However, TuringTrader’s model is different from what you’ve seen with other platforms, as the transition from backtest to live trading is performed explicitly: (1) Run a backtest from the past, all the way to today’s close. (2) Watch the *IsLastBar* flag, and transition to live when it’s set. (3) Pull the current account status and positions through the broker interface, and calculate orders based on the account, and the status of the backtest.
 
 ### Does TuringTrader run on Linux or Mac?
 

@@ -17,6 +17,7 @@
     - add scatter plots to SimpleChart and SimpleReport
     - improve SimpleReport template: improved metrics, annual return bar chart, and Monte-Carlo simulation
     - fix issue where SimpleReport did not show metrics
+    - add ability to render stacked chart for target allocation
   - documentation
     - add QSG article for SimpleReport
   - build environment
@@ -24,8 +25,11 @@
     - add single-click build script
     - make sure XML documentation is installed for TuringTrader.Simulator.dll
   - miscellaneous
-    - optional feature to pass algorithm parent into Plotter object
+	  - optional feature to pass algorithm parent into Plotter object
 	- cleanup of showcase strategies
+	  - closer track the original sources
+	  - simplify customization
+	  - standardize assets
 - 0.9
   - 0.9b3 - August 02, 2019
     - fix issues on systems using non-U.S. localizations
