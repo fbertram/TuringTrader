@@ -97,7 +97,8 @@ namespace TuringTrader.Simulator
         /// <returns>next bar time</returns>
         static public DateTime NextSimTime(this SimulatorCore sim)
         {
-            DateTime nextBarTime = sim.SimTime[0];
+            DateTime currentBarTime = sim.SimTime[0];
+            DateTime nextBarTime = currentBarTime;
             do
             {
                 nextBarTime += TimeSpan.FromDays(1);
