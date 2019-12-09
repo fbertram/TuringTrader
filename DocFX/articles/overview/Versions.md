@@ -1,5 +1,8 @@
 # Version History
 
+- 0.11
+  - simulator
+    - add holiday calendar, to provide accurate NextSimTime on last bar
 - 0.10
   - loader
     - allow loading algorithms from entry-assembly
