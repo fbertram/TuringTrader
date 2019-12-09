@@ -457,6 +457,10 @@ namespace TuringTrader.Simulator
                     // update IsLastBar
                     IsLastBar = hasData.Select(x => x.Value ? 1 : 0).Sum() == 0;
 
+                    // set NextSimTime according to holiday schedule
+                    if (IsLastBar)
+                        NextSimTime = this.NextSimTime();
+
                     // execute orders
                     foreach (Order order in PendingOrders)
                         ExecOrder(order);

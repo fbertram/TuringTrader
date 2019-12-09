@@ -99,7 +99,7 @@ namespace TuringTrader.BooksAndPubs
                     continue;
 
                 // trigger rebalancing
-                if (SimTime[0].Month != SimTime[1].Month) // monthly
+                if (SimTime[0].Month != NextSimTime.Month) // monthly
                 {
                     // calculate covariance
                     var covar = new PortfolioSupport.Covariance(Instruments, 12, 21); // 12 monthly bars

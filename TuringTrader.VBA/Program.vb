@@ -41,6 +41,8 @@ Module Program
 
         Public Overrides Sub Run()
 
+            Console.WriteLine("TuringTrader VisualBasic Demonstration")
+
             '===== algorithm initialization
 
             ' the plotter object is basically a thin wrapper around
@@ -72,12 +74,23 @@ Module Program
                 Dim sma100 As Double
                 sma100 = ds.Instrument.Close.SMA(100).Item(0)
 
-                ' trade logic
+                ' determine target shares and order size
+                Dim ts As Integer
                 If sma50 > sma100 Then
-                    Dim ts As Integer
                     ts = Math.Floor(NetAssetValue.Item(0) / ds.Instrument.Close.Item(0))
-                    ds.Instrument.Trade(ts - ds.Instrument.Position)
+                Else
+                    ts = 0
                 End If
+                Dim os As Integer
+                os = ts - ds.Instrument.Position
+
+                ' submit orders
+                If os > 0 Then
+                    Console.WriteLine(SimTime.Item(0) & ": buy " & os & " shares")
+                ElseIf os < 0 Then
+                    Console.WriteLine(SimTime.Item(0) & ": sell " & os & " shares")
+                End If
+                ds.Instrument.Trade(os)
 
                 ' add data to plotter object, so that we can visualize them later
                 _plotter.SelectChart(Name, "Date")
@@ -96,8 +109,7 @@ Module Program
             ' TuringTrader assumes that a strategy does not visualize its
             ' results immediately, but when this function is called
             ' this makes it simple to not have output during optimization
-            Console.WriteLine(Name)
-            Console.WriteLine(NetAssetValue.Item(0))
+            Console.WriteLine("Final NAV: " & NetAssetValue.Item(0))
         End Sub
     End Class
 

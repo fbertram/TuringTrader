@@ -103,7 +103,7 @@ namespace TuringTrader.BooksAndPubs
                         * Math.Abs(i.Position * i.Close[0] / NetAssetValue[0] - targetPercentage) / targetPercentage);
 
                 // rebalance once per month, and only if we need adjustments exceeding 20%
-                if (SimTime[0].Month != SimTime[1].Month
+                if (SimTime[0].Month != NextSimTime.Month
                     && maxOff > REBAL_TRIGGER)
                 {
                     _alloc.LastUpdate = SimTime[0];

@@ -118,7 +118,7 @@ namespace TuringTrader.BooksAndPubs
 
                 // execute trades once per month
                 // CAUTION: do not calculate indicators within this block!
-                if (SimTime[0].Month != SimTime[1].Month)
+                if (SimTime[0].Month != NextSimTime.Month)
                 {
                     // create empty structure for instrument weights
                     Dictionary<Instrument, double> instrumentWeights = Instruments

@@ -100,7 +100,7 @@ namespace TuringTrader.BooksAndPubs
 
                 // rebalance once per month
                 // CAUTION: no indicator calculations within this block!
-                if (SimTime[0].Month != SimTime[1].Month)
+                if (SimTime[0].Month != NextSimTime.Month)
                 {
                     // find T top risky assets
                     IEnumerable<Instrument> topInstruments = Instruments

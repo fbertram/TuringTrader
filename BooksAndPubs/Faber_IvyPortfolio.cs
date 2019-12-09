@@ -113,7 +113,7 @@ namespace TuringTrader.BooksAndPubs
                 }
 
                 // execute trades once per month
-                if (SimTime[0].Month != SimTime[1].Month)
+                if (SimTime[0].Month != NextSimTime.Month)
                 {
                     double totalWeight = ASSET_CLASSES
                         .Sum(a => a.weight);

@@ -543,10 +543,10 @@ namespace TuringTrader.BooksAndPubs
         new public int AGGRESSIVE_ON => 1;
 
         [OptimizerParam(10, 40, 5)]
-        public int ENTRY_MAX_RSI_LONG = 25;
+        public virtual int ENTRY_MAX_RSI_LONG { get; set; } = 25;
 
         [OptimizerParam(60, 80, 5)]
-        public int EXIT_MIN_RSI_LONG = 70;
+        public virtual int EXIT_MIN_RSI_LONG { get; set; } = 70;
 
         private Dictionary<Instrument, double> _entryPrices = new Dictionary<Instrument, double>();
         private Dictionary<Instrument, int> _numPositions = new Dictionary<Instrument, int>();
