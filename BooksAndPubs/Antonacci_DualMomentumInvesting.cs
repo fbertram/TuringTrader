@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
+using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs

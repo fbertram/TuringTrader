@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TuringTrader.BooksAndPubs;
 using TuringTrader.Simulator;
+using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs

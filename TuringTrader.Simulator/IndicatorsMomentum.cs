@@ -326,7 +326,7 @@ namespace TuringTrader.Indicators
 
         #region public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21)
         /// <summary>
-        /// Calculate simple momentum of time series, normalized to 1 bar.
+        /// Calculate simple logarithmic momentum of time series, normalized to 1 bar.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars for regression</param>

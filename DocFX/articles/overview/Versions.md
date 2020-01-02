@@ -3,6 +3,8 @@
 - 0.11
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
+  - data sources
+	- fix issue w/ splice data source using open price in all fields
 - 0.10
   - loader
     - allow loading algorithms from entry-assembly
