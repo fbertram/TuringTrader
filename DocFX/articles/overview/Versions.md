@@ -4,7 +4,10 @@
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
   - data sources
-	- fix issue w/ splice data source using open price in all fields
+    - fix issue w/ splice data source using open price in all fields
+  - showcase algorithms
+    - update algorithms from Bensdorp's 30-Minute Stock Trader to closer match the book
+	- add lazy portfolios
 - 0.10
   - loader
     - allow loading algorithms from entry-assembly

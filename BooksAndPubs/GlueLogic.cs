@@ -35,7 +35,7 @@ using System.Text;
 using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.BooksAndPubs
+namespace TuringTrader.Algorithms.Glue
 {
     #region global constants
     /// <summary>
@@ -60,6 +60,9 @@ namespace TuringTrader.BooksAndPubs
     {
 #if USE_NORGATE_UNIVERSE
         public static readonly Universe STOCKS_US_LG_CAP = Universe.New("$SPX");
+        public static readonly Universe STOCKS_US_TOP_100 = Universe.New("$OEX");
+        public static readonly Universe STOCKS_US_ALL = Universe.New("$RUA");
+        public static readonly Universe STOCKS_US_LG_MID_SMALL_CAP = Universe.New("$SP1500");
 #else
         #region test universe
         private class TestUniverse : Universe
@@ -294,6 +297,7 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         public static readonly Universe STOCKS_US_LG_CAP = new TestUniverse();
+        public static readonly Universe STOCKS_US_ALL = new TestUniverse();
 #endif
 
     }
@@ -324,7 +328,8 @@ namespace TuringTrader.BooksAndPubs
         //----- bonds
         public static readonly string BONDS_US_TOTAL = "splice:AGG,FUSGX";
         public static readonly string BONDS_US_TREAS_3M = "splice:BIL,PRTBX";
-        public static readonly string BONDS_US_TREAS_30Y = "TLT";  // long-term government bonds
+        public static readonly string BONDS_US_TREAS_10Y = "IEF"; //7-10yr 
+        public static readonly string BONDS_US_TREAS_30Y = "TLT";  // long-term (20+yr) government bonds
         public static readonly string BONDS_US_CORP_10Y = "IGIB"; // intermediate-term corporate bonds
         public static readonly string BONDS_US_CORP_JUNK = "HYG";
 
@@ -336,7 +341,10 @@ namespace TuringTrader.BooksAndPubs
 
         //----- commodities
         public static readonly string GOLD = "GLD"; // gold
+        public static readonly string COMMODITIES = "DBC"; // commodities
+
         //----- portfolios
+        public static readonly string PORTF_0 = "algorithm:ZeroReturn";
         public static readonly string PORTF_60_40 = "@60_40";
     }
     #endregion
@@ -510,6 +518,39 @@ namespace TuringTrader.BooksAndPubs
 
             return K25;
 #endif
+        }
+    }
+    #endregion
+
+    #region zero-return portfolio
+    public class ZeroReturn : SubclassableAlgorithm
+    {
+        public override string Name => "Zero Return";
+
+        private Plotter _plotter = null;
+        public ZeroReturn()
+        {
+            _plotter = new Plotter(this);
+        }
+        public override void Run()
+        {
+            StartTime = SubclassedStartTime ?? Globals.START_TIME;
+            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+
+            Deposit(100.0);
+
+            AddDataSource(Assets.STOCKS_US_LG_CAP); // just a dummy
+
+            foreach (var s in SimTimes)
+            {
+                _plotter.AddNavAndBenchmark(this, Instruments.FirstOrDefault());
+                AddSubclassedBar();
+            }
+        }
+
+        public override void Report()
+        {
+            _plotter.OpenWith("SimpleReport");
         }
     }
     #endregion

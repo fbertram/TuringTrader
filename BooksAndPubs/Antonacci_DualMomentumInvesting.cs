@@ -84,7 +84,7 @@ namespace TuringTrader.BooksAndPubs
         {
             //========== initialization ==========
 
-            WarmupStartTime = Globals.WARMUP_START_TIME;
+            //WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
@@ -177,7 +177,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, assets.Select(nick => FindInstrument(nick)));
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsSubclassed) 
+                        AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
                 }
             }
 
@@ -386,6 +387,35 @@ namespace TuringTrader.BooksAndPubs
                 },
             },
         };
+    }
+    #endregion
+    #region Accelerated Dual Momentum - as seen on EngineeredPortfolio.com
+    // see simulation here: https://www.portfoliovisualizer.com/test-market-timing-model?s=y&coreSatellite=false&timingModel=6&startYear=1985&endYear=2018&initialAmount=10000&symbols=VFINX+VINEX&singleAbsoluteMomentum=false&volatilityTarget=9.0&downsideVolatility=false&outOfMarketAssetType=2&outOfMarketAsset=VUSTX&movingAverageSignal=1&movingAverageType=1&multipleTimingPeriods=true&periodWeighting=2&windowSize=1&windowSizeInDays=105&movingAverageType2=1&windowSize2=10&windowSizeInDays2=105&volatilityWindowSize=0&volatilityWindowSizeInDays=0&assetsToHold=1&allocationWeights=1&riskControl=false&riskWindowSize=10&riskWindowSizeInDays=0&rebalancePeriod=1&separateSignalAsset=false&tradeExecution=0&benchmark=VFINX&timingPeriods[0]=1&timingUnits[0]=2&timingWeights[0]=33&timingPeriods[1]=3&timingUnits[1]=2&timingWeights[1]=33&timingPeriods[2]=6&timingUnits[2]=2&timingWeights[2]=34&timingUnits[3]=2&timingWeights[3]=0&timingUnits[4]=2&timingWeights[4]=0&volatilityPeriodUnit=2&volatilityPeriodWeight=0
+    public class EngineeredPortfolio_AcceleratedDualMomentum : Antonacci_DualMomentumInvesting_Core
+    {
+        public override string Name => "Engineered Portfolio's Accelerated Dual Momentum";
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass
+            {
+                weight = 1.0,
+                assets = new HashSet<string> {
+                    "yahoo:VFINX",
+                    "yahoo:VINEX",
+                    ABS_MOMENTUM,
+                },
+            },
+        };
+        protected override string ABS_MOMENTUM => Assets.PORTF_0;
+        protected override string SAFE_INSTR => "yahoo:VUSTX";
+        //protected override string BENCHMARK => "yahoo:VFINX";
+        protected override double MOMENTUM(Instrument i)
+        {
+            var m1 = i.Close[0] / i.Close[21] - 1.0;
+            var m3 = i.Close[0] / i.Close[63] - 1.0;
+            var m6 = i.Close[0] / i.Close[126] - 1.0;
+            return 0.33 * m1 + 0.33 * m3 + 0.33 * m6;
+        }
     }
     #endregion
 }

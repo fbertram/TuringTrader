@@ -47,6 +47,7 @@ namespace TuringTrader.BooksAndPubs
 
         #region inputs
         protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
+        //protected Universe UNIVERSE = Universes.STOCKS_US_TOP_100;
 
         [OptimizerParam(0, 100, 5)]
         public virtual int MAX_RSI { get; set; } = 50;
@@ -56,10 +57,10 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        private static readonly string SPX = Assets.STOCKS_US_LG_CAP;
 
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
-        private Instrument _benchmark;
         #endregion
         #region ctor
         public Bensdorp_30MinStockTrader_WR()
@@ -75,28 +76,27 @@ namespace TuringTrader.BooksAndPubs
 
 #if USE_BENSDORPS_RANGE
             // matching range in the book
-            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            StartTime = SubclassedStartTime ?? DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            EndTime = SubclassedEndTime ?? DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
-            EndTime = DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
 #else
+            StartTime = SubclassedStartTime ?? Globals.START_TIME;
+            EndTime = SubclassedEndTime ?? Globals.END_TIME;
             WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME;
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
 
             AddDataSources(UNIVERSE.Constituents);
-            AddDataSource(BENCHMARK);
+            var spx = AddDataSource(SPX);
+            var benchmark = AddDataSource(BENCHMARK);
 
             //========== simulation loop ==========
 
+            double nn = 0.0;
             foreach (var s in SimTimes)
             {
-                //----- find instruments
-
-                _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 var universe = Instruments
                     .Where(i => i.IsConstituent(UNIVERSE))
                     .ToList();
@@ -114,44 +114,78 @@ namespace TuringTrader.BooksAndPubs
                             roc = i.Close.Momentum(200),
                         });
 
-                var smaBand = _benchmark.Close.SMA(200).Multiply(0.98); // 2% below 200-day SMA
+                if (!HasInstrument(benchmark))
+                    continue;
 
-                // filter universe to potential candidates
-                var filtered = universe
-                    .Where(i => _benchmark.Close[0] > smaBand[0]
-                        && indicators[i].rsi[0] < MAX_RSI)
-                    .ToList();
+                var smaBand = spx.Instrument.Close.SMA(200).Multiply(0.98); // 2% below 200-day SMA
 
+                // open positions on Monday
                 if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek) // open positions on Monday
                 {
-                    // sort by momentum
-                    var ranked = universe
-                        .Where(i => _benchmark.Close[0] > smaBand[0])
-                        .OrderByDescending(i => indicators[i].roc[0])
-                        .ToList();
-
-                    // enter: top-ranked momentum and low RSI
-                    var entry = ranked
+                    // we are not entirely sure how Bensdorp wants this strategy to work.
+                    // we see three alternatives
+#if false
+                    // solution A
+                    // create one list of 10 stocks, none of which are overbought,
+                    // ranked by momentum
+                    // good: new entries are guaranteed to be on keep-list on day 1
+                    //       also, we always hold 10 stocks
+                    // bad: we might exit stocks with top momentum, as soon as they become overbought
+                    // => this strategy seems to never hold stocks longer than 60 days,
+                    //    conflicting with the statements made in the book
+                    var nextHoldings = universe
+                        .Where(i => spx.Instrument.Close[0] > smaBand[0])
                         .Where(i => indicators[i].rsi[0] < MAX_RSI)
+                        .OrderByDescending(i => indicators[i].roc[0])
                         .Take(MAX_ENTRIES)
                         .ToList();
-
-                    // hold: top-ranked momentum
-                    var hold = ranked
+#endif
+#if false
+                    // solution B
+                    // create separate list for new entries and for keepers
+                    // good: this makes sure that we almost always hold 10 stocks
+                    // bad: a new stock entered might not meet the hold requirements,
+                    //    as it might not have top-10 momentum. this adds somewhat of
+                    //    a mean-reversion component to the strategy
+                    // => this strategy seems to work very well over the book's backtesting period.
+                    //    overall, higher return and higher drawdown than C, worse Sharpe ratio
+                    var keep = universe
+                        .Where(i => spx.Instrument.Close[0] > smaBand[0])
+                        .OrderByDescending(i => indicators[i].roc[0])
+                        .Take(MAX_ENTRIES)
+                        .Where(i => i.Position != 0)
+                        .ToList();
+                    var enter = universe
+                        .Where(i => spx.Instrument.Close[0] > smaBand[0])
+                        .Where(i => i.Position == 0 && indicators[i].rsi[0] < MAX_RSI)
+                        .OrderByDescending(i => indicators[i].roc[0])
+                        .Take(MAX_ENTRIES - keep.Count)
+                        .ToList();
+                    var nextHoldings = keep
+                        .Concat(enter)
+                        .ToList();
+#endif
+#if true
+                    // solution C
+                    // draw new entries and keeps both from top-10 ranked stocks
+                    // good: new entries are guaranteed to be on the keep list on day 1
+                    // bad: the enter list might be empty, if all top-10 stocks are overbought
+                    //   driving down our exposure and therewith return
+                    var top10 = universe
+                        .Where(i => spx.Instrument.Close[0] > smaBand[0])
+                        .OrderByDescending(i => indicators[i].roc[0])
                         .Take(MAX_ENTRIES)
                         .ToList();
-
-                    // keep those we have identified as 'hold'
-                    var nextHoldings = Instruments
-                        .Where(i => i.Position != 0 
-                            && hold.Contains(i))
+                    var keep = top10
+                        .Where(i => i.Position != 0)
                         .ToList();
-
-                    // fill up, until we reach MAX_ENTRIES
-                    nextHoldings = nextHoldings
-                        //.Concat(entry.Take(MAX_ENTRIES - nextHoldings.Count))
-                        .Concat(entry.Where(i => !nextHoldings.Contains(i)).Take(MAX_ENTRIES - nextHoldings.Count))
+                    var enter = top10
+                        .Where(i => i.Position == 0 && indicators[i].rsi[0] < MAX_RSI)
                         .ToList();
+                    var nextHoldings = keep
+                        .Concat(enter)
+                        .ToList();
+#endif
 
                     _alloc.LastUpdate = SimTime[0];
                     _alloc.Allocation.Clear();
@@ -167,6 +201,8 @@ namespace TuringTrader.BooksAndPubs
 
                         i.Trade(targetShares - i.Position);
                     }
+
+                    nn = nextHoldings.Count / 10.0;
                 }
 
                 //----- output
@@ -180,8 +216,9 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SelectChart("Exposure Chart", "Date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    //_plotter.Plot("Choices", nn);
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsSubclassed) AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
                 }
             }
 
@@ -209,14 +246,17 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
     #region Mean Reversion
-    public abstract class Bensdorp_30MinStockTrader_MRx : Algorithm
+    public abstract class Bensdorp_30MinStockTrader_MRx : SubclassableAlgorithm
     {
         public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
         #region inputs
-        protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP;
+        //protected Universe UNIVERSE = Universes.STOCKS_US_TOP_100; // 100 stocks
+        //protected Universe UNIVERSE = Universes.STOCKS_US_LG_CAP; // 500 stocks
+        //protected Universe UNIVERSE = Universes.STOCKS_US_LG_MID_SMALL_CAP; // 1500 stocks
+        protected Universe UNIVERSE = Universes.STOCKS_US_ALL; // 3000 stocks
 
-        public abstract int ENTRY_DIR { get; set; }
+        public abstract int ENTRY_DIR { get; }
 
         public abstract int SMA_DAYS { get; set; }
 
@@ -246,7 +286,6 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         private static readonly string BENCHMARK = "$SPX";
-        private static readonly double INITIAL_CAPITAL = 1e6;
 
         private Plotter _plotter;
         private Instrument _benchmark;
@@ -264,19 +303,19 @@ namespace TuringTrader.BooksAndPubs
 
 #if USE_BENSDORPS_RANGE
             // matching range in the book
-            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            StartTime = SubclassedStartTime ?? DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            EndTime = SubclassedEndTime ?? DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
-            EndTime = DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
 #else
+            StartTime = SubclassedStartTime ?? Globals.START_TIME;
+            EndTime = SubclassedEndTime ?? Globals.END_TIME;
             WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME;
 #endif
 
             AddDataSources(UNIVERSE.Constituents);
             AddDataSource(BENCHMARK);
 
-            Deposit(INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = 0.015;
 
             var entryParameters = Enumerable.Empty<Instrument>()
@@ -299,6 +338,14 @@ namespace TuringTrader.BooksAndPubs
                 _benchmark = _benchmark ?? FindInstrument(BENCHMARK);
                 var universe = Instruments
                     .Where(i => i.IsConstituent(UNIVERSE))
+#if false
+                    // we don't like to have these filter rules here. Instead,
+                    // this should be solved by proper universe selection
+                    .Where(i =>
+                        i.Close[0] > 1.00
+                        && i.Volume.ToDouble().SMA(50)[0] > 0.5e6
+                        && i.Close.Multiply(i.Volume.ToDouble()).SMA(50)[0] > 2.5e6)
+#endif
                     .ToList();
 
                 //----- calculate indicators
@@ -318,17 +365,21 @@ namespace TuringTrader.BooksAndPubs
                         });
 
                 // filter universe to potential candidates
-                var filtered = universe
-                    .Where(i =>
-                        (ENTRY_DIR > 0
-                            ? i.Close[0] > indicators[i].sma150[0]                // long: above sma
-                            : i.Close[0] > i.Close[1] && i.Close[1] > i.Close[2]) // short: 2 up-days
-                        && indicators[i].adx7[0] > MIN_ADX
-                        && indicators[i].atr10[0] > MIN_ATR / 10000.0
-                        && (ENTRY_DIR > 0
-                            ? indicators[i].rsi3[0] < MINMAX_RSI   // long: maximum
-                            : indicators[i].rsi3[0] > MINMAX_RSI)) // short: minimum
-                    .ToList();
+                var filtered = ENTRY_DIR > 0
+                    ? (universe
+                        .Where(i =>                                       // - long -
+                            i.Close[0] > indicators[i].sma150[0]          // close above 150-day SMA
+                            && indicators[i].adx7[0] > MIN_ADX            // 7-day ADX above 45
+                            && indicators[i].atr10[0] > MIN_ATR / 10000.0 // 10-day ATR above 4%
+                            && indicators[i].rsi3[0] < MINMAX_RSI)        // 3-day RSI below 30
+                        .ToList())
+                    : (universe
+                        .Where(i =>                                            // - short -
+                            i.Close[0] > i.Close[1] && i.Close[1] > i.Close[2] // 2 up-days
+                            && indicators[i].adx7[0] > MIN_ADX                 // 7-day ADX above 50
+                            && indicators[i].atr10[0] > MIN_ATR / 10000.0      // 10-day ATR above 5%
+                            && indicators[i].rsi3[0] > MINMAX_RSI)             // 3-day RSI above 85
+                        .ToList());
 
                 //----- manage existing positions
 
@@ -361,115 +412,91 @@ namespace TuringTrader.BooksAndPubs
 
                 //----- open new positions
 
-                if (NextSimTime.DayOfWeek < SimTime[0].DayOfWeek) // open positions on Monday
+                // sort candidates by RSI to find entries
+                var entries = ENTRY_DIR > 0
+                    ? filtered // long
+                        .Where(i => i.Position == 0)
+                        .OrderBy(i => indicators[i].rsi3[0])
+                        .Take(MAX_ENTRIES - numOpenPositions)
+                        .ToList()
+                    : filtered // short
+                        .Where(i => i.Position == 0)
+                        .OrderByDescending(i => indicators[i].rsi3[0])
+                        .Take(MAX_ENTRIES - numOpenPositions)
+                        .ToList();
+
+                foreach (var i in entries)
                 {
-                    // sort candidates by RSI to find entries
-                    var entries = ENTRY_DIR > 0
-                        ? filtered // long
-                            .Where(i => i.Position == 0)
-                            .OrderBy(i => indicators[i].rsi3[0])
-                            .Take(MAX_ENTRIES - numOpenPositions)
-                            .ToList()
-                        : filtered // short
-                            .Where(i => i.Position == 0)
-                            .OrderByDescending(i => indicators[i].rsi3[0])
-                            .Take(MAX_ENTRIES - numOpenPositions)
-                            .ToList();
+                    // save our entry parameters, so that we may access
+                    // them later to manage exits
+                    double entryPrice = ENTRY_DIR > 0
+                            ? i.Close[0] * (1.0 - MIN_ATR / 10000.0) // long
+                            : i.Close[0];                            // short
 
-                    foreach (var i in entries)
+                    double stopLoss = ENTRY_DIR > 0
+                            ? entryPrice * (1.0 - STOP_LOSS / 100.0 * indicators[i].atr10[0])  // long
+                            : entryPrice * (1.0 + STOP_LOSS / 100.0 * indicators[i].atr10[0]); // short
+
+                    double profitTarget = ENTRY_DIR > 0
+                        ? entryPrice * (1.0 + PROFIT_TARGET / 10000.0)  // long
+                        : entryPrice * (1.0 - PROFIT_TARGET / 10000.0); // short
+
+                    entryParameters[i] = new
                     {
-                        // save our entry parameters, so that we may access
-                        // them later to manage exits
-                        double entryPrice = ENTRY_DIR > 0
-                                ? i.Close[0] * (1.0 - MIN_ATR / 10000.0) // long
-                                : i.Close[0];                            // short
+                        entryDate = NextSimTime,
+                        entryPrice,
+                        stopLoss,
+                        profitTarget,
+                    };
 
-                        double stopLoss = ENTRY_DIR > 0
-                                ? entryPrice * (1.0 - STOP_LOSS / 100.0 * indicators[i].atr10[0])  // long
-                                : entryPrice * (1.0 + STOP_LOSS / 100.0 * indicators[i].atr10[0]); // short
+                    // calculate target shares in two ways:
+                    // * fixed-fractional risk (with entry - stop-loss = "risk"), and
+                    // * fixed percentage of total equity
+                    double riskPerShare = ENTRY_DIR > 0
+                        ? Math.Max(0.10, entryPrice - stopLoss)  // long
+                        : Math.Max(0.10, stopLoss - entryPrice); // short
 
-                        double profitTarget = ENTRY_DIR > 0
-                            ? entryPrice * (1.0 + PROFIT_TARGET / 10000.0)  // long
-                            : entryPrice * (1.0 - PROFIT_TARGET / 10000.0); // short
+                    int sharesRiskLimited = (int)Math.Floor(MAX_RISK / 100.0 / MAX_ENTRIES * NetAssetValue[0] / riskPerShare);
+                    int sharesCapLimited = (int)Math.Floor(MAX_CAP / 100.0 / MAX_ENTRIES * NetAssetValue[0] / entryParameters[i].entryPrice);
+                    int targetShares = (ENTRY_DIR > 0 ? 1 : -1) * Math.Min(sharesRiskLimited, sharesCapLimited);
 
-                        entryParameters[i] = new
-                        {
-                            entryDate = NextSimTime,
-                            entryPrice,
-                            stopLoss,
-                            profitTarget,
-                        };
-
-                        // calculate target shares in two ways:
-                        // * fixed-fractional risk (with entry - stop-loss = "risk"), and
-                        // * fixed percentage of total equity
-                        double riskPerShare = ENTRY_DIR > 0
-                            ? Math.Max(0.10, entryPrice - stopLoss)  // long
-                            : Math.Max(0.10, stopLoss - entryPrice); // short
-
-                        int sharesRiskLimited = (int)Math.Floor(MAX_RISK / 100.0 / MAX_ENTRIES * NetAssetValue[0] / riskPerShare);
-                        int sharesCapLimited = (int)Math.Floor(MAX_CAP / 100.0 / MAX_ENTRIES * NetAssetValue[0] / entryParameters[i].entryPrice);
-                        int targetShares = (ENTRY_DIR > 0 ? 1 : -1) * Math.Min(sharesRiskLimited, sharesCapLimited);
-
-                        // enter positions with limit order
-                        i.Trade(targetShares,
-                            OrderType.limitNextBar,
-                            entryParameters[i].entryPrice);
-                    }
+                    // enter positions with limit order
+                    i.Trade(targetShares,
+                        OrderType.limitNextBar,
+                        entryParameters[i].entryPrice);
                 }
 
                 //----- output
 
-                if (!IsOptimizing)
+                if (!IsOptimizing && TradingDays > 0)
                 {
-                    // plot to chart
-                    _plotter.SelectChart(Name + ": " + OptimizerParamsAsString, "date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0]);
-                    _plotter.Plot(_benchmark.Name, _benchmark.Close[0]);
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    //_plotter.AddStrategyHoldings(this, universe);
 
-                    // placeholder, to make sure positions land on sheet 2
-                    _plotter.SelectChart("Strategy Positions", "entry date");
-
-                    // additional indicators
-                    _plotter.SelectChart("Strategy Leverage", "date");
+                    // plot strategy exposure
+                    _plotter.SelectChart("Exposure Chart", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("leverage", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+
+                    if (IsSubclassed) AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
                 }
             }
 
             //========== post processing ==========
 
-            //----- print position log, grouped as LIFO
-
             if (!IsOptimizing)
             {
-                var tradeLog = LogAnalysis
-                    .GroupPositions(Log, true)
-                    .OrderBy(i => i.Entry.BarOfExecution.Time);
-
-                _plotter.SelectChart("Strategy Positions", "entry date");
-                foreach (var trade in tradeLog)
-                {
-                    _plotter.SetX(trade.Entry.BarOfExecution.Time);
-                    _plotter.Plot("exit date", trade.Exit.BarOfExecution.Time);
-                    _plotter.Plot("Symbol", trade.Symbol);
-                    _plotter.Plot("Quantity", trade.Quantity);
-                    _plotter.Plot("% Profit", (ENTRY_DIR > 0 ? 1.0 : -1.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0));
-                    _plotter.Plot("Exit", trade.Exit.OrderTicket.Comment ?? "");
-                    //_plotter.Plot("$ Profit", trade.Quantity * (trade.Exit.FillPrice - trade.Entry.FillPrice));
-                }
+                //_plotter.AddTargetAllocation(_alloc);
+                //_plotter.AddOrderLog(this);
+                //_plotter.AddPositionLog(this);
+                //_plotter.AddPnLHoldTime(this);
+                //_plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
             }
 
-            //----- optimization objective
-
-            double cagr = Math.Exp(252.0 / Math.Max(1, TradingDays) * Math.Log(NetAssetValue[0] / INITIAL_CAPITAL)) - 1.0;
-            FitnessValue = cagr / Math.Max(1e-10, Math.Max(0.01, NetAssetValueMaxDrawdown));
-
-            if (!IsOptimizing)
-                Output.WriteLine("CAGR = {0:P2}, DD = {1:P2}, Fitness = {2:F4}", cagr, NetAssetValueMaxDrawdown, FitnessValue);
+            FitnessValue = this.CalcFitness();
         }
-#       endregion
+        #endregion
         #region public override void Report()
         public override void Report()
         {
@@ -478,9 +505,9 @@ namespace TuringTrader.BooksAndPubs
         #endregion
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRL : Bensdorp_30MinStockTrader_MRx
+    public class Bensdorp_30MinStockTrader_MRL : Bensdorp_30MinStockTrader_MRx
     {
-        public override int ENTRY_DIR { get; set; } = 1;   // 1 = long
+        public override int ENTRY_DIR => 1;   // 1 = long
         public override int SMA_DAYS { get; set; } = 150; // 150 days
         public override int MIN_ADX { get; set; } = 45;
         public override int MIN_ATR { get; set; } = 400; // 4%
@@ -493,9 +520,9 @@ namespace TuringTrader.BooksAndPubs
         public override int MAX_HOLD_DAYS { get; set; } = 4;   // 4 days
     }
 
-    public abstract class Bensdorp_30MinStockTrader_MRS : Bensdorp_30MinStockTrader_MRx
+    public class Bensdorp_30MinStockTrader_MRS : Bensdorp_30MinStockTrader_MRx
     {
-        public override int ENTRY_DIR { get; set; } = -1;  // -1 = short
+        public override int ENTRY_DIR => -1;  // -1 = short
         public override int SMA_DAYS { get; set; } = 150; // 150 days
         public override int MIN_ADX { get; set; } = 50;
         public override int MIN_ATR { get; set; } = 500; // 5%
@@ -508,6 +535,87 @@ namespace TuringTrader.BooksAndPubs
         public override int MAX_HOLD_DAYS { get; set; } = 2;   // 2 days
     }
     #endregion
+
+    public class Bensdorp_30MinStockTrader_WR_MRS_Combo : Algorithm
+    {
+        public override string Name => "Bensdorp's WR + MRS";
+
+        protected virtual string STRATEGY1 => "algorithm:Bensdorp_30MinStockTrader_WR";
+        protected virtual string STRATEGY2 => "algorithm:Bensdorp_30MinStockTrader_MRS";
+
+        private Plotter _plotter = null;
+        public Bensdorp_30MinStockTrader_WR_MRS_Combo()
+        {
+            _plotter = new Plotter(this);
+        }
+        public override void Run()
+        {
+            //========== initialization ==========
+
+            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("04/01/2009", CultureInfo.InvariantCulture);
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
+
+            var strat1 = AddDataSource(STRATEGY1);
+            var strat2 = AddDataSource(STRATEGY2);
+            var bench = AddDataSource(Assets.STOCKS_US_LG_CAP);
+
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = 0.015;
+
+            //========== simulation loop ==========
+
+            foreach (var s in SimTimes)
+            {
+                if (!HasInstrument(strat1) || !HasInstrument(strat2))
+                    continue;
+
+                int shares1 = (int)Math.Floor(0.50 * NetAssetValue[0] / strat1.Instrument.Close[0]);
+                int shares2 = (int)Math.Floor(0.50 * NetAssetValue[0] / strat2.Instrument.Close[0]);
+
+                strat1.Instrument.Trade(shares1 - strat1.Instrument.Position);
+                strat2.Instrument.Trade(shares2 - strat2.Instrument.Position);
+
+                if (!IsOptimizing && TradingDays > 0)
+                {
+                    _plotter.AddNavAndBenchmark(this, bench.Instrument);
+                    //_plotter.AddStrategyHoldings(this, universe);
+
+                    // plot strategy exposure
+                    //_plotter.SelectChart("Exposure Chart", "Date");
+                    //_plotter.SetX(SimTime[0]);
+                    //_plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                }
+            }
+
+            //========== post processing ==========
+
+            if (!IsOptimizing)
+            {
+                //_plotter.AddTargetAllocation(_alloc);
+                //_plotter.AddOrderLog(this);
+                //_plotter.AddPositionLog(this);
+                //_plotter.AddPnLHoldTime(this);
+                //_plotter.AddMfeMae(this);
+                //_plotter.AddParameters(this);
+            }
+
+            FitnessValue = this.CalcFitness();
+        }
+
+        public override void Report()
+        {
+            _plotter.OpenWith("SimpleReport");
+        }
+    }
+    public class Bensdorp_30MinStockTrader_MRL_MRS_Combo : Bensdorp_30MinStockTrader_WR_MRS_Combo
+    {
+        public override string Name => "Bensdorp's MRL + MRS";
+
+        protected override string STRATEGY1 => "algorithm:Bensdorp_30MinStockTrader_MRL";
+        protected override string STRATEGY2 => "algorithm:Bensdorp_30MinStockTrader_MRS";
+
+    }
 }
 
 //==============================================================================

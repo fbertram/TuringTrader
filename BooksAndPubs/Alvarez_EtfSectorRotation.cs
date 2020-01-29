@@ -28,6 +28,7 @@ using System.Globalization;
 using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
+using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {

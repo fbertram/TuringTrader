@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TuringTrader.Simulator;
+using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {

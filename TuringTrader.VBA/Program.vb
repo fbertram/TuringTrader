@@ -1,6 +1,6 @@
 ''==============================================================================
 '' Project:     TuringTrader, Visual Basic demonstration
-'' Name:        Program
+'' Name:        Program.vb
 '' Description: Demo, showing how to use TuringTrader with VisualBasic
 '' History:     2019xii03, FUB, created
 ''------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ Module Program
     End Sub
     Sub RegisterOutput()
         ' TODO: any messages printed by the simulator core
-        ' are current lost. need to register the event handler
+        ' are currently lost. need to register the event handler
         ' for the Output object here
     End Sub
 
