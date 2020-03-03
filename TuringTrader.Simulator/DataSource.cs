@@ -254,8 +254,8 @@ namespace TuringTrader.Simulator
         /// <param name="nickname">universe nickname</param>
         /// <returns>universe object</returns>
         /// <remarks>Currently, the following universes are recognized: 
-        /// $SPX (S&P 500), $NDX (NASDAQ 100), $OEX (S&P 100), 
-        /// $SP1500 (S&P Composite 1500), $RUA (Russell 3000)</remarks>
+        /// $SPX (S&amp;P 500), $NDX (NASDAQ 100), $OEX (S&amp;P 100), 
+        /// $SP1500 (S&amp;P Composite 1500), $RUA (Russell 3000)</remarks>
         static public Universe New(string nickname)
         {
             return DataSourceCollection.NewUniverse(nickname);

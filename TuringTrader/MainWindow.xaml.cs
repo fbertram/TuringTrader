@@ -264,7 +264,7 @@ namespace TuringTrader
             {
                 SelectAlgo(mostRecentAlgorithm);
             }
-            catch(Exception e)
+            catch(Exception /*e*/)
             {
                 Output.WriteLine("Failed to instantiate {0}", mostRecentAlgorithm);
             }

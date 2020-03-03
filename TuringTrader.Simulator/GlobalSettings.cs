@@ -143,6 +143,14 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public bool LoadAlgoDlls
+        /// <summary>
+        /// Enable/ disable loading of algorithms from external DLLs. Default is true.
+        /// Note that this setting can only be made prior to accessing the
+        /// AlgorithmLoader.
+        /// </summary>
+        static public bool LoadAlgoDlls { get; set; } = true;
+        #endregion
 
         #region static public string MostRecentAlgorithm
         /// <summary>
