@@ -26,6 +26,8 @@ using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
 
@@ -680,6 +682,18 @@ namespace TuringTrader.Support
                     _lb = lowerBounds;
                     _ub = upperBounds;
 
+#if true
+                    for (var i = 0; i < _lb.Count; i++)
+                    {
+                        // FUB addition
+                        // ill-conditioned vector. we assume that it is more likely
+                        // for an algorithm to dynamically control the upper bounds,
+                        // which is why we set the lower bound to those.
+                        if (_lb[i] > _ub[i])
+                            _lb[i] = _ub[i];
+                    }
+#endif
+
                     // TODO: not sure what this does
                     // if (mean == np.ones(mean.shape) * mean.mean()).all():mean[-1, 0] += 1e-5
 
@@ -1269,6 +1283,45 @@ namespace TuringTrader.Support
                 }
             }
             #endregion
+        }
+        #endregion
+    }
+
+    /// <summary>
+    /// Collection of portfolio-related indicators
+    /// </summary>
+    public static class IndicatorsPortfolio
+    {
+        #region public static ITimeSeries<double> Covariance(this Instrument series, Instrument otherSeries, int n = 10)
+        /// <summary>
+        /// Calculate historical volatility.
+        /// </summary>
+        /// <param name="series">primary instrument</param>
+        /// <param name="otherSeries">other instrument</param>
+        /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>volatility as time series</returns>
+        public static ITimeSeries<double> Covariance(this Instrument series, Instrument otherSeries, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), otherSeries.GetHashCode(), n);
+
+            return IndicatorsBasic.Lambda(
+                (t) =>
+                {
+                    List<Instrument> instruments = new List<Instrument> { series, otherSeries };
+                    var c = new PortfolioSupport.Covariance(instruments, n, 1);
+                    var coVar = c[series, otherSeries];
+                    return coVar;
+
+                    //var var = c[series, series];
+                    //var otherVar = c[otherSeries, otherSeries];
+                    //return coVar / Math.Sqrt(var) / Math.Sqrt(otherVar);
+                },
+                cacheId);
         }
         #endregion
     }
