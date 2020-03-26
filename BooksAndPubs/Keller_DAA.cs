@@ -24,6 +24,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// compare results - website operated by Jan Willem Keuning:
+// https://indexswingtrader.blogspot.com/2018/07/announcing-defensive-asset-allocation.html
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -43,9 +46,9 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Keller's DAA";
 
         #region inputs
-        protected abstract List<string> riskyUniverse { get; }
-        protected abstract List<string> cashUniverse { get; }
-        protected abstract List<string> protectiveUniverse { get; }
+        protected abstract List<string> RISKY_UNIVERSE { get; }
+        protected abstract List<string> CASH_UNIVERSE { get; }
+        protected abstract List<string> PROTECTIVE_UNIVERSE { get; }
         protected abstract int T { get; } // (risky) top parameter
         protected abstract int B { get; } // breadth parameter
         #endregion
@@ -73,51 +76,61 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // paper does not consider trade commissions
 
-            AddDataSources(riskyUniverse);
-            AddDataSources(cashUniverse);
-            AddDataSources(protectiveUniverse);
-            AddDataSource(BENCHMARK);
+            var riskyUniverse = AddDataSources(RISKY_UNIVERSE);
+            var cashUniverse = AddDataSources(CASH_UNIVERSE);
+            var protectiveUniverse = AddDataSources(PROTECTIVE_UNIVERSE);
+            var benchmark = AddDataSource(BENCHMARK);
 
             //----- simulation loop
 
+            var monthlyBars = new Dictionary<Instrument, TimeSeries<double>>();
+
             foreach (DateTime simTime in SimTimes)
             {
-                // calculate 13612W momentum for all instruments
-                Dictionary<Instrument, double> momentum13612W = Instruments
-                    .ToDictionary(
-                        i => i,
-                        i => 0.25 *
-                            (12.0 * (i.Close[0] / i.Close[21] - 1.0)
-                            + 4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                            + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                            + 1.0 * (i.Close[0] / i.Close[252] - 1.0)));
-
                 // skip if there are any missing instruments
                 // we want to make sure our strategy has all instruments available
                 if (!HasInstruments(riskyUniverse)
                 || !HasInstruments(cashUniverse)
-                || !HasInstruments(protectiveUniverse))
+                || !HasInstruments(protectiveUniverse)
+                || !HasInstrument(benchmark))
                     continue;
 
                 // rebalance once per month
                 // CAUTION: no indicator calculations within this block!
                 if (SimTime[0].Month != NextSimTime.Month)
                 {
+                    // calculate 13612W momentum for all instruments
+                    foreach (var i in Instruments)
+                        if (!monthlyBars.ContainsKey(i))
+                            monthlyBars[i] = new TimeSeries<double>();
+
+                    foreach (var i in Instruments)
+                        monthlyBars[i].Value = i.Close[0];
+
+                    Dictionary<Instrument, double> momentum13612W = Instruments
+                        .ToDictionary(
+                            i => i,
+                            i => 0.25 *
+                                (12.0 * (monthlyBars[i][0] / monthlyBars[i][1] - 1.0)
+                                + 4.0 * (monthlyBars[i][0] / monthlyBars[i][3] - 1.0)
+                                + 2.0 * (monthlyBars[i][0] / monthlyBars[i][6] - 1.0)
+                                + 1.0 * (monthlyBars[i][0] / monthlyBars[i][12] - 1.0)));
+
                     // find T top risky assets
-                    IEnumerable<Instrument> topInstruments = Instruments
-                    .Where(i => riskyUniverse.Contains(i.Nickname))
-                    .OrderByDescending(i => momentum13612W[i])
-                    .Take(T);
+                    IEnumerable<Instrument> topInstruments = riskyUniverse
+                        .Select(ds => ds.Instrument)
+                        .OrderByDescending(i => momentum13612W[i])
+                        .Take(T);
 
                     // find single cash/ bond asset
-                    Instrument cashInstrument = Instruments
-                        .Where(i => cashUniverse.Contains(i.Nickname))
+                    Instrument cashInstrument = cashUniverse
+                        .Select(ds => ds.Instrument)
                         .OrderByDescending(i => momentum13612W[i])
                         .First();
 
                     // determine number of bad assets in canary universe
-                    double b = Instruments
-                        .Where(i => protectiveUniverse.Contains(i.Nickname))
+                    double b = protectiveUniverse
+                        .Select(ds => ds.Instrument)
                         .Sum(i => momentum13612W[i] < 0.0 ? 1.0 : 0.0);
 
                     // calculate cash fraction
@@ -137,7 +150,7 @@ namespace TuringTrader.BooksAndPubs
 
                     foreach (Instrument i in Instruments)
                     {
-                        if (riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname))
+                        if (riskyUniverse.Contains(i.DataSource) || cashUniverse.Contains(i.DataSource))
                             _alloc.Allocation[i] = weights[i];
 
                         int targetShares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
@@ -158,7 +171,7 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, Instruments
-                        .Where(i => riskyUniverse.Contains(i.Nickname) || cashUniverse.Contains(i.Nickname)));
+                        .Where(i => riskyUniverse.Contains(i.DataSource) || cashUniverse.Contains(i.DataSource)));
                 }
             }
 
@@ -189,7 +202,7 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA_G4 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA-G4";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
         {
             "SPY", // SPDR S&P 500 ETF
             "VEA", // Vanguard FTSE Developed Markets ETF
@@ -197,14 +210,14 @@ namespace TuringTrader.BooksAndPubs
             "BND", // Vanguard Total Bond Market ETF
         };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
         {
             "SHY", // iShares 1-3 Year Treasury Bond ETF
             "IEF", // iShares 7-10 Year Treasury Bond ETF
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
             "BND"  // Vanguard Total Bond Market ETF
@@ -218,7 +231,7 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA_G6 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA-G6";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
             {
                     "SPY", // SPDR S&P 500 ETF
                     "VEA", // Vanguard FTSE Developed Markets ETF
@@ -228,14 +241,14 @@ namespace TuringTrader.BooksAndPubs
                     "HYG"  // iShares iBoxx High Yield Corporate Bond ETF
             };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
             {
                     "SHY", // iShares 1-3 Year Treasury Bond ETF
                     "IEF", // iShares 7-10 Year Treasury Bond ETF
                     "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
             };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
             {
                     "VWO", // Vanguard FTSE Emerging Markets ETF
                     "BND"  // Vanguard Total Bond Market ETF
@@ -249,7 +262,7 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA_G12 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA-G12";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
         {
             "SPY", // SPDR S&P 500 ETF
             "IWM", // iShares Russell 2000 ETF
@@ -265,14 +278,14 @@ namespace TuringTrader.BooksAndPubs
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
         {
             "SHY", // iShares 1-3 Year Treasury Bond ETF
             "IEF", // iShares 7-10 Year Treasury Bond ETF
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
             "BND"  // Vanguard Total Bond Market ETF
@@ -287,7 +300,7 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA1_G4 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA1-G4";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
         {
             "SPY", // SPDR S&P 500 ETF
             "VEA", // Vanguard FTSE Developed Markets ETF
@@ -295,14 +308,14 @@ namespace TuringTrader.BooksAndPubs
             "BND", // Vanguard Total Bond Market ETF
         };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
         {
             "SHV", // iShares Short Treasury Bond ETF
             "IEF", // iShares 7-10 Year Treasury Bond ETF
             "UST"  // ProShares Ultra 7-10 Year Treasury ETF
         };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
             "BND"  // Vanguard Total Bond Market ETF
@@ -316,7 +329,7 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA1_G12 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA1-G12";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
         {
             "SPY", // SPDR S&P 500 ETF
             "IWM", // iShares Russell 2000 ETF
@@ -332,14 +345,14 @@ namespace TuringTrader.BooksAndPubs
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
         {
             "SHY", // iShares 1-3 Year Treasury Bond ETF
             "IEF", // iShares 7-10 Year Treasury Bond ETF
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
             "BND"  // Vanguard Total Bond Market ETF
@@ -353,19 +366,19 @@ namespace TuringTrader.BooksAndPubs
     public class Keller_DAA1_U1 : Keller_DAA_Core
     {
         public override string Name => "Keller's DAA1-U1";
-        protected override List<string> riskyUniverse => new List<string>
+        protected override List<string> RISKY_UNIVERSE => new List<string>
         {
             "SPY", // SPDR S&P 500 ETF
         };
 
-        protected override List<string> cashUniverse => new List<string>
+        protected override List<string> CASH_UNIVERSE => new List<string>
         {
             "SHV", // iShares Short Treasury Bond ETF
             "IEF", // iShares 7-10 Year Treasury Bond ETF
             "UST"  // ProShares Ultra 7-10 Year Treasury ETF
         };
 
-        protected override List<string> protectiveUniverse => new List<string>
+        protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
             "BND"  // Vanguard Total Bond Market ETF
