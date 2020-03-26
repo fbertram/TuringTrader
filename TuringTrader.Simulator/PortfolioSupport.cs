@@ -1294,7 +1294,7 @@ namespace TuringTrader.Support
     {
         #region public static ITimeSeries<double> Covariance(this Instrument series, Instrument otherSeries, int n = 10)
         /// <summary>
-        /// Calculate historical volatility.
+        /// Calculate historical covariance.
         /// </summary>
         /// <param name="series">primary instrument</param>
         /// <param name="otherSeries">other instrument</param>
@@ -1309,18 +1309,44 @@ namespace TuringTrader.Support
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), otherSeries.GetHashCode(), n);
 
-            return IndicatorsBasic.Lambda(
-                (t) =>
+            return IndicatorsBasic.BufferedLambda(
+                (p) =>
                 {
                     List<Instrument> instruments = new List<Instrument> { series, otherSeries };
                     var c = new PortfolioSupport.Covariance(instruments, n, 1);
                     var coVar = c[series, otherSeries];
                     return coVar;
+                }, 0.0,
+                cacheId);
+        }
+        #endregion
+        #region public static ITimeSeries<double> Correlation(this Instrument series, Instrument otherSeries, int n = 10)
+        /// <summary>
+        /// Calculate historical correlation.
+        /// </summary>
+        /// <param name="series">primary instrument</param>
+        /// <param name="otherSeries">other instrument</param>
+        /// <param name="n">length</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>volatility as time series</returns>
+        public static ITimeSeries<double> Correlation(this Instrument series, Instrument otherSeries, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), otherSeries.GetHashCode(), n);
 
-                    //var var = c[series, series];
-                    //var otherVar = c[otherSeries, otherSeries];
-                    //return coVar / Math.Sqrt(var) / Math.Sqrt(otherVar);
-                },
+            return IndicatorsBasic.BufferedLambda(
+                (p) =>
+                {
+                    List<Instrument> instruments = new List<Instrument> { series, otherSeries };
+                    var c = new PortfolioSupport.Covariance(instruments, n, 1);
+                    var coVar = c[series, otherSeries];
+                    var var = c[series, series];
+                    var otherVar = c[otherSeries, otherSeries];
+                    return coVar / Math.Sqrt(var) / Math.Sqrt(otherVar);
+                }, 0.0, 
                 cacheId);
         }
         #endregion
