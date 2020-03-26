@@ -521,39 +521,6 @@ namespace TuringTrader.Algorithms.Glue
         }
     }
     #endregion
-
-    #region zero-return portfolio
-    public class ZeroReturn : SubclassableAlgorithm
-    {
-        public override string Name => "Zero Return";
-
-        private Plotter _plotter = null;
-        public ZeroReturn()
-        {
-            _plotter = new Plotter(this);
-        }
-        public override void Run()
-        {
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
-
-            Deposit(100.0);
-
-            AddDataSource(Assets.STOCKS_US_LG_CAP); // just a dummy
-
-            foreach (var s in SimTimes)
-            {
-                _plotter.AddNavAndBenchmark(this, Instruments.FirstOrDefault());
-                AddSubclassedBar();
-            }
-        }
-
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
-    }
-    #endregion
 }
 
 //==============================================================================

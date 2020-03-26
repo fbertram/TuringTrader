@@ -161,51 +161,6 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
-    #region zero return
-#if false
-    public class ZeroReturn : LazyPortfolio
-    {
-        public override string Name => "Zero Return Portfolio";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
-        {
-            Tuple.Create(Assets.STOCKS_US_LG_CAP, 0.00),
-        };
-        public override string BENCH => Assets.STOCKS_US_LG_CAP;
-    }
-#else
-    public class ZeroReturn : SubclassableAlgorithm
-    {
-        public override string Name => "Zero Return";
-
-        private Plotter _plotter = null;
-        public ZeroReturn()
-        {
-            _plotter = new Plotter(this);
-        }
-        public override void Run()
-        {
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
-
-            Deposit(100.0);
-
-            AddDataSource(Assets.STOCKS_US_LG_CAP); // just a dummy
-
-            foreach (var s in SimTimes)
-            {
-                _plotter.AddNavAndBenchmark(this, Instruments.FirstOrDefault());
-                AddSubclassedBar();
-            }
-        }
-
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
-    }
-#endif
-    #endregion
-
     #region 60/40 benchmark
     public class Benchmark_60_40 : LazyPortfolio
     {

@@ -406,11 +406,14 @@ namespace TuringTrader.BooksAndPubs
                 },
             },
         };
-        protected override string ABS_MOMENTUM => Assets.PORTF_0;
+        protected override string ABS_MOMENTUM => "BIL";
         protected override string SAFE_INSTR => "TLT"; //"yahoo:VUSTX";
         //protected override string BENCHMARK => "yahoo:VFINX";
         protected override double MOMENTUM(Instrument i)
         {
+            if (i.Name == ABS_MOMENTUM)
+                return 0.0;
+
             var m1 = i.Close[0] / i.Close[21] - 1.0;
             var m3 = i.Close[0] / i.Close[63] - 1.0;
             var m6 = i.Close[0] / i.Close[126] - 1.0;
