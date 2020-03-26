@@ -536,86 +536,38 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
-    public class Bensdorp_30MinStockTrader_WR_MRS_Combo : Algorithm
+    #region Combo: WR + MRS
+    public class Bensdorp_30MinStockTrader_WR_MRS_Combo : LazyPortfolio
     {
         public override string Name => "Bensdorp's WR + MRS";
 
-        protected virtual string STRATEGY1 => "algorithm:Bensdorp_30MinStockTrader_WR";
-        protected virtual string STRATEGY2 => "algorithm:Bensdorp_30MinStockTrader_MRS";
-
-        private Plotter _plotter = null;
-        public Bensdorp_30MinStockTrader_WR_MRS_Combo()
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
         {
-            _plotter = new Plotter(this);
-        }
-        public override void Run()
-        {
-            //========== initialization ==========
+            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_WR",  0.50),
+            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
+        };
+        public override string BENCH => Assets.STOCKS_US_LG_CAP;
 
-            StartTime = DateTime.Parse("01/02/1995", CultureInfo.InvariantCulture);
-            EndTime = DateTime.Parse("04/01/2009", CultureInfo.InvariantCulture);
-            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
-
-            var strat1 = AddDataSource(STRATEGY1);
-            var strat2 = AddDataSource(STRATEGY2);
-            var bench = AddDataSource(Assets.STOCKS_US_LG_CAP);
-
-            Deposit(Globals.INITIAL_CAPITAL);
-            CommissionPerShare = 0.015;
-
-            //========== simulation loop ==========
-
-            foreach (var s in SimTimes)
-            {
-                if (!HasInstrument(strat1) || !HasInstrument(strat2))
-                    continue;
-
-                int shares1 = (int)Math.Floor(0.50 * NetAssetValue[0] / strat1.Instrument.Close[0]);
-                int shares2 = (int)Math.Floor(0.50 * NetAssetValue[0] / strat2.Instrument.Close[0]);
-
-                strat1.Instrument.Trade(shares1 - strat1.Instrument.Position);
-                strat2.Instrument.Trade(shares2 - strat2.Instrument.Position);
-
-                if (!IsOptimizing && TradingDays > 0)
-                {
-                    _plotter.AddNavAndBenchmark(this, bench.Instrument);
-                    //_plotter.AddStrategyHoldings(this, universe);
-
-                    // plot strategy exposure
-                    //_plotter.SelectChart("Exposure Chart", "Date");
-                    //_plotter.SetX(SimTime[0]);
-                    //_plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
-                }
-            }
-
-            //========== post processing ==========
-
-            if (!IsOptimizing)
-            {
-                //_plotter.AddTargetAllocation(_alloc);
-                //_plotter.AddOrderLog(this);
-                //_plotter.AddPositionLog(this);
-                //_plotter.AddPnLHoldTime(this);
-                //_plotter.AddMfeMae(this);
-                //_plotter.AddParameters(this);
-            }
-
-            FitnessValue = this.CalcFitness();
-        }
-
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
+        public override DateTime START_TIME => Globals.START_TIME;
+        public override DateTime END_TIME => Globals.END_TIME;
     }
-    public class Bensdorp_30MinStockTrader_MRL_MRS_Combo : Bensdorp_30MinStockTrader_WR_MRS_Combo
+    #endregion
+    #region Combo: MRL + MRS
+    public class Bensdorp_30MinStockTrader_MRL_MRS_Combo : LazyPortfolio
     {
         public override string Name => "Bensdorp's MRL + MRS";
 
-        protected override string STRATEGY1 => "algorithm:Bensdorp_30MinStockTrader_MRL";
-        protected override string STRATEGY2 => "algorithm:Bensdorp_30MinStockTrader_MRS";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRL", 0.50),
+            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
+        };
+        public override string BENCH => Assets.STOCKS_US_LG_CAP;
 
+        public override DateTime START_TIME => Globals.START_TIME;
+        public override DateTime END_TIME => Globals.END_TIME;
     }
+    #endregion
 }
 
 //==============================================================================
