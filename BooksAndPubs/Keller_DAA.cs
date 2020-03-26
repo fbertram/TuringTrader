@@ -116,18 +116,6 @@ namespace TuringTrader.BooksAndPubs
                                 + 2.0 * (monthlyBars[i][0] / monthlyBars[i][6] - 1.0)
                                 + 1.0 * (monthlyBars[i][0] / monthlyBars[i][12] - 1.0)));
 
-                    // find T top risky assets
-                    IEnumerable<Instrument> topInstruments = riskyUniverse
-                        .Select(ds => ds.Instrument)
-                        .OrderByDescending(i => momentum13612W[i])
-                        .Take(T);
-
-                    // find single cash/ bond asset
-                    Instrument cashInstrument = cashUniverse
-                        .Select(ds => ds.Instrument)
-                        .OrderByDescending(i => momentum13612W[i])
-                        .First();
-
                     // determine number of bad assets in canary universe
                     double b = protectiveUniverse
                         .Select(ds => ds.Instrument)
@@ -137,6 +125,22 @@ namespace TuringTrader.BooksAndPubs
                     //double CF = Math.Min(1.0, b / B) // standard calculation
                     double CF = Math.Min(1.0, 1.0 / T * Math.Floor(b * T / B)); // Easy Trading
 
+                    // as part of Easy Trading, we scale back the number of 
+                    // top assets as CF increases
+                    int t = (int)Math.Round((1.0 - CF) * T);
+
+                    // find T top risky assets
+                    IEnumerable<Instrument> topInstruments = riskyUniverse
+                        .Select(ds => ds.Instrument)
+                        .OrderByDescending(i => momentum13612W[i])
+                        .Take(t);
+
+                    // find single cash/ bond asset
+                    Instrument cashInstrument = cashUniverse
+                        .Select(ds => ds.Instrument)
+                        .OrderByDescending(i => momentum13612W[i])
+                        .First();
+
                     // set instrument weights
                     Dictionary<Instrument, double> weights = Instruments
                         .ToDictionary(i => i, i => 0.0);
@@ -144,7 +148,7 @@ namespace TuringTrader.BooksAndPubs
                     weights[cashInstrument] = CF;
 
                     foreach (Instrument i in topInstruments)
-                        weights[i] += (1.0 - CF) / T;
+                        weights[i] += (1.0 - CF) / t;
 
                     _alloc.LastUpdate = SimTime[0];
 
