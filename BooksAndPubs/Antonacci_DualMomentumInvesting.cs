@@ -67,6 +67,14 @@ namespace TuringTrader.BooksAndPubs
         /// <param name="i"></param>
         /// <returns></returns>
         protected virtual double MOMENTUM(Instrument i) => i.Close[0] / i.Close[252] - 1.0;
+        /// <summary>
+        /// simulation start time
+        /// </summary>
+        protected virtual DateTime START_TIME => Globals.START_TIME;
+        /// <summary>
+        /// simulation end time
+        /// </summary>
+        protected virtual DateTime END_TIME => Globals.END_TIME;
         #endregion
         #region internal data
         private Plotter _plotter;
@@ -85,23 +93,24 @@ namespace TuringTrader.BooksAndPubs
             //========== initialization ==========
 
             //WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME;
+            StartTime = START_TIME;
+            EndTime = END_TIME;
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
 
             // assets we can trade
-            List<string> assets = ASSET_CLASSES
+            List<string> ASSETS = ASSET_CLASSES
                 .SelectMany(c => c.assets)
                 .Distinct()
                 .Where(nick => nick != ABS_MOMENTUM)
                 .ToList();
-            assets.Add(SAFE_INSTR);
+            ASSETS.Add(SAFE_INSTR);
 
-            AddDataSources(assets);
-            AddDataSource(ABS_MOMENTUM);
-            AddDataSource(BENCHMARK);
+            var assets = AddDataSources(ASSETS);
+            var safe = AddDataSource(SAFE_INSTR); // we just need the data source
+            var absMom = AddDataSource(ABS_MOMENTUM);
+            var benchmark = AddDataSource(BENCHMARK);
 
             double totalWeights = ASSET_CLASSES.Sum(a => a.weight);
 
@@ -114,7 +123,7 @@ namespace TuringTrader.BooksAndPubs
                     .ToDictionary(i => i, i => MOMENTUM(i));
 
                 // skip if there are any missing instruments
-                if (!HasInstruments(assets) || !HasInstrument(BENCHMARK) || !HasInstrument(ABS_MOMENTUM))
+                if (!HasInstruments(assets) || !HasInstrument(benchmark) || !HasInstrument(absMom))
                     continue;
 
                 // execute trades once per month
@@ -126,18 +135,18 @@ namespace TuringTrader.BooksAndPubs
                     .ToDictionary(i => i, i => 0.0);
 
                     // loop through all asset classes, and find the top-ranked one
-                    Instrument safeInstrument = FindInstrument(SAFE_INSTR);
+                    Instrument safeInstrument = safe.Instrument;
                     foreach (AssetClass assetClass in ASSET_CLASSES)
                     {
                         // find the instrument with the highest momentum
                         // in each asset class
                         var bestInstrument = assetClass.assets
-                            .Select(nick =>FindInstrument(nick))
+                            .Select(nick => FindInstrument(nick))
                             .OrderByDescending(i => instrumentMomentum[i])
                             .Take(1)
                             .First();
 
-                        // sum up the weights (because safe instrument is duplicated)
+                        // sum up the weights (because instrument is duplicated)
                         instrumentWeights[bestInstrument] += assetClass.weight / totalWeights;
 
                         if (assetClass.setSafeInstrument)
@@ -147,20 +156,19 @@ namespace TuringTrader.BooksAndPubs
                     // if momentum of any instrument drops below that of a T-Bill,
                     // we use the safe instrument instead
                     // therefore, we swap T-Bills for the safe instrument:
-                    double pcntTbill = instrumentWeights[FindInstrument(ABS_MOMENTUM)];
-                    instrumentWeights[FindInstrument(ABS_MOMENTUM)] = 0.0;
+                    double pcntTbill = instrumentWeights[absMom.Instrument];
+                    instrumentWeights[absMom.Instrument] = 0.0;
                     instrumentWeights[safeInstrument] += pcntTbill;
 
                     // submit orders
                     _alloc.LastUpdate = SimTime[0];
-                    foreach (var nick in assets)
+                    foreach (var ds in assets)
                     {
-                        var asset = FindInstrument(nick);
-                        _alloc.Allocation[asset] = instrumentWeights[asset];
+                        _alloc.Allocation[ds.Instrument] = instrumentWeights[ds.Instrument];
 
-                        int targetShares = (int)Math.Floor(instrumentWeights[asset] * NetAssetValue[0] / asset.Close[0]);
-                        int currentShares = asset.Position;
-                        Order newOrder = asset.Trade(targetShares - currentShares);
+                        int targetShares = (int)Math.Floor(instrumentWeights[ds.Instrument] * NetAssetValue[0] / ds.Instrument.Close[0]);
+                        int currentShares = ds.Instrument.Position;
+                        Order newOrder = ds.Instrument.Trade(targetShares - currentShares);
 
                         if (newOrder != null)
                         {
@@ -174,8 +182,8 @@ namespace TuringTrader.BooksAndPubs
                 // plotter output
                 if (!IsOptimizing && TradingDays > 0)
                 {
-                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
-                    _plotter.AddStrategyHoldings(this, assets.Select(nick => FindInstrument(nick)));
+                    _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
+                    _plotter.AddStrategyHoldings(this, assets.Select(ds => ds.Instrument));
 
                     if (IsSubclassed) 
                         AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
@@ -389,35 +397,46 @@ namespace TuringTrader.BooksAndPubs
         };
     }
     #endregion
-    #region Accelerating Dual Momentum - as seen on EngineeredPortfolio.com
-    // see simulation here: https://www.portfoliovisualizer.com/test-market-timing-model?s=y&coreSatellite=false&timingModel=6&startYear=1985&endYear=2018&initialAmount=10000&symbols=VFINX+VINEX&singleAbsoluteMomentum=false&volatilityTarget=9.0&downsideVolatility=false&outOfMarketAssetType=2&outOfMarketAsset=VUSTX&movingAverageSignal=1&movingAverageType=1&multipleTimingPeriods=true&periodWeighting=2&windowSize=1&windowSizeInDays=105&movingAverageType2=1&windowSize2=10&windowSizeInDays2=105&volatilityWindowSize=0&volatilityWindowSizeInDays=0&assetsToHold=1&allocationWeights=1&riskControl=false&riskWindowSize=10&riskWindowSizeInDays=0&rebalancePeriod=1&separateSignalAsset=false&tradeExecution=0&benchmark=VFINX&timingPeriods[0]=1&timingUnits[0]=2&timingWeights[0]=33&timingPeriods[1]=3&timingUnits[1]=2&timingWeights[1]=33&timingPeriods[2]=6&timingUnits[2]=2&timingWeights[2]=34&timingUnits[3]=2&timingWeights[3]=0&timingUnits[4]=2&timingWeights[4]=0&volatilityPeriodUnit=2&volatilityPeriodWeight=0
+    #region Accelerating Dual Momentum - as seen on www.EngineeredPortfolio.com
+    // post: https://engineeredportfolio.com/2018/05/02/accelerating-dual-momentum-investing/
+    // code by author here: https://www.quantopian.com/posts/accelerating-dual-momentum-150-year-backtest
+    // simulation: https://www.portfoliovisualizer.com/test-market-timing-model?s=y&coreSatellite=false&timingModel=6&startYear=1985&endYear=2018&initialAmount=10000&symbols=VFINX+VINEX&singleAbsoluteMomentum=false&volatilityTarget=9.0&downsideVolatility=false&outOfMarketAssetType=2&outOfMarketAsset=VUSTX&movingAverageSignal=1&movingAverageType=1&multipleTimingPeriods=true&periodWeighting=2&windowSize=1&windowSizeInDays=105&movingAverageType2=1&windowSize2=10&windowSizeInDays2=105&volatilityWindowSize=0&volatilityWindowSizeInDays=0&assetsToHold=1&allocationWeights=1&riskControl=false&riskWindowSize=10&riskWindowSizeInDays=0&rebalancePeriod=1&separateSignalAsset=false&tradeExecution=0&benchmark=VFINX&timingPeriods[0]=1&timingUnits[0]=2&timingWeights[0]=33&timingPeriods[1]=3&timingUnits[1]=2&timingWeights[1]=33&timingPeriods[2]=6&timingUnits[2]=2&timingWeights[2]=34&timingUnits[3]=2&timingWeights[3]=0&timingUnits[4]=2&timingWeights[4]=0&volatilityPeriodUnit=2&volatilityPeriodWeight=0
     public class EngineeredPortfolio_AcceleratingDualMomentum : Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Engineered Portfolio's Accelerating Dual Momentum";
+
+        //protected override DateTime START_TIME => DateTime.Parse("01/01/1990");
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             new AssetClass
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    "SPY", //"yahoo:VFINX",
+                    "splice:SPY,yahoo:VFINX",
                     "splice:VSS,yahoo:VINEX",
                     ABS_MOMENTUM,
                 },
             },
         };
-        protected override string ABS_MOMENTUM => "BIL";
-        protected override string SAFE_INSTR => "TLT"; //"yahoo:VUSTX";
+
+        // the instrument for absolute momentum is just a dummy,
+        // MOMENTUM() will always return zero for this
+        protected override string ABS_MOMENTUM => "splice:BIL,yahoo:VFISX";
+        protected override string SAFE_INSTR => "splice:VGLT,yahoo:VUSTX";
         //protected override string BENCHMARK => "yahoo:VFINX";
+        //protected override string BENCHMARK => "$SPXTR";
+        //protected override string BENCHMARK => "$SPX";
+
         protected override double MOMENTUM(Instrument i)
         {
-            if (i.Name == ABS_MOMENTUM)
+            if (i.Nickname == ABS_MOMENTUM)
                 return 0.0;
 
             var m1 = i.Close[0] / i.Close[21] - 1.0;
             var m3 = i.Close[0] / i.Close[63] - 1.0;
             var m6 = i.Close[0] / i.Close[126] - 1.0;
-            return 0.33 * m1 + 0.33 * m3 + 0.33 * m6;
+
+            return m1 + m3 + m6;
         }
     }
     #endregion

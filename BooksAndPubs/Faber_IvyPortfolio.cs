@@ -2,7 +2,11 @@
 // Project:     TuringTrader, algorithms from books & publications
 // Name:        Faber_IvyPortfolio
 // Description: Variuous strategies as published in Mebane Faber's book
-//              'The Ivy Portfolio'.
+//              'The Ivy Portfolio' and
+//              'A Quantitative Approach to Tactical Asset Allocation'
+//              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=962461
+//              'Relative Strength Strategies for Investing'
+//              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1585517
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2019, Bertram Solutions LLC
