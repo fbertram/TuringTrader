@@ -17,11 +17,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DocumentationFile>C:\Users\Felix\Documents\Trading\TuringTrader\TuringTrader\TuringTrader.Simulator\TuringTrader.Simulator.xml</DocumentationFile>
+    <DocumentationFile>TuringTrader.Simulator.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DocumentationFile>C:\Users\Felix\Documents\Trading\TuringTrader\TuringTrader\TuringTrader.Simulator\TuringTrader.Simulator.xml</DocumentationFile>
+    <DocumentationFile>TuringTrader.Simulator.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
