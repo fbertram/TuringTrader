@@ -1,5 +1,6 @@
 # Version History
 
+- 0.12
 - 0.11
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
@@ -14,7 +15,7 @@
 	- add lazy portfolios
 	- add Connors' Alpha Formula
   - indicators
-    - improve robustnes of Markowitz CLA portfolios
+    - improve robustness of Markowitz CLA portfolios
 - 0.10
   - loader
     - allow loading algorithms from entry-assembly
