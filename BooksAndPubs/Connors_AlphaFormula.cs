@@ -362,7 +362,7 @@ namespace TuringTrader.com.Algorithms
         };
         #endregion
         #region ctor
-        public Connors_AlphaFormula_DynanmicTreasuries()
+        public Connors_AlphaFormula_DynamicTreasuries()
         {
             _plotter = new Plotter(this);
         }
