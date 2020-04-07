@@ -8,8 +8,11 @@
   - loader
     - add feature to disable loading algorithms from DLLs
   - showcase algorithms
+	- separate glue logic from algorithms
     - update algorithms from Bensdorp's 30-Minute Stock Trader to closer match the book
+	- add leveraged variants to Keller's DAA
 	- add lazy portfolios
+	- add Connors' Alpha Formula
   - indicators
     - improve robustnes of Markowitz CLA portfolios
 - 0.10
