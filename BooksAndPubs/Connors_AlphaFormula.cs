@@ -336,7 +336,7 @@ namespace TuringTrader.com.Algorithms
     }
     #endregion
     #region public class Connors_AlphaFormula_DynanmicTreasuries
-    public class Connors_AlphaFormula_DynanmicTreasuries : SubclassableAlgorithm
+    public class Connors_AlphaFormula_DynamicTreasuries : SubclassableAlgorithm
     {
         public override string Name => "Connors' Dynamic Treasuries";
 
@@ -362,7 +362,7 @@ namespace TuringTrader.com.Algorithms
         };
         #endregion
         #region ctor
-        public Connors_AlphaFormula_DynanmicTreasuries()
+        public Connors_AlphaFormula_DynamicTreasuries()
         {
             _plotter = new Plotter(this);
         }
@@ -664,7 +664,7 @@ namespace TuringTrader.com.Algorithms
         {
             Tuple.Create("algo:Connors_AlphaFormula_RisingAssets",        0.30),
             Tuple.Create("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.30),
-            Tuple.Create("algo:Connors_AlphaFormula_DynanmicTreasuries",  0.20),
+            Tuple.Create("algo:Connors_AlphaFormula_DynamicTreasuries",   0.20),
             Tuple.Create("algo:Connors_AlphaFormula_EtfAvalanches",       0.20),
         };
 
@@ -684,7 +684,7 @@ namespace TuringTrader.com.Algorithms
         {
             Tuple.Create("algo:Connors_AlphaFormula_RisingAssets",        0.45),
             Tuple.Create("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.45),
-            Tuple.Create("algo:Connors_AlphaFormula_DynanmicTreasuries",  0.30),
+            Tuple.Create("algo:Connors_AlphaFormula_DynamicTreasuries",   0.30),
             Tuple.Create("algo:Connors_AlphaFormula_EtfAvalanches",       0.30),
         };
         public override string BENCH => Assets.PORTF_60_40;
