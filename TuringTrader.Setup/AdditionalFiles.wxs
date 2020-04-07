@@ -63,49 +63,49 @@
       </Component>
 
       <!-- ===== data files ======================================== -->
-      <Component Id="cmpSpxInf" Directory="DataDir" Guid="*">
-        <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />
-      </Component>
-
-      <Component Id="cmpVixInf" Directory="DataDir" Guid="*">
-        <File Id="filVixInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$VIX.inf" />
-      </Component>
-
       <Component Id="cmpSpxFakeOptionsInf" Directory="DataDir" Guid="*">
         <File Id="filSpxFakeOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.fake.options.inf" />
+      </Component>
+
+      <Component Id="cmpSpxInf" Directory="DataDir" Guid="*">
+        <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />
       </Component>
 
       <Component Id="cmpSpxOptionsInf" Directory="DataDir" Guid="*">
         <File Id="filSpxOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.options.inf" />
       </Component>
 
-      <Component Id="cmpSpxOptionsCsv" Directory="DataSpxOptionsDir" Guid="*">
-        <File Id="filSpxOptionsCsv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
+      <Component Id="cmpSpxTrInf" Directory="DataDir" Guid="*">
+        <File Id="filSpxTrInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPXTR.inf" />
+      </Component>
+
+      <Component Id="cmpVixInf" Directory="DataDir" Guid="*">
+        <File Id="filVixInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$VIX.inf" />
       </Component>
 
       <Component Id="cmp6040Inf" Directory="DataDir" Guid="*">
         <File Id="fil6040Inf" KeyPath="yes" Source="$(var.HomeDir)\Data\@60_40.inf" />
       </Component>
 
-      <!-- <Component Id="cmp6040Csv" Directory="Data6040Dir" Guid="*">
-        <File Id="fil6040Csv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\@60_40\60_40.csv" />
-      </Component> -->
+      <Component Id="cmpSpxOptionsCsv" Directory="DataSpxOptionsDir" Guid="*">
+        <File Id="filSpxOptionsCsv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
+      </Component>
 
       <!-- ===== templates ======================================== -->
       <Component Id="cmpTemplateSimpleChartCs" Directory="TemplatesDir" Guid="*">
         <File Id="filTemplateSimpleChartsCs" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.cs" />
       </Component>
 
-      <Component Id="cmpTemplateSimpleChartXlsm" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleChartsXlsm" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.xlsm" />
-      </Component>
-      
       <Component Id="cmpTemplateSimpleChartR" Directory="TemplatesDir" Guid="*">
         <File Id="filTemplateSimpleChartsR" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.r" />
       </Component>
-      
+
       <Component Id="cmpTemplateSimpleChartRmd" Directory="TemplatesDir" Guid="*">
         <File Id="filTemplateSimpleChartsRmd" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.rmd" />
+      </Component>
+
+      <Component Id="cmpTemplateSimpleChartXlsm" Directory="TemplatesDir" Guid="*">
+        <File Id="filTemplateSimpleChartsXlsm" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.xlsm" />
       </Component>
       
       <Component Id="cmpTemplateSimpleReportCs" Directory="TemplatesDir" Guid="*">
@@ -117,18 +117,6 @@
       </Component>
 
       <!-- ===== books & pubs ======================================== -->
-      <Component Id="cmpBooksAndPubs_Project" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Project" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.csproj" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Solution" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Solution" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.sln" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_LaunchSettings" Directory="BooksAndPubsPropertiesDir" Guid="*">
-        <File Id="filBooksAndPubs_LaunchSettings" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
-      </Component>
-
       <Component Id="cmpBooksAndPubs_Aeromir_ParkingTrade" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_Aeromir_ParkingTrade" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Aeromir_ParkingTrade.cs" />
       </Component>
@@ -145,8 +133,24 @@
         <File Id="filBooksAndPubs_Bensdorp_30MinStockTrader" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Bensdorp_30MinStockTrader.cs" />
       </Component>
 
+      <Component Id="cmpBooksAndPubs_Project" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Project" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.csproj" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_Solution" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Solution" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.sln" />
+      </Component>
+
       <Component Id="cmpBooksAndPubs_Clenow_StocksOnTheMove" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_Clenow_StocksOnTheMove" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Clenow_StocksOnTheMove.cs" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_Comparison" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Comparison" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Comparison.cs" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_Connors_AlphaFormula" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Connors_AlphaFormula" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Connors_AlphaFormula.cs" />
       </Component>
 
       <Component Id="cmpBooksAndPubs_Connors_HighProbEtfTrading" Directory="BooksAndPubsDir" Guid="*">
@@ -161,6 +165,10 @@
         <File Id="filBooksAndPubs_Faber_IvyPortfolio" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Faber_IvyPortfolio.cs" />
       </Component>
 
+      <Component Id="cmpBooksAndPubs_GlueLogic" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_GlueLogic" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\GlueLogic.cs" />
+      </Component>
+
       <Component Id="cmpBooksAndPubs_Keller_CAA" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_Keller_CAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_CAA.cs" />
       </Component>
@@ -169,8 +177,16 @@
         <File Id="filBooksAndPubs_Keller_DAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_DAA.cs" />
       </Component>
 
+      <Component Id="cmpBooksAndPubs_LazyPortfolios" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_LazyPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\LazyPortfolios.cs" />
+      </Component>
+
       <Component Id="cmpBooksAndPubs_Livingston_MuscularPortfolios" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_Livingston_MuscularPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Livingston_MuscularPortfolios.cs" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_LaunchSettings" Directory="BooksAndPubsPropertiesDir" Guid="*">
+        <File Id="filBooksAndPubs_LaunchSettings" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
       </Component>
 
     </ComponentGroup>
