@@ -63,7 +63,7 @@ namespace TuringTrader.Simulator
                     var d = DataSource.New(nick);
 
                     name = name ?? d.Info[DataSourceParam.name];
-                    ticker = ticker ?? d.Info[DataSourceParam.ticker];
+                    ticker = ticker ?? d.Info[DataSourceParam.ticker] + "++";
                 }
 
                 Info[DataSourceParam.name] = name;
@@ -92,14 +92,9 @@ namespace TuringTrader.Simulator
                     // load data from specified data sources
                     // and save as list of bars, in reverse order
                     Dictionary<string, List<Bar>> dsBars = new Dictionary<string, List<Bar>>();
-                    string name = null;
-                    string ticker = null;
                     foreach (var nick in _symbols)
                     {
                         var d = DataSource.New(nick);
-
-                        name = name ?? d.Info[DataSourceParam.name];
-                        ticker = ticker ?? d.Info[DataSourceParam.ticker];
 
                         try
                         {
@@ -118,12 +113,6 @@ namespace TuringTrader.Simulator
 
                         //Output.WriteLine("{0}: {1} data range {2:MM/dd/yyyy}, {3:MM/dd/yyyy}", GetType().Name, nick, d.FirstTime, d.LastTime);
                     }
-
-#if false
-                    // BUGBUG: this won't work when data is cached
-                    Info[DataSourceParam.name] = name;
-                    Info[DataSourceParam.ticker] = ticker;
-#endif
 
                     // create enumerators for all data sources
                     Dictionary<string, IEnumerator<Bar>> dsEnums = new Dictionary<string, IEnumerator<Bar>>();
@@ -163,12 +152,12 @@ namespace TuringTrader.Simulator
                                 // highest priority bar
                                 Bar rawBar = dsEnums[nick].Current;
                                 double open = rawBar.Open * dsScale[nick];
-                                double high = rawBar.Open * dsScale[nick];
-                                double low = rawBar.Open * dsScale[nick];
-                                double close = rawBar.Open * dsScale[nick];
+                                double high = rawBar.High * dsScale[nick];
+                                double low = rawBar.Low * dsScale[nick];
+                                double close = rawBar.Close * dsScale[nick];
                                 long volume = 0;
 
-                                bar = Bar.NewOHLC(ticker, ts, open, high, low, close, volume);
+                                bar = Bar.NewOHLC(Info[DataSourceParam.ticker], ts, open, high, low, close, volume);
 
                                 bars.Add(bar);
                             }

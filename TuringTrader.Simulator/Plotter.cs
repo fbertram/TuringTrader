@@ -111,6 +111,12 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public string Title
+        /// <summary>
+        /// Plotter object's title. Typically, this does not need to be set,
+        /// as most of the time the title will be identical with the name
+        /// of the chart. However, for stacked charts, we want to set the
+        /// title independently.
+        /// </summary>
         public string Title { get; set; }
         #endregion
 

@@ -275,6 +275,11 @@ namespace TuringTrader.Simulator
                 .Where(v => v >= val)
                 .ToList();
 
+            if (less.Count == 0)
+                return 0.0;
+            if (more.Count == 0)
+                return 1.0;
+
             var pLess = (double)less.Count() / distr.Count;
             var vLess = less.Max();
             var pMore = 1.0 - (double)more.Count() / distr.Count;

@@ -143,6 +143,14 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region static public bool LoadAlgoDlls
+        /// <summary>
+        /// Enable/ disable loading of algorithms from external DLLs. Default is true.
+        /// Note that this setting can only be made prior to accessing the
+        /// AlgorithmLoader.
+        /// </summary>
+        static public bool LoadAlgoDlls { get; set; } = true;
+        #endregion
 
         #region static public string MostRecentAlgorithm
         /// <summary>
@@ -212,23 +220,12 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region static public bool AdjustForDividends
-        private static bool _adjustQuotes = true;
         /// <summary>
         /// Enable/ disable quote adjustment for dividends. Default is true.
         /// Note that most data feeds (other than Norgate) cannot adjust for dividends.
         /// For these data feeds, this switch won't have any effect.
         /// </summary>
-        static public bool AdjustForDividends
-        {
-            get
-            {
-                return _adjustQuotes;
-            }
-            set
-            {
-                _adjustQuotes = value;
-            }
-        }
+        static public bool AdjustForDividends { get; set; } = true;
         #endregion
 
         #region static public string DefaultDataFeed

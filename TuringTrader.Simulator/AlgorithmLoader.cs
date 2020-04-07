@@ -60,6 +60,10 @@ namespace TuringTrader.Simulator
         /// </summary>
         public Type DllType;
         /// <summary>
+        /// Path to DLL, in case algorithm is contained in DLL
+        /// </summary>
+        public string DllPath;
+        /// <summary>
         /// Algorithm source path, in case algorithm is contained in C# source file
         /// </summary>
         public string SourcePath;
@@ -114,6 +118,7 @@ namespace TuringTrader.Simulator
                         Name = type.Name,
                         IsPublic = type.IsPublic,
                         DllType = type,
+                        DllPath = assembly.Location,
                         DisplayPath = new List<string>() { title },
                     };
                 }
@@ -130,30 +135,34 @@ namespace TuringTrader.Simulator
             foreach (var type in _enumAssyAlgorithms(entry))
                 yield return type;
 #endif
-            DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
 
-            if (!dirInfo.Exists)
-                yield break;
-
-            FileInfo[] files = dirInfo.GetFiles("*.dll");
-
-            // see https://msdn.microsoft.com/en-us/library/ms972968.aspx
-
-            foreach (FileInfo file in files)
+            if (GlobalSettings.LoadAlgoDlls)
             {
-                Assembly assembly = null;
+                DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
 
-                try
-                {
-                    assembly = Assembly.LoadFrom(file.FullName);
-                }
-                catch
-                {
-                    continue;
-                }
+                if (!dirInfo.Exists)
+                    yield break;
 
-                foreach (var type in _enumAssyAlgorithms(assembly))
-                    yield return type;
+                FileInfo[] files = dirInfo.GetFiles("*.dll");
+
+                // see https://msdn.microsoft.com/en-us/library/ms972968.aspx
+
+                foreach (FileInfo file in files)
+                {
+                    Assembly assembly = null;
+
+                    try
+                    {
+                        assembly = Assembly.LoadFrom(file.FullName);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    foreach (var type in _enumAssyAlgorithms(assembly))
+                        yield return type;
+                }
             }
 
             yield break;
@@ -210,7 +219,7 @@ namespace TuringTrader.Simulator
 
             yield break;
         }
-#endregion
+        #endregion
 
         #region public static List<Type> GetAllAlgorithms()
         /// <summary>
@@ -304,6 +313,28 @@ namespace TuringTrader.Simulator
 
                 return algo;
             }
+        }
+        #endregion
+
+        #region public static void PrintInfo()
+        /// <summary>
+        /// Print info about all algorithms found
+        /// </summary>
+        public static void PrintInfo()
+        {
+            Output.WriteLine("===== AlgorithmLoader Info =====");
+            int i = 0;
+            foreach (var info in _staticAlgorithms)
+            {
+                if (info.DllType != null)
+                {
+                    Output.WriteLine("{0}: {1} ({2})", i++, info.Name, info.DllPath);
+                } else
+                {
+                    Output.WriteLine("{0}: {1} ({2})", i++, info.Name, info.SourcePath);
+                }
+            }
+            Output.WriteLine("===== end =====");
         }
         #endregion
     }

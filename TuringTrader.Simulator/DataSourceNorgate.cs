@@ -331,6 +331,10 @@ namespace TuringTrader.Simulator
             private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
             {
                 { "$SPX", "S&P 500 Current & Past"},
+                { "$NDX", "NASDAQ 100 Current & Past" },
+                { "$OEX", "S&P 100 Current & Past" },
+                { "$SP1500",  "S&P Composite 1500 Current & Past"},
+                { "$RUA", "Russell 3000 Current & Past" },
             };
             private string _nickname;
             // Norgate dll is loaded *while* first instance is created

@@ -708,7 +708,8 @@ namespace TuringTrader.Simulator
             }
 
             _accountFilter = account;
-            ClientSocket.reqAccountSummary(accountSummaryHash, "All", "TotalCashValue,NetLiquidation");
+            //ClientSocket.reqAccountSummary(accountSummaryHash, "All", "TotalCashValue,NetLiquidation");
+            ClientSocket.reqAccountSummary(accountSummaryHash, "All", "TotalCashValue,NetLiquidation,SettledCash,AccruedCash,BuyingPower,AvailableFunds,GrossPositionValue");
             _asyncEvent[accountSummaryHash].WaitOne();
             ClientSocket.cancelAccountSummary(accountSummaryHash);
 

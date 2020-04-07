@@ -8,8 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BooksAndPubs\BooksAndPubs.csproj" />
-    <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
+    <Reference Include="TuringTrader.Simulator">
+      <HintPath>..\..\..\..\..\..\..\Program Files\TuringTrader\Bin\TuringTrader.Simulator.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
