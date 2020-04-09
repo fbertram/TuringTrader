@@ -52,20 +52,25 @@ namespace TuringTrader.CustomApp
 
             foreach (var simTime in SimTimes)
             {
+                // this chart will be rendered by our renderer.
+                // we recognize it by its name
                 _plotter.SelectChart(Globals.Render, "Date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot(Globals.Asset, a.Instrument.Close[0]);
             }
 
+            // this chart will be ignored by our renderer
             _plotter.SelectChart(Globals.Ignore, "Stuff");
             _plotter.SetX("Row 1");
-            _plotter.Plot("Column 1", 1.0);
+            _plotter.Plot("Column 1", "some data");
+            _plotter.SetX("Row 2");
+            _plotter.Plot("Column 1", "more data");
         }
 
         public override void Report()
         {
-            // even if we are not using it, we need to specify
-            // a proper report template here
+            // note that the report template must exist, even though
+            // our custom renderer most likely won't use it
             _plotter.OpenWith("SimpleChart");
         }
     }
@@ -139,8 +144,6 @@ namespace TuringTrader.CustomApp
             algo.Run();
 
             // create report
-            // note that the report template needs to exist, even though
-            // the renderer for our example most likely won't use it
             algo.Report();
         }
         #endregion
