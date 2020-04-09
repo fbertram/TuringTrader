@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Authors>Felix Bertram</Authors>
     <Company>Bertram Solutions LLC</Company>
     <Description>Open-source backtesting engine and market simulator</Description>
-    <Copyright>Copyright (c) 2011-2019, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2020, Bertram Solutions LLC</Copyright>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="AvalonLibrary" Version="2.4.0" />
     <PackageReference Include="NetOffice.Excel" Version="1.7.4.4" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.0.0-unstable1035" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

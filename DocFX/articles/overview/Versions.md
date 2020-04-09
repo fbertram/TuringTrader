@@ -1,6 +1,7 @@
 # Version History
 
 - 0.12
+  - update to .Net Core 3.1
 - 0.11
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar

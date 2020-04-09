@@ -214,8 +214,8 @@
             <Component Id="cmp2AEB1D8B013BA9A730B011D0C259995F" Directory="BINFOLDER" Guid="*">
                 <File Id="fil75BE3DD33690026580A76C74059F921D" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmpE162EF74406BBE168B549696A4C5BA5B" Directory="BINFOLDER" Guid="*">
-                <File Id="fil8CB0C55728400DBD89F823DCF3E9A1C6" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.19.37902.dll" />
+            <Component Id="cmp67B2A5D643F406D1C375294B5B40E7E4" Directory="BINFOLDER" Guid="*">
+                <File Id="fil714F0927420FE8375C607BA6CB81B78F" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.20.11803.dll" />
             </Component>
             <Component Id="cmpAF28CE66C6DA6E2E7F469E603E9CD404" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5A3F401CAE73B190C6C3DB8367EC383D" KeyPath="yes" Source="$(var.SourceDir)\mscordbi.dll" />
@@ -333,6 +333,9 @@
             </Component>
             <Component Id="cmp3A5277DAF941C56D29CA6BA1A09FC556" Directory="BINFOLDER" Guid="*">
                 <File Id="filD3F9EDC07747198047FC091AE63E3FEB" KeyPath="yes" Source="$(var.SourceDir)\System.ComponentModel.Composition.dll" />
+            </Component>
+            <Component Id="cmpD8488E2E48A45B1D08A4D7B825B07619" Directory="BINFOLDER" Guid="*">
+                <File Id="fil39B3D41D63D3D619BE68313A903F563A" KeyPath="yes" Source="$(var.SourceDir)\System.ComponentModel.Composition.Registration.dll" />
             </Component>
             <Component Id="cmp0E1416C32947962F4F8A559F3EFC84C8" Directory="BINFOLDER" Guid="*">
                 <File Id="fil863DD55D1E89AAA938898B8BB26CCC09" KeyPath="yes" Source="$(var.SourceDir)\System.ComponentModel.DataAnnotations.dll" />
@@ -603,6 +606,9 @@
             </Component>
             <Component Id="cmp93789564C31C9005FD163005C9727970" Directory="BINFOLDER" Guid="*">
                 <File Id="fil6B01550D5983C4859EFB4D6976A7690B" KeyPath="yes" Source="$(var.SourceDir)\System.Private.Xml.Linq.dll" />
+            </Component>
+            <Component Id="cmp51972B67BC9B0297426997D520956E39" Directory="BINFOLDER" Guid="*">
+                <File Id="fil31AAB586D517634179D05D5308D92EBB" KeyPath="yes" Source="$(var.SourceDir)\System.Reflection.Context.dll" />
             </Component>
             <Component Id="cmp4E74F5E6AD93FCD8E9AA80AA05754103" Directory="BINFOLDER" Guid="*">
                 <File Id="fil36EFD71548C3F77D72121DFFA7A3D234" KeyPath="yes" Source="$(var.SourceDir)\System.Reflection.DispatchProxy.dll" />

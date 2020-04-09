@@ -101,7 +101,7 @@ namespace TuringTrader.Simulator
                             d.LoadData(startTime, endTime);
                             dsBars[nick] = d.Data.Reverse().ToList();
                         }
-                        catch (Exception e)
+                        catch (Exception /*e*/)
                         {
                             Output.WriteLine("{0}: {1} failed to load {2}", this.GetType().Name, Info[DataSourceParam.nickName], nick);
 

@@ -18,12 +18,12 @@ Find the TuringTrader documentation at https://www.turingtrader.org/documentatio
 
 ### Prerequisites
 
-see https://dotnet.microsoft.com/download/dotnet-core/3.0
+see https://dotnet.microsoft.com/download/dotnet-core/3.1
 
 - Microsoft Visual Studio Community 2019
     - due to using .NET Core 3, we need at least version 16.2.0 Preview 3
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
-- .NET Core 3 SDK, Preview 6 or later
+- .NET Core 3.1 SDK
 - WiX Toolset version 3.11
 - WiX Toolset Visual Studio 2019 Extension
 - DocFX toolset version 2.43.2.0
