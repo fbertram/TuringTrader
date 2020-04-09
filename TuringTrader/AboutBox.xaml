@@ -12,11 +12,11 @@
             <Run Text="An open-source backtesting engine/ market simulator."/>
             <Run Text="For news, updates, and more information about the project, please visit our
 website at "/>
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.turingtrader.org/">
-                <Run Text="http://www.turingtrader.org/"/></Hyperlink><Run Text="."/><LineBreak/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
+                <Run Text="https://www.turingtrader.org/"/></Hyperlink><Run Text="."/><LineBreak/>
             <LineBreak/>
-            <Run Text="Copyright © 2011-2019, "/>
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://bertram.solutions/">
+            <Run Text="Copyright © 2011-2020, "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.bertram.solutions/tools/software/">
                 <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             <Run Text="This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -29,8 +29,8 @@ GNU Affero General Public License for more details." FontFamily="Segoe UI"/><Lin
             <Run Text="You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see "/>
             
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://www.gnu.org/licenses/agpl-3.0">
-                <Run Text="http://www.gnu.org/licenses/agpl-3.0"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.gnu.org/licenses/agpl-3.0">
+                <Run Text="https://www.gnu.org/licenses/agpl-3.0"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             
             <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
             <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
@@ -45,7 +45,7 @@ along with this program.  If not, see "/>
                 <Run Text="NetOffice.Excel"/></Hyperlink><LineBreak/>
             <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/OxyPlot.Wpf">
                 <Run Text="OxyPlot.Wpf"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://interactivebrokers.github.io/tws-api/">
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://interactivebrokers.github.io/tws-api/">
                 <Run Text="TWS API"/></Hyperlink><LineBreak/>
         </TextBlock>
         <Button Content="OK" Width="75" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click" HorizontalAlignment="Right"/>
