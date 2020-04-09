@@ -1,8 +1,11 @@
 # Version History
 
 - 0.12
-  - update to .Net Core 3.1
-- 0.11
+  - general
+    - update to .Net Core 3.1
+  - simulator
+    - make cache objects thread-local (except for data sources)
+- 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
   - data sources

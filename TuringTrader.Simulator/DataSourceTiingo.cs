@@ -337,7 +337,7 @@ namespace TuringTrader.Simulator
                         return bars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction); ;
+                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true); ;
                 }
 
                 catch (Exception e)

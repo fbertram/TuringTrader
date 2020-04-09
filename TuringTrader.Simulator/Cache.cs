@@ -4,7 +4,7 @@
 // Description: data cache, to reduce memory footprint and cpu use
 // History:     2018ix21, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -20,6 +20,11 @@
 //              License along with TuringTrader. If not, see 
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
+
+#define THREAD_LOCAL
+// with THREAD_LOCAL defined, data will be cached 
+// in thread-local storage, except when the 'global'
+// flag is set
 
 //#define DISABLE_CACHE
 // with DISABLE_CACHE defined, no data will be cached, 
@@ -154,7 +159,10 @@ namespace TuringTrader.Simulator
     {
 
         #region internal data
-        private static Dictionary<int, T> _cache = new Dictionary<int, T>();
+        private static Dictionary<int, T> _globalCache = new Dictionary<int, T>();
+
+        [ThreadStatic]
+        private static Dictionary<int, T> _threadCache = null;
         #endregion
         #region static public T GetData(CacheId key, Func<T> initialRetrieval)
         /// <summary>
@@ -162,22 +170,47 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="id">unique ID of data</param>
         /// <param name="initialRetrieval">lambda to retrieve data not found in cache</param>
+        /// <param name="global">set to true, to cache globally across all threads</param>
         /// <returns>cached data</returns>
-        static public T GetData(CacheId id, Func<T> initialRetrieval)
+        static public T GetData(CacheId id, Func<T> initialRetrieval, bool global = false)
         {
 #if DISABLE_CACHE
             return initialRetrieval();
 #else
             int key = id.Key;
 
-            //lock (_lockCache)
-            lock(_cache)
+#if THREAD_LOCAL
+            // separate thread-local and global caches
+            if (global)
             {
-                if (!_cache.ContainsKey(key))
-                    _cache[key] = initialRetrieval();
+                lock (_globalCache)
+                {
+                    if (!_globalCache.ContainsKey(key))
+                        _globalCache[key] = initialRetrieval();
 
-                return _cache[key];
+                    return _globalCache[key];
+                }
             }
+            else
+            {
+                if (_threadCache == null)
+                    _threadCache = new Dictionary<int, T>();
+
+                if (!_threadCache.ContainsKey(key))
+                    _threadCache[key] = initialRetrieval();
+
+                return _threadCache[key];
+            }
+#else
+            // unified cache across all threads
+            lock (_globalCache)
+            {
+                if (!_globalCache.ContainsKey(key))
+                    _globalCache[key] = initialRetrieval();
+
+                return _globalCache[key];
+            }
+#endif
 #endif
         }
         #endregion

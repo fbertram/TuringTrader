@@ -351,7 +351,7 @@ namespace TuringTrader.Simulator
                         return alignedBars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
                     // FIXME: this is far from ideal. We want to make sure that retired
                     //        series are not extended indefinitely

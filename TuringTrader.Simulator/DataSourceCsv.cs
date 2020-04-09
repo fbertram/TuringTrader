@@ -459,7 +459,7 @@ namespace TuringTrader.Simulator
                     return bars;
                 };
 
-                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
                 if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));

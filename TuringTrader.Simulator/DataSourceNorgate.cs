@@ -315,7 +315,7 @@ namespace TuringTrader.Simulator
                     return bars;
                 };
 
-                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction);
+                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
                 if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
                     throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName2]));
