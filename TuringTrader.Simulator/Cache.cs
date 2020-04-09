@@ -21,6 +21,13 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// NOTE:
+// This cache implementation will leak memory, as global objects are never
+// freed. Typical global objects include data from the various data feeds.
+// By default, objects are stored in thread-local memory, which should be
+// freed when the thread terminates. This includes objects created for
+// time series and indicators.
+
 #define THREAD_LOCAL
 // with THREAD_LOCAL defined, data will be cached 
 // in thread-local storage, except when the 'global'
