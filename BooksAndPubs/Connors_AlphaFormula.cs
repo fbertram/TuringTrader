@@ -22,7 +22,7 @@ using TuringTrader.Algorithms.Glue;
 using System.Globalization;
 #endregion
 
-namespace TuringTrader.com.Algorithms
+namespace TuringTrader.BooksAndPubs
 {
     #region public class Connors_AlphaFormula_RisingAssets
     public class Connors_AlphaFormula_RisingAssets : SubclassableAlgorithm
