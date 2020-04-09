@@ -21,17 +21,59 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#region libraries
 using System;
 using TuringTrader.Simulator;
 using TuringTrader;
 using System.IO;
+using System.Globalization;
+#endregion
 
 namespace TuringTrader.CustomApp
 {
+    #region globals
+    static class Globals
+    {
+        public static string Render = "Render Chart";
+        public static string Ignore = "Ignore Chart";
+        public static string Asset = "MSFT";
+    }
+    #endregion
+    #region algorithm
+    class MyAlgo : Algorithm
+    {
+        private Plotter _plotter = new Plotter();
+        public override void Run()
+        {
+            StartTime = DateTime.Parse("01/01/2020", CultureInfo.InvariantCulture);
+            EndTime = DateTime.Parse("01/31/2020", CultureInfo.InvariantCulture);
+
+            var a = AddDataSource(Globals.Asset);
+
+            foreach (var simTime in SimTimes)
+            {
+                _plotter.SelectChart(Globals.Render, "Date");
+                _plotter.SetX(SimTime[0]);
+                _plotter.Plot(Globals.Asset, a.Instrument.Close[0]);
+            }
+
+            _plotter.SelectChart(Globals.Ignore, "Stuff");
+            _plotter.SetX("Row 1");
+            _plotter.Plot("Column 1", 1.0);
+        }
+
+        public override void Report()
+        {
+            // even if we are not using it, we need to specify
+            // a proper report template here
+            _plotter.OpenWith("SimpleChart");
+        }
+    }
+    #endregion
+    #region application
     class Program
     {
-        private static string ALGO = "Demo01_Indicators";
-
+        #region renderer
         /// <summary>
         /// Renderer for TuringTrader's Plotter object
         /// </summary>
@@ -41,17 +83,21 @@ namespace TuringTrader.CustomApp
         {
             foreach(var chart in plotter.AllData.Keys)
             {
-                Console.WriteLine("=== Chart = {0}, Template = {1} ===", chart, pathToTemplate);
-
-                foreach (var row in plotter.AllData[chart])
+                if (chart == Globals.Render)
                 {
-                    foreach (var col in row.Keys)
-                        Console.Write("{0} = {1}, ", col, row[col]);
-                    Console.WriteLine();
+                    Console.WriteLine("=== Chart = {0}, Template = {1} ===", chart, pathToTemplate);
+
+                    foreach (var row in plotter.AllData[chart])
+                    {
+                        foreach (var col in row.Keys)
+                            Console.Write("{0} = {1}, ", col, row[col]);
+                        Console.WriteLine();
+                    }
                 }
             }
         }
-
+        #endregion
+        #region log output
         /// <summary>
         /// Event-handler for TuringTrader's Output object
         /// </summary>
@@ -60,6 +106,9 @@ namespace TuringTrader.CustomApp
         {
             Console.Write("Output: {0}", message);
         }
+        #endregion
+
+        #region application code
         static void Main(string[] args)
         {
             // add an event handler to TuringTrader's Output object,
@@ -78,16 +127,13 @@ namespace TuringTrader.CustomApp
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "TuringTrader");
 
-            // optional: disable loading of algorithms from external DLLs
-            // this way, only algorithms compiled into the entry-assembly
-            // are available
-            GlobalSettings.LoadAlgoDlls = false;
-
-            // scan available algorithms
-            var list = AlgorithmLoader.GetAllAlgorithms(false);
+            // set the default data feed, to have a proper fallback when
+            // there are no data source descriptor files present
+            GlobalSettings.DefaultDataFeed = "yahoo";
 
             // instantiate algorithm
-            var algo = AlgorithmLoader.InstantiateAlgorithm(ALGO);
+            // more advanced applications might use AlgorithmLoader here
+            var algo = new MyAlgo();
 
             // run backtest
             algo.Run();
@@ -97,7 +143,9 @@ namespace TuringTrader.CustomApp
             // the renderer for our example most likely won't use it
             algo.Report();
         }
+        #endregion
     }
+    #endregion
 }
 
 //==============================================================================
