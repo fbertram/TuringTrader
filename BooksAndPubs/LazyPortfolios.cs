@@ -49,6 +49,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual string BENCH => Assets.PORTF_60_40;
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
+        public virtual bool REBAL_MONTHLY => true;
         #endregion
 
         #region ctor
@@ -79,7 +80,7 @@ namespace TuringTrader.BooksAndPubs
                     continue;
 
                 //if (SimTime[0].Date.DayOfWeek > NextSimTime.Date.DayOfWeek)
-                if (SimTime[0].Date.Month != NextSimTime.Date.Month)
+                if (!REBAL_MONTHLY || SimTime[0].Date.Month != NextSimTime.Date.Month)
                 {
                     _alloc.LastUpdate = SimTime[0];
                     foreach (var a in ALLOCATION)
@@ -188,6 +189,22 @@ namespace TuringTrader.BooksAndPubs
         };
         public override string BENCH => Assets.PORTF_60_40;
         //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
+    }
+    #endregion
+    #region Harry Browne's Permanent Portfolio
+    public class Browne_PermanentPortfolio : LazyPortfolio
+    {
+        public override string Name => "Browne's Permanent Portfolio";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // See Harry Browne, Fail Safe Investing
+            Tuple.Create(Assets.STOCKS_US_LG_CAP,   0.25),  // 25% S&P 500
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y, 0.25),  // 25% 20-25yr Treasuries
+            //Tuple.Create(Assets.BONDS_US_TREAS_3M,  0.25),  // 25% Treasury Bills
+            Tuple.Create(Assets.BONDS_US_TREAS_3Y,  0.25),  // 25% Short-Term Treasuries
+            Tuple.Create(Assets.GOLD,               0.25),  // 25% Gold
+        };
+        public override string BENCH => Assets.PORTF_60_40;
     }
     #endregion
 }
