@@ -53,6 +53,13 @@ namespace TuringTrader.Simulator
         #region private void RunIteration()
         private void RunIteration()
         {
+            if (!MasterInstance.CheckParametersValid())
+            {
+                // parameters are invalid. skip this iteration
+                _numIterationsTotal--;
+                return;
+            }
+
             // create algorithm instance to run
             Algorithm instanceToRun = MasterInstance.Clone();
 

@@ -127,6 +127,17 @@ namespace TuringTrader.Simulator
         /// </summary>
         public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
         #endregion
+        #region virtual public bool CheckParametersValid()
+        /// <summary>
+        /// Check, if current parameterset is valid. This is used to weed out
+        /// illegal parameter combinations during grid optimization.
+        /// </summary>
+        /// <returns>true, if parameter set valid</returns>
+        virtual public bool CheckParametersValid()
+        {
+            return true;
+        }
+        #endregion
         #region public string OptimizerParamsAsString
         /// <summary>
         /// String representation of the current settings of all
