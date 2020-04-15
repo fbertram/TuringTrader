@@ -165,7 +165,10 @@ namespace TuringTrader.Simulator
 #endif
 
             // run fill model. default fill is theoretical price
-            var fillPrice = FillModel(ticket, execBar, price);
+            var fillPrice = ticket.Type == OrderType.cash
+                || ticket.Type == OrderType.optionExpiryClose
+                    ? price
+                    : FillModel(ticket, execBar, price);
 
             // adjust position, unless it's the end-of-sim order
             if (ticket.Type != OrderType.endOfSimFakeClose)
@@ -215,7 +218,10 @@ namespace TuringTrader.Simulator
         private void ExpireOption(Instrument instrument)
         {
             Instrument underlying = _instruments[instrument.OptionUnderlying];
-            double price = underlying.Close[1];
+            double spotPrice = underlying.Close[1];
+            double optionValue = instrument.OptionIsPut
+                    ? Math.Max(0.00, instrument.OptionStrike - spotPrice)
+                    : Math.Max(0.00, spotPrice - instrument.OptionStrike);
 
             // create order ticket
             Order ticket = new Order()
@@ -223,9 +229,8 @@ namespace TuringTrader.Simulator
                 Instrument = instrument,
                 Quantity = -Positions[instrument],
                 Type = OrderType.optionExpiryClose,
-                Price = instrument.OptionIsPut
-                    ? Math.Max(0.00, instrument.OptionStrike - price)
-                    : Math.Max(0.00, price - instrument.OptionStrike),
+                Price = optionValue,
+                Comment = string.Format("spot = {0:C2}", spotPrice)
             };
 
             // force execution
