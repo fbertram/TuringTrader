@@ -5,6 +5,14 @@
     - update to .Net Core 3.1
   - simulator
     - make cache objects thread-local (except for data sources)
+	- add CheckParameters
+	- add FillModel
+  - data sources
+    - fake options
+	  - interpolated volatility, based on 9d, 30d, 3m, 6m, and 12m vix
+	  - improved selection of expiry dates
+	  - fix issue w/ option prices not always maintained all the way to expiry
+	  - cache calculated option chain
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
