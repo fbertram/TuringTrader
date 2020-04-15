@@ -24,6 +24,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TuringTrader.Indicators;
 using TuringTrader.Support;
 #endregion
@@ -37,8 +38,12 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private class SimFakeOptions : SimulatorCore
             {
-                private static readonly string UNDERLYING_NICK = "$SPX";
-                private static readonly string VOLATILITY_NICK = "$VIX";
+                private static readonly string UNDERLYING = "$SPX";
+                private static readonly string VOLATILITY_9D = "$VIX9D";
+                private static readonly string VOLATILITY_30D = "$VIX";
+                private static readonly string VOLATILITY_3M = "$VIX3M";
+                private static readonly string VOLATILITY_6M = "$VIX6M";
+                private static readonly string VOLATILITY_12M = "$VIX1Y";
 
                 private List<Bar> _data;
                 private DateTime _startTime;
@@ -56,33 +61,84 @@ namespace TuringTrader.Simulator
                     StartTime = _startTime;
                     EndTime = _endTime;
 
-                    AddDataSource(UNDERLYING_NICK);
-                    AddDataSource(VOLATILITY_NICK);
+                    AddDataSource(UNDERLYING);
+
+                    var volatilities = new Dictionary<double, DataSource>
+                    {
+                        { 9 / 365.25, AddDataSource(VOLATILITY_9D) },
+                        { 30 / 365.25, AddDataSource(VOLATILITY_30D) },
+                        { 91 / 365.25, AddDataSource(VOLATILITY_3M) },
+                        { 182 / 365.25, AddDataSource(VOLATILITY_6M) },
+                        { 365 / 365.25, AddDataSource(VOLATILITY_12M) },
+                    };
+
+                    var lowStrikes = new Dictionary<DateTime, int>();
+                    var highStrikes = new Dictionary<DateTime, int>();
 
                     foreach (var simTime in SimTimes)
                     {
-                        ITimeSeries<double> underlying = FindInstrument(UNDERLYING_NICK).Close;
-                        ITimeSeries<double> volatility = FindInstrument(VOLATILITY_NICK).Close.Divide(100.0);
+                        ITimeSeries<double> underlying = FindInstrument(UNDERLYING).Close;
 
                         DateTime previousFriday = SimTime[0]
                             - TimeSpan.FromDays((int)SimTime[0].DayOfWeek + 2);
 
-                        for (int weeks = 1; weeks < 4 * 4; weeks++)
+                        var expiries = new List<DateTime>();
+                        for (int w = 1; w < 60; w++)
                         {
-                            DateTime expiry = previousFriday + TimeSpan.FromDays(weeks * 7);
+                            DateTime x = previousFriday + TimeSpan.FromDays(w * 7);
+                            if (w <= 13)
+                                expiries.Add(x);
+
+                            // 3rd Friday of the Month:
+                            //   15, if 1st is a Friday
+                            //   21, if 1st is a Saturday
+                            else if (x.Day <= 21 && x.Day >= 15)
+                                expiries.Add(x);
+                        }
+
+                        foreach (var expiry in expiries)
+                        {
                             double T = (expiry - SimTime[0].Date).TotalDays / 365.25;
 
-                            int lowStrike = 5 * (int)Math.Round(underlying[0] * 0.80 / 5.0);
-                            int highStrike = 5 * (int)Math.Round(underlying[0] * 1.20 / 5.0);
+                            var volatility = 0.0;
+                            if (T < volatilities.Keys.Min())
+                            {
+                                volatility = volatilities[volatilities.Keys.Min()].Instrument.Close[0] / 100.0;
+                            }
+                            else if (T > volatilities.Keys.Max())
+                            {
+                                volatility = volatilities[volatilities.Keys.Max()].Instrument.Close[0] / 100.0;
+                            }
+                            else
+                            {
+                                var vLow = volatilities
+                                    .Where(v => v.Key <= T)
+                                    .OrderByDescending(v => v.Key)
+                                    .FirstOrDefault();
+                                var vHigh = volatilities
+                                    .Where(v => v.Key >= T)
+                                    .OrderBy(v => v.Key)
+                                    .FirstOrDefault();
+                                var p = (T - vLow.Key) / (vHigh.Key - vLow.Key);
+                                volatility = 0.01 * (vLow.Value.Instrument.Close[0]
+                                    + p * (vHigh.Value.Instrument.Close[0] - vLow.Value.Instrument.Close[0]));
+                            }
+
+                            lowStrikes[expiry] = Math.Min(5 * (int)Math.Round(underlying[0] * 0.70 / 5.0),
+                                lowStrikes.ContainsKey(expiry) ? lowStrikes[expiry] : int.MaxValue);
+                            highStrikes[expiry] = Math.Max(5 * (int)Math.Round(underlying[0] * 1.20 / 5.0),
+                                highStrikes.ContainsKey(expiry) ? highStrikes[expiry] : 0);
+                            int lowStrike = lowStrikes[expiry];
+                            int highStrike = highStrikes[expiry];
 
                             for (int strike = lowStrike; strike <= highStrike; strike += 5)
                             {
                                 for (int putCall = 0; putCall < 2; putCall++) // 0 = put, 1 = call
                                 {
                                     double z = (strike - underlying[0])
-                                        / (Math.Sqrt(T) * underlying[0] * volatility[0]);
+                                        / (Math.Sqrt(T) * underlying[0] * volatility);
 
-                                    double vol = volatility[0] * (1.0 + 0.30 * Math.Abs(z));
+                                    double vol = volatility * (1.0 + 0.30 * Math.Abs(z));
 
                                     double price = OptionSupport.GBlackScholes(
                                         putCall == 0 ? false : true,
@@ -135,15 +191,27 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
-                DateTime t1 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceFakeOptions: generating data for {0}...", Info[DataSourceParam.nickName]));
+                var cacheKey = new CacheId(null, "", 0,
+                    Info[DataSourceParam.nickName].GetHashCode(),
+                    startTime.GetHashCode(),
+                    endTime.GetHashCode());
 
-                List<Bar> data = new List<Bar>();
-                LoadData(data, startTime, endTime);
-                Data = data;
+                List<Bar> retrievalFunction()
+                {
 
-                DateTime t2 = DateTime.Now;
-                Output.WriteLine(string.Format("DataSourceFakeOptions: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    DateTime t1 = DateTime.Now;
+                    Output.WriteLine(string.Format("DataSourceFakeOptions: generating data for {0}...", Info[DataSourceParam.nickName]));
+
+                    List<Bar> data = new List<Bar>();
+                    LoadData(data, startTime, endTime);
+
+                    DateTime t2 = DateTime.Now;
+                    Output.WriteLine(string.Format("DataSourceFakeOptions: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                    return data;
+                }
+
+                Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true); ;
             }
             #endregion
         }
