@@ -328,6 +328,8 @@ namespace TuringTrader.Algorithms.Glue
         //----- bonds
         public static readonly string BONDS_US_TOTAL = "splice:AGG,FUSGX";
         public static readonly string BONDS_US_TREAS_3M = "splice:BIL,PRTBX";
+        public static readonly string BONDS_US_TREAS_3Y = "SHY"; // 1-3yr US Treasuries
+        public static readonly string BONDS_US_TREAS_7Y = "IEI"; // 3-7yr US Treasuries
         public static readonly string BONDS_US_TREAS_10Y = "IEF"; //7-10yr 
         public static readonly string BONDS_US_TREAS_30Y = "TLT";  // long-term (20+yr) government bonds
         public static readonly string BONDS_US_CORP_10Y = "IGIB"; // intermediate-term corporate bonds
