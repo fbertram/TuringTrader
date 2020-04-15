@@ -85,16 +85,17 @@ namespace TuringTrader.Simulator
                 case OrderType.closeThisBar:
                     execBar = instrument[1];
                     execTime = SimTime[1];
-                    if (execBar.HasBidAsk)
-                        price = ticket.Quantity > 0 ? execBar.Ask : execBar.Bid;
-                    else
-                        price = execBar.Close;
+                    price = execBar.HasBidAsk
+                        ? (ticket.Quantity > 0 ? execBar.Ask : execBar.Bid)
+                        : execBar.Open;
                     break;
 
                 case OrderType.openNextBar:
                     execBar = instrument[0];
                     execTime = SimTime[0];
-                    price = execBar.Open;
+                    price = execBar.HasBidAsk
+                        ? (ticket.Quantity > 0 ? execBar.Ask : execBar.Bid)
+                        : execBar.Open;
                     break;
 
                 case OrderType.stopNextBar:
@@ -141,7 +142,9 @@ namespace TuringTrader.Simulator
                 case OrderType.endOfSimFakeClose:
                     execBar = instrument[0];
                     execTime = SimTime[0];
-                    price = execBar.Close;
+                    price = execBar.HasBidAsk
+                        ? (instrument.Position > 0 ? execBar.Bid : execBar.Ask)
+                        : execBar.Close;
                     break;
 
                 case OrderType.optionExpiryClose:
@@ -160,6 +163,9 @@ namespace TuringTrader.Simulator
                 Output.WriteLine("WARNING: {0}: bar time mismatch. expected {1:MM/dd/yyyy}, found {2:MM/dd/yyyy}", 
                     instrument.Symbol, execTime, execBar.Time);
 #endif
+
+            // run fill model. default fill is theoretical price
+            var fillPrice = FillModel(ticket, execBar, price);
 
             // adjust position, unless it's the end-of-sim order
             if (ticket.Type != OrderType.endOfSimFakeClose)
@@ -187,7 +193,7 @@ namespace TuringTrader.Simulator
             if (ticket.Type != OrderType.endOfSimFakeClose)
             {
                 Cash = Cash
-                    - numberOfShares * price
+                    - numberOfShares * fillPrice
                     - commission;
             }
 
@@ -200,7 +206,7 @@ namespace TuringTrader.Simulator
                     : LogEntryInstrument.Equity,
                 OrderTicket = ticket,
                 BarOfExecution = execBar,
-                FillPrice = price,
+                FillPrice = fillPrice,
                 Commission = commission,
             };
             //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
@@ -838,6 +844,21 @@ namespace TuringTrader.Simulator
         /// Commision to be paid per share.
         /// </summary>
         protected double CommissionPerShare = 0.00;
+        #endregion
+
+        #region virtual protected double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
+        /// <summary>
+        /// Order fill model. This method is only called for those orders
+        /// which are executed, but not for those which expired.
+        /// </summary>
+        /// <param name="orderTicket">original order ticket</param>
+        /// <param name="barOfExecution">bar of order execution</param>
+        /// <param name="theoreticalPrice">theoretical fill price</param>
+        /// <returns>custom fill price. default: theoretical fill price</returns>
+        virtual protected double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
+        {
+            return theoreticalPrice;
+        }
         #endregion
     }
 }
