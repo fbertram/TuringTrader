@@ -67,229 +67,42 @@ namespace TuringTrader.Algorithms.Glue
         #region test universe
         private class TestUniverse : Universe
         {
-            private static List<string> NDX = new List<string>()
+            // this is a small test universe so that we can demo the
+            // algorithm code. for proper functionality, a Norgate
+            // subscription is required
+            private static List<string> SP500_Top25 = new List<string>()
             {
-                // Trade all US stocks, but filter out 
-                // * ETFs; 
-                // * stocks < $10; and 
-                // * average daily volume< 500,000 over last 50 days.
+                // see here: https://www.slickcharts.com/sp500
 
-                // here, we use Nasdaq 100, as of 03/21/2019
-                "AAL",
-                "AAPL",
-                "ADBE",
-                "ADI",
-                "ADP",
-                "ADSK",
-                "ALGN",
-                "ALXN",
-                "AMAT",
-                "AMD",
-                "AMGN",
-                "AMZN",
-                "ASML",
-                "ATVI",
-                "AVGO",
-                "BIDU",
-                "BIIB",
-                "BKNG",
-                "BMRN",
-                "CDNS",
-                //"CELG",
-                "CERN",
-                "CHKP",
-                "CHTR",
-                "CMCSA",
-                "COST",
-                "CSCO",
-                "CSX",
-                "CTAS",
-                //"CTRP", // delisted
-                "CTSH",
-                "CTXS",
-                "DLTR",
-                "EA",
-                "EBAY",
-                "EXPE",
-                "FAST",
-                "FB",
-                "FISV",
-                "GILD",
-                "GOOG",
-                "GOOGL",
-                "HAS",
-                "HSIC",
-                "IDXX",
-                "ILMN",
-                "INCY",
-                "INTC",
-                "INTU",
-                "ISRG",
-                "JBHT",
-                "JD",
-                "KHC",
-                "KLAC",
-                "LBTYA",
-                "LBTYK",
-                "LRCX",
-                "LULU",
-                "MAR",
-                "MCHP",
-                "MDLZ",
-                "MELI",
-                "MNST",
-                "MSFT",
-                "MU",
-                "MXIM",
-                "MYL",
-                "NFLX",
-                "NTAP",
-                "NTES",
-                "NVDA",
-                "NXPI",
-                "ORLY",
-                "PAYX",
-                "PCAR",
-                "PEP",
-                "PYPL",
-                "QCOM",
-                "REGN",
-                "ROST",
-                "SBUX",
-                "SIRI",
-                "SNPS",
-                "SWKS",
-                //"SYMC", // delisted
-                //"TFCF", // delisted
-                //"TFCFA", // delisted
-                "TMUS",
-                "TSLA",
-                "TTWO",
-                "TXN",
-                "UAL",
-                "ULTA",
-                "VRSK",
-                "VRSN",
-                "VRTX",
-                "WBA",
-                "WDAY",
-                "WDC",
-                "WLTW",
-                "WYNN",
-                "XEL",
-                "XLNX",
+                // top 25 companies, representing ~40% of 
+                // the S&P 500's total market capitalization
+                "MSFT",  // Microsoft Corporation
+                "AAPL",  // Apple Inc.
+                "AMZN",  // Amazon.com Inc.
+                "FB",    // Facebook Inc. Class A
+                "JNJ",   // Johnson & Johnson
+                "GOOG",  // Alphabet Inc. Class C
+                "GOOGL", // Alphabet Inc. Class A
+                "BRK.B", // Berkshire Hathaway Inc. Class B
+                "PG",    // Procter & Gamble Company
+                "JPM",   // JPMorgan Chase & Co.
+                "V",     // Visa Inc. Class A
+                "INTC",  // Intel Corporation
+                "UNH",   // UnitedHealth Group Incorporated
+                "VZ",    // Verizon Communications Inc.
+                "MA",    // Mastercard Incorporated Class A
+                "T",     // AT&T Inc.
+                "HD",    // Home Depot Inc.
+                "MRK",   // Merck & Co. Inc.
+                "PFE",   // Pfizer Inc.
+                "PEP",   // PepsiCo Inc.
+                "BAC",   // Bank of America Corp
+                "DIS",   // Walt Disney Company
+                "KO",    // Coca-Cola Company
+                "WMT",   // Walmart Inc.
+                "CSCO",  // Cisco Systems Inc.
             };
-            private static List<string> OEX = new List<string>()
-            {
-                // Trade all US stocks, but filter out 
-                // * ETFs; 
-                // * stocks < $10; and 
-                // * average daily volume< 500,000 over last 50 days.
-
-                // here, we use S&P 100, as of 03/20/2019
-                "AAPL",
-                "ABBV",
-                "ABT",
-                "ACN",
-                "ADBE",
-                "AGN",
-                "AIG",
-                "ALL",
-                "AMGN",
-                "AMZN",
-                "AXP",
-                "BA",
-                "BAC",
-                "BIIB",
-                "BK",
-                "BKNG",
-                "BLK",
-                "BMY",
-                "BRK.B",
-                "C",
-                "CAT",
-                //"CELG",
-                "CHTR",
-                "CL",
-                "CMCSA",
-                "COF",
-                "COP",
-                "COST",
-                "CSCO",
-                "CVS",
-                "CVX",
-                "DHR",
-                "DIS",
-                "DUK",
-                //"DWDP",
-                "EMR",
-                "EXC",
-                "F",
-                "FB",
-                "FDX",
-                "GD",
-                "GE",
-                "GILD",
-                "GM",
-                "GOOG",
-                "GOOGL",
-                "GS",
-                "HAL",
-                "HD",
-                "HON",
-                "IBM",
-                "INTC",
-                "JNJ",
-                "JPM",
-                "KHC",
-                "KMI",
-                "KO",
-                "LLY",
-                "LMT",
-                "LOW",
-                "MA",
-                "MCD",
-                "MDLZ",
-                "MDT",
-                "MET",
-                "MMM",
-                "MO",
-                "MRK",
-                "MS",
-                "MSFT",
-                "NEE",
-                "NFLX",
-                "NKE",
-                "NVDA",
-                "ORCL",
-                "OXY",
-                "PEP",
-                "PFE",
-                "PG",
-                "PM",
-                "PYPL",
-                "QCOM",
-                "RTN",
-                "SBUX",
-                "SLB",
-                "SO",
-                "SPG",
-                "T",
-                "TGT",
-                "TXN",
-                "UNH",
-                "UNP",
-                "UPS",
-                "USB",
-                "UTX",
-                "V",
-                "VZ",
-                "WBA",
-                "WFC",
-                "WMT",
-                "XOM",
-            };
-            public override IEnumerable<string> Constituents => NDX.Concat(OEX).ToList();
+            public override IEnumerable<string> Constituents => SP500_Top25;
             public override bool IsConstituent(string nickname, DateTime timestamp)
             {
                 return true;
