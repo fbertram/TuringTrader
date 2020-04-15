@@ -167,7 +167,7 @@ namespace TuringTrader.BooksAndPubs
         private Plotter _plotter;
         #endregion
         #region inputs
-        private Universe _universe = Universe.New("$SPX");
+        private Universe _universe = Universes.STOCKS_US_LG_CAP;
         public virtual Universe UNIVERSE => _universe;
         public virtual string IDLE_CASH => "splice:SHY,VFIRX";
         public virtual string BENCHMARK => "SPY";
