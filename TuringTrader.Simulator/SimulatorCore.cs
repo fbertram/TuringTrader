@@ -22,6 +22,7 @@
 //==============================================================================
 
 #region libraries
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,8 +149,8 @@ namespace TuringTrader.Simulator
                     break;
 
                 case OrderType.optionExpiryClose:
-                    // execBar = instrument[1]; // option bar
-                    execBar = _instruments[instrument.OptionUnderlying][1]; // underlying bar
+                    // execBar = instrument[0]; // option bar
+                    execBar = _instruments[instrument.OptionUnderlying][0]; // underlying bar
                     execTime = SimTime[1];
                     price = ticket.Price;
                     break;
@@ -218,7 +219,7 @@ namespace TuringTrader.Simulator
         private void ExpireOption(Instrument instrument)
         {
             Instrument underlying = _instruments[instrument.OptionUnderlying];
-            double spotPrice = underlying.Close[1];
+            double spotPrice = underlying.Close[0];
             double optionValue = instrument.OptionIsPut
                     ? Math.Max(0.00, instrument.OptionStrike - spotPrice)
                     : Math.Max(0.00, spotPrice - instrument.OptionStrike);
@@ -257,19 +258,33 @@ namespace TuringTrader.Simulator
 
             _instruments.Remove(instrument.Symbol);
         }
+        private bool navInvalidFirst = true;
         private double CalcNetAssetValue()
         {
+            //string navCalc = string.Format("{0:MM/dd/yyyy}: cash = {1:C2}", SimTime[0], Cash);
             double nav = Cash;
+
+            bool navValid = true;
+            string invalidInstrument = "";
 
             foreach (var instrument in Positions.Keys)
             {
                 double price = 0.00;
 
-                if (instrument.HasBidAsk && instrument.IsBidAskValid[0])
+                if (instrument.HasBidAsk)
                 {
-                    price = Positions[instrument] > 0
-                        ? instrument.Bid[0]
-                        : instrument.Ask[0];
+                    if (instrument.IsBidAskValid[0])
+                    {
+                        price = Positions[instrument] > 0
+                            ? instrument.Bid[0]
+                            : instrument.Ask[0];
+                    }
+                    else
+                    {
+                        // price is bad
+                        navValid = false;
+                        invalidInstrument = instrument.Symbol;
+                    }
                 }
                 else if (instrument.HasOHLC)
                 {
@@ -280,10 +295,21 @@ namespace TuringTrader.Simulator
                     ? 100.0 * Positions[instrument]
                     : Positions[instrument];
 
+                //navCalc += string.Format(", {0} = {1:C2}", instrument.Symbol, quantity * price);
                 nav += quantity * price;
             }
 
-            return nav;
+            //navCalc += string.Format(", nav = {0:C2}", nav);
+
+            if (!navValid && navInvalidFirst)
+            {
+                Output.WriteLine("{0:MM/dd/yyyy}: NAV invalid, instrument {1}", SimTime[0], invalidInstrument);
+                navInvalidFirst = false;
+            }
+
+            return navValid 
+                ? nav 
+                : NetAssetValue[0]; // yesterday's value
         }
         #endregion
 
@@ -479,7 +505,7 @@ namespace TuringTrader.Simulator
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < SimTime[0].Date)
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < NextSimTime)
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
