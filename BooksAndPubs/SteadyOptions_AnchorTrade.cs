@@ -92,7 +92,7 @@
 //#define FAKE_DATA
 // if defined: run on synthetic fake data, instead of actual quotes
 
-//#define MAIN_POS
+#define MAIN_POS
 // if defined: implement main position
 
 //#define MAIN_POS_CALL
@@ -215,7 +215,8 @@ namespace TuringTrader.BooksAndPubs
 
                 if (_mainPosition == null)
                 {
-                    Output.WriteLine(string.Format("{0:MM/dd/yyyy}, main position: no suitable contract found", SimTime[0]));
+                    if (!IsOptimizing)
+                        Output.WriteLine(string.Format("{0:MM/dd/yyyy}, main position: no suitable contract found", SimTime[0]));
                     return;
                 }
 
@@ -232,10 +233,12 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region MaintainMainHedge
-        [OptimizerParam(90, 95, 5)]
+        [OptimizerParam(90, 96, 2)]
         public int MAIN_HEDGE_STRIKE = 92; //95;
-        [OptimizerParam(85, 95, 5)]
-        public int MAIN_HEDGE_ROLL = 85; //90;
+        [OptimizerParam(100, 125, 5)]
+        public int MAIN_HEDGE_ITM = 120;
+        [OptimizerParam(84, 94, 2)]
+        public int MAIN_HEDGE_ROLL = 86; //90;
         private Instrument _mainHedge = null;
         private int _mainHedgeTargetLots { get; set; } = 0;
         private int _mainHedgeCurrentLots
@@ -252,14 +255,10 @@ namespace TuringTrader.BooksAndPubs
         }
         private void MaintainMainHedge()
         {
-            //var vixCur = _vix1y.Close[0];
-            //var vixLow = _vix1y.Low.Lowest(63)[0];
-
             //----- close existing hedge position
             if (_mainHedgeCurrentLots > 0)
             {
                 var minStrike = _underlying.Close[0] * MAIN_HEDGE_ROLL / 100.0;
-                //var tryStrike = _underlying.Close[0] * MAIN_HEDGE_TRY / 100.0;
 
                 if ((_mainHedge.OptionStrike < minStrike)
                 //|| (_mainHedge.OptionStrike < tryStrike && vixCur < vixLow * 1.01) // attempt to roll when puts are cheap
@@ -307,7 +306,10 @@ namespace TuringTrader.BooksAndPubs
                     .FirstOrDefault();
 
                 // target strike: 5% OTM
-                var targetStrike = _underlying.Close[0] * MAIN_HEDGE_STRIKE / 100.0;
+                // unless previous hedge expired ITM
+                var targetStrike = _mainHedge == null /*|| _mainHedge.OptionStrike < _underlying.Close[0]*/
+                    ? _underlying.Close[0] * MAIN_HEDGE_STRIKE / 100.0
+                    : Math.Min(_mainHedge.OptionStrike, _underlying.Close[0] * MAIN_HEDGE_ITM / 100.0);
 
                 // select the closes strike
                 _mainHedge = OptionChain(OPTION_NICK)
@@ -318,7 +320,8 @@ namespace TuringTrader.BooksAndPubs
 
                 if (_mainHedge == null)
                 {
-                    Output.WriteLine(string.Format("{0:MM/dd/yyyy}, main hedge: no suitable contract found", SimTime[0]));
+                    if (!IsOptimizing)
+                        Output.WriteLine(string.Format("{0:MM/dd/yyyy}, main hedge: no suitable contract found", SimTime[0]));
                     return;
                 }
 
@@ -334,12 +337,12 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region MaintainIncomePosition
-        [OptimizerParam(100, 110, 1)]
-        public int INCOME_POS_STRIKE = 101; // 105? about two strikes ITM
+        [OptimizerParam(100, 200, 25)]
+        public int INCOME_POS_STRIKE = 150; // 500? about two strikes ITM
         [OptimizerParam(14, 35, 7)]
-        public int INCOME_POS_DTE = 35; // 28? about 1 month out
-        [OptimizerParam(50, 90, 5)]
-        public int INCOME_POS_PT = 55; // profit target ~70%
+        public int INCOME_POS_DTE = 14; // 28? about 1 month out
+        [OptimizerParam(50, 80, 5)]
+        public int INCOME_POS_PT = 65; // profit target ~70%
         private Instrument _incomePosition = null;
         private double _incomePositionInitialTV = 0.0;
         private double _incomePositionPremiumRecv = 0.0;
@@ -407,7 +410,8 @@ namespace TuringTrader.BooksAndPubs
                     .FirstOrDefault();
 
                 // target strike: ATM
-                var targetStrike = FindInstrument(UNDERLYING_NICK).Close[0] * INCOME_POS_STRIKE / 100.0;
+                var targetStrike = FindInstrument(UNDERLYING_NICK).Close[0] 
+                    * (1.0 + INCOME_POS_STRIKE / 1e4);
 
                 // select the closest strike
                 _incomePosition = OptionChain(OPTION_NICK)
@@ -418,7 +422,8 @@ namespace TuringTrader.BooksAndPubs
 
                 if (_incomePosition == null)
                 {
-                    Output.WriteLine(string.Format("{0:MM/dd/yyyy}, income position: no suitable contract found", SimTime[0]));
+                    if (!IsOptimizing)
+                        Output.WriteLine(string.Format("{0:MM/dd/yyyy}, income position: no suitable contract found", SimTime[0]));
                     return;
                 }
 
@@ -434,10 +439,11 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region MaintainIncomeHedge
-        [OptimizerParam(95, 100, 5)]
-        public int INCOME_HEDGE_STRIKE = 86; // 100?
-        [OptimizerParam(85, 95, 5)]
-        public int INCOME_HEDGE_ROLL = 80; // 95?
+        [OptimizerParam(94, 100, 2)]
+        public int INCOME_HEDGE_STRIKE = 100; // 100?
+        public int INCOME_HEDGE_ITM => MAIN_HEDGE_ITM;
+        [OptimizerParam(84, 94, 2)]
+        public int INCOME_HEDGE_ROLL = 84; // 95?
         private Instrument _incomeHedge = null;
         private int _incomeHedgeTargetLots { get; set; } = 0;
         private int _incomeHedgeCurrentLots
@@ -499,7 +505,9 @@ namespace TuringTrader.BooksAndPubs
                     .FirstOrDefault();
 
                 // target strike: 5% OTM
-                var targetStrike = FindInstrument(UNDERLYING_NICK).Close[0] * INCOME_HEDGE_STRIKE / 100.0;
+                var targetStrike = _incomeHedge == null /*|| _incomeHedge.OptionStrike < _underlying.Close[0]*/
+                    ? _underlying.Close[0] * INCOME_HEDGE_STRIKE / 100.0
+                    : Math.Min(_incomeHedge.OptionStrike, _underlying.Close[0] * INCOME_HEDGE_ITM / 100.0);
 
                 // select the closes strike
                 _incomeHedge = OptionChain(OPTION_NICK)
@@ -510,7 +518,8 @@ namespace TuringTrader.BooksAndPubs
 
                 if (_incomeHedge == null)
                 {
-                    Output.WriteLine(string.Format("{0:MM/dd/yyyy}, income hedge: no suitable contract found", SimTime[0]));
+                    if (!IsOptimizing)
+                        Output.WriteLine(string.Format("{0:MM/dd/yyyy}, income hedge: no suitable contract found", SimTime[0]));
                     return;
                 }
 
