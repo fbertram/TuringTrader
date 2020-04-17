@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression; // requires reference to System.IO.Compression.dll
 using System.Text.RegularExpressions;
+using System.Globalization;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -48,6 +49,29 @@ namespace TuringTrader.Simulator
             private static int _totalBarsRead = 0;
             #endregion
             #region internal helpers
+            private DateTime ParseDate(string value, string mapping)
+            {
+                if (mapping.Contains("yyyyMMdd"))
+                    return DateTime.ParseExact(value, "yyyyMMdd", CultureInfo.InvariantCulture);
+                else if (mapping.Contains("MM/dd/yyyy"))
+                    return DateTime.ParseExact(value, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                throw new Exception("unknown date format");
+            }
+            private double ParseDouble(string value)
+            {
+                if (!value.Contains('.'))
+                    value += ".0";
+
+                try
+                {
+                    return double.Parse(value);
+                }
+                catch
+                {
+                    return 0.0;
+                }
+            }
             private Bar CreateBar(string line)
             {
                 string[] items = (Info[DataSourceParam.ticker] + "," + line).Split(',');
@@ -83,22 +107,22 @@ namespace TuringTrader.Simulator
                         // assign sub-string to field
                         switch (mapping.Key)
                         {
-                            case DataSourceParam.date: date = DateTime.Parse(mappedString); break;
+                            case DataSourceParam.date: date = ParseDate(mappedString, mapping.Value); break;
                             case DataSourceParam.time: time = DateTime.Parse(mappedString); break;
 
-                            case DataSourceParam.open: open = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceParam.high: high = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceParam.low: low = double.Parse(mappedString); hasOHLC = true; break;
-                            case DataSourceParam.close: close = double.Parse(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.open: open = ParseDouble(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.high: high = ParseDouble(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.low: low = ParseDouble(mappedString); hasOHLC = true; break;
+                            case DataSourceParam.close: close = ParseDouble(mappedString); hasOHLC = true; break;
                             case DataSourceParam.volume: volume = long.Parse(mappedString); break;
 
-                            case DataSourceParam.bid: bid = double.Parse(mappedString); hasBidAsk = true; break;
-                            case DataSourceParam.ask: ask = double.Parse(mappedString); hasBidAsk = true; break;
+                            case DataSourceParam.bid: bid = ParseDouble(mappedString); hasBidAsk = true; break;
+                            case DataSourceParam.ask: ask = ParseDouble(mappedString); hasBidAsk = true; break;
                             case DataSourceParam.bidSize: bidVolume = long.Parse(mappedString); break;
                             case DataSourceParam.askSize: askVolume = long.Parse(mappedString); break;
 
-                            case DataSourceParam.optionExpiration: optionExpiry = DateTime.Parse(mappedString); break;
-                            case DataSourceParam.optionStrike: optionStrike = double.Parse(mappedString); break;
+                            case DataSourceParam.optionExpiration: optionExpiry = ParseDate(mappedString, mapping.Value); break;
+                            case DataSourceParam.optionStrike: optionStrike = ParseDouble(mappedString); break;
                             case DataSourceParam.optionRight: optionIsPut = Regex.IsMatch(mappedString, "^[pP]"); break;
                         }
                     }
