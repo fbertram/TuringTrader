@@ -88,7 +88,7 @@ namespace TuringTrader.Simulator
                     execTime = SimTime[1];
                     price = execBar.HasBidAsk
                         ? (ticket.Quantity > 0 ? execBar.Ask : execBar.Bid)
-                        : execBar.Open;
+                        : execBar.Close;
                     break;
 
                 case OrderType.openNextBar:
