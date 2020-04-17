@@ -7,6 +7,8 @@
     - make cache objects thread-local (except for data sources)
 	- add CheckParameters
 	- add FillModel
+  - optimizer
+    - fix issue w/ optimizer hanging when algos throw exceptions
   - data sources
     - fake options
 	  - interpolated volatility, based on 9d, 30d, 3m, 6m, and 12m vix

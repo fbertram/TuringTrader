@@ -46,7 +46,7 @@ namespace TuringTrader.Simulator
         private readonly object _optimizerLock = new object();
         private int _numIterationsTotal;
         private int _numIterationsCompleted;
-        private double _maxFitness = -1e10;
+        private double? _maxFitness = null;
         private DateTime _startTime;
         #endregion
         #region internal helpers
@@ -76,24 +76,41 @@ namespace TuringTrader.Simulator
             // run algorithm with these values
             _jobQueue.QueueJob(() =>
             {
-                instanceToRun.Run();
-                result.NetAssetValue = instanceToRun.NetAssetValue[0];
-                result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
-                result.Fitness = instanceToRun.FitnessValue;
-                instanceToRun = null;
-                lock (_optimizerLock)
+                try
                 {
-                    _numIterationsCompleted++;
+                    instanceToRun.Run();
 
-                    TimeSpan t = DateTime.Now - _startTime;
-                    TimeSpan eta = TimeSpan.FromSeconds(
-                        (_numIterationsTotal - _numIterationsCompleted)
-                        * t.TotalSeconds / _numIterationsCompleted);
-                    _maxFitness = Math.Max(_maxFitness, (double)result.Fitness);
+                    result.NetAssetValue = instanceToRun.NetAssetValue[0];
+                    result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
+                    result.Fitness = instanceToRun.FitnessValue;
+                    instanceToRun = null;
+                }
 
-                    Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
-                        _numIterationsCompleted, _numIterationsTotal, _maxFitness,
-                        Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
+                catch (Exception)
+                {
+                    // we ignore any exeption while running the algo
+                }
+
+                finally
+                {
+                    lock (_optimizerLock)
+                    {
+                        _numIterationsCompleted++;
+
+                        TimeSpan t = DateTime.Now - _startTime;
+                        TimeSpan eta = TimeSpan.FromSeconds(
+                            (_numIterationsTotal - _numIterationsCompleted)
+                            * t.TotalSeconds / _numIterationsCompleted);
+
+                        if (result.Fitness != null)
+                            _maxFitness = _maxFitness != null
+                                ? Math.Max((double)_maxFitness, (double)result.Fitness)
+                                : (double)result.Fitness;
+
+                        Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
+                            _numIterationsCompleted, _numIterationsTotal, _maxFitness,
+                            Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
+                    }
                 }
             });
         }
