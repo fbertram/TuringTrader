@@ -113,8 +113,10 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                //return Info.ContainsKey(DataSourceValue.optionExpiration);
-                return Info.ContainsKey(DataSourceParam.optionUnderlying);
+                return Info.ContainsKey(DataSourceParam.optionUnderlying)
+                    || Info.ContainsKey(DataSourceParam.optionExpiration)
+                    || Info.ContainsKey(DataSourceParam.optionStrike)
+                    || Info.ContainsKey(DataSourceParam.optionRight);
             }
         }
         #endregion
