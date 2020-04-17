@@ -92,10 +92,13 @@
 //#define FAKE_DATA
 // if defined: run on synthetic fake data, instead of actual quotes
 
+//#define SPX_OPTIONS
+// if defined: use SPX, else XSP
+
 #define MAIN_POS
 // if defined: implement main position
 
-//#define MAIN_POS_CALL
+#define MAIN_POS_CALL
 // if defined: implement main position as ITM call
 
 #define MAIN_HEDGE
@@ -132,8 +135,7 @@ namespace TuringTrader.BooksAndPubs
         private readonly string UNDERLYING_NICK = "$SPX";
         private readonly string OPTION_NICK = "$SPX.fake.options";
         private readonly string BENCHMARK = "$SPXTR";
-#else
-#if false
+#elif SPX_OPTIONS
         private string UNDERLYING_NICK = "$SPX";
         private string OPTION_NICK = "$SPX.weekly.options";
         private readonly string BENCHMARK = "$SPXTR";
@@ -141,7 +143,6 @@ namespace TuringTrader.BooksAndPubs
         private string UNDERLYING_NICK = "$XSP";
         private string OPTION_NICK = "$XSP.options";
         private readonly string BENCHMARK = "$SPXTR";
-#endif
 #endif
         private readonly string VIX_1Y = "$VIX1Y";
         //private readonly string PARKING_NICK = "BIL";
@@ -557,14 +558,15 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             //WarmupStartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
-#if false
+#if FAKE_DATA
+            // data range for fake data
             StartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("04/09/2020", CultureInfo.InvariantCulture);
-#elif false
+#elif SPX_OPTIONS
             // SPX date range
             StartTime = DateTime.Parse("02/01/2007", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("11/28/2018", CultureInfo.InvariantCulture);
-#elif true
+#else
             // XSP date range
             //StartTime = DateTime.Parse("08/01/2006", CultureInfo.InvariantCulture);
             StartTime = DateTime.Parse("11/19/2007", CultureInfo.InvariantCulture); // availability of monthlies
