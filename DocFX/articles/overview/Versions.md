@@ -10,11 +10,18 @@
   - optimizer
     - fix issue w/ optimizer hanging when algos throw exceptions
   - data sources
+    - general
+      - improve detecion of option contracts
     - fake options
 	  - interpolated volatility, based on 9d, 30d, 3m, 6m, and 12m vix
 	  - improved selection of expiry dates
 	  - fix issue w/ option prices not always maintained all the way to expiry
 	  - cache calculated option chain
+    - CSV files
+      - improve parsing of dates and floats
+    - showcase strategies
+      - update algorithms from Livingston's Muscular Portfolios to match book exactly
+      - add SteadyOption's Anchor Trades portfolio
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar

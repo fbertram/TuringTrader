@@ -41,6 +41,7 @@ namespace TuringTrader.BooksAndPubs
         #region inputs
         protected abstract HashSet<string> ETF_MENU { get; }
         protected abstract double MOMENTUM(Instrument i);
+        protected virtual int NUM_PICKS { get => 3; }
 
         protected virtual double REBAL_TRIGGER => 0.20;
         #endregion
@@ -68,9 +69,8 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // the book does not deduct commissions
 
-            AddDataSource(BENCHMARK);
-            foreach (string nick in ETF_MENU)
-                AddDataSource(nick);
+            var menu = AddDataSources(ETF_MENU).ToList();
+            var bench = AddDataSource(BENCHMARK);
 
             //========== simulation loop ==========
 
@@ -83,23 +83,19 @@ namespace TuringTrader.BooksAndPubs
                         i => MOMENTUM(i));
 
                 // skip, if there are any missing instruments
-                // we want to make sure our strategy has all instruments available
-                if (!HasInstruments(ETF_MENU))
+                if (!HasInstruments(menu) || !HasInstrument(bench))
                     continue;
 
-                // find our trading instruments
-                var instruments = Instruments
-                    .Where(i => ETF_MENU.Contains(i.Nickname));
-
                 // rank, and select top-3 instruments
-                const int numHold = 3;
-                var top3 = instruments
+                var top3 = menu
+                    .Select(ds => ds.Instrument)
                     .OrderByDescending(i => evaluation[i])
-                    .Take(numHold);
+                    .Take(NUM_PICKS);
 
                 // calculate target percentage and how far we are off
-                double targetPercentage = 1.0 / numHold;
-                double maxOff = instruments
+                double targetPercentage = 1.0 / NUM_PICKS;
+                double maxOff = menu
+                    .Select(ds => ds.Instrument)
                     .Max(i => (top3.Count() > 0 && top3.Contains(i) ? 1.0 : 0.0)
                         * Math.Abs(i.Position * i.Close[0] / NetAssetValue[0] - targetPercentage) / targetPercentage);
 
@@ -109,7 +105,7 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _alloc.LastUpdate = SimTime[0];
 
-                    foreach (Instrument i in instruments)
+                    foreach (var i in menu.Select(ds => ds.Instrument))
                     {
                         _alloc.Allocation[i] = top3.Contains(i) ? targetPercentage : 0.0;
 
@@ -167,30 +163,32 @@ namespace TuringTrader.BooksAndPubs
     }
 
     #region Mama Bear
+    // https://muscularportfolios.com/mama-bear/
     public class Livingston_MuscularPortfolios_MamaBear : Livingston_MuscularPortfolios
     {
         public override string Name => "Livingston's Mama Bear";
         protected override HashSet<string> ETF_MENU => new HashSet<string>()
         {
-#if false
+#if true
             // note that some instruments have not been around
             // until 2014, making this hard to simulate
 
             //--- equities
-            "VONE", // Vanguard Russell 1000 ETF
-            "VIOO", // Vanguard Small-Cap 600 ETF
-            "VEA",  // Vanguard FTSE Developed Markets ETF
-            "VWO",  // Vanguard FTSE Emerging Markets ETF
+            "splice:VONE,$RUITR", // Vanguard Russell 1000 ETF (US large-cap stocks)
+            "splice:VIOO,$SMLTR", // Vanguard Small-Cap 600 ETF (US small-cap stocks)
+            "VEA",  // Vanguard FTSE Developed Markets ETF (developed-market large-cap stocks)
+            "VWO",  // Vanguard FTSE Emerging Markets ETF (emerging-market stocks)
             //--- hard assets
-            "VNQ",  // Vanguard Real Estate ETF
-            "PDBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF
-            "IAU",  // iShares Gold Trust
+            "VNQ",  // Vanguard Real Estate ETF (REITs)
+            "splice:PDBC,DBC", // Invesco Optimum Yield Diversified Commodity Strategy ETF (Commodities)
+            "IAU",  // iShares Gold Trust (Gold)
             //--- fixed-income
-            "VGLT", // Vanguard Long-Term Govt. Bond ETF
-            "SHV",  // iShares Short-Term Treasury ETF
+            "splice:VGLT,TLT", // Vanguard Long-Term Govt. Bond ETF (US Treasury bonds, long-term)
+            "SHV",  // iShares Short-Term Treasury ETF (US Treasury bills, 1 to 12 months)
 #else
             // the book mentions that CXO is using different ETFs
             // we use these, to simulate back to 2007
+            // see page 104
             
             //--- equities
             "SPY", // SPDR S&P 500 Trust ETF
@@ -207,15 +205,19 @@ namespace TuringTrader.BooksAndPubs
             "BIL"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
 #endif
         };
-
         protected override double MOMENTUM(Instrument i)
         {
             // simple 5-month momentum
-            return i.Close[0] / i.Close[5 * 21] - 1.0;
+
+            // Note: Livingston calculates momentum based on daily bars,
+            // see footnote here: https://muscularportfolios.com/mama-bear/
+            // as of 04/17/2020, our momentum values match his website exactly
+            return i.Close[0] / i.Close[105] - 1.0;
         }
     }
     #endregion
-    #region Papa Bear - incomplete, instruments need to be extended for longer simulation
+    #region Papa Bear
+    // see https://muscularportfolios.com/papa-bear/
     public class Livingston_MuscularPortfolios_PapaBear : Livingston_MuscularPortfolios
     {
         public override string Name => "Livingston's Papa Bear Strategy";
@@ -245,9 +247,13 @@ namespace TuringTrader.BooksAndPubs
         protected override double MOMENTUM(Instrument i)
         {
             // average momentum over 3, 6, and 12 months
-            return (4.0 * (i.Close[0] / i.Close[63] - 1.0)
-                + 2.0 * (i.Close[0] / i.Close[126] - 1.0)
-                + 1.0 * (i.Close[0] / i.Close[252] - 1.0)) / 3.0;
+
+            // NOTE: Livingston is calculating momentum on daily bars,
+            // see footnote here: https://muscularportfolios.com/papa-bear/
+            // as of 04/17/2020, our calculation matches Livingston's exactly
+            return ((i.Close[0] / i.Close[63] - 1.0)
+                + (i.Close[0] / i.Close[126] - 1.0)
+                + (i.Close[0] / i.Close[252] - 1.0)) / 3.0;
         }
     }
     #endregion
