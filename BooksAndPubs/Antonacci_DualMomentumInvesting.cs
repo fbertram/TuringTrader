@@ -34,6 +34,10 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
+    // the book is not always conclusive how to really implement these strategies
+    // additional clarifications can be found here:
+    // https://www.optimalmomentum.com/faq/
+
     public abstract class Antonacci_DualMomentumInvesting_Core : SubclassableAlgorithm
     {
         public override string Name => "Antonacci's Dual Momentum";
@@ -118,13 +122,13 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (DateTime simTime in SimTimes)
             {
-                // evaluate momentum for all known instruments
-                Dictionary<Instrument, double> instrumentMomentum = Instruments
-                    .ToDictionary(i => i, i => MOMENTUM(i));
-
                 // skip if there are any missing instruments
                 if (!HasInstruments(assets) || !HasInstrument(benchmark) || !HasInstrument(absMom))
                     continue;
+
+                // evaluate momentum for all known instruments
+                Dictionary<Instrument, double> instrumentMomentum = Instruments
+                    .ToDictionary(i => i, i => MOMENTUM(i));
 
                 // execute trades once per month
                 // CAUTION: do not calculate indicators within this block!
@@ -249,6 +253,34 @@ namespace TuringTrader.BooksAndPubs
         };
         protected override string BENCHMARK => Assets.PORTF_60_40;
     }
+
+    public class Antonacci_GlobalEquitiesMomentum_p98 : Antonacci_GlobalEquitiesMomentum
+    {
+        // on page 98 of his book, Antonacci describes that he tests
+        // for S&P 500's absolute momentum first, because S&P 500
+        // is leading world markets.
+        // this contradicts the flowchart and description on page 101
+        // this code is the 'absolute momentum first' implementation
+        public override string Name => "Antonacci's Global Equities Momentum (p98 variant)";
+        protected override double MOMENTUM(Instrument i)
+        {
+            var m = i.Close[0] / i.Close[252] - 1.0;
+
+            var spx = FindInstrument(Assets.STOCKS_US_LG_CAP);
+            var abs = FindInstrument(ABS_MOMENTUM);
+
+            if (i.Nickname == Assets.STOCKS_WXUS_LG_MID_CAP
+            && MOMENTUM(spx) < MOMENTUM(abs))
+            {
+                // if S&P 500 returns are below T-Bill,
+                // ACWX is forced negative, so that we end
+                // up in bonds
+                return -999.9;
+            }
+
+            return m;
+        }
+    }
     #endregion
     #region Global Balanced Momentum
     public class Antonacci_GlobalBalancedMomentum : Antonacci_DualMomentumInvesting_Core
@@ -336,7 +368,6 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Antonacci's Dual Momentum Sector Rotation";
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
-            // note that we removed those ETFs with short history
             new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_MATERIALS,  ABS_MOMENTUM } },
             new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_COMMUNICATION,  ABS_MOMENTUM } },
             new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_ENERGY,  ABS_MOMENTUM } },
