@@ -19,9 +19,9 @@
 	  - cache calculated option chain
     - CSV files
       - improve parsing of dates and floats
-    - showcase strategies
-      - update algorithms from Livingston's Muscular Portfolios to match book exactly
-      - add SteadyOption's Anchor Trades portfolio
+  - showcase strategies
+    - update algorithms from Livingston's Muscular Portfolios to match book exactly
+    - add SteadyOption's Anchor Trades portfolio
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
@@ -35,6 +35,7 @@
 	- add leveraged variants to Keller's DAA
 	- add lazy portfolios
 	- add Connors' Alpha Formula
+    - add Keller's Flexible Asset Allocation (FAA)
   - indicators
     - improve robustness of Markowitz CLA portfolios
 - 0.10

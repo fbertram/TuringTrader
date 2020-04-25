@@ -136,6 +136,7 @@ namespace TuringTrader.BooksAndPubs
         protected virtual int NUM_PICKS { get => 3; }
 
         protected virtual double REBAL_TRIGGER => 0.20;
+        protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
         #endregion
         #region internal data
         private readonly string BENCHMARK = Assets.PORTF_60_40;
@@ -207,7 +208,7 @@ namespace TuringTrader.BooksAndPubs
                         int currentShares = i.Position;
 
                         // ... and trade the delta
-                        Order newOrder = i.Trade(targetShares - currentShares);
+                        Order newOrder = i.Trade(targetShares - currentShares, ORDER_TYPE);
 
                         // add a comment, to make the trading log easier to read
                         if (newOrder != null)
