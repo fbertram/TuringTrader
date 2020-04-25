@@ -274,8 +274,8 @@ namespace TuringTrader.Indicators
 
         #region public static ITimeSeries<double> Return(this ITimeSeries<double> series)
         /// <summary>
-        /// Calculate absolute return, from the previous to the current
-        /// value of the time series.
+        /// Calculate absolute return, as difference from the previous 
+        /// to the current value of the time series.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="parentId">caller cache id, optional</param>

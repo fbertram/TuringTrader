@@ -24,20 +24,28 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-//#define DATE_RANGES_FROM_PAPER
+// see also:
+// https://alphaarchitect.com/2014/09/18/flexible-asset-allocation-dethroning-moving-average-rules/
+// https://systematicinvestor.github.io/strategy/Strategy-FAA
+// https://indexswingtrader.blogspot.com/2013/11/flexibile-asset-allocation-with-crash.html
+
+#define DATE_RANGES_FROM_PAPER
 // DATE_RANGES_FROM_PAPER: if defined, use fixed date ranges from paper
 // otherwise, use global date ranges
 
 #if DATE_RANGES_FROM_PAPER
-#define DATA_RANG_IS
-// DATA_RANG_IS: if defined, use in-sample range
+//#define DATA_RANG_IS
+// DATA_RANG_IS: if defined, use in-sample range (
 
 //#define DATE_RANGE_OS
 // DATE_RANGE_OS: if defined, use out-of-sample range
 
-//#define DATE_RANGE_FULL
+#define DATE_RANGE_FULL
 // DATE_RANGE_FULL: if defined, use full range
 #endif
+
+#define MUTUAL_FUNDS
+// MUTUAL_FUNDS: if defined, use mutual funds, otherwise ETFs
 
 #region libraries
 using System;
@@ -53,9 +61,14 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
+
     public abstract class Keller_FAA_Core : SubclassableAlgorithm
     {
-        public override string Name => "Keller's FAA Strategy";
+        public override string Name => string.Format(
+            "Keller's FAA Strategy {0}/{1}; {2}m/{3}m/{4}m; {5}/{6}/{7}%",
+            N, U.Count,
+            LOOKBACK_R / 21, LOOKBACK_V / 21, LOOKBACK_C / 21,
+            WR, WV, WC);
 
         #region inputs
         /// <summary>
@@ -87,15 +100,15 @@ namespace TuringTrader.BooksAndPubs
         /// <summary>
         /// weight for volatility
         /// </summary>
-        public abstract int WV { get; set; }
+        public virtual int WV { get; set; } = 0;
         /// <summary>
         /// weight for correlation
         /// </summary>
-        public abstract int WC { get; set; }
+        public virtual int WC { get; set; } = 0;
         /// <summary>
         /// lookback period for relative returns
         /// </summary>
-        public abstract int LOOKBACK_R { get; set; }
+        public virtual int LOOKBACK_R { get; set; } = 84;
         /// <summary>
         /// lookback period for absolute returns
         /// </summary>
@@ -103,14 +116,15 @@ namespace TuringTrader.BooksAndPubs
         /// <summary>
         /// lookback period for volatility
         /// </summary>
-        public abstract int LOOKBACK_V { get; set; }
+        public virtual int LOOKBACK_V { get; set; } = 84;
         /// <summary>
         /// lookback period for correlation
         /// </summary>
-        public abstract int LOOKBACK_C { get; set; }
+        public virtual int LOOKBACK_C { get; set; } = 84;
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        //private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private readonly string BENCHMARK = "algo:Keller_FAA_EW";
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         protected struct indicatorValues
@@ -121,49 +135,49 @@ namespace TuringTrader.BooksAndPubs
             public double c;
         }
         #endregion
+        #region ctor
+        public Keller_FAA_Core()
+        {
+            _plotter = new Plotter(this);
+        }
+        #endregion
+
         #region LossFunction
         protected virtual Dictionary<Instrument, double> LossFunction(Dictionary<Instrument, indicatorValues> indicators)
         {
-            // rank by decreasing relative momentum
+            // rank by decreasing momentum
             var rankR = indicators
                 .OrderByDescending(kv => kv.Value.r)
-                .Select((v, i) => new { instr = v.Key, idx = i })
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
                 .ToDictionary(
                     x => x.instr,
-                    x => x.idx + 1);
+                    x => x.rank);
 
             // rank by increasing volatility
             var rankV = indicators
                 .OrderBy(kv => kv.Value.v)
-                .Select((v, i) => new { instr = v.Key, idx = i })
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
                 .ToDictionary(
                     x => x.instr,
-                    x => x.idx + 1);
+                    x => x.rank);
 
             // rank by increasing correlation
             var rankC = indicators
                 .OrderBy(kv => kv.Value.c)
-                .Select((v, i) => new { instr = v.Key, idx = i })
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
                 .ToDictionary(
                     x => x.instr,
-                    x => x.idx + 1);
+                    x => x.rank);
 
-            // loss function L(i)
+            // loss function L(i), formula (2)
             var L = indicators.Keys
                 .ToDictionary(
                     i => i,
                     i => WR / 100.0 * rankR[i]
                         + WV / 100.0 * rankV[i]
-                        + WC / 100.0 * rankC[i]
-                );
+                        + WC / 100.0 * rankC[i]);
 
             return L;
-        }
-        #endregion
-        #region ctor
-        public Keller_FAA_Core()
-        {
-            _plotter = new Plotter(this);
         }
         #endregion
 
@@ -216,27 +230,26 @@ namespace TuringTrader.BooksAndPubs
                             r = i.Close[0] / i.Close[LOOKBACK_R] - 1.0,
                             a = i.Close[0] / i.Close[LOOKBACK_A] - 1.0,
                             v = i.Close.Volatility(LOOKBACK_C)[0],
-                            // Keller talks about the correlation matrix,
-                            // not covariance!
                             c = universe
                                 .Select(ds => ds.Instrument)
                                 .Where(i2 => i != i2)
-                                //.Average(i2 => i.Correlation(i2, LOOKBACK_C)[0])
-                                .Average(i2 => i.Covariance(i2, LOOKBACK_C)[0])
+                                // FIXME: how exactly are we calculating correlation here?
+                                .Average(i2 => i.Close.Correlation(i2.Close, LOOKBACK_C)[0])
+                                //.Average(i2 => i.Close.Return().Correlation(i2.Close.Return(), LOOKBACK_C)[0])
+                                //.Average(i2 => i.Close.LogReturn().Correlation(i2.Close.LogReturn(), LOOKBACK_C)[0])
                         });
 
-                // trigger rebalancing
-                if (SimTime[0].Month != NextSimTime.Month) // monthly
+                // trigger monthly rebalancing
+                if (SimTime[0].Month != NextSimTime.Month)
                 {
                     // calculate loss function for universe
                     var L = LossFunction(indicators);
 
+                    // Keller is adamant to filter for absolute momentum
+                    // after ranking for the loss function
                     var top = L.Keys
                         .OrderBy(i => L[i])
                         .Take(N)
-                        // Keller specifically mentions the order
-                        // of operations, replacing instruments with
-                        // cash comes last!
                         .Where(i => indicators[i].a > RMIN / 100.0)
                         .ToList();
 
@@ -257,7 +270,8 @@ namespace TuringTrader.BooksAndPubs
                     }
 
                     // assign any leftover weight to safe instrument
-                    weights[FindInstrument(U_SAFE)] += (N - top.Count) / (double)N;
+                    weights[FindInstrument(U_SAFE)] += 1.0 - weights.Sum(kv => kv.Value);
+                    //weights[FindInstrument(U_SAFE)] += (N - top.Count) / (double)N;
 
                     // submit orders
                     foreach (var i in weights.Keys)
@@ -272,6 +286,24 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
+
+#if true
+                    // additional plotter output
+                    _plotter.SelectChart("Factor R", "Date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var i in indicators.Keys)
+                        _plotter.Plot(i.Symbol, indicators[i].r);
+
+                    _plotter.SelectChart("Factor V", "Date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var i in indicators.Keys)
+                        _plotter.Plot(i.Symbol, indicators[i].v);
+
+                    _plotter.SelectChart("Factor C", "Date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var i in indicators.Keys)
+                        _plotter.Plot(i.Symbol, indicators[i].c);
+#endif
 
                     if (IsSubclassed) AddSubclassedBar();
                 }
@@ -300,40 +332,152 @@ namespace TuringTrader.BooksAndPubs
         #endregion
     }
 
-    #region FAA w/ U7, 3/7, 4m/4m/4m, 100/80/50%
-    public class Keller_FAA : Keller_FAA_Core
+    #region U7 Universe
+    static class Keller_FAA_U7
     {
-        public override string Name => "Keller's FAA (U7; 3/7; 4m/4m/4m; 100/80/50%)";
-        protected override List<string> U => new List<string>
+#if MUTUAL_FUNDS
+        public static List<string> Universe => new List<string>
+        {
+            // global stocks
+            "yahoo:VTSMX",
+            "yahoo:FDIVX",
+            "yahoo:VEIEX",
+            // US bonds
+            SafeInstrument,
+            "yahoo:VBMFX",
+            // commodities
+            "yahoo:QRAAX",
+            // REITs
+            "yahoo:VGSIX"
+        };
+        public static string SafeInstrument => "yahoo:VFISX";
+#else
+        public static List<string> Universe => new List<string>
         {
             // global stocks
             "splice:VTI,yahoo:VTSMX",
             "splice:VEA,yahoo:FDIVX",
             "splice:VWO,yahoo:VEIEX",
             // US bonds
-            U_SAFE,
+            SafeInstrument,
             "splice:BND,yahoo:VBMFX",
             // commodities
             "splice:GSG,yahoo:QRAAX",
             // REITs
             "splice:VNQ,yahoo:VGSIX"
         };
-        protected override string U_SAFE => "splice:SHY,yahoo:VFISX";
+        public static string SafeInstrument => "splice:SHY,yahoo:VFISX";
+#endif
+    }
+    #endregion
 
-        [OptimizerParam(2, 4, 1)]
+    #region Equal-Weighted Benchmark
+    public class Keller_FAA_EW : LazyPortfolio
+    {
+        public override string Name => "Keller's FAA: EW Benchmark";
+
+        private HashSet<Tuple<string, double>> _allocation;
+        public Keller_FAA_EW()
+        {
+            _allocation = new HashSet<Tuple<string, double>>();
+
+            foreach (var a in Keller_FAA_U7.Universe)
+                _allocation.Add(Tuple.Create(a, 0.0));
+        }
+        public override HashSet<Tuple<string, double>> ALLOCATION => _allocation;
+        public override string BENCH => Assets.PORTF_60_40;
+    }
+    #endregion
+
+    #region FAA Example 1: Relative momentum (factor R)
+    public class Keller_FAA_Example1_R : Keller_FAA_Core
+    {
+        public override string Name => "Keller's FAA (Example 1: R Momentum)";
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
         public override int N { get; set; } = 3;
-
-        [OptimizerParam(70, 90, 10)]
-        public override int WV { get; set; } = 80;
-        [OptimizerParam(40, 60, 10)]
+        public override int LOOKBACK_R { get; set; } = 84;
+        public override int RMIN => -999; // defeat absolute momentum
+    }
+    #endregion
+    #region FAA Example 2: Absolute momentum (factor A)
+    public class Keller_FAA_Example2_RA : Keller_FAA_Core
+    {
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
+        public override int N { get; set; } = 3;
+        public override int LOOKBACK_R { get; set; } = 84;
+    }
+    #endregion
+    #region FAA Example 3: Generalized momentum with factors R, A and V
+    public class Keller_FAA_Example3_RAV : Keller_FAA_Core
+    {
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
+        public override int N { get; set; } = 3;
+        public override int LOOKBACK_R { get; set; } = 84;
+        public override int LOOKBACK_V { get; set; } = 84;
+        public override int WV { get; set; } = 50;
+    }
+    #endregion
+    #region FAA Example 4: Correlations
+    public class Keller_FAA_Example4_RAVC : Keller_FAA_Core
+    {
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
+        public override int N { get; set; } = 3;
+        public override int LOOKBACK_R { get; set; } = 84;
+        public override int LOOKBACK_V { get; set; } = 84;
+        public override int LOOKBACK_C { get; set; } = 84;
+        public override int WV { get; set; } = 50;
+        public override int WC { get; set; } = 50;
+    }
+    #endregion
+    #region FAA Example: Logarithmic loss function
+    public class Keller_FAA_Example_LogLoss : Keller_FAA_Core
+    {
+        public override string Name => "Keller's FAA (Example of logarithmic loss function)";
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
+        public override int N { get; set; } = 3;
+        public override int LOOKBACK_R { get; set; } = 84;
+        public override int LOOKBACK_V { get; set; } = 84;
+        public override int LOOKBACK_C { get; set; } = 84;
+        public override int WV { get; set; } = 50;
         public override int WC { get; set; } = 50;
 
-        [OptimizerParam(63, 105, 21)]
+        protected override Dictionary<Instrument, double> LossFunction(Dictionary<Instrument, indicatorValues> indicators)
+        {
+            var rmax = indicators.Max(kv => kv.Value.r);
+            var vmin = indicators.Min(kv => kv.Value.v);
+            var cmin = indicators.Min(kv => kv.Value.c);
+
+            // loss function L(i), see equation (3)
+            var L = indicators.Keys
+                .ToDictionary(
+                    i => i,
+                    i => -1.0 * 
+                        (WR / 100.0 * Math.Log(indicators[i].r / rmax)
+                        + WV / 100.0 * Math.Log(vmin / indicators[i].v)
+                        + WC / 100.0 * Math.Log((cmin + 1.0) / (indicators[i].c + 1.0)))
+                );
+
+            return L;
+        }
+    }
+    #endregion
+
+    #region FAA: Optimized for "best" parameters
+    public class Keller_FAA_Optimized : Keller_FAA_Core
+    {
+        protected override List<string> U => Keller_FAA_U7.Universe;
+        protected override string U_SAFE => Keller_FAA_U7.SafeInstrument;
+        public override int N { get; set; } = 3;
         public override int LOOKBACK_R { get; set; } = 84;
-        [OptimizerParam(63, 105, 21)]
         public override int LOOKBACK_V { get; set; } = 84;
-        [OptimizerParam(63, 105, 21)]
         public override int LOOKBACK_C { get; set; } = 84;
+        public override int WV { get; set; } = 80;
+        public override int WC { get; set; } = 60;
     }
     #endregion
 }

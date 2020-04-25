@@ -231,7 +231,7 @@ namespace TuringTrader.Indicators
 
         #region public static ITimeSeries<double> Volatility(this ITimeSeries<double> series, int n)
         /// <summary>
-        /// Calculate historical volatility.
+        /// Calculate historical volatility, based on log-returns.
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">length</param>
