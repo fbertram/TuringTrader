@@ -3,7 +3,7 @@
 - 0.12
   - general
     - update to .Net Core 3.1
-  - simulator
+  - simulator core
     - make cache objects thread-local (except for data sources)
 	- add CheckParameters
 	- add FillModel
@@ -19,9 +19,12 @@
 	  - cache calculated option chain
     - CSV files
       - improve parsing of dates and floats
+  - indicators
+    - new indicators for correlation and covariance
   - showcase strategies
     - update algorithms from Livingston's Muscular Portfolios to match book exactly
     - add SteadyOption's Anchor Trades portfolio
+    - add Keller's Flexible Asset Allocation
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
