@@ -35,6 +35,95 @@ namespace TuringTrader.Indicators
     /// </summary>
     public static class IndicatorsMomentum
     {
+        #region public static ITimeSeries<double> SimpleMomentum(this ITimeSeries<double> series, int n = 21)
+        /// <summary>
+        /// Calculate simple momentum: m = p[0] / p[n] - 1
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>log momentum, normalized to one day, as time series</returns>
+        public static ITimeSeries<double> SimpleMomentum(this ITimeSeries<double> series, int n = 21,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n.GetHashCode());
+
+            return IndicatorsBasic.BufferedLambda(
+                prev => series[0] / series[n] - 1.0,
+                0.0,
+                cacheId);
+        }
+        #endregion
+        #region public static ITimeSeries<double> LogMomentum(this ITimeSeries<double> series, int n = 21)
+        /// <summary>
+        /// Calculate logarithmic momentum: m = Ln(p[0] / p[n])
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>log momentum, normalized to one day, as time series</returns>
+        public static ITimeSeries<double> LogMomentum(this ITimeSeries<double> series, int n = 21,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n.GetHashCode());
+
+#if true
+            return IndicatorsBasic.BufferedLambda(
+                prev => Math.Log(series[0] / series[n]) / n,
+                0.0,
+                cacheId);
+#else
+            // retired 04/02/2019
+            return series
+                .Divide(series
+                        .Delay(n, cacheId)
+                        .Max(1e-10, cacheId),
+                    cacheId)
+                .Log(cacheId)
+                .Divide(n, cacheId);
+#endif
+        }
+        #endregion
+        #region public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21)
+        /// <summary>
+        /// Calculate momentum, normalized to single bar: m = Ln(p[0] / p[n]) / n.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">number of bars for regression</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>log momentum, normalized to one day, as time series</returns>
+        public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n.GetHashCode());
+
+#if true
+            return IndicatorsBasic.BufferedLambda(
+                prev => Math.Log(series[0] / series[n]) / n,
+                0.0,
+                cacheId);
+#else
+            // retired 04/02/2019
+            return series
+                .Divide(series
+                        .Delay(n, cacheId)
+                        .Max(1e-10, cacheId),
+                    cacheId)
+                .Log(cacheId)
+                .Divide(n, cacheId);
+#endif
+        }
+        #endregion
+
         #region public static ITimeSeries<double> CCI(this Instrument series, int n = 20)
         /// <summary>
         /// Calculate Commodity Channel Index of input time series, as described here:
@@ -321,40 +410,6 @@ namespace TuringTrader.Indicators
             /// %D (filtered %K)
             /// </summary>
             public ITimeSeries<double> PercentD;
-        }
-        #endregion
-
-        #region public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21)
-        /// <summary>
-        /// Calculate momentum, normalized to single bar: m = Ln(p[0] / p[n]) / n.
-        /// </summary>
-        /// <param name="series">input time series</param>
-        /// <param name="n">number of bars for regression</param>
-        /// <param name="parentId">caller cache id, optional</param>
-        /// <param name="memberName">caller's member name, optional</param>
-        /// <param name="lineNumber">caller line number, optional</param>
-        /// <returns>log momentum, normalized to one day, as time series</returns>
-        public static ITimeSeries<double> Momentum(this ITimeSeries<double> series, int n = 21,
-            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
-        {
-            var cacheId = new CacheId(parentId, memberName, lineNumber,
-                series.GetHashCode(), n.GetHashCode());
-
-#if true
-            return IndicatorsBasic.BufferedLambda(
-                prev => Math.Log(series[0] / series[n]) / n,
-                0.0,
-                cacheId);
-#else
-            // retired 04/02/2019
-            return series
-                .Divide(series
-                        .Delay(n, cacheId)
-                        .Max(1e-10, cacheId),
-                    cacheId)
-                .Log(cacheId)
-                .Divide(n, cacheId);
-#endif
         }
         #endregion
 

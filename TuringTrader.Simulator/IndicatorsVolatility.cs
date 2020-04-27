@@ -135,6 +135,7 @@ namespace TuringTrader.Indicators
                 {
                     // calculate exponentially-weighted mean and variance
                     // see Tony Finch, Incremental calculation of mean and variance
+                    // https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
                     double diff = Series[0] - (double)_average;
                     double incr = _alpha * diff;
                     _average = _average + incr;

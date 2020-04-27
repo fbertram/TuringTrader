@@ -165,6 +165,10 @@ namespace TuringTrader.Indicators
 
             public void Calc()
             {
+                // we abstracted Tony Finch's code for covariance
+                // see Tony Finch, Incremental calculation of mean and variance
+                // https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
+
                 //--- average & variance for series
                 double seriesNew = _series.LogReturn()[0];
                 double seriesDiff = seriesNew - _avgSeries;

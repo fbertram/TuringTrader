@@ -1173,6 +1173,32 @@ namespace TuringTrader.Support
                 NumBars = numBars;
                 BarSize = barSize;
 
+#if false
+                // BUGBUG: this code currently does not work
+
+                // save the price series, so that we may use indicators
+                // in the priceFunc lambda expression, without evaluating
+                // them multiple times per bar
+                Dictionary<Instrument, ITimeSeries<double>> priceSeries = universe
+                    .ToDictionary(
+                        i => i,
+                        i => priceFunc(i).LogMomentum(barSize));
+
+                _covariance = new Dictionary<Instrument, Dictionary<Instrument, double>>();
+
+                for (int i1 = 0; i1 < _instruments.Count; i1++)
+                {
+                    Instrument instrument1 = _instruments[i1];
+                    _covariance[instrument1] = new Dictionary<Instrument, double>();
+
+                    for (int i2 = i1; i2 < _instruments.Count; i2++)
+                    {
+                        Instrument instrument2 = _instruments[i2];
+                        _covariance[instrument1][instrument2] =
+                            priceSeries[instrument1].Covariance(priceSeries[instrument2], numBars, barSize)[0];
+                    }
+                }
+#else
                 // save the price series, so that we may use indicators
                 // in the priceFunc lambda expression, without evaluating
                 // them multiple times per bar
@@ -1182,6 +1208,7 @@ namespace TuringTrader.Support
                         i => priceFunc(i));
 
                 _covariance = new Dictionary<Instrument, Dictionary<Instrument, double>>();
+
                 for (int i1 = 0; i1 < _instruments.Count; i1++)
                 {
                     Instrument instrument1 = _instruments[i1];
@@ -1213,6 +1240,7 @@ namespace TuringTrader.Support
                             / (NumBars - 1.0);
                     }
                 }
+#endif
             }
             #endregion
 
@@ -1287,6 +1315,10 @@ namespace TuringTrader.Support
         #endregion
     }
 
+#if false
+    // DEPRECATED as of 04/2020
+    // use functionality from IndicatorsCorrelation instead
+
     /// <summary>
     /// Collection of portfolio-related indicators
     /// </summary>
@@ -1351,6 +1383,7 @@ namespace TuringTrader.Support
         }
         #endregion
     }
+#endif
 }
 
 //==============================================================================
