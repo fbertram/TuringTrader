@@ -43,12 +43,13 @@ namespace TuringTrader.Indicators
         /// <param name="series">this time series</param>
         /// <param name="other">other time series</param>
         /// <param name="n">number of bars</param>
+        /// <param name="subSample">distance between bars</param>
         /// <param name="parentId">caller cache id, optional</param>
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>correlation coefficient time series</returns>
-        public static ITimeSeries<double> Correlation(this ITimeSeries<double> series, ITimeSeries<double> other, int n,
-            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        public static ITimeSeries<double> Correlation(this ITimeSeries<double> series, ITimeSeries<double> other, int n, int subSample = 1,
+        CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,
                 series.GetHashCode(), other.GetHashCode(), n);
@@ -60,30 +61,20 @@ namespace TuringTrader.Indicators
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    // determine averages
-                    var sumX = 0.0;
-                    var sumY = 0.0;
-                    for (int t = 0; t < n; t++)
-                    {
-                        sumX += x[t];
-                        sumY += y[t];
-                    }
-                    var avgX = sumX / n;
-                    var avgY = sumY / n;
+                    var avgX = Enumerable.Range(0, n)
+                        .Average(t => x[t * subSample]);
+                    var avgY = Enumerable.Range(0, n)
+                        .Average(t => y[t * subSample]);
+                    var covXY = Enumerable.Range(0, n)
+                        .Sum(t => (x[t * subSample] - avgX) * (y[t * subSample] - avgY)) / n;
+                    var varX = Enumerable.Range(0, n)
+                        .Sum(t => Math.Pow(x[t * subSample] - avgX, 2.0)) / n;
+                    var varY = Enumerable.Range(0, n)
+                        .Sum(t => Math.Pow(y[t * subSample] - avgY, 2.0)) / n;
+                    var corr = covXY
+                        / Math.Max(1e-99, Math.Sqrt(varX) * Math.Sqrt(varY));
 
-                    // determine factors
-                    var sumDXX = 0.0;
-                    var sumDYY = 0.0;
-                    var sumDXY = 0.0;
-                    for (int t = 0; t < n; t++)
-                    {
-                        sumDXX += (x[t] - avgX) * (x[t] - avgX);
-                        sumDYY += (y[t] - avgY) * (y[t] - avgY);
-                        sumDXY += (x[t] - avgX) * (y[t] - avgY);
-                    }
-
-                    // put it all together
-                    return sumDXY / Math.Sqrt(sumDXX) / Math.Sqrt(sumDYY);
+                    return corr;
                 },
                 0.0,
                 cacheId);
@@ -97,11 +88,12 @@ namespace TuringTrader.Indicators
         /// <param name="series">this time series</param>
         /// <param name="other">other time series</param>
         /// <param name="n">number of bars</param>
+        /// <param name="subSample">distance between bars</param>
         /// <param name="parentId">caller cache id, optional</param>
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>covariance time series</returns>
-        public static ITimeSeries<double> Covariance(this ITimeSeries<double> series, ITimeSeries<double> other, int n,
+        public static ITimeSeries<double> Covariance(this ITimeSeries<double> series, ITimeSeries<double> other, int n, int subSample = 1,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             var cacheId = new CacheId(parentId, memberName, lineNumber,
@@ -113,25 +105,15 @@ namespace TuringTrader.Indicators
             return IndicatorsBasic.BufferedLambda(
                 (v) =>
                 {
-                    // determine averages
-                    var sumX = 0.0;
-                    var sumY = 0.0;
-                    for (int t = 0; t < n; t++)
-                    {
-                        sumX += x[t];
-                        sumY += y[t];
-                    }
-                    var avgX = sumX / n;
-                    var avgY = sumY / n;
+                    var avgX = Enumerable.Range(0, n)
+                        .Average(t => x[t * subSample]);
+                    var avgY = Enumerable.Range(0, n)
+                        .Average(t => y[t * subSample]);
+                    var covXY = Enumerable.Range(0, n)
+                        .Sum(t => (x[t * subSample] - avgX) * (y[t * subSample] - avgY))
+                        / (n - 1.0);
 
-                    // determine factors
-                    var sumDXY = 0.0;
-                    for (int t = 0; t < n; t++)
-                    {
-                        sumDXY += (x[t] - avgX) * (y[t] - avgY);
-                    }
-
-                    return sumDXY / n;
+                    return covXY;
                 },
                 0.0,
                 cacheId);
