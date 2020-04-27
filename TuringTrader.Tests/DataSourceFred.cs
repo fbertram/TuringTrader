@@ -47,8 +47,10 @@ namespace SimulatorEngine.Tests
             Assert.IsTrue(((DateTime)ds.FirstTime).Date == DateTime.Parse("01/01/1947"));
             //Assert.IsTrue(((DateTime)ds.LastTime).Date == DateTime.Parse("01/11/2019"));
             Assert.IsTrue(ds.Data.Count() == 64);
-            Assert.IsTrue(Math.Abs(ds.Data.First().Open - 18765.256) < 1e-2);
-            Assert.IsTrue(Math.Abs(ds.Data.Last().Close - 18912.326) < 1e-2);
+            //var v0 = ds.Data.First().Open;
+            //var v1 = ds.Data.Last().Close;
+            Assert.IsTrue(Math.Abs(ds.Data.First().Open - 18783.548) < 1e-2);
+            Assert.IsTrue(Math.Abs(ds.Data.Last().Close - 18927.281) < 1e-2);
         }
     }
 }
