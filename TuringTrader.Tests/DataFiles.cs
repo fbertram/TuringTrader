@@ -51,6 +51,8 @@ namespace SimulatorEngine.Tests
                     executableDir,
                     "..",
                     "..",
+                    "..",
+                    "..",
                     "..");
                 GlobalSettings.HomePath = homePath;
 
