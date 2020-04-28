@@ -74,13 +74,11 @@ namespace TuringTrader.BooksAndPubs
             CommissionPerShare = Globals.COMMISSION;
 
             // our universe consists of risky & safe assets
-            var universe = RISKY_ASSETS
-                .Concat(SAFE_ASSETS).ToList();
+            var riskyAssets = AddDataSources(RISKY_ASSETS);
+            var safeAssets = AddDataSources(SAFE_ASSETS);
+            var universe = riskyAssets.Concat(safeAssets);
 
-            // add all data sources
-            AddDataSource(BENCHMARK);
-            foreach (var nick in universe)
-                AddDataSource(nick);
+            var bench = AddDataSource(BENCHMARK);
 
             //========== simulation loop ==========
 
@@ -96,7 +94,7 @@ namespace TuringTrader.BooksAndPubs
                             + 12.0 * i.Close.Momentum(252)[0]) / 22.0);
 
                 // skip if there are any instruments missing from our universe
-                if (!HasInstruments(universe))
+                if (!HasInstruments(universe) || !HasInstrument(bench))
                     continue;
 
                 // trigger rebalancing
@@ -108,11 +106,11 @@ namespace TuringTrader.BooksAndPubs
                     // calculate efficient frontier for universe
                     // note how momentum and covariance are annualized here
                     var cla = new PortfolioSupport.MarkowitzCLA(
-                        Instruments.Where(i => universe.Contains(i.Nickname)),
+                        universe.Select(ds => ds.Instrument),
                         i => 252.0 * momentum[i],
-                        (i, j) => 252.0 / covar.BarSize * covar[i, j], // TODO: is sqrt correct?
+                        (i, j) => 252.0 / covar.BarSize * covar[i, j],
                         i => 0.0,
-                        i => SAFE_ASSETS.Contains(i.Nickname) ? 1.0 : MAX_RISKY_ALLOC);
+                        i => safeAssets.Contains(i.DataSource) ? 1.0 : MAX_RISKY_ALLOC);
 
                     // find portfolio with specified risk
                     var pf = cla.TargetVolatility(TVOL);
@@ -143,7 +141,7 @@ namespace TuringTrader.BooksAndPubs
                 if (!IsOptimizing && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
-                    _plotter.AddStrategyHoldings(this, universe.Select(nick => FindInstrument(nick)));
+                    _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
 
                     if (IsSubclassed) AddSubclassedBar();
                 }
