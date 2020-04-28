@@ -57,6 +57,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         private Plotter _plotter = null;
+        private AllocationTracker _alloc = new AllocationTracker();
         #endregion
         #region ctor
         public Keller_LAA_Core()
@@ -126,8 +127,10 @@ namespace TuringTrader.BooksAndPubs
                                 .Sum(a => a.Item2));
 
                     // submit orders
+                    _alloc.LastUpdate = SimTime[0];
                     foreach (var i in weights.Keys)
                     {
+                        _alloc.Allocation[i] = weights[i];
                         var shares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
                         i.Trade(shares - i.Position);
                     }
@@ -158,7 +161,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                //_plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -178,6 +181,8 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
+#if false
+    // collection of supplemental simulations from the paper
     #region Fig. 2: The static 60-40 (SPY-IEF) benchmark
     public class Keller_LAA_Fig2_60_40_benchmark : LazyPortfolio
     {
@@ -335,6 +340,8 @@ namespace TuringTrader.BooksAndPubs
         };
     }
     #endregion
+#endif
+
     #region LAA, see Fig. 12: QQQ+IWD+GLD+IEF (25% each), switched to SHY+IWD+GLD+IEF(25% each) using GT timing
     public class Keller_LAA : Keller_LAA_Core
     {
@@ -355,6 +362,7 @@ namespace TuringTrader.BooksAndPubs
         };
     }
     #endregion
+
     #region constructed World ETF (named WRLD)
     public class Keller_LAA_WRLD : LazyPortfolio
     {
