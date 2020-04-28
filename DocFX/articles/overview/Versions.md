@@ -25,6 +25,7 @@
     - update algorithms from Livingston's Muscular Portfolios to match book exactly
     - add SteadyOption's Anchor Trades portfolio
     - add Keller's Flexible Asset Allocation
+    - add Keller's Lethargic Asset Allocation
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar

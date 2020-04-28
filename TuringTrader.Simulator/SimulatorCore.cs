@@ -172,7 +172,7 @@ namespace TuringTrader.Simulator
                     : FillModel(ticket, execBar, price);
 
             // adjust position, unless it's the end-of-sim order
-            if (ticket.Type != OrderType.endOfSimFakeClose)
+            //if (ticket.Type != OrderType.endOfSimFakeClose) // removed 2020iv28. why did we do this?
             {
                 if (!Positions.ContainsKey(instrument))
                     Positions[instrument] = 0;
@@ -194,7 +194,7 @@ namespace TuringTrader.Simulator
                 : 0.00;
 
             // pay for it, unless it's the end-of-sim order
-            if (ticket.Type != OrderType.endOfSimFakeClose)
+            //if (ticket.Type != OrderType.endOfSimFakeClose) // removed 2020iv28. why did we do this?
             {
                 Cash = Cash
                     - numberOfShares * fillPrice
@@ -300,6 +300,8 @@ namespace TuringTrader.Simulator
             }
 
             //navCalc += string.Format(", nav = {0:C2}", nav);
+            //if (SimTime[0].Year == 2020 && SimTime[0].Month == 4)
+            //    Output.WriteLine(navCalc);
 
             if (!navValid && navInvalidFirst)
             {
