@@ -51,6 +51,7 @@ namespace TuringTrader.Support
             /// as presended in paper by David H. Bailey and Marcos Lopez de Prado.
             /// <see href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2197616"/>
             /// <see href="http://www.quantresearch.info/Software.htm"/>
+            /// <see href="https://www.davidhbailey.com/dhbpapers/"/>
             /// In case you are wondering why this code smells a bit like Python:
             /// This implementation follows the paper closely; the overall structure,
             /// as well as the names of methods and fields are (mostly) identical.
