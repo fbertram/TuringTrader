@@ -384,6 +384,14 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
     #region Dual Momentum w/ 4 asset pairs - as seen on Scott's Investments
+    // see also:
+    // https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2042750
+    // https://allocatesmartly.com/antonaccis-composite-dual-momentum/
+    // Equities: SPY/ EFA
+    // Credit risk: LQD/ HYG
+    // Real estate: VNQ/ REM
+    // Economic stress: GLD/ TLT
+    // safe instrument: BIL
     public class Antonacci_4PairsDualMomentum: Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Antonacci's Dual Momentum w/ 4 Pairs";
