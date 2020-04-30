@@ -40,76 +40,28 @@ namespace TuringTrader.Simulator
     /// <typeparam name="T">value type</typeparam>
     public class TimeSeries<T> : ITimeSeries<T>
     {
-#if false
-        // safe: implementation with C# List<T>
         #region internal data
-        private int _maxBarsBack;
-        private List<T> _data = new List<T>();
-        #endregion
-
-        #region public TimeSeries(int maxBarsBack)
-        public TimeSeries(int maxBarsBack = 256)
-        {
-            _maxBarsBack = maxBarsBack;
-
-        }
-        #endregion
-
-        #region public T Value
-        public T Value
-        {
-            set
-            {
-                _data.Insert(0, value);
-
-                if (_data.Count > _maxBarsBack)
-                    _data.RemoveRange(_maxBarsBack, _data.Count - _maxBarsBack);
-            }
-        }
-        #endregion
-        #region public T this[int daysBack]
-        public T this[int daysBack]
-        {
-            get
-            {
-#if false
-                // throw, if exceeding # of available bars
-                if (daysBack < 0 || daysBack >= BarsAvailable)
-                    throw new Exception(string.Format("{0} exceed max bars back of {1}", daysBack, _maxBarsBack));
-#else
-                // adjust daysBack, if exceeding # of available bars
-                daysBack = Math.Max(Math.Min(daysBack, BarsAvailable - 1), 0);
-#endif
-
-                return _data[daysBack];
-            }
-        }
-        #endregion
-        #region public int BarsAvailable
-        public int BarsAvailable
-        {
-            get
-            {
-                return _data.Count();
-            }
-        }
-        #endregion
-#else
-        // faster: implementation with diy cyclic buffer
-        #region internal data
-        private T[] _barData;
-        private int _newestBar;
+        private T[] _cyclicData;
+        private int _cyclicNewest;
+        private List<T> _listData;
         #endregion
 
         #region public TimeSeries(int maxBarsBack)
         /// <summary>
-        /// Create and initialize time series.
+        /// Create and initialize time series. Typically, a time series
+        /// is a cyclic buffer, allowing access to a limited range of
+        /// data. However, if a non-positive value is passed for maxBarsBack,
+        /// a list is created, allowing access to all previous values.
         /// </summary>
         /// <param name="maxBarsBack">number of bars to hold</param>
         public TimeSeries(int maxBarsBack = 256)
         {
             MaxBarsBack = maxBarsBack;
-            _barData = new T[MaxBarsBack];
+
+            if (MaxBarsBack > 0)
+                _cyclicData = new T[MaxBarsBack];
+            else
+                _listData = new List<T>();
 
             Clear();
         }
@@ -120,7 +72,11 @@ namespace TuringTrader.Simulator
         /// </summary>
         public void Clear()
         {
-            _newestBar = -1;
+            if (_cyclicData != null)
+                _cyclicNewest = -1;
+            else
+                _listData.Clear();
+
             BarsAvailable = 0;
         }
         #endregion
@@ -133,9 +89,17 @@ namespace TuringTrader.Simulator
         {
             set
             {
-                _newestBar = (_newestBar + 1) % MaxBarsBack;
-                BarsAvailable = Math.Min(BarsAvailable + 1, MaxBarsBack);
-                _barData[_newestBar] = value;
+                if (_cyclicData != null)
+                {
+                    _cyclicNewest = (_cyclicNewest + 1) % MaxBarsBack;
+                    BarsAvailable = Math.Min(BarsAvailable + 1, MaxBarsBack);
+                    _cyclicData[_cyclicNewest] = value;
+                }
+                else
+                {
+                    _listData.Add(value);
+                    BarsAvailable++;
+                }
             }
         }
         #endregion
@@ -152,15 +116,22 @@ namespace TuringTrader.Simulator
                 if (BarsAvailable < 1)
                     throw new Exception("time series lookup past available bars");
 
-                // adjust daysBack, if exceeding # of available bars
-                // NOTE: we will *not* throw an exception when referencing bars
-                //       exceeding BarsAvailable
-                barsBack = Math.Max(Math.Min(barsBack, BarsAvailable - 1), 0);
+                if (_cyclicData != null)
+                {
+                    // adjust daysBack, if exceeding # of available bars
+                    // NOTE: we will *not* throw an exception when referencing bars
+                    //       exceeding BarsAvailable
+                    barsBack = Math.Max(Math.Min(barsBack, BarsAvailable - 1), 0);
 
-                int idx = (_newestBar + MaxBarsBack - barsBack) % MaxBarsBack;
-                T value = _barData[idx];
+                    int idx = (_cyclicNewest + MaxBarsBack - barsBack) % MaxBarsBack;
+                    T value = _cyclicData[idx];
 
-                return value;
+                    return value;
+                }
+                else
+                {
+                    return _listData[_listData.Count - 1 - barsBack];
+                }
             }
         }
         #endregion
@@ -180,7 +151,6 @@ namespace TuringTrader.Simulator
         /// </summary>
         public readonly int MaxBarsBack;
         #endregion
-#endif
     }
 }
 

@@ -434,9 +434,9 @@ namespace TuringTrader.Simulator
 
                 // reset cash and net asset value
                 // we create a new time-series here, to make sure that
-                // any indicators depending on it, are also re-created
+                // any indicators depending on it are also re-created
                 Cash = 0.0;
-                NetAssetValue = new TimeSeries<double>
+                NetAssetValue = new TimeSeries<double>(-1)
                 {
                     Value = Cash
                 };
