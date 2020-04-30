@@ -241,9 +241,10 @@ namespace TuringTrader.Simulator
 
         private double ULCER_PERFORMANCE_INDEX(string label)
         {
-            double perf = Math.Exp(12.0 * EXC_MONTHLY_RETURNS(label).Values.Average(r => r)) - 1.0;
+            double perf = CAGR(label);
             double ulcer = ULCER_INDEX(label);
-            return perf / ulcer;
+            double martinRatio = perf / ulcer;
+            return martinRatio;
         }
 
         private List<double> DISTR_DAILY_RETURNS(string label)
