@@ -86,9 +86,13 @@ namespace TuringTrader.Simulator
                     instanceToRun = null;
                 }
 
-                catch (Exception)
+                catch (Exception e)
                 {
                     // we ignore any exeption while running the algo
+                    lock (_optimizerLock)
+                    {
+                        Output.WriteLine("{0}: Iteration failed. {1}", this.GetType().Name, e.Message);
+                    }
                 }
 
                 finally
