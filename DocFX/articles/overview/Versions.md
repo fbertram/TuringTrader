@@ -7,6 +7,7 @@
     - make cache objects thread-local (except for data sources)
 	- add CheckParameters
 	- add FillModel
+    - keep full time series for NetAssetValue
   - optimizer
     - fix issue w/ optimizer hanging when algos throw exceptions
   - data sources
@@ -26,6 +27,8 @@
     - add SteadyOption's Anchor Trades portfolio
     - add Keller's Flexible Asset Allocation
     - add Keller's Lethargic Asset Allocation
+  - project
+    - reorganize project files
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar

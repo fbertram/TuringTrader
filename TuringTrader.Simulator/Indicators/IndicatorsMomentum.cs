@@ -44,7 +44,7 @@ namespace TuringTrader.Indicators
         /// <param name="parentId">caller cache id, optional</param>
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
-        /// <returns>log momentum, normalized to one day, as time series</returns>
+        /// <returns>simple momentum, as time series</returns>
         public static ITimeSeries<double> SimpleMomentum(this ITimeSeries<double> series, int n = 21,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
@@ -66,7 +66,7 @@ namespace TuringTrader.Indicators
         /// <param name="parentId">caller cache id, optional</param>
         /// <param name="memberName">caller's member name, optional</param>
         /// <param name="lineNumber">caller line number, optional</param>
-        /// <returns>log momentum, normalized to one day, as time series</returns>
+        /// <returns>log momentum, as time series</returns>
         public static ITimeSeries<double> LogMomentum(this ITimeSeries<double> series, int n = 21,
             CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
@@ -75,7 +75,7 @@ namespace TuringTrader.Indicators
 
 #if true
             return IndicatorsBasic.BufferedLambda(
-                prev => Math.Log(series[0] / series[n]) / n,
+                prev => Math.Log(series[0] / series[n]),
                 0.0,
                 cacheId);
 #else
