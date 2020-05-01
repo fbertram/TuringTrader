@@ -6,7 +6,7 @@
 //              http://www.followingthetrend.com/
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -143,7 +143,6 @@ namespace TuringTrader.BooksAndPubs
             StartTime = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
             WarmupStartTime = StartTime - TimeSpan.FromDays(180);
             EndTime = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
-            //EndTime = DateTime.Parse("04/25/2020", CultureInfo.InvariantCulture);
 #else
             WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = Globals.START_TIME;
@@ -244,6 +243,7 @@ namespace TuringTrader.BooksAndPubs
                         portfolioRisk += RISK_PER_STOCK;
                     }
 
+                    // perform customized money-management
                     ManageWeights(weights);
 
                     // submit trades
