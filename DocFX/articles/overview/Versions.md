@@ -27,6 +27,8 @@
     - add SteadyOption's Anchor Trades portfolio
     - add Keller's Flexible Asset Allocation
     - add Keller's Lethargic Asset Allocation
+  - renderer
+    - fix issue w/ C# template skipping integer values on charts
   - project
     - reorganize project files
 - 0.11 - April 2020

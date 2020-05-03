@@ -278,7 +278,7 @@ namespace TuringTrader.BooksAndPubs
                     // plot strategy exposure
                     _plotter.SelectChart("Strategy Exposure", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("Exposure", constituents.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
+                    _plotter.Plot("Stock Exposure", constituents.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                     _plotter.Plot("Number of Stocks", constituents.Where(i => i.Position != 0).Count());
 
 #if true

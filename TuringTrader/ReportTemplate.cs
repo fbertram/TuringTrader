@@ -133,12 +133,24 @@ namespace TuringTrader
                     if (col.Key == xLabel)
                         continue;
 
+#if true
+                    // new 2020v01
+                    if (!IsNumeric(col.Value))
+                        continue;
+
+                    if (col.Value.GetType() == typeof(double)
+                    && (double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value)))
+                        continue;
+#else
                     if (col.Value.GetType() != typeof(double)
                     || double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value))
                         continue;
+#endif
 
                     string yLabel = col.Key;
-                    double yValue = (double)col.Value;
+                    double yValue = col.Value.GetType() == typeof(double)
+                        ? (double)col.Value
+                        : (double)(int)col.Value;
 
                     if (!allSeries.ContainsKey(yLabel))
                     {
@@ -249,6 +261,24 @@ namespace TuringTrader
             return plotModel;
         }
         #endregion
+        #region protected bool IsNumeric(object obj)
+        protected bool IsNumeric(object obj)
+        {
+            // see https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number
+
+            HashSet<Type> numericTypes = new HashSet<Type>
+                {
+                    typeof(int),  typeof(double),  typeof(decimal),
+                    typeof(long), typeof(short),   typeof(sbyte),
+                    typeof(byte), typeof(ulong),   typeof(ushort),
+                    typeof(uint), typeof(float),
+                    typeof(DateTime)
+                };
+
+            Type type = obj.GetType();
+            return numericTypes.Contains(Nullable.GetUnderlyingType(type) ?? type);
+        }
+        #endregion
         #region protected bool IsTable(string selectedChart)
         /// <summary>
         /// Determine if we should render as table.
@@ -260,28 +290,12 @@ namespace TuringTrader
             //===== get plot data
             var chartData = PlotData[selectedChart];
 
-            bool isNumeric(object obj)
-            {
-                // see https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number
-
-                HashSet<Type> numericTypes = new HashSet<Type>
-                {
-                    typeof(int),  typeof(double),  typeof(decimal),
-                    typeof(long), typeof(short),   typeof(sbyte),
-                    typeof(byte), typeof(ulong),   typeof(ushort),
-                    typeof(uint), typeof(float),
-                    typeof(DateTime)
-                };
-
-                Type type = obj.GetType();
-                return numericTypes.Contains(Nullable.GetUnderlyingType(type) ?? type);
-            }
 
             foreach (var row in chartData)
             {
                 foreach (var val in row.Values)
                 {
-                    if (!isNumeric(val))
+                    if (!IsNumeric(val))
                         return true;
                 }
             }
