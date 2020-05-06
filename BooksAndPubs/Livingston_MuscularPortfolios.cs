@@ -137,9 +137,9 @@ namespace TuringTrader.BooksAndPubs
 
         protected virtual double REBAL_TRIGGER => 0.20;
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
+        protected virtual string BENCHMARK => Assets.PORTF_60_40;
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
         private Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion
@@ -293,7 +293,6 @@ namespace TuringTrader.BooksAndPubs
             "splice:SHV,SHY",  // iShares Short-Term Treasury ETF (US Treasury bills, 1 to 12 months)
 #else
             // the book mentions that CXO is using different ETFs
-            // we use these, to simulate back to 2007
             // see page 104
             
             //--- equities
