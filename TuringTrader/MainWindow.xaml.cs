@@ -445,7 +445,14 @@ namespace TuringTrader
             var commandParam = menuItem.CommandParameter;
             var algoType = commandParam as AlgorithmInfo;
 
-            SelectAlgo(AlgoLookupName(algoType));
+            try
+            {
+                SelectAlgo(AlgoLookupName(algoType));
+            }
+            catch (Exception exc)
+            {
+                Output.WriteLine("failed to instantiate {0}", algoType);
+            }
         }
         #endregion
         #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
