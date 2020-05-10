@@ -298,16 +298,16 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Faber's Ivy 5 Rotation";
 
-        protected override string SAFE_INSTRUMENT => "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
+        protected override string SAFE_INSTRUMENT => "splice:BIL,PRTBX"; // SPDR Barclays 1-3 Month T-Bill ETF
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
                 //--- domestic equity
                 "VTI", // Vanguard Total Stock Market ETF
                 //--- world equity
-                "VEU", // Vanguard FTSE All-World ex-US ETF
+                "splice:VEU,SCINX", // Vanguard FTSE All-World ex-US ETF
                 //--- credit
-                "BND", // Vanguard Total Bond Market ETF
+                "splice:BND,AGG", // Vanguard Total Bond Market ETF
                 //--- real estate
                 "VNQ", // Vanguard REIT Index ETF
                 //--- economic stress

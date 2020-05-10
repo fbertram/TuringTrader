@@ -65,6 +65,7 @@ namespace TuringTrader.BooksAndPubs
 
             StartTime = SubclassedStartTime ?? START_TIME;
             EndTime = SubclassedEndTime ?? END_TIME;
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = 0.0; // lazy portfolios w/o commissions

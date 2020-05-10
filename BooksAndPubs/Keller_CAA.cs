@@ -180,13 +180,13 @@ namespace TuringTrader.BooksAndPubs
             "EEM", // Emerging Markets
             "QQQ", // US Technology Sector
             "EWJ", // Japanese Equities
-            "HYG", // High Yield Bonds
+            "splice:HYG,VWEAX", // High Yield Bonds
         };
 
         protected override List<string> SAFE_ASSETS => new List<string>
         {
             "IEF", // 10-Year Treasuries
-            "BIL", // T-Bills
+            "splice:BIL,PRTBX", // T-Bills
         };
     }
     #endregion

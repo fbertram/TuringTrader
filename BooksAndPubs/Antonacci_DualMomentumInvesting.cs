@@ -96,9 +96,9 @@ namespace TuringTrader.BooksAndPubs
         {
             //========== initialization ==========
 
-            //WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = START_TIME;
             EndTime = END_TIME;
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
