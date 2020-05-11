@@ -325,7 +325,7 @@ namespace TuringTrader.BooksAndPubs
     // see https://muscularportfolios.com/papa-bear/
     public class Livingston_MuscularPortfolios_PapaBear : Livingston_MuscularPortfolios
     {
-        public override string Name => "Livingston's Papa Bear Strategy";
+        public override string Name => "Livingston's Papa Bear";
         protected override HashSet<string> ETF_MENU => new HashSet<string>()
         {
             // proxies as suggest by Brian Livingston
