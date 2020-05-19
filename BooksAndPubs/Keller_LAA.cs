@@ -103,17 +103,17 @@ namespace TuringTrader.BooksAndPubs
                     continue;
 
                 // calculate indicators
-                var economyLaged = economy.Instrument.Close.Delay(25); // 1 month publication lag: March observation published April 03
-                var economySMA = economyLaged.SMA(252);
-                var economyRecession = economyLaged[0] < economySMA[0];
+                var economyLagged = economy.Instrument.Close.Delay(25); // 1 month publication lag: March observation published April 03
+                var economySMA = economyLagged.SMA(252);
+                var economyGrowing = economyLagged[0] < economySMA[0];
                 var marketSMA = market.Instrument.Close.SMA(200); // 10-months moving average
                 var marketRising = market.Instrument.Close[0] > marketSMA[0];
 
                 // trigger monthly rebalancing
                 if (SimTime[0].Month != NextSimTime.Month)
                 {
-                    // determine target allocation: cash, if economy in recession _and_ markets declining
-                    var allocation = economyRecession || marketRising
+                    // determine target allocation: cash, if economy shrinking _and_ markets declining
+                    var allocation = economyGrowing || marketRising
                         ? risky
                         : cash;
 
@@ -146,7 +146,7 @@ namespace TuringTrader.BooksAndPubs
                     // additional plotter output
                     _plotter.SelectChart("Unemployment Trend", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(economy.Instrument.Name, economyLaged[0]);
+                    _plotter.Plot(economy.Instrument.Name, economyLagged[0]);
                     _plotter.Plot(economy.Instrument.Name + "-SMA", economySMA[0]);
 
                     _plotter.SelectChart("Market Trend", "Date");
