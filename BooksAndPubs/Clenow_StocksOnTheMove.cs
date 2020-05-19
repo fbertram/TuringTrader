@@ -257,6 +257,7 @@ namespace TuringTrader.BooksAndPubs
                         var targetShares = (int)Math.Round(NetAssetValue[0] * weights[i] / i.Close[0]);
                         i.Trade(targetShares - i.Position, OrderType.openNextBar);
                     }
+                    if (_plotter.AllData.Count > 0) _plotter.AddTargetAllocationRow(_alloc);
 
                     if (!IsOptimizing && (EndTime - SimTime[0]).TotalDays < 30)
                     {

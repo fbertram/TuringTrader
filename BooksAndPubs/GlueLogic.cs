@@ -197,6 +197,10 @@ namespace TuringTrader.Algorithms.Glue
                 plotter.Plot("Allocation", string.Format("{0:P2}", alloc.Allocation[i]));
             }
         }
+        public static void AddTargetAllocationRow(this Plotter plotter, AllocationTracker alloc)
+        {
+            // TODO: write historical allocations here
+        }
 
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, IEnumerable<Instrument> assets)
         {
