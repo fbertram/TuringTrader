@@ -262,6 +262,10 @@ namespace TuringTrader.Simulator
         private double CalcNetAssetValue()
         {
             //string navCalc = string.Format("{0:MM/dd/yyyy}: cash = {1:C2}", SimTime[0], Cash);
+            //var d = SimTime[0];
+            //var n = this.Name;
+            //var t = d > DateTime.Parse("05/20/2020") && n.StartsWith("Antonacci");
+
             double nav = Cash;
 
             bool navValid = true;
@@ -295,7 +299,7 @@ namespace TuringTrader.Simulator
                     ? 100.0 * Positions[instrument]
                     : Positions[instrument];
 
-                //navCalc += string.Format(", {0} = {1:C2}", instrument.Symbol, quantity * price);
+                //if (t) Output.WriteLine("{0}: {1} = {2} x {3:C2} = {4:C2}", SimTime[0], instrument.Symbol, quantity, price, quantity * price);
                 nav += quantity * price;
             }
 

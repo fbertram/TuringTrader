@@ -100,6 +100,12 @@ namespace TuringTrader.Simulator
                         {
                             d.LoadData(startTime, endTime);
                             dsBars[nick] = d.Data.Reverse().ToList();
+
+                            // this line makes sure that no datasource has bars after
+                            // the 'master' datasource. This can happen when extending
+                            // GLD w/ XAUUSD, because of different trading calendars
+                            if (nick == _symbols.First())
+                                endTime = (DateTime)d.LastTime;
                         }
                         catch (Exception /*e*/)
                         {

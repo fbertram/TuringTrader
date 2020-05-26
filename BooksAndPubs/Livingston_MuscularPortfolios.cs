@@ -134,13 +134,16 @@ namespace TuringTrader.BooksAndPubs
         protected abstract HashSet<string> ETF_MENU { get; }
         protected abstract double MOMENTUM(Instrument i);
         protected virtual int NUM_PICKS { get => 3; }
-
-        protected virtual double REBAL_TRIGGER => 0.20;
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
         protected virtual string BENCHMARK => Assets.PORTF_60_40;
+        protected virtual double REBAL_TRIGGER => 0.20;
+        protected virtual bool REBAL_TODAY(double maxOff)
+        {
+            return SimTime[0].Month != NextSimTime.Month && maxOff > REBAL_TRIGGER;
+        }
         #endregion
         #region internal data
-        private Plotter _plotter;
+        protected Plotter _plotter;
         private AllocationTracker _alloc = new AllocationTracker();
         #endregion
         #region ctor
@@ -193,8 +196,7 @@ namespace TuringTrader.BooksAndPubs
                         * Math.Abs(i.Position * i.Close[0] / NetAssetValue[0] - targetPercentage) / targetPercentage);
 
                 // rebalance once per month, and only if we need adjustments exceeding 20%
-                if (SimTime[0].Month != NextSimTime.Month
-                    && maxOff > REBAL_TRIGGER)
+                if (REBAL_TODAY(maxOff))
                 {
                     _alloc.LastUpdate = SimTime[0];
 
