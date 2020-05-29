@@ -141,6 +141,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
 
 #if true
                     // additional plotter output

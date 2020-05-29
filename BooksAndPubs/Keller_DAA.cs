@@ -201,6 +201,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.AddStrategyHoldings(this, Instruments
                         .Where(i => riskyUniverse.Contains(i.DataSource) || cashUniverse.Contains(i.DataSource))
                         .Select(i => AssetSub(i)));
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
                 }
             }
 

@@ -188,6 +188,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     _plotter.AddStrategyHoldings(this, assets.Select(ds => ds.Instrument));
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
 
                     if (IsSubclassed) 
                         AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);

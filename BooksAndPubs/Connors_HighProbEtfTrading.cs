@@ -115,6 +115,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, market.Instrument);
                     _plotter.AddStrategyHoldings(this, market.Instrument);
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
                 }
             }
 

@@ -217,6 +217,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                     //_plotter.Plot("Choices", nn);
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
 
                     if (IsSubclassed) AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
                 }

@@ -29,7 +29,7 @@
 // https://systematicinvestor.github.io/strategy/Strategy-FAA
 // https://indexswingtrader.blogspot.com/2013/11/flexibile-asset-allocation-with-crash.html
 
-#define DATE_RANGES_FROM_PAPER
+//#define DATE_RANGES_FROM_PAPER
 // DATE_RANGES_FROM_PAPER: if defined, use fixed date ranges from paper
 // otherwise, use global date ranges
 
@@ -44,7 +44,7 @@
 // DATE_RANGE_FULL: if defined, use full range
 #endif
 
-#define MUTUAL_FUNDS
+//#define MUTUAL_FUNDS
 // MUTUAL_FUNDS: if defined, use mutual funds, otherwise ETFs
 
 #region libraries

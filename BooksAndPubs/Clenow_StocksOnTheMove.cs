@@ -257,7 +257,6 @@ namespace TuringTrader.BooksAndPubs
                         var targetShares = (int)Math.Round(NetAssetValue[0] * weights[i] / i.Close[0]);
                         i.Trade(targetShares - i.Position, OrderType.openNextBar);
                     }
-                    if (_plotter.AllData.Count > 0) _plotter.AddTargetAllocationRow(_alloc);
 
                     if (!IsOptimizing && (EndTime - SimTime[0]).TotalDays < 30)
                     {
@@ -281,6 +280,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Stock Exposure", constituents.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                     _plotter.Plot("Number of Stocks", constituents.Where(i => i.Position != 0).Count());
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
 
 #if true
                     _plotter.SelectChart("Clenow-style Chart", "Date");
