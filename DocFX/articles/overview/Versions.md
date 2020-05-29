@@ -20,6 +20,8 @@
 	  - cache calculated option chain
     - CSV files
       - improve parsing of dates and floats
+    - splicing souce
+      - fix issue w/ missing last bar on 'master' instrument leading to data glitch
   - indicators
     - new indicators for correlation and covariance
   - showcase strategies

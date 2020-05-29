@@ -1,6 +1,6 @@
 # TuringTrader
 
-![](https://www.gnu.org/graphics/agplv3-155x51.png)
+![GNU Affero General Public License](https://www.gnu.org/graphics/agplv3-155x51.png)
 
 An open-source backtesting engine/ market simulator, licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0).
 
