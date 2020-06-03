@@ -103,10 +103,12 @@ namespace TuringTrader.Simulator
                     {
                         // extract the relevant sub-string
                         string mappedString = string.Format(mapping.Value, items);
+                        mappedString = mappedString.Replace(" ", ""); // drop spaces
 
                         // assign sub-string to field
                         switch (mapping.Key)
                         {
+                            //case DataSourceParam.ticker: ticker = mappedString; break;
                             case DataSourceParam.date: date = ParseDate(mappedString, mapping.Value); break;
                             case DataSourceParam.time: time = DateTime.Parse(mappedString); break;
 
@@ -202,11 +204,17 @@ namespace TuringTrader.Simulator
                 Bar prevBar = null;
                 for (string line; (line = reader.ReadLine()) != null;)
                 {
+                    // handle end of file gracefully
                     if (line.Length == 0)
-                        continue; // to handle end of file
+                        continue;
 
+                    // skip invalid bars
                     Bar bar = ValidateBar(CreateBar(line));
                     if (bar == null)
+                        continue;
+
+                    // skip duplicate timestamps, unless we are processing options
+                    if (prevBar != null && !bar.IsOption && prevBar.Time == bar.Time)
                         continue;
 
                     if (FirstTime == null)
