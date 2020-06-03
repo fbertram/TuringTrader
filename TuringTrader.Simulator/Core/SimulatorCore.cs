@@ -764,6 +764,25 @@ namespace TuringTrader.Simulator
             return optionChain;
         }
         #endregion
+        #region protected List<Instrument> OptionChain(DataSource ds)
+        protected List<Instrument> OptionChain(DataSource ds)
+        {
+            List<Instrument> optionChain = _instruments.Values
+                    .Where(i => i.DataSource == ds      // check data source
+                        && i[0].Time == SimTime[0]      // current bar
+                        && i.IsOption                   // is option
+                        && i.OptionExpiry > SimTime[0]  // future expiry
+
+                        // NOTE: by filtering out those w/ invalid bid/ask,
+                        // algos are discouraged from opening new positions
+                        // with these contracts. however, we can still
+                        // trade them, if we know the Instrument object
+                        && (!i.HasBidAsk || i.IsBidAskValid[0])) // bid/ask seems legit
+                    .ToList();
+
+            return optionChain;
+        }
+        #endregion
 
         #region public void QueueOrder(Order order)
         /// <summary>
