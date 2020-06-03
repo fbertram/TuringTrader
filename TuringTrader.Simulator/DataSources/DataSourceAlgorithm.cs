@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
         private class DataSourceAlgorithm : DataSource
         {
             #region internal data
-            private readonly string _algoName;
+            private readonly SubclassableAlgorithm _algo;
             #endregion
 
             //---------- API
@@ -45,19 +45,20 @@ namespace TuringTrader.Simulator
             /// <param name="info">info dictionary</param>
             public DataSourceAlgorithm(Dictionary<DataSourceParam, string> info) : base(info)
             {
-#if false
-                _algoName = Info[DataSourceParam.dataFeed]
-                    .Split(':')
-                    .Last();
-#else
-                _algoName = Info[DataSourceParam.symbolAlgo];
-#endif
-                var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
+                if (!Info.ContainsKey(DataSourceParam.symbolAlgo))
+                    throw new Exception(string.Format("{0}: {1} missing mandatory symbolAlgo key", GetType().Name, info[DataSourceParam.nickName]));
 
-                if (algo == null)
-                    throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", _algoName));
+                var items = info[DataSourceParam.symbolAlgo].Split(",").ToList();
+                var algoName = items[0];
+                var algoParam = items.Count > 1 ? items[1] : null;
 
-                Info[DataSourceParam.name] = algo.Name;
+                _algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
+
+                if (_algo == null)
+                    throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", info[DataSourceParam.nickName2]));
+
+                _algo.SubclassedParam = algoParam;
+                Info[DataSourceParam.name] = _algo.Name;
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
@@ -68,8 +69,10 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             override public void LoadData(DateTime startTime, DateTime endTime)
             {
+                var algoNick = Info[DataSourceParam.nickName];
+
                 var cacheKey = new CacheId(null, "", 0,
-                    _algoName.GetHashCode(),
+                    algoNick.GetHashCode(), // _algoName.GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());
 
@@ -80,25 +83,23 @@ namespace TuringTrader.Simulator
                         DateTime t1 = DateTime.Now;
                         Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
-                        var algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(_algoName);
+                        _algo.SubclassedStartTime = startTime;
+                        _algo.SubclassedEndTime = endTime;
+                        _algo.ParentDataSource = this;
 
-                        algo.SubclassedStartTime = startTime;
-                        algo.SubclassedEndTime = endTime;
-                        algo.ParentDataSource = this;
+                        _algo.SubclassedData = new List<Bar>(); ;
 
-                        algo.SubclassedData = new List<Bar>(); ;
-
-                        algo.Run();
+                        _algo.Run();
 
                         DateTime t2 = DateTime.Now;
                         Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                        return algo.SubclassedData;
+                        return _algo.SubclassedData;
                     }
 
                     catch
                     {
-                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + _algoName);
+                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
                     }
                 }
 

@@ -53,6 +53,11 @@ namespace TuringTrader.Simulator
         public List<Bar> SubclassedData = null;
 
         /// <summary>
+        /// Optional parameter, passed in from data source nickname
+        /// </summary>
+        public string SubclassedParam = null;
+
+        /// <summary>
         /// Parent data source, when sub-classed
         /// </summary>
         public DataSource ParentDataSource = null;
