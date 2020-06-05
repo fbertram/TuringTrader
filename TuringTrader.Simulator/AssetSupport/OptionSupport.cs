@@ -513,9 +513,31 @@ namespace TuringTrader.Support
             double cm = 0.5 * (contract.Bid[0] + contract.Ask[0]);
             double epsilon = 0.001;
 
-            double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
+            try
+            {
+                double volatility = GImpliedVolatility(CallPutFlag, S, X, T, r, b, cm, epsilon);
 
-            return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
+                return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
+            }
+            catch (Exception e)
+            {
+                // catch exceptions here, so that we can use this method inside
+                // LINQ expressions
+                Output.WriteLine("BlackScholesImplied: failed to calculate {0} on {1:MM/dd/yyyy}",
+                    contract.Symbol, contract[0].Time);
+            }
+
+            // return invalid record
+            return new OptionPriceVolGreeks
+            {
+                Price = cm,
+                Volatility = double.NaN,
+                Delta = double.NaN,
+                Gamma = double.NaN,
+                Vega = double.NaN,
+                Rho = double.NaN,
+                Theta = double.NaN,
+            };
         }
         #endregion
 
