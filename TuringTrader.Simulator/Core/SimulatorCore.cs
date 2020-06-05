@@ -765,6 +765,13 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region protected List<Instrument> OptionChain(DataSource ds)
+        /// <summary>
+        /// Retrieve option chain by its data source. This will return a list of
+        /// all instruments with the given data source, marked as options, and with 
+        /// bars available at the current simulation time.
+        /// </summary>
+        /// <param name="ds"></param>
+        /// <returns></returns>
         protected List<Instrument> OptionChain(DataSource ds)
         {
             List<Instrument> optionChain = _instruments.Values
