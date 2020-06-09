@@ -33,6 +33,8 @@
     - fix issue w/ C# template skipping integer values on charts
   - project
     - reorganize project files
+  - documentation
+    - add demo code for custom data sources
 - 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
