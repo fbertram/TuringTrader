@@ -119,6 +119,9 @@
 #define INCOME_HEDGE
 // if defined: implement income hedge
 
+#define FILL_AT_MID
+// if defined: fill at mid-price between bid and ask
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -388,7 +391,7 @@ namespace TuringTrader.BooksAndPubs
                     // buy back
 #if INCOME_POS
                     _incomePosition.Trade(_incomePositionCurrentLots, ORDER_TYPE)
-                        .Comment = "roll income position";
+                        .Comment = string.Format("roll income position: received = {0:C2}, buy-back = {1:C2}", _incomePositionPremiumRecv, _incomePosition.Ask[0]);
 #endif
                     _incomePosition = null;
                 }
@@ -424,7 +427,7 @@ namespace TuringTrader.BooksAndPubs
                     .FirstOrDefault();
 
                 // target strike: ATM
-                var targetStrike = FindInstrument(UNDERLYING_NICK).Close[0] 
+                var targetStrike = _underlying.Close[0] 
                     * (1.0 + INCOME_POS_STRIKE / 1e4);
 
                 // select the closest strike
@@ -558,8 +561,10 @@ namespace TuringTrader.BooksAndPubs
         #region FillModel
         protected override double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
         {
+#if FILL_AT_MID
             if (orderTicket.Instrument != null && orderTicket.Instrument.IsOption)
                 return 0.5 * (barOfExecution.Bid + barOfExecution.Ask);
+#endif
 
             return theoreticalPrice;
         }
@@ -575,15 +580,21 @@ namespace TuringTrader.BooksAndPubs
             // data range for fake data
             StartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("04/09/2020", CultureInfo.InvariantCulture);
-#elif SPX_OPTIONS
+#endif
+#if SPX_OPTIONS
             // SPX date range
             StartTime = DateTime.Parse("02/01/2007", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("11/28/2018", CultureInfo.InvariantCulture);
-#else
+#endif
+#if XSP_OPTIONS
             // XSP date range
             //StartTime = DateTime.Parse("08/01/2006", CultureInfo.InvariantCulture);
             StartTime = DateTime.Parse("11/19/2007", CultureInfo.InvariantCulture); // availability of monthlies
             EndTime = DateTime.Parse("08/01/2018", CultureInfo.InvariantCulture);
+#endif
+#if SPY_OPTIONS
+            StartTime = DateTime.Parse("11/19/2007", CultureInfo.InvariantCulture); // availability of monthlies
+            EndTime = DateTime.Parse("05/31/2020", CultureInfo.InvariantCulture);
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
@@ -619,7 +630,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("Underlying", spy.Instrument.Close[0]);
                     _plotter.Plot("Main Position", _mainPosition != null ? _mainPosition.OptionStrike : 0.0);
                     _plotter.Plot("Main Hedge", _mainHedge != null ? _mainHedge.OptionStrike : 0.0);
-                    _plotter.Plot("Main Position", _incomePosition != null ? _incomePosition.OptionStrike : 0.0);
+                    _plotter.Plot("Income Position", _incomePosition != null ? _incomePosition.OptionStrike : 0.0);
                     _plotter.Plot("Income Hedge", _incomeHedge != null ? _incomeHedge.OptionStrike : 0.0);
 #endif
 
