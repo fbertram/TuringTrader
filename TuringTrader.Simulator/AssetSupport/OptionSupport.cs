@@ -382,8 +382,10 @@ namespace TuringTrader.Support
             double vegai = GVega(S, X, T, r, b, vi);
             double minDiff = Math.Abs(cm - ci);
 
-            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff)
+            int iterations = 1000; // FUB addition: sometimes this doesn't converge
+            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff && iterations > 0)
             {
+                iterations--;
                 vi = vi - (ci - cm) / vegai;
                 vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
                 ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
