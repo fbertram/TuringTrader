@@ -51,12 +51,8 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private DateTime ParseDate(string value, string mapping)
             {
-                if (mapping.Contains("yyyyMMdd"))
-                    return DateTime.ParseExact(value, "yyyyMMdd", CultureInfo.InvariantCulture);
-                else if (mapping.Contains("MM/dd/yyyy"))
-                    return DateTime.ParseExact(value, "MM/dd/yyyy", CultureInfo.InvariantCulture);
-
-                throw new Exception("unknown date format");
+                var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
+                return DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
             }
             private double ParseDouble(string value)
             {

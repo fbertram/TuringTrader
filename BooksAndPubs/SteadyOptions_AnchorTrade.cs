@@ -89,11 +89,17 @@
 // 
 //==============================================================================
 
-//#define FAKE_DATA
+//#define FAKE_OPTIONS
 // if defined: run on synthetic fake data, instead of actual quotes
 
 //#define SPX_OPTIONS
-// if defined: use SPX, else XSP
+// if defined: use SPX options
+
+//#define XSP_OPTIONS
+// if defined: use XSP options
+
+#define SPY_OPTIONS
+// if defined: use SPY options
 
 #define MAIN_POS
 // if defined: implement main position
@@ -131,20 +137,27 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "SteadyOptions' Anchor Trade";
 
         #region inputs
-#if FAKE_DATA
+#if FAKE_OPTIONS
         private readonly string UNDERLYING_NICK = "$SPX";
         private readonly string OPTION_NICK = "$SPX.fake.options";
         private readonly string BENCHMARK = "$SPXTR";
-#elif SPX_OPTIONS
+#endif
+#if SPX_OPTIONS
         private string UNDERLYING_NICK = "$SPX";
         private string OPTION_NICK = "$SPX.weekly.options";
         private readonly string BENCHMARK = "$SPXTR";
-#else
+#endif
+#if XSP_OPTIONS
         private string UNDERLYING_NICK = "$XSP";
         private string OPTION_NICK = "$XSP.options";
         private readonly string BENCHMARK = "$SPXTR";
 #endif
-        private readonly string VIX_1Y = "$VIX1Y";
+#if SPY_OPTIONS
+        private string UNDERLYING_NICK = "_pou_SPY";
+        private string OPTION_NICK = "_pou_SPY.options";
+        private readonly string BENCHMARK = "$SPXTR";
+#endif
+        //private readonly string VIX_1Y = "$VIX1Y";
         //private readonly string PARKING_NICK = "BIL";
         private OrderType ORDER_TYPE = OrderType.closeThisBar;
         #endregion
@@ -558,7 +571,7 @@ namespace TuringTrader.BooksAndPubs
             //---------- initialization
 
             //WarmupStartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
-#if FAKE_DATA
+#if FAKE_OPTIONS
             // data range for fake data
             StartTime = DateTime.Parse("06/01/2011", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("04/09/2020", CultureInfo.InvariantCulture);
@@ -578,18 +591,18 @@ namespace TuringTrader.BooksAndPubs
 
             var spy = AddDataSource(UNDERLYING_NICK);
             AddDataSource(OPTION_NICK);
-            var vix = AddDataSource(VIX_1Y);
+            //var vix = AddDataSource(VIX_1Y);
             var bench = AddDataSource(BENCHMARK);
 
             //---------- simulation
 
             foreach (var simTime in SimTimes)
             {
-                if (!HasInstrument(spy) || !HasInstrument(OPTION_NICK) || !HasInstrument(vix) || !HasInstrument(bench))
+                if (!HasInstrument(spy) || !HasInstrument(OPTION_NICK) /*|| !HasInstrument(vix)*/ || !HasInstrument(bench))
                     continue;
 
                 _underlying = _underlying ?? spy.Instrument;
-                _vix1y = _vix1y ?? vix.Instrument;
+                //_vix1y = _vix1y ?? vix.Instrument;
 
                 MaintainMainPosition();
                 MaintainMainHedge();
@@ -600,11 +613,24 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, bench.Instrument);
 
+#if true
+                    _plotter.SelectChart("Strikes", "Date");
+                    _plotter.SetX(SimTime[0]);
+                    _plotter.Plot("Underlying", spy.Instrument.Close[0]);
+                    _plotter.Plot("Main Position", _mainPosition != null ? _mainPosition.OptionStrike : 0.0);
+                    _plotter.Plot("Main Hedge", _mainHedge != null ? _mainHedge.OptionStrike : 0.0);
+                    _plotter.Plot("Main Position", _incomePosition != null ? _incomePosition.OptionStrike : 0.0);
+                    _plotter.Plot("Income Hedge", _incomeHedge != null ? _incomeHedge.OptionStrike : 0.0);
+#endif
+
+#if false
                     _plotter.SelectChart("Hedge Strikes", "Date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Underlying", spy.Instrument.Close[0]);
                     _plotter.Plot("Main Hedge", _mainHedge != null ? _mainHedge.OptionStrike : 0.0);
                     _plotter.Plot("Income Hedge", _incomeHedge != null ? _incomeHedge.OptionStrike : 0.0);
+#endif
+#if true
 
                     _plotter.SelectChart("Position Breakdown", "Date");
                     _plotter.SetX(SimTime[0]);
@@ -618,6 +644,7 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("Income Position", _incomePosition != null ? 100.0 * _incomePositionCurrentLots * _incomePosition.Ask[0] : 0.0);
                     _plotter.Plot("Income Hedge", _incomeHedge != null ? 100.0 * _incomeHedgeCurrentLots * _incomeHedge.Bid[0] : 0.0);
                     _plotter.Plot("Cash", Cash);
+#endif
                 }
             }
 
