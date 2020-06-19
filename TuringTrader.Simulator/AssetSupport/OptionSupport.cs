@@ -382,10 +382,8 @@ namespace TuringTrader.Support
             double vegai = GVega(S, X, T, r, b, vi);
             double minDiff = Math.Abs(cm - ci);
 
-            int iterations = 1000; // FUB addition: sometimes this doesn't converge
-            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff && iterations > 0)
+            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff)
             {
-                iterations--;
                 vi = vi - (ci - cm) / vegai;
                 vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
                 ci = GBlackScholes(CallPutFlag, S, X, T, r, b, vi);
@@ -496,9 +494,13 @@ namespace TuringTrader.Support
         public static OptionPriceVolGreeks BlackScholesImplied(this Instrument contract, double riskFreeRate, double dividendYield = 0.0)
         {
             if (!contract.IsOption)
-                throw new Exception("BlackScholes: input not an option contract");
+                throw new Exception("BlackScholesImplied: input not an option contract");
 
             DateTime today = contract.Simulator.SimTime[0];
+
+            if (contract.OptionExpiry < today)
+                throw new Exception("BlackScholesImplied: contract already expired");
+
             Instrument underlying = contract.Simulator.Instruments.Where(i => i.Symbol == contract.OptionUnderlying).First();
 
             bool CallPutFlag = !contract.OptionIsPut;
