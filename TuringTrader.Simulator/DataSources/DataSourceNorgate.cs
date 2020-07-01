@@ -30,8 +30,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 using NDU = NorgateData.DataAccess;
 using NDW = NorgateData.WatchListLibrary;
@@ -328,6 +326,7 @@ namespace TuringTrader.Simulator
         private class UniverseNorgate : Universe
         {
             #region internal data
+            private static object mutex = new object(); // watchlist functionality not multi-threaded?
             private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
             {
                 { "$SPX", "S&P 500 Current & Past"},
@@ -346,11 +345,18 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private void getWatchlist()
             {
-                // this code cannot be in the same method
-                // that calls HandleUnresolvedAssemblies
-                NDW.Watchlist watchlist;
-                var success = NDU.Api.GetWatchlist(_watchlistNames[_nickname], out watchlist);
-                _watchlist = watchlist;
+                // TODO: it seems that Norgate's code might not be multi-threaded
+                //       this mutex here avoids issues with GetWatchlist returning
+                //       a null-pointer for the out-parameter watchlist,
+                //       when run in the optimizer.
+                lock (mutex)
+                {
+                    // this code cannot be in the same method
+                    // that calls HandleUnresolvedAssemblies
+                    NDW.Watchlist watchlist;
+                    var success = NDU.Api.GetWatchlist(_watchlistNames[_nickname], out watchlist);
+                    _watchlist = watchlist;
+                }
             }
             #endregion
 
