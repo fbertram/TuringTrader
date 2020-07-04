@@ -125,12 +125,18 @@ namespace TuringTrader.Simulator
                         dsHasData[nick] = dsEnums[nick].MoveNext();
                     }
 
-                    // TODO:
-                    // make sure that no datasource has bars after the 'primary' 
-                    // datasource. This can happen when extending GLD w/ XAUUSD, 
-                    // because of different trading calendars
-                    //if (nick == _symbols.First())
-                    //    endTime = (DateTime)d.LastTime;
+                    // skip bars from all proxy datasources, so that no proxy
+                    // has bars after the primary datasource
+                    // example: extending GLD w/ XAUUSD. because XAUUSD has
+                    // a different trading calendar, XAUUSD might have bars
+                    // after GLD, leading to faulty results
+                    var lastPrimary = dsEnums[_symbols.First()].Current.Time;
+
+                    foreach (var nick in _symbols)
+                    {
+                        while (dsHasData[nick] && dsEnums[nick].Current.Time > lastPrimary)
+                            dsHasData[nick] = dsEnums[nick].MoveNext();
+                    }
 
                     // collect bars
                     List<Bar> bars = new List<Bar>();
@@ -204,6 +210,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0)
                     throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName]));
 
+                CachedData = data;
                 return data;
             }
             #endregion

@@ -119,6 +119,7 @@ namespace TuringTrader.Simulator
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format("DataSourceConstantYield: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
+                CachedData = data;
                 return data;
             }
             #endregion

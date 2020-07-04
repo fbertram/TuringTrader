@@ -494,6 +494,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));
 
+                CachedData = data;
                 return data;
             }
             #endregion

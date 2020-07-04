@@ -514,12 +514,15 @@ namespace TuringTrader.Simulator
                         _expireOption(instr);
 
                     // handle instrument de-listing
-                    IEnumerable<Instrument> instrumentsToDelist = Instruments
-                        .Where(i => !hasData[i.DataSource])
-                        .ToList();
+                    if (!IsLastBar)
+                    {
+                        IEnumerable<Instrument> instrumentsToDelist = Instruments
+                            .Where(i => !hasData[i.DataSource])
+                            .ToList();
 
-                    foreach (Instrument instr in instrumentsToDelist)
-                        _delistInstrument(instr);
+                        foreach (Instrument instr in instrumentsToDelist)
+                            _delistInstrument(instr);
+                    }
 
                     // update net asset value
                     NetAssetValue.Value = _calcNetAssetValue();

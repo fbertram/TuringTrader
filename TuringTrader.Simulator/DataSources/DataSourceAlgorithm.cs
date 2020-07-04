@@ -83,9 +83,60 @@ namespace TuringTrader.Simulator
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
 #if true
-                foreach (var bar in _algo.Run(startTime, endTime))
-                    yield return bar;
-                yield break;
+                _algo.IsDataSource = true;
+
+                if (_algo.IsChildAlgorithm)
+                {
+                    // for child algorithms, we bypass the cache and run the
+                    // child bar-for-bar and in sync with its parent
+
+                    foreach (var bar in _algo.Run(startTime, endTime))
+                        yield return bar;
+                    yield break;
+                }
+                else
+                {
+                    // for all other algorithms, we run the algo
+                    // all at once and save the result in the cache
+
+                    var algoNick = Info[DataSourceParam.nickName];
+
+                    var cacheKey = new CacheId(null, "", 0,
+                        algoNick.GetHashCode(), // _algoName.GetHashCode(),
+                        startTime.GetHashCode(),
+                        endTime.GetHashCode());
+
+                    List<Bar> retrievalFunction()
+                    {
+                        try
+                        {
+                            DateTime t1 = DateTime.Now;
+                            Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
+
+                            var bars = _algo.Run(startTime, endTime)
+                                .ToList();
+
+                            DateTime t2 = DateTime.Now;
+                            Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                            return bars;
+                        }
+
+                        catch
+                        {
+                            throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
+                        }
+                    }
+
+                    List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
+
+                    if (data.Count == 0)
+                        throw new Exception(string.Format("DataSourceAlgorithm: no data for {0}", Info[DataSourceParam.nickName]));
+
+                    CachedData = data;
+                    foreach (var bar in data)
+                        yield return bar;
+                }
 #else
                 var algoNick = Info[DataSourceParam.nickName];
 

@@ -78,7 +78,13 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
-                    instanceToRun.Run();
+                    // make sure to enter the extended Run method
+                    // the default implementation will forward
+                    // to the simple Run method, if required
+                    // also, we need to convert the result to a list,
+                    // in order to circumvent lazy execution
+                    var noLazyExec = instanceToRun.Run(null, null)
+                        .ToList();
 
                     result.NetAssetValue = instanceToRun.NetAssetValue[0];
                     result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;

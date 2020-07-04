@@ -124,6 +124,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         public bool IsChildAlgorithm => ParentAlgorithm != null;
         #endregion
+        #region public bool IsDataSource
+        /// <summary>
+        /// Field indicating if this algorithm instance is used as
+        /// a datasource. This information can be used to turn-off
+        /// CPU or memory intensive operations, e.g., the generation
+        /// of plots and logs.
+        /// </summary>
+        public bool IsDataSource { get; set; } = false;
+        #endregion
 
         #region public void SetAllocation(double totalDollars)
         /// <summary>

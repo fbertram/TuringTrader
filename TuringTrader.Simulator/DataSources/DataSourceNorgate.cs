@@ -318,6 +318,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
                     throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName2]));
 
+                CachedData = data;
                 return data;
             }
             #endregion

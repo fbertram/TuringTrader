@@ -200,6 +200,15 @@ namespace TuringTrader.Simulator
         /// <param name="endTime">end time stamp</param>
         public abstract IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime);
         #endregion
+        #region public List<Bar> CachedData
+        /// <summary>
+        /// Data sources using the cache make their data accessible here.
+        /// This may be used for algorithms and report generators, e.g.,
+        /// MFE/MAE analysis, which requires access to the data independent
+        /// of the simulator's current bar.
+        /// </summary>
+        public List<Bar> CachedData = null;
+        #endregion
     }
 
     /// <summary>

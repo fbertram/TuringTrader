@@ -213,6 +213,7 @@ namespace TuringTrader.Simulator
 
                 var data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
+                CachedData = data;
                 return data;
             }
             #endregion

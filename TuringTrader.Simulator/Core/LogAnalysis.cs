@@ -145,20 +145,22 @@ namespace TuringTrader.Simulator
                             Quantity = -closeFromEntry,
                             Entry = entryOrder.Entry,
                             Exit = order,
-                            /*HighestHigh = order.OrderTicket.Instrument == null
-                            || order.OrderTicket.Instrument.IsOption
+                            HighestHigh = order.OrderTicket.Instrument == null
+                                    || order.OrderTicket.Instrument.IsOption 
+                                    || order.OrderTicket.Instrument.DataSource.CachedData == null
                                 ? 0.0
-                                : order.OrderTicket.Instrument.DataSource.Data
+                                : order.OrderTicket.Instrument.DataSource.CachedData
                                     .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
                                         && b.Time <= order.BarOfExecution.Time)
                                     .Max(b => b.High),
                             LowestLow = order.OrderTicket.Instrument == null 
-                            || order.OrderTicket.Instrument.IsOption
+                                    || order.OrderTicket.Instrument.IsOption
+                                    || order.OrderTicket.Instrument.DataSource.CachedData == null
                                 ? 0.0
-                                : order.OrderTicket.Instrument.DataSource.Data
+                                : order.OrderTicket.Instrument.DataSource.CachedData
                                     .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
                                         && b.Time <= order.BarOfExecution.Time)
-                                    .Min(b => b.Low),*/
+                                    .Min(b => b.Low),
                         });
 
                         remainingQuantity -= closeFromEntry;
