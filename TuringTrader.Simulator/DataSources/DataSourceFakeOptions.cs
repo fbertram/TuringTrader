@@ -36,7 +36,7 @@ namespace TuringTrader.Simulator
         private class DataSourceFakeOptions : DataSource
         {
             #region internal helpers
-            private class SimFakeOptions : SimulatorCore
+            private class SimFakeOptions : Algorithm
             {
                 private static readonly string UNDERLYING = "$SPX";
                 private static readonly string VOLATILITY_9D = "$VIX9D";
@@ -189,7 +189,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
                     Info[DataSourceParam.nickName].GetHashCode(),
@@ -211,7 +211,9 @@ namespace TuringTrader.Simulator
                     return data;
                 }
 
-                Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true); ;
+                var data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
+
+                return data;
             }
             #endregion
         }

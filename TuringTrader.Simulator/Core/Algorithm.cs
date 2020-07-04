@@ -36,6 +36,24 @@ namespace TuringTrader.Simulator
     /// </summary>
     public abstract class Algorithm : SimulatorCore
     {
+        #region internal data
+        private List<Algorithm> _childAlgorithms = new List<Algorithm>();
+        #endregion
+        #region internal helpers
+        /// <summary>
+        /// calculate algorithm's net asset value.
+        /// </summary>
+        /// <returns>nav</returns>
+        protected override double _calcNetAssetValue()
+        {
+            var assets = base._calcNetAssetValue();
+            var childAlgos = _childAlgorithms
+                .Sum(a => a.NetAssetValue[0]);
+
+            return assets + childAlgos;
+        }
+        #endregion
+
         #region public Algorithm()
         /// <summary>
         /// Initialize trading algorithm. Most trading algorithms will
@@ -75,26 +93,103 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region override public void Run()
+        #region protected DataSource AddChildAlgorithm(Algorithm algo)
         /// <summary>
-        /// Main entry point for trading algorithms, containing all proprietary
-        /// trading logic. All trading algorithms override this method with their
-        /// own implementation. Trading algorithms are not required to call the
-        /// base class implementation of this method. This method may be called
-        /// multiple times for the same instance. Care should be taken, that the
-        /// implementation of this method initializes all parameters, to allow
-        /// multiple runs.
+        /// Add a subclassed algorithm to simulator.
         /// </summary>
-        override public void Run() { }
+        /// <param name="algo">subclassed algorithm</param>
+        /// <returns>newly created data source</returns>
+        protected DataSource AddChildAlgorithm(Algorithm algo)
+        {
+            DataSource newSource = DataSource.New(algo);
+            AddDataSource(newSource);
+
+            algo.ParentAlgorithm = this;
+            _childAlgorithms.Add(algo);
+
+            return newSource;
+        }
         #endregion
-        #region virtual public void Report()
+        #region protected Algorithm ParentAlgorithm
+        /// <summary>
+        /// Parent algorithm. Null, if this instance is not a child
+        /// of another algorithm.
+        /// </summary>
+        protected Algorithm ParentAlgorithm { get; private set; } = null;
+        #endregion
+        #region public bool IsChildAlgorithm
+        /// <summary>
+        /// Property indicating if this algorithm is a child of
+        /// another algorithm.
+        /// </summary>
+        public bool IsChildAlgorithm => ParentAlgorithm != null;
+        #endregion
+
+        #region public void SetAllocation(double totalDollars)
+        /// <summary>
+        /// Set child algorithm capital allocation.
+        /// </summary>
+        /// <param name="totalDollars">total dollar amount to allocate</param>
+        public void SetAllocation(double totalDollars)
+        {
+            if (!IsChildAlgorithm)
+                throw new Exception("Algorithm: SetAllocation only valid for child algorithms");
+
+            var transferAmount = totalDollars - NetAssetValue[0];
+
+            if (transferAmount >= 0.0)
+            {
+                this.Deposit(transferAmount);
+                ParentAlgorithm.Withdraw(transferAmount);
+            }
+            else
+            {
+                this.Withdraw(-transferAmount);
+                ParentAlgorithm.Deposit(-transferAmount);
+            }
+        }
+        #endregion
+
+        #region public virtual void Run()
+        /// <summary>
+        /// Entry point for trading algorithm, simple interface.
+        /// All algorithms override either this method, or the subclassable
+        /// version of it with their own implementation. Algorithms are not
+        /// required to call the base class implementation of this method. 
+        /// This method is called only once per instance. Nonetheless,
+        /// care should be taken that the implementation of this method 
+        /// initializes/ resets all parameters, to allow multiple runs.
+        /// </summary>
+        public virtual void Run() { }
+        #endregion
+        #region public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
+        /// <summary>
+        /// Entry point for trading algorithm, subclassable interface.
+        /// All algorithms override either this method, or the subclassable
+        /// version of it with their own implementation. Algorithms are not
+        /// required to call the base class implementation of this method. 
+        /// This method is called only once per instance. Nonetheless,
+        /// care should be taken that the implementation of this method 
+        /// initializes/ resets all parameters, to allow multiple runs.
+        /// </summary>
+        /// <param name="startTime">simulation start time</param>
+        /// <param name="endTime">simulation end time</param>
+        /// <returns>enumerable of bars, representing the algorithm result</returns>
+        public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
+        {
+            Run();
+
+            yield break;
+        }
+        #endregion
+        #region public virtual void Report()
         /// <summary>
         /// Create report. This method can be called after calling Run(), to
         /// create and display a custom report. Typically, trading algorithms
         /// override this method with their own implementation. Algorithms are
         /// not required to call the base class implementation of this method.
         /// </summary>
-        virtual public void Report() { }
+        public virtual void Report() { }
         #endregion
         #region public double Progress
         /// <summary>
@@ -109,7 +204,7 @@ namespace TuringTrader.Simulator
                 try
                 {
                     double doneDays = (SimTime[0] - (DateTime)WarmupStartTime).TotalDays;
-                    double totalDays = (EndTime - (DateTime)WarmupStartTime).TotalDays;
+                    double totalDays = ((DateTime)EndTime - (DateTime)WarmupStartTime).TotalDays;
                     return 100.0 * doneDays / totalDays;
                 }
                 catch (Exception)
@@ -127,13 +222,13 @@ namespace TuringTrader.Simulator
         /// </summary>
         public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
         #endregion
-        #region virtual public bool CheckParametersValid()
+        #region public virtual bool CheckParametersValid()
         /// <summary>
         /// Check, if current parameterset is valid. This is used to weed out
         /// illegal parameter combinations during grid optimization.
         /// </summary>
         /// <returns>true, if parameter set valid</returns>
-        virtual public bool CheckParametersValid()
+        public virtual bool CheckParametersValid()
         {
             return true;
         }
@@ -177,6 +272,10 @@ namespace TuringTrader.Simulator
             get;
             protected set;
         }
+        #endregion
+
+        #region public string SubclassedParam
+        public string SubclassedParam = null;
         #endregion
     }
 }

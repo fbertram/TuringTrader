@@ -81,6 +81,17 @@ namespace TuringTrader.Simulator
             return DataSourceCollection.New(nickname);
         }
         #endregion
+        #region static public DataSource New(Algorithm algo)
+        /// <summary>
+        /// Factory function to instantiate new algorithm data source.
+        /// </summary>
+        /// <param name="algo">nickname</param>
+        /// <returns>data source object</returns>
+        static public DataSource New(Algorithm algo)
+        {
+            return DataSourceCollection.New(algo);
+        }
+        #endregion
         #region protected DataSource(Dictionary<DataSourceParam, string> info)
         /// <summary>
         /// Create and initialize data source object.
@@ -89,8 +100,6 @@ namespace TuringTrader.Simulator
         protected DataSource(Dictionary<DataSourceParam, string> info)
         {
             Info = info;
-            FirstTime = null;
-            LastTime = null;
         }
         #endregion
 
@@ -132,49 +141,11 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region public DateTime? FirstTime
-        private DateTime? _firstTime = null;
-        /// <summary>
-        /// First time stamp available in database.
-        /// </summary>
-        public DateTime? FirstTime
-        {
-            get
-            {
-                if (_firstTime == null && Data != null && Data.Count() > 0)
-                    _firstTime = Data.First().Time;
-                return _firstTime;
-            }
-            protected set
-            {
-                _firstTime = value;
-            }
-        }
-        #endregion
-        #region public DateTime? LastTime
-        private DateTime? _lastTime = null;
-        /// <summary>
-        /// Last time stamp available in database.
-        /// </summary>
-        public DateTime? LastTime
-        {
-            get
-            {
-                if (_lastTime == null && Data != null && Data.Count() > 0)
-                    _lastTime = Data.Last().Time;
-                return _lastTime;
-            }
-            protected set
-            {
-                _lastTime = value;
-            }
-        }
-        #endregion
 
         #region protected Bar ValidateBar(Bar bar)
         /// <summary>
-        /// Validate bar. This function will either return a, possibly adjusted
-        /// bar, or null if this bar should be dropped.
+        /// Validate bar. This function will either return a 
+        /// (possibly adjusted) bar or null, if this bar should be dropped.
         /// </summary>
         /// <param name="bar">input bar</param>
         /// <returns>adjusted bar, or null</returns>
@@ -221,25 +192,14 @@ namespace TuringTrader.Simulator
         #endregion
 
         //----- fields to fill/ methods to override by actual implementation
-        #region public IEnumerable<Bar> Data
-        /// <summary>
-        /// Enumerable with Bar data.
-        /// </summary>
-        public IEnumerable<Bar> Data
-        {
-            get;
-            protected set;
-        } = null;
-        #endregion
-        #region abstract public void LoadData(DateTime startTime, DateTime endTime)
+        #region public abstract IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
         /// <summary>
         /// Load data between time stamps into memory.
         /// </summary>
         /// <param name="startTime">beginning time stamp</param>
         /// <param name="endTime">end time stamp</param>
-        abstract public void LoadData(DateTime startTime, DateTime endTime);
+        public abstract IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime);
         #endregion
-
     }
 
     /// <summary>
@@ -632,6 +592,21 @@ namespace TuringTrader.Simulator
 #endif
 
                 throw new Exception("DataSource: can't instantiate data source");
+        }
+        #endregion
+        #region static public DataSource New(Algorithm algo)
+        /// <summary>
+        /// Factory function to instantiate new data source.
+        /// </summary>
+        /// <param name="algo">algorithm object</param>
+        /// <returns>data source object</returns>
+        static public DataSource New(Algorithm algo)
+        {
+#if ENABLE_ALGO
+            return new DataSourceAlgorithm(algo);
+#else
+            throw new Exception("DataSource: can't instantiate data source");
+#endif
         }
         #endregion
         #region static public Universe NewUniverse(string nickname)

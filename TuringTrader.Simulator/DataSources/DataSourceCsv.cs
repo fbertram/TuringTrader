@@ -47,6 +47,8 @@ namespace TuringTrader.Simulator
         {
             #region internal data
             private static int _totalBarsRead = 0;
+            private DateTime? _firstTime;
+            private DateTime? _lastTime;
             #endregion
             #region internal helpers
             private DateTime ParseDate(string value, string mapping)
@@ -213,13 +215,13 @@ namespace TuringTrader.Simulator
                     if (prevBar != null && !bar.IsOption && prevBar.Time == bar.Time)
                         continue;
 
-                    if (FirstTime == null)
-                        FirstTime = bar.Time;
+                    if (_firstTime == null)
+                        _firstTime = bar.Time;
 
-                    if (LastTime == null || bar.Time > LastTime)
-                        LastTime = bar.Time;
+                    if (_lastTime == null || bar.Time > _lastTime)
+                        _lastTime = bar.Time;
 
-                    if (bar.Time < LastTime)
+                    if (bar.Time < _lastTime)
                         throw new Exception("DataSourceCsv: bars out of sequence");
 
 #if true
@@ -370,11 +372,11 @@ namespace TuringTrader.Simulator
                 // as our update can only append to the end, we need to make
                 // sure we start our database early (e.g. 1990) when we
                 // start initializing an empty data set
-                DateTime loadStartTime = LastTime != null && LastTime >= startTime
-                    ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
+                DateTime loadStartTime = _lastTime != null && _lastTime >= startTime
+                    ? (DateTime)_lastTime + TimeSpan.FromSeconds(1)
                     : startTime;
-                DateTime updateStartTime = LastTime != null
-                    ? (DateTime)LastTime + TimeSpan.FromSeconds(1)
+                DateTime updateStartTime = _lastTime != null
+                    ? (DateTime)_lastTime + TimeSpan.FromSeconds(1)
                     : DateTime.Parse("01/01/1970");
 
                 // we also have two end times
@@ -454,7 +456,7 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
                     Info[DataSourceParam.nickName].GetHashCode(),
@@ -480,8 +482,8 @@ namespace TuringTrader.Simulator
                     DateTime t2 = DateTime.Now;
                     Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                    if (LastTime == null
-                    || LastTime < endTime)
+                    if (_lastTime == null
+                    || _lastTime < endTime)
                         UpdateData(bars, startTime, endTime);
 
                     return bars;
@@ -492,7 +494,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));
 
-                Data = data;
+                return data;
             }
             #endregion
         }

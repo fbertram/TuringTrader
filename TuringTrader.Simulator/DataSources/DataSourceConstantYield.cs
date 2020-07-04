@@ -36,7 +36,7 @@ namespace TuringTrader.Simulator
         private class DataSourceConstantYield : DataSource
         {
             #region internal helpers
-            private class SimConstantYield : SimulatorCore
+            private class SimConstantYield : Algorithm
             {
                 private static readonly string UNDERLYING_NICK = "$SPX.index";
 
@@ -108,17 +108,18 @@ namespace TuringTrader.Simulator
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
                 DateTime t1 = DateTime.Now;
                 Output.WriteLine(string.Format("DataSourceConstantYield: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                 List<Bar> data = new List<Bar>();
                 LoadData(data, startTime, endTime);
-                Data = data;
 
                 DateTime t2 = DateTime.Now;
                 Output.WriteLine(string.Format("DataSourceConstantYield: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+
+                return data;
             }
             #endregion
         }

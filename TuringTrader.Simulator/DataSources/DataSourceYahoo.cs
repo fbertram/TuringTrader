@@ -276,14 +276,16 @@ namespace TuringTrader.Simulator
                 }
             }
             #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
+                List<Bar> data = new List<Bar>();
+
                 try
                 {
                     //if (startTime < (DateTime)FirstTime)
@@ -411,7 +413,7 @@ namespace TuringTrader.Simulator
                         return bars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
+                    data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
                 }
 
                 catch (Exception e)
@@ -421,9 +423,10 @@ namespace TuringTrader.Simulator
                             Info[DataSourceParam.nickName], e.Message));
                 }
 
-                if ((Data as List<Bar>).Count == 0)
+                if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceYahoo: no data for {0}", Info[DataSourceParam.nickName]));
 
+                return data;
             }
             #endregion
         }

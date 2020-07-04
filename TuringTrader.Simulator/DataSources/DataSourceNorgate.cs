@@ -285,13 +285,13 @@ namespace TuringTrader.Simulator
                 }
             }
             #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
                     Info[DataSourceParam.nickName].GetHashCode(),
@@ -318,7 +318,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
                     throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName2]));
 
-                Data = data;
+                return data;
             }
             #endregion
         }

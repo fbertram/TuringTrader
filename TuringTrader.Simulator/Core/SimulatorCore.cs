@@ -43,7 +43,7 @@ namespace TuringTrader.Simulator
         private List<DataSource> _dataSources = new List<DataSource>();
         #endregion
         #region internal helpers
-        private void ExecOrder(Order ticket)
+        private void _execOrder(Order ticket)
         {
             if (ticket.Type == OrderType.cash)
             {
@@ -216,7 +216,7 @@ namespace TuringTrader.Simulator
             //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
-        private void ExpireOption(Instrument instrument)
+        private void _expireOption(Instrument instrument)
         {
             Instrument underlying = _instruments[instrument.OptionUnderlying];
             double spotPrice = underlying.Close[0];
@@ -235,11 +235,11 @@ namespace TuringTrader.Simulator
             };
 
             // force execution
-            ExecOrder(ticket);
+            _execOrder(ticket);
 
             _instruments.Remove(instrument.Symbol);
         }
-        private void DelistInstrument(Instrument instrument)
+        private void _delistInstrument(Instrument instrument)
         {
             if (instrument.Position != 0)
             {
@@ -253,13 +253,17 @@ namespace TuringTrader.Simulator
                 };
 
                 // force execution
-                ExecOrder(ticket);
+                _execOrder(ticket);
             }
 
             _instruments.Remove(instrument.Symbol);
         }
-        private bool navInvalidFirst = true;
-        private double CalcNetAssetValue()
+        private bool _navInvalidFirst = true;
+        /// <summary>
+        /// calculate algorithm's net asset value.
+        /// </summary>
+        /// <returns>nav</returns>
+        protected virtual double _calcNetAssetValue()
         {
             //string navCalc = string.Format("{0:MM/dd/yyyy}: cash = {1:C2}", SimTime[0], Cash);
             //var d = SimTime[0];
@@ -307,10 +311,10 @@ namespace TuringTrader.Simulator
             //if (SimTime[0].Year == 2020 && SimTime[0].Month == 4)
             //    Output.WriteLine(navCalc);
 
-            if (!navValid && navInvalidFirst)
+            if (!navValid && _navInvalidFirst)
             {
                 Output.WriteLine("{0:MM/dd/yyyy}: NAV invalid, instrument {1}", SimTime[0], invalidInstrument);
-                navInvalidFirst = false;
+                _navInvalidFirst = false;
             }
 
             return navValid 
@@ -352,14 +356,6 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region abstract public void Run()
-        /// <summary>
-        /// Hook for proprietary trading logic. This method must be
-        /// overriden and implemented by a derived class.
-        /// </summary>
-        abstract public void Run();
-        #endregion
-
         #region protected DateTime StartTime
         /// <summary>
         /// Time stamp representing the first bar, on which
@@ -369,7 +365,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         protected DateTime StartTime;
         #endregion
-        # region protected DateTime? WarmupStartTime
+        #region protected DateTime? WarmupStartTime
         /// <summary>
         /// Optional value, specifying a time stamp earlier than StartTime,
         /// representing the first bar processed by the simulator. Setting
@@ -417,8 +413,8 @@ namespace TuringTrader.Simulator
                 foreach (DataSource source in _dataSources)
                 {
                     source.Simulator = this; // we'd love to do this during construction
-                    source.LoadData((DateTime)WarmupStartTime, EndTime);
-                    enumData[source] = source.Data.GetEnumerator();
+                    enumData[source] = source.LoadData((DateTime)WarmupStartTime, (DateTime)EndTime)
+                        .GetEnumerator();
                     hasData[source] = enumData[source].MoveNext();
                 }
 
@@ -506,7 +502,7 @@ namespace TuringTrader.Simulator
 
                     // execute orders
                     foreach (Order order in PendingOrders)
-                        ExecOrder(order);
+                        _execOrder(order);
                     PendingOrders.Clear();
 
                     // handle option expiry on bar following expiry
@@ -515,18 +511,18 @@ namespace TuringTrader.Simulator
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
-                        ExpireOption(instr);
+                        _expireOption(instr);
 
                     // handle instrument de-listing
                     IEnumerable<Instrument> instrumentsToDelist = Instruments
-                        .Where(i => i.DataSource.LastTime + TimeSpan.FromDays(5) < SimTime[0])
+                        .Where(i => !hasData[i.DataSource])
                         .ToList();
 
                     foreach (Instrument instr in instrumentsToDelist)
-                        DelistInstrument(instr);
+                        _delistInstrument(instr);
 
                     // update net asset value
-                    NetAssetValue.Value = CalcNetAssetValue();
+                    NetAssetValue.Value = _calcNetAssetValue();
                     ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
                     NetAssetValueHighestHigh = Math.Max(NetAssetValueHighestHigh, filteredNAV[0]);
                     NetAssetValueMaxDrawdown = Math.Max(NetAssetValueMaxDrawdown, 1.0 - filteredNAV[0] / NetAssetValueHighestHigh);
@@ -552,7 +548,7 @@ namespace TuringTrader.Simulator
                             };
 
                             // force execution
-                            ExecOrder(ticket);
+                            _execOrder(ticket);
                         }
                     }
 
@@ -647,6 +643,7 @@ namespace TuringTrader.Simulator
             _dataSources.Add(dataSource);
         }
         #endregion
+
         #region public IEnumerable<Instrument> Instruments
         /// <summary>
         /// Enumeration of instruments available to the simulator. It is

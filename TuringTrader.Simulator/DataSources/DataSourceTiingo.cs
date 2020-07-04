@@ -185,9 +185,9 @@ namespace TuringTrader.Simulator
                     // offline behavior as pleasant as possible
                     DateTime DATA_START = DateTime.Parse("01/01/1970", CultureInfo.InvariantCulture);
 
-                    startTime = ((DateTime)FirstTime) < DATA_START
+                    startTime = ((DateTime)_firstTime) < DATA_START
                         ? DATA_START
-                        : (DateTime)FirstTime;
+                        : (DateTime)_firstTime;
 
                     endTime = DateTime.Now.Date + TimeSpan.FromDays(1);
 #else
@@ -249,6 +249,8 @@ namespace TuringTrader.Simulator
 
                 return jsonPrices;
             }
+            private DateTime? _firstTime;
+            private DateTime? _lastTime;
             #endregion
 
             //---------- API
@@ -267,8 +269,8 @@ namespace TuringTrader.Simulator
 
                         Info[DataSourceParam.name] = (string)jsonData["name"];
 
-                        FirstTime = DateTime.Parse((string)jsonData["startDate"], CultureInfo.InvariantCulture);
-                        LastTime = DateTime.Parse((string)jsonData["endDate"], CultureInfo.InvariantCulture);
+                        _firstTime = DateTime.Parse((string)jsonData["startDate"], CultureInfo.InvariantCulture);
+                        _lastTime = DateTime.Parse((string)jsonData["endDate"], CultureInfo.InvariantCulture);
                     }
                 }
                 catch (Exception /*e*/)
@@ -279,18 +281,20 @@ namespace TuringTrader.Simulator
                 }
             }
             #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
+                List<Bar> data = new List<Bar>();
+
                 try
                 {
-                    if (startTime < (DateTime)FirstTime)
-                        startTime = (DateTime)FirstTime;
+                    if (startTime < (DateTime)_firstTime)
+                        startTime = (DateTime)_firstTime;
 
                     //if (endTime > (DateTime)LastTime)
                     //    endTime = (DateTime)LastTime;
@@ -337,7 +341,7 @@ namespace TuringTrader.Simulator
                         return bars;
                     };
 
-                    Data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true); ;
+                    data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true); ;
                 }
 
                 catch (Exception e)
@@ -347,9 +351,10 @@ namespace TuringTrader.Simulator
                             Info[DataSourceParam.nickName], e.Message));
                 }
 
-                if ((Data as List<Bar>).Count == 0)
+                if (data.Count == 0)
                     throw new Exception(string.Format("DataSourceTiingo: no data for {0}", Info[DataSourceParam.nickName]));
 
+                return data;
             }
             #endregion
         }

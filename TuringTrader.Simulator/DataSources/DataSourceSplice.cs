@@ -41,6 +41,8 @@ namespace TuringTrader.Simulator
         {
             #region internal data
             private List<string> _symbols = null;
+            private DateTime? _firstTime;
+            private DateTime? _lastTime;
             #endregion
 
             #region public DataSourceSplice(Dictionary<DataSourceValue, string> info)
@@ -71,13 +73,13 @@ namespace TuringTrader.Simulator
 #endif
             }
             #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Load data into memory.
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
                 var cacheKey = new CacheId(null, "", 0,
                     Info[DataSourceParam.nickName].GetHashCode(),
@@ -98,14 +100,8 @@ namespace TuringTrader.Simulator
 
                         try
                         {
-                            d.LoadData(startTime, endTime);
-                            dsBars[nick] = d.Data.Reverse().ToList();
-
-                            // this line makes sure that no datasource has bars after
-                            // the 'master' datasource. This can happen when extending
-                            // GLD w/ XAUUSD, because of different trading calendars
-                            if (nick == _symbols.First())
-                                endTime = (DateTime)d.LastTime;
+                            var data = d.LoadData(startTime, endTime);
+                            dsBars[nick] = data.Reverse().ToList();
                         }
                         catch (Exception /*e*/)
                         {
@@ -128,6 +124,13 @@ namespace TuringTrader.Simulator
                         dsEnums[nick] = dsBars[nick].GetEnumerator();
                         dsHasData[nick] = dsEnums[nick].MoveNext();
                     }
+
+                    // TODO:
+                    // make sure that no datasource has bars after the 'primary' 
+                    // datasource. This can happen when extending GLD w/ XAUUSD, 
+                    // because of different trading calendars
+                    //if (nick == _symbols.First())
+                    //    endTime = (DateTime)d.LastTime;
 
                     // collect bars
                     List<Bar> bars = new List<Bar>();
@@ -201,7 +204,7 @@ namespace TuringTrader.Simulator
                 if (data.Count == 0)
                     throw new Exception(string.Format("{0}: no data for {1}", GetType().Name, Info[DataSourceParam.nickName]));
 
-                Data = data;
+                return data;
             }
             #endregion
         }

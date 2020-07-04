@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
         private class DataSourceAlgorithm : DataSource
         {
             #region internal data
-            private readonly SubclassableAlgorithm _algo;
+            private readonly Algorithm _algo;
             #endregion
 
             //---------- API
@@ -52,7 +52,7 @@ namespace TuringTrader.Simulator
                 var algoName = items[0];
                 var algoParam = items.Count > 1 ? items[1] : null;
 
-                _algo = (SubclassableAlgorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
+                _algo = (Algorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
 
                 if (_algo == null)
                     throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", info[DataSourceParam.nickName2]));
@@ -61,14 +61,32 @@ namespace TuringTrader.Simulator
                 Info[DataSourceParam.name] = _algo.Name;
             }
             #endregion
-            #region override public void LoadData(DateTime startTime, DateTime endTime)
+            #region  public DataSourceAlgorithm(SubclassableAlgorithm algo)
+            public DataSourceAlgorithm(Algorithm algo) : base(new Dictionary<DataSourceParam, string>())
+            {
+                _algo = algo;
+                Info[DataSourceParam.nickName] 
+                    = Info[DataSourceParam.nickName2]
+                    = Info[DataSourceParam.ticker]
+                    = Info[DataSourceParam.symbolAlgo]
+                    = string.Format("algorithm:{0}", _algo.GetType().Name);
+                Info[DataSourceParam.name] = _algo.Name;
+            }
+            #endregion
+            #region public override void LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
-            /// Load data into memory.
+            /// Run sub-classed algorithm and return bars as enumerable.
             /// </summary>
             /// <param name="startTime">start of load range</param>
             /// <param name="endTime">end of load range</param>
-            override public void LoadData(DateTime startTime, DateTime endTime)
+            /// <returns>bars created from sub-classed algo</returns>
+            public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
+#if true
+                foreach (var bar in _algo.Run(startTime, endTime))
+                    yield return bar;
+                yield break;
+#else
                 var algoNick = Info[DataSourceParam.nickName];
 
                 var cacheKey = new CacheId(null, "", 0,
@@ -83,8 +101,8 @@ namespace TuringTrader.Simulator
                         DateTime t1 = DateTime.Now;
                         Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
-                        _algo.SubclassedStartTime = startTime;
-                        _algo.SubclassedEndTime = endTime;
+                        _algo.StartTime = startTime;
+                        _algo.EndTime = endTime;
                         _algo.ParentDataSource = this;
 
                         _algo.SubclassedData = new List<Bar>(); ;
@@ -106,9 +124,10 @@ namespace TuringTrader.Simulator
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
                 if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceNorgate: no data for {0}", Info[DataSourceParam.nickName]));
+                    throw new Exception(string.Format("DataSourceAlgorithm: no data for {0}", Info[DataSourceParam.nickName]));
 
                 Data = data;
+#endif
             }
             #endregion
         }

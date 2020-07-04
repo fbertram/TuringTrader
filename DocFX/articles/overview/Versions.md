@@ -8,6 +8,7 @@
 	- add CheckParameters
 	- add FillModel
     - keep full time series for NetAssetValue
+    - implement infrastructure for child algorithms
   - optimizer
     - fix issue w/ optimizer hanging when algos throw exceptions
   - data sources
@@ -22,6 +23,8 @@
       - improve parsing of dates and floats
     - splicing souce
       - fix issue w/ missing last bar on 'master' instrument leading to data glitch
+    - Norgate
+      - fix issue w/ universes not loading correctly in optimizer
   - indicators
     - new indicators for correlation and covariance
   - showcase strategies
