@@ -140,8 +140,11 @@ namespace TuringTrader.Simulator
 
                     // collect bars
                     List<Bar> bars = new List<Bar>();
-                    Dictionary<string, double> dsScale = new Dictionary<string, double>();
-                    _symbols.ForEach(n => dsScale[n] = 1.0);
+
+                    Dictionary<string, double?> dsScale = new Dictionary<string, double?>();
+                    _symbols.ForEach(n => dsScale[n] = null);
+                    dsScale[_symbols.First()] = 1.0;
+
                     while (dsHasData.Values.Aggregate((a, b) => a || b))
                     {
                         // find most-recent timestamp
@@ -166,10 +169,16 @@ namespace TuringTrader.Simulator
                             {
                                 // highest priority bar
                                 Bar rawBar = dsEnums[nick].Current;
-                                double open = rawBar.Open * dsScale[nick];
-                                double high = rawBar.High * dsScale[nick];
-                                double low = rawBar.Low * dsScale[nick];
-                                double close = rawBar.Close * dsScale[nick];
+
+                                // we might get here, with dsScale not set yet.
+                                // this is the best we can do to fix things
+                                if (dsScale[nick] == null)
+                                    dsScale[nick] = bars.Last().Open / rawBar.Close;
+
+                                double open = rawBar.Open * (double)dsScale[nick];
+                                double high = rawBar.High * (double)dsScale[nick];
+                                double low = rawBar.Low * (double)dsScale[nick];
+                                double close = rawBar.Close * (double)dsScale[nick];
                                 long volume = 0;
 
                                 bar = Bar.NewOHLC(Info[DataSourceParam.ticker], ts, open, high, low, close, volume);
