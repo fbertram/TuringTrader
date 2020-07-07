@@ -133,6 +133,12 @@ namespace TuringTrader.Simulator
         /// </summary>
         public bool IsDataSource { get; set; } = false;
         #endregion
+        #region public IEnumerable<Algorithm> ChildAlgorithms
+        /// <summary>
+        /// Enumeration of child algorithms.
+        /// </summary>
+        public IEnumerable<Algorithm> ChildAlgorithms => _childAlgorithms;
+        #endregion
 
         #region public void SetAllocation(double totalDollars)
         /// <summary>
