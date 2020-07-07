@@ -171,8 +171,10 @@ namespace TuringTrader.Simulator
                     ? price
                     : FillModel(ticket, execBar, price);
 
-            // adjust position, unless it's the end-of-sim order
-            //if (ticket.Type != OrderType.endOfSimFakeClose) // removed 2020iv28. why did we do this?
+            // adjust position, unless its the end-of-sim order
+            // this is to ensure that the Positions collection can
+            // be queried after the simulation finished
+            if (ticket.Type != OrderType.endOfSimFakeClose)
             {
                 if (!Positions.ContainsKey(instrument))
                     Positions[instrument] = 0;
@@ -194,7 +196,8 @@ namespace TuringTrader.Simulator
                 : 0.00;
 
             // pay for it, unless it's the end-of-sim order
-            //if (ticket.Type != OrderType.endOfSimFakeClose) // removed 2020iv28. why did we do this?
+            // same reasoning as for adjustment of position applies
+            if (ticket.Type != OrderType.endOfSimFakeClose)
             {
                 Cash = Cash
                     - numberOfShares * fillPrice
@@ -213,7 +216,7 @@ namespace TuringTrader.Simulator
                 FillPrice = fillPrice,
                 Commission = commission,
             };
-            //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
+            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void _expireOption(Instrument instrument)
