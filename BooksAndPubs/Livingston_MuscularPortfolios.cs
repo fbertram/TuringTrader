@@ -128,7 +128,7 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Livingston_MuscularPortfolios : SubclassableAlgorithm
+    public abstract class Livingston_MuscularPortfolios : Algorithm
     {
         #region inputs
         protected abstract HashSet<string> ETF_MENU { get; }
@@ -154,7 +154,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region override public void Run()
-        override public void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -233,7 +233,13 @@ namespace TuringTrader.BooksAndPubs
                     if (_alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(_alloc);
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
             //========== post processing ==========

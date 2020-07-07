@@ -37,6 +37,30 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.Algorithms.Glue
 {
+    #region AlgorithmPlusGlue
+    /// <summary>
+    /// Class adding some convenient features to 
+    /// the Algorithm base, most notably
+    /// a Plotter and an AllocationTracker.
+    /// </summary>
+    public class AlgorithmPlusGlue : Algorithm
+    {
+        protected Plotter _plotter;
+        public AllocationTracker Alloc;
+
+        public AlgorithmPlusGlue()
+        {
+            _plotter = new Plotter(this);
+            Alloc = new AllocationTracker();
+        }
+
+        public override void Report()
+        {
+            _plotter.OpenWith("SimpleReport");
+        }
+    }
+    #endregion
+
     #region global constants
     /// <summary>
     /// constants used across all algorithms

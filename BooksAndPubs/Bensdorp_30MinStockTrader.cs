@@ -41,7 +41,7 @@ namespace TuringTrader.BooksAndPubs
 {
     //---------- core strategies
     #region Weekly Rotation
-    public class Bensdorp_30MinStockTrader_WR : SubclassableAlgorithm
+    public class Bensdorp_30MinStockTrader_WR : Algorithm
     {
         public override string Name => "Bensdorp's Weekly Rotation";
 
@@ -70,7 +70,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -80,8 +80,8 @@ namespace TuringTrader.BooksAndPubs
             EndTime = SubclassedEndTime ?? DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
             WarmupStartTime = Globals.WARMUP_START_TIME;
 #endif
 
@@ -220,7 +220,13 @@ namespace TuringTrader.BooksAndPubs
                     if (_alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(_alloc);
 
-                    if (IsSubclassed) AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
 
@@ -248,7 +254,7 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
     #region Mean Reversion
-    public abstract class Bensdorp_30MinStockTrader_MRx : SubclassableAlgorithm
+    public abstract class Bensdorp_30MinStockTrader_MRx : Algorithm
     {
         public override string Name => ENTRY_DIR > 0 ? "MRL Strategy" : "MRS Strategy";
 
@@ -299,7 +305,7 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -309,8 +315,8 @@ namespace TuringTrader.BooksAndPubs
             EndTime = SubclassedEndTime ?? DateTime.Parse("11/23/2016", CultureInfo.InvariantCulture);
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
             WarmupStartTime = Globals.WARMUP_START_TIME;
 #endif
 
@@ -480,7 +486,13 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
 
-                    if (IsSubclassed) AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
 

@@ -62,7 +62,7 @@ using TuringTrader.Algorithms.Glue;
 namespace TuringTrader.BooksAndPubs
 {
 
-    public abstract class Keller_FAA_Core : SubclassableAlgorithm
+    public abstract class Keller_FAA_Core : Algorithm
     {
         public override string Name => string.Format(
             "Keller's FAA Strategy {0}/{1}; {2}m/{3}m/{4}m; {5}/{6}/{7}%",
@@ -182,23 +182,23 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
 #if DATE_RANGES_FROM_PAPER
-    #if DATA_RANG_IS
+#if DATA_RANG_IS
             StartTime = DateTime.Parse("01/03/2005", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("12/11/2012, 4pm", CultureInfo.InvariantCulture);
-    #endif
-    #if DATE_RANGE_OS
+#endif
+#if DATE_RANGE_OS
             StartTime = DateTime.Parse("01/02/1998", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("12/31/2004, 4pm", CultureInfo.InvariantCulture);
-    #endif
-    #if DATE_RANGE_FULL
+#endif
+#if DATE_RANGE_FULL
             StartTime = DateTime.Parse("01/02/1998", CultureInfo.InvariantCulture);
             EndTime = DateTime.Parse("12/14/2012, 4pm", CultureInfo.InvariantCulture);
-    #endif
+#endif
             WarmupStartTime = StartTime - TimeSpan.FromDays(126);
 #else
             WarmupStartTime = Globals.WARMUP_START_TIME;
@@ -305,7 +305,13 @@ namespace TuringTrader.BooksAndPubs
                         _plotter.Plot(i.Symbol, indicators[i].c);
 #endif
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
 

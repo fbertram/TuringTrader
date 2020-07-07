@@ -40,7 +40,7 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public class Clenow_StocksOnTheMove : Algorithm
+    public class Clenow_StocksOnTheMove : AlgorithmPlusGlue
     {
         public override string Name => "Clenow's Stocks on the Move";
 
@@ -123,8 +123,6 @@ namespace TuringTrader.BooksAndPubs
         #region private data
         private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
         private readonly string SP500 = "$SPX";
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
         #endregion
         #region ctor
         public Clenow_StocksOnTheMove()
@@ -134,7 +132,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -149,7 +147,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = Globals.END_TIME;
 #endif
 
-            Deposit(Globals.INITIAL_CAPITAL);
+            Deposit(IsChildAlgorithm ? 0.0 : Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             var all = AddDataSources(UNIVERSE.Constituents);
@@ -230,7 +228,9 @@ namespace TuringTrader.BooksAndPubs
                         if (portfolioRisk > RISK_TOTAL)
                             continue;
 
-                        var currentWeight = i.Position * i.Close[0] / NetAssetValue[0];
+                        var currentWeight = NetAssetValue[0] > 0
+                            ? i.Position * i.Close[0] / NetAssetValue[0]
+                            : 0.0;
                         var newWeight = Math.Min(Math.Min(availableCapital, MAX_PER_STOCK / 100.0),
                             RISK_PER_STOCK * 0.0001 / indicators[i].atr20[0] * i.Close[0]);
 
@@ -247,12 +247,12 @@ namespace TuringTrader.BooksAndPubs
                     ManageWeights(weights);
 
                     // submit trades
-                    _alloc.LastUpdate = SimTime[0];
-                    _alloc.Allocation.Clear();
+                    Alloc.LastUpdate = SimTime[0];
+                    Alloc.Allocation.Clear();
                     foreach (var i in Instruments)
                     {
                         if (weights[i] > 0.005)
-                            _alloc.Allocation[i] = weights[i];
+                            Alloc.Allocation[i] = weights[i];
 
                         var targetShares = (int)Math.Round(NetAssetValue[0] * weights[i] / i.Close[0]);
                         i.Trade(targetShares - i.Position, OrderType.openNextBar);
@@ -280,8 +280,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Stock Exposure", constituents.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                     _plotter.Plot("Number of Stocks", constituents.Where(i => i.Position != 0).Count());
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
 
 #if true
                     _plotter.SelectChart("Clenow-style Chart", "Date");
@@ -292,13 +292,21 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.Plot("Cash", Cash / NetAssetValue[0]);
 #endif
                 }
+
+                if (IsDataSource)
+                {
+                    var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                    yield return Bar.NewOHLC(
+                        this.GetType().Name, SimTime[0],
+                        v, v, v, v, 0);
+                }
             }
 
             //========== post processing ==========
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -307,12 +315,6 @@ namespace TuringTrader.BooksAndPubs
             }
 
             FitnessValue = this.CalcFitness();
-        }
-        #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

@@ -34,7 +34,7 @@ using TuringTrader.Indicators;
 namespace TuringTrader.BooksAndPubs
 {
     #region LazyPortfolio core
-    public abstract class LazyPortfolio : SubclassableAlgorithm
+    public abstract class LazyPortfolio : Algorithm
     {
         #region internal data
         private Plotter _plotter = null;
@@ -59,12 +59,12 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
-            StartTime = SubclassedStartTime ?? START_TIME;
-            EndTime = SubclassedEndTime ?? END_TIME;
+            StartTime = startTime ?? START_TIME;
+            EndTime = endTime ?? END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
             Deposit(Globals.INITIAL_CAPITAL);
@@ -94,10 +94,14 @@ namespace TuringTrader.BooksAndPubs
                         i.Trade(targetShares - i.Position);
                     }
                 }
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+
+                var p = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                yield return Bar.NewOHLC(
+                    this.GetType().Name, SimTime[0],
+                    p, p, p, p, 0);
 
                 // plotter output
-                if (!IsOptimizing && TradingDays > 0)
+                if (!IsOptimizing && !IsDataSource && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, bench.Instrument);
                     _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
@@ -141,7 +145,7 @@ namespace TuringTrader.BooksAndPubs
             }
 #endif
 
-            if (!IsOptimizing)
+            if (!IsOptimizing && !IsDataSource)
             {
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);

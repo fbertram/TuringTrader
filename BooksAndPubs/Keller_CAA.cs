@@ -38,7 +38,7 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Keller_CAA_Core : SubclassableAlgorithm
+    public abstract class Keller_CAA_Core : Algorithm
     {
         public override string Name => "Keller's CAA Strategy";
 
@@ -62,7 +62,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -145,7 +145,13 @@ namespace TuringTrader.BooksAndPubs
                     if (_alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(_alloc);
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
 
