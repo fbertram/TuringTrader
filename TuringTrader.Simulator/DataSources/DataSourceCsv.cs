@@ -54,7 +54,8 @@ namespace TuringTrader.Simulator
             private DateTime ParseDate(string value, string mapping)
             {
                 var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
-                return DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
+                var parsed = DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
+                return parsed;
             }
             private double ParseDouble(string value)
             {
@@ -72,7 +73,8 @@ namespace TuringTrader.Simulator
             }
             private Bar CreateBar(string line)
             {
-                string[] items = (Info[DataSourceParam.ticker] + "," + line).Split(',');
+                string[] items = (Info[DataSourceParam.ticker] + Info[DataSourceParam.delim] + line)
+                    .Split(Info[DataSourceParam.delim]);
 
                 string ticker = Info[DataSourceParam.ticker];
                 DateTime date = default(DateTime);
@@ -101,7 +103,9 @@ namespace TuringTrader.Simulator
                     {
                         // extract the relevant sub-string
                         string mappedString = string.Format(mapping.Value, items);
-                        mappedString = mappedString.Replace(" ", ""); // drop spaces
+
+                        // drop leading spaces, introduced by a space after the delimiting comma
+                        mappedString = mappedString.Trim(' ');
 
                         // assign sub-string to field
                         switch (mapping.Key)
@@ -129,12 +133,16 @@ namespace TuringTrader.Simulator
                     catch
                     {
                         // there are a lot of things that can go wrong here
-                        // we try to move on, as long as we can parse at least part of the fields
-                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", Info[DataSourceParam.nickName], line, mapping.Key, mapping.Value);
+                        // we try to move on for as long as we can and
+                        // parse at least some if not most of the fields
+                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", 
+                            Info[DataSourceParam.nickName], line, mapping.Key, mapping.Value);
                     }
                 }
 
-                DateTime barTime = date.Date + time.TimeOfDay;
+                DateTime barTime = Info.ContainsKey(DataSourceParam.time)
+                    ? date.Date + time.TimeOfDay
+                    : date;
 
                 return new Bar(
                                 ticker, barTime,
@@ -448,6 +456,11 @@ namespace TuringTrader.Simulator
                 if (!File.Exists(Info[DataSourceParam.dataPath])
                 && !Directory.Exists(Info[DataSourceParam.dataPath]))
                     Directory.CreateDirectory(Info[DataSourceParam.dataPath]);
+
+                // remove time field, if date format also contains time
+                if (Info[DataSourceParam.date].Contains("H") || Info[DataSourceParam.date].Contains("h")
+                || Info[DataSourceParam.date].Contains("m"))
+                    Info.Remove(DataSourceParam.time);
             }
             #endregion
             #region override public void LoadData(DateTime startTime, DateTime endTime)
