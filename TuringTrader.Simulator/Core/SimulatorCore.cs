@@ -282,24 +282,24 @@ namespace TuringTrader.Simulator
             {
                 double price = 0.00;
 
-                if (instrument.HasBidAsk)
+                if (IsValidBar(instrument[0]))
                 {
-                    if (instrument.IsBidAskValid[0])
+                    if (instrument.HasBidAsk)
                     {
                         price = Positions[instrument] > 0
                             ? instrument.Bid[0]
                             : instrument.Ask[0];
                     }
-                    else
+                    else if (instrument.HasOHLC)
                     {
-                        // price is bad
-                        navValid = false;
-                        invalidInstrument = instrument.Symbol;
+                        price = instrument.Close[0];
                     }
                 }
-                else if (instrument.HasOHLC)
+                else
                 {
-                    price = instrument.Close[0];
+                    // price is bad
+                    navValid = false;
+                    invalidInstrument = instrument.Symbol;
                 }
 
                 double quantity = instrument.IsOption
@@ -501,7 +501,7 @@ namespace TuringTrader.Simulator
 
                     // set NextSimTime according to holiday schedule
                     if (IsLastBar)
-                        NextSimTime = this.NextSimTime();
+                        NextSimTime = CalcNextSimTime(SimTime[0]);
 
                     // execute orders
                     foreach (Order order in PendingOrders)
@@ -558,8 +558,10 @@ namespace TuringTrader.Simulator
                         }
                     }
 
-                    // run our algorithm here
-                    if (SimTime[0] >= (DateTime)WarmupStartTime && SimTime[0] <= EndTime)
+                    // run user algorithm here
+                    if (SimTime[0] >= (DateTime)WarmupStartTime 
+                            && SimTime[0] <= EndTime
+                            && IsValidSimTime(SimTime[0]))
                         yield return SimTime[0];
                 }
 
@@ -603,7 +605,8 @@ namespace TuringTrader.Simulator
         #region protected DataSource AddDataSource(string nickname)
         /// <summary>
         /// Create new data source and add to simulator. If the simulator 
-        /// already has a data source for the nickname, the call is ignored.
+        /// already has a data source with the given nickname, the call 
+        /// is ignored.
         /// </summary>
         /// <param name="nickname">nickname of data source</param>
         /// <returns>newly created data source</returns>
@@ -622,7 +625,10 @@ namespace TuringTrader.Simulator
         #endregion
         #region protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
         /// <summary>
-        /// Add multiple data sources at once.
+        /// Add multiple data sources at once and return an enumeration
+        /// of datasources. If the simulator already has data sources
+        /// with any of the given nicknames, those data sources will be
+        /// re-used.
         /// </summary>
         /// <param name="nicknames">enumerable of nicknames</param>
         /// <returns>enumerable of newly created data sources</returns>
@@ -667,7 +673,8 @@ namespace TuringTrader.Simulator
         #endregion
         #region protected bool HasInstrument(string nickname)
         /// <summary>
-        /// Check, if the we have an instrument with the given nickname
+        /// Check, if the we have an instrument with the given nickname. Use this
+        /// to check if an instrument is available for a given data source.
         /// </summary>
         /// <param name="nickname">nickname to check</param>
         /// <returns>true, if instrument exists</returns>
@@ -678,7 +685,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region protected bool HasInstrument(DataSource ds)
         /// <summary>
-        /// Check if we have an instrument for the given datasource
+        /// Check if we have an instrument for the given datasource.
         /// </summary>
         /// <param name="ds">data source to check</param>
         /// <returns>true, if instrument exists</returns>
@@ -761,7 +768,7 @@ namespace TuringTrader.Simulator
                         // algos are discouraged from opening new positions
                         // with these contracts. however, we can still
                         // trade them, if we know the Instrument object
-                        && (!i.HasBidAsk || i.IsBidAskValid[0])) // bid/ask seems legit
+                        && IsValidBar(i[0]))
                     .ToList();
 
             return optionChain;
@@ -787,7 +794,7 @@ namespace TuringTrader.Simulator
                         // algos are discouraged from opening new positions
                         // with these contracts. however, we can still
                         // trade them, if we know the Instrument object
-                        && (!i.HasBidAsk || i.IsBidAskValid[0])) // bid/ask seems legit
+                        && IsValidBar(i[0]))
                     .ToList();
 
             return optionChain;
@@ -796,7 +803,8 @@ namespace TuringTrader.Simulator
 
         #region public void QueueOrder(Order order)
         /// <summary>
-        /// Queue order ticket for execution
+        /// Queue order ticket for execution. Typically, algorithms won't
+        /// use this function directly, but use Instrument.Trade instead.
         /// </summary>
         /// <param name="order"></param>
         public void QueueOrder(Order order)
@@ -833,7 +841,8 @@ namespace TuringTrader.Simulator
 
         #region protected void Deposit(double amount)
         /// <summary>
-        /// Deposit cash into account.
+        /// Deposit cash into account. Note that the deposit amount
+        /// must be positive.
         /// </summary>
         /// <param name="amount">amount to deposit</param>
         protected void Deposit(double amount)
@@ -857,7 +866,8 @@ namespace TuringTrader.Simulator
         #endregion
         #region protected void Withdraw(double amount)
         /// <summary>
-        /// Withdraw cash from account.
+        /// Withdraw cash from account. Note that the withdrawal
+        /// amount must be positive.
         /// </summary>
         /// <param name="amount">amount to withdraw</param>
         protected void Withdraw(double amount)
@@ -892,7 +902,7 @@ namespace TuringTrader.Simulator
         #endregion
         #region public TimeSeries<double> NetAssetValue
         /// <summary>
-        /// Total net value of all positions, and cash.
+        /// Total net liquidation value of all positions plus cash.
         /// </summary>
         public TimeSeries<double> NetAssetValue;
         #endregion
@@ -912,23 +922,91 @@ namespace TuringTrader.Simulator
 
         #region protected double CommissionPerShare
         /// <summary>
-        /// Commision to be paid per share.
+        /// Commision to be paid per share. The default value is zero, equivalent
+        /// to no commissions. Algorithms should set this to match the commissions
+        /// paid on high account values/ large numbers of shares traded.
         /// </summary>
         protected double CommissionPerShare = 0.00;
         #endregion
 
-        #region virtual protected double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
+        #region protected virtual double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
         /// <summary>
         /// Order fill model. This method is only called for those orders
-        /// which are executed, but not for those which expired.
+        /// which are executed, but not for those which expired. The default
+        /// implementation fills orders at their theoretical price. Algorithms
+        /// can override this method to implement more realistic fill models
+        /// reflecting slippage.
         /// </summary>
         /// <param name="orderTicket">original order ticket</param>
         /// <param name="barOfExecution">bar of order execution</param>
         /// <param name="theoreticalPrice">theoretical fill price</param>
         /// <returns>custom fill price. default: theoretical fill price</returns>
-        virtual protected double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
+        protected virtual double FillModel(Order orderTicket, Bar barOfExecution, double theoreticalPrice)
         {
             return theoreticalPrice;
+        }
+        #endregion
+        #region protected virtual bool IsValidSimTime(DateTime timestamp)
+        /// <summary>
+        /// Validate simulator timestamp. Timestamps deemed invalid will be
+        /// skipped and not passed on to the user algorithm. The default 
+        /// implementation is geared at the U.S. stock market and skips 
+        /// all bars not within regular trading hours of the NYSE.
+        /// </summary>
+        /// <param name="timestamp">simulator timestamp</param>
+        /// <returns>true, if valid</returns>
+        protected virtual bool IsValidSimTime(DateTime timestamp)
+        {
+            if (timestamp.DayOfWeek >= DayOfWeek.Monday
+            && timestamp.DayOfWeek <= DayOfWeek.Friday)
+            {
+                if (timestamp.TimeOfDay.TotalHours >= 9.5
+                && timestamp.TimeOfDay.TotalHours <= 16.0)
+                    return true;
+            }
+
+            return false;
+        }
+        #endregion
+        #region protected virtual DateTime CalcNextSimTime(DateTime timestamp)
+        /// <summary>
+        /// Determine next sim time. This hook is used by the simulator to
+        /// determine the value for NextSimTime, after reaching the end of 
+        /// the available historical bars. 
+        /// </summary>
+        /// <param name="timestamp"></param>
+        /// <returns>next simulator timestamp</returns>
+        protected virtual DateTime CalcNextSimTime(DateTime timestamp)
+        {
+            return HolidayCalendar.NextLiveSimTime(timestamp);
+        }
+        #endregion
+        #region protected virtual bool IsValidBar(Bar bar)
+        /// <summary>
+        /// Validate bar. This hook is used by the simulator to validate
+        /// bars. Invalid bars are relevant in the following situations:
+        /// (1) option chain: Simulator.OptionChain will not return contracts
+        /// with invalid bars at the current sim time. 
+        /// (2) nav calculation: The simulator will ignore invalid bars when
+        /// calculating Simulator.NetAssetValue
+        /// The default implementation marks bars invalid under the following 
+        /// conditions:
+        /// (1) bid volume or ask volume is zero.
+        /// (2) bid price is less than 20% of ask price.
+        /// </summary>
+        /// <param name="bar"></param>
+        /// <returns></returns>
+        protected virtual bool IsValidBar(Bar bar)
+        {
+            if (bar.HasBidAsk)
+            {
+                if (bar.BidVolume <= 0
+                        || bar.AskVolume <= 0
+                        || bar.Bid < 0.2 * bar.Ask)
+                    return false;
+            }
+
+            return true;
         }
         #endregion
     }

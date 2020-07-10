@@ -71,7 +71,6 @@ namespace TuringTrader.Simulator
         private readonly BarSeriesAccessor<double> _askSeries;
         private readonly BarSeriesAccessor<long> _bidVolume;
         private readonly BarSeriesAccessor<long> _askVolume;
-        private readonly BarSeriesAccessor<bool> _bidAskValid;
         #endregion
 
         #region public Instrument(...)
@@ -98,7 +97,6 @@ namespace TuringTrader.Simulator
             _askSeries = new BarSeriesAccessor<double>(t => this[t].Ask);
             _bidVolume = new BarSeriesAccessor<long>(t => this[t].BidVolume);
             _askVolume = new BarSeriesAccessor<long>(t => this[t].AskVolume);
-            _bidAskValid = new BarSeriesAccessor<bool>(t => this[t].IsBidAskValid);
         }
         #endregion
 
@@ -359,18 +357,6 @@ namespace TuringTrader.Simulator
             get
             {
                 return _askVolume;
-            }
-        }
-        #endregion
-        #region public ITimeSeries<bool> IsBidAskValid
-        /// <summary>
-        /// Time series of flags indicating bid/ ask price validity.
-        /// </summary>
-        public ITimeSeries<bool> IsBidAskValid
-        {
-            get
-            {
-                return _bidAskValid;
             }
         }
         #endregion

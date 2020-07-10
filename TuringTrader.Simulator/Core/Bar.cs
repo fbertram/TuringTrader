@@ -80,9 +80,6 @@ namespace TuringTrader.Simulator
             BidVolume = bidVolume;
             AskVolume = askVolume;
             HasBidAsk = hasBidAsk;
-            IsBidAskValid = 5.0 * Bid > Ask
-                && BidVolume > 0
-                && AskVolume > 0;
 
             OptionExpiry = optionExpiry;
             OptionStrike = optionStrike;
@@ -200,12 +197,6 @@ namespace TuringTrader.Simulator
         /// Flag indicating availability of Bid/ Ask pricing.
         /// </summary>
         public readonly bool HasBidAsk;
-        #endregion
-        #region public readonly bool IsBidAskValid
-        /// <summary>
-        /// Flag indicating validity of Bid/ Ask pricing.
-        /// </summary>
-        public readonly bool IsBidAskValid;
         #endregion
 
         #region public readonly DateTime OptionExpiry

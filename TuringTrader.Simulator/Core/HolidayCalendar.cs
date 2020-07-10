@@ -93,11 +93,10 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// find next bar time that is not a holiday
         /// </summary>
-        /// <param name="sim">simulator object</param>
-        /// <returns>next bar time</returns>
-        static public DateTime NextSimTime(this SimulatorCore sim)
+        /// <param name="currentBarTime">current simulator timestamp</param>
+        /// <returns>next simulator timestamp</returns>
+        static public DateTime NextLiveSimTime(DateTime currentBarTime)
         {
-            DateTime currentBarTime = sim.SimTime[0];
             DateTime nextBarTime = currentBarTime;
             do
             {
