@@ -33,20 +33,47 @@ along with this program.  If not, see "/>
                 <Run Text="https://www.gnu.org/licenses/agpl-3.0"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             
             <Run Text="TuringTrader thanks various contributors for the following open-source packages:"/><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
-                <Run Text="AvalonLibrary (WPF Contrib)"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/IQFeed.CSharpApiClient/">
-                <Run Text="IQFeed.CSharpApiClient"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/MathNet.Numerics">
-                <Run Text="Math.NET Numerics"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/Newtonsoft.Json/">
-                <Run Text="Newtonsoft.Json (Json.NET)"/></Hyperlink><LineBreak/>
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/AvalonLibrary">
+                    <Run Text="AvalonLibrary (WPF Contrib)"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://licenses.nuget.org/Apache-2.0">
+                    <Run Text="Apache 2.0 License"/></Hyperlink>
+                <LineBreak/>
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/IQFeed.CSharpApiClient/">
+                    <Run Text="IQFeed.CSharpApiClient"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/IQFeed.CSharpApiClient/2.5.0/License">
+                    <Run Text="MIT License"/></Hyperlink>
+                <LineBreak/>
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/MathNet.Numerics">
+                    <Run Text="Math.NET Numerics"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://licenses.nuget.org/MIT">
+                    <Run Text="MIT License"/></Hyperlink>
+                <LineBreak/>            
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/Newtonsoft.Json/">
+                    <Run Text="Newtonsoft.Json (Json.NET)"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://licenses.nuget.org/MIT">
+                    <Run Text="MIT License"/></Hyperlink>
+                <LineBreak/>
             <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/NetOffice.Excel/">
-                <Run Text="NetOffice.Excel"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/OxyPlot.Wpf">
-                <Run Text="OxyPlot.Wpf"/></Hyperlink><LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://interactivebrokers.github.io/tws-api/">
-                <Run Text="TWS API"/></Hyperlink><LineBreak/>
+                <Run Text="NetOffice.Excel"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://choosealicense.com/licenses/mit/">
+                <Run Text="MIT License"/></Hyperlink>
+                <LineBreak/>
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/OxyPlot.Wpf">
+                    <Run Text="OxyPlot.Wpf"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://licenses.nuget.org/MIT">
+                    <Run Text="MIT License"/></Hyperlink>
+                <LineBreak/>
+            <Run Text="◦ "/>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://interactivebrokers.github.io/tws-api/">
+                    <Run Text="TWS API"/></Hyperlink> - 
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://interactivebrokers.github.io/">
+                    <Run Text="TWS API Non-Commercial License"/></Hyperlink>
+                <LineBreak/>
         </TextBlock>
         <Button Content="OK" Width="75" Margin="0,0,10,10" Height="20" VerticalAlignment="Bottom" Click="AboutBox_Click" HorizontalAlignment="Right"/>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top">
