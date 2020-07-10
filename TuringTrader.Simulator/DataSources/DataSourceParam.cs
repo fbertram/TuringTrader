@@ -33,6 +33,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         error,
 
+        //----- general fields
         /// <summary>
         /// path to .inf data source descriptor
         /// </summary>
@@ -59,6 +60,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         ticker,
 
+        //----- CSV files
         /// <summary>
         /// timestamp, data part
         /// </summary>
@@ -107,6 +109,12 @@ namespace TuringTrader.Simulator
         askSize,
 
         /// <summary>
+        /// delimiter
+        /// </summary>
+        delim,
+
+        //----- options contracts
+        /// <summary>
         /// option expiration date
         /// </summary>
         optionExpiration,
@@ -123,6 +131,17 @@ namespace TuringTrader.Simulator
         /// </summary>
         optionUnderlying,
 
+        //----- futures contracts
+        /// <summary>
+        /// future expiration date
+        /// </summary>
+        futureExpiration,
+        /// <summary>
+        /// future underlying symbol
+        /// </summary>
+        futureUnderlying,
+
+        //----- symbol mapping
         /// <summary>
         /// symbol for IQFeed/ DTN
         /// </summary>
