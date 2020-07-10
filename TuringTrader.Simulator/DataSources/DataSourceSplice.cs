@@ -41,8 +41,6 @@ namespace TuringTrader.Simulator
         {
             #region internal data
             private List<string> _symbols = null;
-            private DateTime? _firstTime;
-            private DateTime? _lastTime;
             #endregion
 
             #region public DataSourceSplice(Dictionary<DataSourceValue, string> info)

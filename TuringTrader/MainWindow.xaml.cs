@@ -449,7 +449,7 @@ namespace TuringTrader
             {
                 SelectAlgo(AlgoLookupName(algoType));
             }
-            catch (Exception exc)
+            catch (Exception /*exc*/)
             {
                 Output.WriteLine("failed to instantiate {0}", algoType);
             }

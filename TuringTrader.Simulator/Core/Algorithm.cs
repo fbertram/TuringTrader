@@ -290,6 +290,11 @@ namespace TuringTrader.Simulator
         #endregion
 
         #region public string SubclassedParam
+        /// <summary>
+        /// Field w/ optional additional parameters for subclassed parameters. 
+        /// This field is populated from the data source's nickname used to
+        /// instantiate the algorithm.
+        /// </summary>
         public string SubclassedParam = null;
         #endregion
     }

@@ -523,7 +523,7 @@ namespace TuringTrader.Support
 
                 return BlackScholes(contract, volatility, riskFreeRate, dividendYield);
             }
-            catch (Exception e)
+            catch (Exception /*e*/)
             {
                 // catch exceptions here, so that we can use this method inside
                 // LINQ expressions
