@@ -215,7 +215,7 @@ namespace TuringTrader.Simulator
                         continue;
 
                     // skip invalid bars
-                    Bar bar = ValidateBar(CreateBar(line));
+                    Bar bar = CreateBar(line);
                     if (bar == null)
                         continue;
 
@@ -417,12 +417,8 @@ namespace TuringTrader.Simulator
                         WriteCsv(updater.Name, updateBars);
 
                     // load the bars into memory
-                    foreach (Bar b in updateBars)
+                    foreach (Bar bar in updateBars)
                     {
-                        Bar bar = ValidateBar(b);
-                        if (bar == null)
-                            continue;
-
                         if (bar.Time >= loadStartTime
                         && bar.Time <= loadEndTime)
                             data.Add(bar);

@@ -142,36 +142,6 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region protected Bar ValidateBar(Bar bar)
-        /// <summary>
-        /// Validate bar. This function will either return a 
-        /// (possibly adjusted) bar or null, if this bar should be dropped.
-        /// </summary>
-        /// <param name="bar">input bar</param>
-        /// <returns>adjusted bar, or null</returns>
-        protected Bar ValidateBar(Bar bar)
-        {
-            DateTime barTime = bar.Time;
-            if (barTime.DayOfWeek >= DayOfWeek.Monday
-            && barTime.DayOfWeek <= DayOfWeek.Friday)
-            {
-                if (barTime.TimeOfDay.TotalHours >= 9.5
-                && barTime.TimeOfDay.TotalHours <= 16.0)
-                {
-                    return bar;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-        #endregion
-
         //----- mapping to simulator instruments
         #region public Instrument Instrument
         private Instrument _instrument = null;
@@ -338,6 +308,7 @@ namespace TuringTrader.Simulator
                     { DataSourceParam.low, "{4:F2}" },
                     { DataSourceParam.close, "{5:F2}" },
                     { DataSourceParam.volume, "{6}" },
+                    { DataSourceParam.delim, "," },
                     // symbol mapping
                     { DataSourceParam.symbolYahoo, "{0}"},
                     { DataSourceParam.symbolFred, "{0}"},
