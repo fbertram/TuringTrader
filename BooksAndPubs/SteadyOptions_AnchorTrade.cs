@@ -167,7 +167,7 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         private Plotter _plotter = new Plotter();
         private Instrument _underlying = null;
-        private Instrument _vix1y = null;
+        //private Instrument _vix1y = null;
         #endregion
 
         #region MaintainMainPosition

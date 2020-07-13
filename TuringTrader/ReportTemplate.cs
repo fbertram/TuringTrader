@@ -4,7 +4,7 @@
 // Description: Base class for C# report templates.
 // History:     2019v28, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader
@@ -40,11 +41,33 @@ namespace TuringTrader
     /// </summary>
     public abstract class ReportTemplate
     {
-        #region protected OxyColor[] SeriesColors
+        #region chart configuration
         /// <summary>
-        /// collection of pretty colors
+        /// Configure report type. If this property is set to false,
+        /// every plotter chart will result in one sheet (table, chart,
+        /// or scatter). With this property set to true, additional sheets
+        /// with metrics, annual bars, and monte-carlo simulations will
+        /// be rendered.
         /// </summary>
-        protected OxyColor[] SeriesColors =
+        protected virtual bool CFG_IS_REPORT => false;
+        /// <summary>
+        /// Configure calculation of beta. If this property is set to false,
+        /// beta is calculated vs the benchmark. If this property is set to true,
+        /// beta is calculated vs the S&P 500.
+        /// </summary>
+        protected virtual bool CFG_BETA_TO_SPX => false;
+        /// <summary>
+        /// Configure logo. If this property is null, charts will be rendered
+        /// without logo. If this property is set, the logo will be loaded from
+        /// the template directory and placed in the lower right corner of
+        /// the chart.
+        /// </summary>
+        protected virtual string CFG_LOGO => null;
+        /// <summary>
+        /// Configure colors.
+        /// </summary>
+        protected virtual List<OxyColor> CFG_COLORS => _cfgColors;
+        private readonly List<OxyColor> _cfgColors = new List<OxyColor>
         {
             OxyColor.FromRgb(68, 114, 196),  // blue
             OxyColor.FromRgb(237, 125, 49),  // orange
@@ -68,6 +91,452 @@ namespace TuringTrader
             OxyColor.FromRgb(210, 96, 18),   // brown
             //OxyColor.FromRgb(132, 132, 132), // grey
         };
+        /// <summary>
+        /// Configre graph format. Return true for area chart, and false for
+        /// line charts. The default implementation shows the first colum/
+        /// NAV as an area, and the following columns/ benchmarks as lines.
+        /// </summary>
+        protected virtual bool CFG_IS_AREA(string label) => label == _firstYLabel && _numYLabels <= 2;
+        #endregion
+
+        #region internal data
+        private const string METRIC_LABEL = "Metric";
+        private const string UNI_LABEL = "";
+        private const double DISTR_CUTOFF = 0.495;
+        private const int NUM_MONTE_CARLO_SIMS = 1000;
+        private const string SPXTR = "$SPXTR";
+        private const string RF_YIELD = "FRED:DTB3"; // 3-Month Treasury Bill: Secondary Market Rate
+        #endregion
+        #region internal helper functions
+        private string _firstChartName => PlotData.First().Key;
+        private List<Dictionary<string, object>> _firstChart => PlotData.First().Value;
+
+        private string _xLabel => _firstChart.First().First().Key;
+        private Type xType => _firstChart.First().First().Value.GetType();
+
+        private List<string> _yLabels => _firstChart.First().Keys.Skip(1).ToList();
+        private int _numYLabels => _yLabels.Count();
+        private string _firstYLabel => _yLabels.First();
+        private string _benchYLabel => _yLabels.Last();
+
+        private DateTime _startDate => (DateTime)_firstChart.First()[_xLabel];
+        private DateTime _endDate => (DateTime)_firstChart.Last()[_xLabel];
+        private double _numYears => (_endDate - _startDate).TotalDays / 365.25;
+
+        private Dictionary<DateTime, double> _getSeries(string yLabel)
+        {
+            var xLabel = _xLabel;
+            var series = new Dictionary<DateTime, double>();
+            foreach (var row in _firstChart)
+            {
+                if (row.ContainsKey(yLabel))
+                    series[(DateTime)row[xLabel]] = (double)row[yLabel];
+            }
+            return series;
+        }
+
+        private double _startValue(string label) => _getSeries(label).First().Value;
+        private double _endValue(string label) => _getSeries(label).Last().Value;
+
+        private double _cagr(string label) => Math.Pow(_endValue(label) / _startValue(label), 1.0 / _numYears) - 1.0;
+        private double _mdd(string label)
+        {
+            double max = -1e99;
+            double mdd = 0.0;
+
+            foreach (var row in _firstChart)
+            {
+                double val = (double)row[label];
+
+                max = Math.Max(max, val);
+                double dd = (max - val) / max;
+
+                mdd = Math.Max(mdd, dd);
+            }
+
+            return mdd;
+        }
+
+        private Dictionary<DateTime, double> _monthlyReturns(string label)
+        {
+            var monthlyReturns = new Dictionary<DateTime, double>();
+            DateTime prevTime = _startDate;
+            double? prevValue = null;
+
+            foreach (var row in _firstChart)
+            {
+                DateTime curTime = (DateTime)row.First().Value;
+                double curValue = (double)row[label];
+
+                if (curTime.Month != prevTime.Month)
+                {
+                    DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+
+                    if (prevValue != null)
+                        monthlyReturns[ts] = Math.Log(curValue / (double)prevValue);
+
+                    prevTime = curTime;
+                    prevValue = curValue;
+                }
+            }
+
+            return monthlyReturns;
+        }
+
+        private Dictionary<DateTime, double> _monthlySpxReturns()
+        {
+            DataSource spx = DataSource.New(SPXTR);
+            var data = spx.LoadData(_startDate, _endDate);
+
+            var monthlyReturns = new Dictionary<DateTime, double>();
+            DateTime prevTime = _startDate;
+            double? prevValue = null;
+
+            foreach (var bar in data)
+            {
+                DateTime curTime = (DateTime)bar.Time;
+                double curValue = (double)bar.Close;
+
+                if (curTime.Month != prevTime.Month)
+                {
+                    DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+
+                    if (prevValue != null)
+                        monthlyReturns[ts] = Math.Log(curValue / (double)prevValue);
+
+                    prevTime = curTime;
+                    prevValue = curValue;
+                }
+            }
+
+            return monthlyReturns;
+        }
+
+        double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
+        double _stdMonthlyReturn(string label)
+        {
+            double avg = _avgMonthlyReturrn(label);
+            return Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+        }
+        double _sharpeRatio(string label)
+        {
+            var exc = _excMonthlyReturns(label);
+            var avg = exc.Values.Average(r => r);
+            var var = exc.Values.Average(r => Math.Pow(r - avg, 2.0));
+
+            return Math.Sqrt(12.0) * avg / Math.Sqrt(var);
+        }
+
+        // FIXME: somehow we need to escape the carrot, as XAML treats it
+        //        as a special character
+        // https://stackoverflow.com/questions/6720285/how-do-i-escape-a-slash-character-in-a-wpf-binding-path-or-how-to-work-around
+        private string _xamlLabel(string raw) { return raw.Replace("^", string.Empty); }
+
+        private Dictionary<DateTime, double> _rfMonthlyReturnsCache = null;
+        private Dictionary<DateTime, double> _rfMonthlyReturns
+        {
+            get
+            {
+                if (_rfMonthlyReturnsCache == null)
+                {
+                    var dsRiskFree = DataSource.New(RF_YIELD); 
+                    var data = dsRiskFree.LoadData(_startDate, _endDate);
+
+                    _rfMonthlyReturnsCache = new Dictionary<DateTime, double>();
+                    DateTime prevTime = _startDate;
+
+                    foreach (var bar in data)
+                    {
+                        DateTime curTime = bar.Time;
+                        double curValue = bar.Close;
+
+                        if (curTime.Month != prevTime.Month)
+                        {
+                            DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                            _rfMonthlyReturnsCache[ts] = curValue / 100.0 / 12.0; // monthly yield
+
+                            prevTime = curTime;
+                        }
+                    }
+                }
+                return _rfMonthlyReturnsCache;
+            }
+        }
+
+        private double _maxFlatDays(string label)
+        {
+            double peakValue = -1e99;
+            DateTime peakTime = _startDate;
+            double maxFlat = 0.0;
+
+            foreach (var row in _firstChart)
+            {
+                DateTime time = (DateTime)row.First().Value;
+                double value = (double)row[label];
+
+                if (value > peakValue)
+                {
+                    double flatDays = (time - peakTime).TotalDays;
+                    maxFlat = Math.Max(maxFlat, flatDays);
+
+                    peakValue = value;
+                    peakTime = time;
+                }
+            }
+
+            return maxFlat;
+        }
+
+        private Dictionary<DateTime, double> _excMonthlyReturns(string label)
+        {
+            Dictionary<DateTime, double> rfMonthlyReturns = _rfMonthlyReturns;
+            Dictionary<DateTime, double> monthlyReturns = _monthlyReturns(label)
+                .Where(r => rfMonthlyReturns.ContainsKey(r.Key))
+                .ToDictionary(r => r.Key, r => r.Value);
+
+            return monthlyReturns
+                .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - _rfMonthlyReturns[r.Key]));
+        }
+
+        private double _beta(string seriesLabel, string benchLabel)
+        {
+            var series = _monthlyReturns(seriesLabel);
+            var seriesAvg = series.Values.Average(v => v);
+            var bench = _monthlyReturns(benchLabel);
+            var benchAvg = bench.Values.Average(v => v);
+            var benchVar = bench.Values.Sum(v => Math.Pow(v - benchAvg, 2.0)) / (bench.Count - 1.0);
+            var dates = series.Keys.ToList();
+
+            double covar = dates
+                .Sum(d => (series[d] - seriesAvg) * (bench[d] - benchAvg))
+                / (dates.Count - 1.0);
+
+            return covar / benchVar;
+        }
+
+        private double _betaToSpx(string seriesLabel)
+        {
+            var bench = _monthlySpxReturns();
+            var series = _monthlyReturns(seriesLabel)
+                .Where(r => bench.ContainsKey(r.Key))
+                .ToDictionary(r => r.Key, r => r.Value);
+            var seriesAvg = series.Values.Average(v => v);
+            var benchAvg = bench.Values.Average(v => v);
+            var benchVar = bench.Values.Sum(v => Math.Pow(v - benchAvg, 2.0)) / (bench.Count - 1.0);
+            var dates = series.Keys.ToList();
+
+            double covar = dates
+                .Sum(d => (series[d] - seriesAvg) * (bench[d] - benchAvg))
+                / (dates.Count - 1.0);
+
+            return covar / benchVar;
+        }
+
+        private double _ulcerIndex(string label)
+        {
+            double peak = 0.0;
+            double sumDd2 = 0.0;
+            int N = 0;
+
+            foreach (var row in _firstChart)
+            {
+                N++;
+                peak = Math.Max(peak, (double)row[label]);
+                sumDd2 += Math.Pow(1.0 * (peak - (double)row[label]) / peak, 2.0);
+            }
+
+            return Math.Sqrt(sumDd2 / N);
+        }
+
+        private double _ulcerPerformanceIndex(string label)
+        {
+            double perf = _cagr(label);
+            double ulcer = _ulcerIndex(label);
+            double martinRatio = perf / ulcer;
+            return martinRatio;
+        }
+
+        private List<double> _returnDistribution(string label)
+        {
+            List<double> returns = new List<double>();
+            double? prevValue = null;
+
+            foreach (var row in _firstChart)
+            {
+                double curValue = (double)row[label];
+
+                if (prevValue != null)
+                    returns.Add(Math.Log(curValue / (double)prevValue));
+
+                prevValue = curValue;
+            }
+
+            return returns
+                .OrderBy(v => v)
+                .ToList();
+        }
+
+        private double _probabilityOfReturn(List<double> distr, double val)
+        {
+            var less = distr
+                .Where(v => v <= val)
+                .ToList();
+            var more = distr
+                .Where(v => v >= val)
+                .ToList();
+
+            if (less.Count == 0)
+                return 0.0;
+            if (more.Count == 0)
+                return 1.0;
+
+            var pLess = (double)less.Count() / distr.Count;
+            var vLess = less.Max();
+            var pMore = 1.0 - (double)more.Count() / distr.Count;
+            var vMore = more.Min();
+
+            double p = pLess;
+
+            if (val > vLess)
+                p += (val - vLess) / (vMore - vLess) * (pMore - pLess);
+
+            return p;
+        }
+        protected PlotModel _addLogo(PlotModel plotModel)
+        {
+            if (CFG_LOGO == null)
+                return plotModel;
+
+            string logoPath = Path.Combine(GlobalSettings.TemplatePath, CFG_LOGO);
+            OxyImage logoImage = new OxyImage(File.OpenRead(logoPath));
+
+            // Centered in plot area, filling width
+            var logoAnnot = new OxyPlot.Annotations.ImageAnnotation
+            {
+#if false
+                // centered, full width
+                ImageSource = logoImage,
+                Opacity = 0.2,
+                Interpolate = false,
+                X = new PlotLength(0.5, PlotLengthUnit.RelativeToPlotArea),
+                Y = new PlotLength(0.5, PlotLengthUnit.RelativeToPlotArea),
+                Width = new PlotLength(1, PlotLengthUnit.RelativeToPlotArea),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Middle
+#endif
+#if true
+                // bottom right, 120 pixel wide
+                ImageSource = logoImage,
+                Opacity = 0.5,
+                X = new PlotLength(1, PlotLengthUnit.RelativeToPlotArea),
+                Y = new PlotLength(1, PlotLengthUnit.RelativeToPlotArea),
+                Width = new PlotLength(120, PlotLengthUnit.ScreenUnits),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
+#endif
+            };
+
+            plotModel.Annotations.Add(logoAnnot);
+
+            return plotModel;
+        }
+        #endregion
+
+        #region protected bool IsNumeric(object obj)
+        protected bool IsNumeric(object obj)
+        {
+            // see https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number
+
+            HashSet<Type> numericTypes = new HashSet<Type>
+                {
+                    typeof(int),  typeof(double),  typeof(decimal),
+                    typeof(long), typeof(short),   typeof(sbyte),
+                    typeof(byte), typeof(ulong),   typeof(ushort),
+                    typeof(uint), typeof(float),
+                    typeof(DateTime)
+                };
+
+            Type type = obj.GetType();
+            return numericTypes.Contains(Nullable.GetUnderlyingType(type) ?? type);
+        }
+        #endregion
+        #region protected bool IsTable(string selectedChart)
+        /// <summary>
+        /// Determine if we should render as table.
+        /// </summary>
+        /// <param name="selectedChart"></param>
+        /// <returns>true for table</returns>
+        protected bool IsTable(string selectedChart)
+        {
+            //===== get plot data
+            var chartData = PlotData[selectedChart];
+
+            bool isNumeric(object obj)
+            {
+                // see https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number
+
+                HashSet<Type> numericTypes = new HashSet<Type>
+                {
+                    typeof(int),  typeof(double),  typeof(decimal),
+                    typeof(long), typeof(short),   typeof(sbyte),
+                    typeof(byte), typeof(ulong),   typeof(ushort),
+                    typeof(uint), typeof(float),
+                    typeof(DateTime)
+                };
+
+                Type type = obj.GetType();
+                return numericTypes.Contains(Nullable.GetUnderlyingType(type) ?? type);
+            }
+
+            foreach (var row in chartData)
+            {
+                foreach (var val in row.Values)
+                {
+                    if (!isNumeric(val))
+                        return true;
+                }
+            }
+
+            // when we get here, we did not find any non-numeric fields
+            // however, if we don't have data, we call it 'table' nontheless
+            return chartData.Count == 0 ? true : false;
+        }
+        #endregion
+        #region protected bool IsScatter(string selectedChart)
+        /// <summary>
+        /// Determine if we should render as scatter plot.
+        /// </summary>
+        /// <param name="selectedChart">selected chart</param>
+        /// <returns>true for scatter</returns>
+        protected bool IsScatter(string selectedChart)
+        {
+            var chartData = PlotData[selectedChart];
+
+            object prevX = null;
+
+            foreach (var row in chartData)
+            {
+                object curX = row.First().Value;
+                prevX = prevX ?? curX;
+
+                // note how we cast everything to double here,
+                // unless it is DateTime:
+                if (curX.GetType() == typeof(DateTime))
+                {
+                    if ((DateTime)curX < (DateTime)prevX)
+                        return true;
+                }
+                else
+                {
+                    if ((double)curX < (double)prevX)
+                        return true;
+                }
+
+                prevX = curX;
+            }
+
+            return false;
+        }
         #endregion
 
         #region protected object RenderTable(string selectedChart)
@@ -133,7 +602,6 @@ namespace TuringTrader
                     if (col.Key == xLabel)
                         continue;
 
-#if true
                     // new 2020v01
                     if (!IsNumeric(col.Value))
                         continue;
@@ -141,11 +609,6 @@ namespace TuringTrader
                     if (col.Value.GetType() == typeof(double)
                     && (double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value)))
                         continue;
-#else
-                    if (col.Value.GetType() != typeof(double)
-                    || double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value))
-                        continue;
-#endif
 
                     string yLabel = col.Key;
                     double yValue = col.Value.GetType() == typeof(double)
@@ -159,7 +622,7 @@ namespace TuringTrader
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
-                        newSeries.Color = SeriesColors[allSeries.Count % SeriesColors.Count()];
+                        newSeries.Color = CFG_COLORS[allSeries.Count % CFG_COLORS.Count()];
                         allSeries[yLabel] = newSeries;
                     }
 
@@ -243,7 +706,7 @@ namespace TuringTrader
                         newSeries.YAxisKey = "y";
                         newSeries.MarkerType = MarkerType.Circle;
                         newSeries.MarkerSize = 2;
-                        newSeries.MarkerStroke = SeriesColors[allSeries.Count % SeriesColors.Count()];
+                        newSeries.MarkerStroke = CFG_COLORS[allSeries.Count % CFG_COLORS.Count()];
                         newSeries.MarkerFill = newSeries.MarkerStroke;
                         allSeries[yLabel] = newSeries;
                     }
@@ -261,82 +724,866 @@ namespace TuringTrader
             return plotModel;
         }
         #endregion
-        #region protected bool IsNumeric(object obj)
-        protected bool IsNumeric(object obj)
+
+        #region protected PlotModel RenderNavAndDrawdown()
+        /// <summary>
+        /// Specialized chart rendering NAV and drawdown logarithmically
+        /// </summary>
+        /// <param name="selectedChart">chart to render</param>
+        /// <returns>OxyPlot model</returns>
+        protected PlotModel RenderNavAndDrawdown()
         {
-            // see https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = PlotData.Keys.First();
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
 
-            HashSet<Type> numericTypes = new HashSet<Type>
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            if ((_endDate - _startDate).TotalDays < 400)
+            {
+                // force monthly grid
+                DateTime date = _startDate.Date;
+                DateTime prevDate = date;
+                List<double> extraGridLines = new List<double>();
+                do
                 {
-                    typeof(int),  typeof(double),  typeof(decimal),
-                    typeof(long), typeof(short),   typeof(sbyte),
-                    typeof(byte), typeof(ulong),   typeof(ushort),
-                    typeof(uint), typeof(float),
-                    typeof(DateTime)
-                };
+                    date += TimeSpan.FromDays(1);
 
-            Type type = obj.GetType();
-            return numericTypes.Contains(Nullable.GetUnderlyingType(type) ?? type);
+                    if (date.Month != prevDate.Month)
+                    {
+                        extraGridLines.Add(DateTimeAxis.ToDouble(date));
+                    }
+
+                    prevDate = date;
+                } while (date < _endDate.Date);
+
+                xAxis.ExtraGridlines = extraGridLines.ToArray();
+                xAxis.ExtraGridlineThickness = 1;
+                xAxis.ExtraGridlineStyle = LineStyle.Dot;
+                xAxis.ExtraGridlineColor = OxyColor.FromAColor(255, OxyColors.LightGray);
+                //xAxis.StringFormat = "yyyy/MM/dd";
+            }
+
+            var yAxis = new LogarithmicAxis();
+            yAxis.Title = "Relative Equity";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.StartPosition = 0.35;
+            yAxis.EndPosition = 1.0;
+            yAxis.Key = "y";
+
+            var ddAxis = new LinearAxis();
+            ddAxis.Title = "Drawdown [%]";
+            ddAxis.Position = AxisPosition.Right;
+            ddAxis.StartPosition = 0.0;
+            ddAxis.EndPosition = 0.30;
+            ddAxis.Key = "dd";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+            plotModel.Axes.Add(ddAxis);
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var eqSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(eqSeries);
+
+                var ddSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                        Fill = color,
+                    }
+                    : new LineSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(ddSeries);
+
+                double max = 0.0;
+                double y0 = _startValue(yLabel);
+
+                foreach (var point in series)
+                {
+                    var x = point.Key;
+                    var y = point.Value;
+                    max = Math.Max(max, y);
+                    double dd = (y - max) / max;
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(x),
+                        (double)y / y0));
+
+                    ddSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(x),
+                        100.0 * dd));
+                }
+            }
+
+            return plotModel;
         }
         #endregion
-        #region protected bool IsTable(string selectedChart)
+        #region protected List<Dictionary<string, object>> RenderMetrics()
         /// <summary>
-        /// Determine if we should render as table.
+        /// Specialized table rendering strategy and benchmark metrics.
         /// </summary>
-        /// <param name="selectedChart"></param>
-        /// <returns>true for table</returns>
-        protected bool IsTable(string selectedChart)
+        /// <returns>table model</returns>
+        protected List<Dictionary<string, object>> RenderMetrics()
+        {
+            // TODO: this code needs some cleanup!
+            // we want to make sure that meaningful metrics 
+            // are generated for an arbitrary number of series
+
+            var retvalue = new List<Dictionary<string, object>>();
+            Dictionary<string, object> row = null;
+
+            row = new Dictionary<String, object>();
+            row[METRIC_LABEL] = "Simulation Start";
+            row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", _startDate);
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:C2}", 1000.0);
+            //row[label] = string.Format("{0:C2}", START_VALUE(label));
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Simulation End";
+            row[UNI_LABEL] = string.Format("{0:MM/dd/yyyy}", _endDate);
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:C2}", 1000.0 * _endValue(label) / _startValue(label));
+            //row[label] = string.Format("{0:C2}", END_VALUE(label));
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Simulation Period";
+            row[UNI_LABEL] = string.Format("{0:F1} years", _numYears);
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Compound Annual Growth Rate";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:P2}", _cagr(label));
+            retvalue.Add(row);
+
+#if false
+            // testing only, should be same as CAGR
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Average Return (Monthly, Annualized)";
+            foreach (var label in _getLabels())
+                row[XAML_LABEL(label)] = string.Format("{0:P2}", Math.Sqrt(12.0) * _getStdMonthlyReturns(label));
+            retvalue.Add(row);
+#endif
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:P2}",
+                    Math.Exp(Math.Sqrt(12.0 * _monthlyReturns(label).Values.Average(r => r * r))) - 1.0);
+            retvalue.Add(row);
+
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Maximum Drawdown";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:P2}", _mdd(label));
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Maximum Flat Days";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0} days", _maxFlatDays(label));
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Sharpe Ratio (Monthly, Annualized)";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:F2}", _sharpeRatio(label));
+            retvalue.Add(row);
+
+            if (CFG_BETA_TO_SPX)
+            {
+                row = new Dictionary<string, object>();
+                row[METRIC_LABEL] = "Beta (To S&P 500, Monthly)";
+                foreach (var label in _yLabels)
+                    row[label] = string.Format("{0:F2}", _betaToSpx(label));
+                retvalue.Add(row);
+            }
+            else
+            {
+                if (_numYLabels >= 2)
+                {
+                    row = new Dictionary<string, object>();
+                    row[METRIC_LABEL] = "Beta (To Benchmark, Monthly)";
+                    foreach (var label in _yLabels)
+                        row[_xamlLabel(label)] = label == _benchYLabel
+                            ? "- benchmark -"
+                            : string.Format("{0:F2}", _beta(label, _benchYLabel));
+                    retvalue.Add(row);
+                }
+            }
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Ulcer Index";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:P2}", _ulcerIndex(label));
+            retvalue.Add(row);
+
+            row = new Dictionary<string, object>();
+            row[METRIC_LABEL] = "Ulcer Performance Index (Martin Ratio)";
+            foreach (var label in _yLabels)
+                row[_xamlLabel(label)] = string.Format("{0:F2}", _ulcerPerformanceIndex(label));
+            retvalue.Add(row);
+
+            // Information Ratio
+            // Sortino Ratio
+            // Calmar Ratio
+            // Fouse Ratio
+            // Sterling Ratio
+
+            return retvalue;
+        }
+        #endregion
+        #region protected PlotModel RenderAnnualColumns()
+        /// <summary>
+        /// Specialized chart rendering annual columns for NAV and benchmark P&L
+        /// </summary>
+        /// <param name="selectedChart">chart to render</param>
+        /// <returns>OxyPlot model</returns>
+        protected PlotModel RenderAnnualColumns()
+        {
+            //===== create annual bars
+            Dictionary<int, Dictionary<string, double>> yearlyBars = new Dictionary<int, Dictionary<string, double>>();
+            foreach (var label in _yLabels)
+            {
+                var series = _getSeries(label);
+                DateTime lastTime = series.Last().Key;
+
+                int? currentYear = null;
+                double prevYearClose = 0.0;
+                double prevDayClose = 0.0;
+                foreach (var point in series)
+                {
+                    if (currentYear == null)
+                    {
+                        currentYear = point.Key.Year;
+                        prevDayClose = point.Value;
+                        prevYearClose = point.Value;
+                    }
+
+                    if (currentYear < point.Key.Date.Year
+                    || point.Key == lastTime)
+                    {
+                        double refValue = point.Key == lastTime ? point.Value : prevDayClose;
+                        double pnl = 100.0 * (refValue / (double)prevYearClose - 1.0);
+
+                        if (!yearlyBars.ContainsKey((int)currentYear))
+                            yearlyBars[(int)currentYear] = new Dictionary<string, double>();
+
+                        yearlyBars[(int)currentYear][label] = pnl;
+                        prevYearClose = prevDayClose;
+                        currentYear = point.Key.Year;
+                    }
+
+                    prevDayClose = point.Value;
+                }
+            }
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = Plotter.SheetNames.ANNUAL_BARS;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            var xAxis = new CategoryAxis();
+            xAxis.Title = "Year";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Annual P&L [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+            yAxis.ExtraGridlines = new Double[] { 0 };
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            foreach (var y in yearlyBars.Keys)
+                xAxis.Labels.Add(y.ToString());
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                string yLabel = _yLabels[i];
+                var color = CFG_COLORS[i];
+
+                // TODO: use CFG_IS_AREA here? 
+                // Note that logic for NUM_Y_LABELS is inverted!
+                var colSeries = (yLabel == _firstYLabel || _numYLabels > 2)
+                    ? new ColumnSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        FillColor = color,
+                    }
+                    : new ColumnSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        StrokeColor = color,
+                        StrokeThickness = 1,
+                        FillColor = OxyColors.White,
+                    };
+
+                plotModel.Series.Add(colSeries);
+
+                foreach (var y in yearlyBars.Keys)
+                {
+                    var pnl = yearlyBars[y].ContainsKey(yLabel)
+                        ? yearlyBars[y][yLabel]
+                        : 0.0;
+
+                    colSeries.Items.Add(new ColumnItem(pnl));
+                }
+            }
+
+            return plotModel;
+        }
+        #endregion
+        #region protected PlotModel RenderReturnDistribution()
+        protected PlotModel RenderReturnDistribution()
+        {
+            //===== create distributions
+            Dictionary<string, List<double>> distributions = new Dictionary<string, List<double>>();
+            foreach (var label in _yLabels)
+                distributions[label] = _returnDistribution(label);
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = Plotter.SheetNames.RETURN_DISTRIBUTION;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            xAxis.Title = "Probability [%]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Daily Log-Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            //===== create series
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = distributions.Keys.Skip(s).First();
+                OxyColor color = CFG_COLORS[s];
+
+                var distrSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(distrSeries);
+
+                List<double> distribution = distributions[yLabel];
+
+                for (int i = 0; i < distribution.Count; i++)
+                {
+                    double p = (double)i / distribution.Count;
+
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        distrSeries.Points.Add(new DataPoint(
+                            100.0 * p,
+                            100.0 * distribution[i]));
+                }
+            }
+
+            return plotModel;
+        }
+        #endregion
+        #region protected PlotModel RenderMonteCarlo()
+        protected PlotModel RenderMonteCarlo()
+        {
+            //===== create distributions
+            Dictionary<string, List<double>> distributions = new Dictionary<string, List<double>>();
+            foreach (var label in _yLabels)
+                distributions[label] = _returnDistribution(label);
+
+            //===== create Monte-Carlo simulations
+            Random rnd = new Random();
+            Dictionary<string, List<double>> allCagr = new Dictionary<string, List<double>>();
+            Dictionary<string, List<double>> allMdd = new Dictionary<string, List<double>>();
+            foreach (var s in distributions.Keys)
+            {
+                List<double> distribution = distributions[s];
+                List<double> simsCagr = new List<double>();
+                List<double> simsMdd = new List<double>();
+
+                for (int n = 0; n < NUM_MONTE_CARLO_SIMS; n++)
+                {
+                    //--- create new equity curve
+                    List<double> equityCurve = new List<double>();
+                    equityCurve.Add(1.0);
+
+                    for (int t = 0; t < distribution.Count; t++)
+                    {
+                        int idx = rnd.Next(distribution.Count);
+                        double logReturn = distribution[idx];
+
+                        equityCurve.Add(equityCurve.Last() * Math.Exp(logReturn));
+                    }
+
+                    //--- calculate CAGR
+                    double cagr = Math.Pow(equityCurve.Last(), 1.0 / _numYears) - 1.0;
+                    simsCagr.Add(cagr);
+
+                    //--- calculate MDD
+                    double peak = 0.0;
+                    double mdd = 0.0;
+
+                    foreach (var nav in equityCurve)
+                    {
+                        peak = Math.Max(peak, nav);
+                        mdd = Math.Max(mdd, (peak - nav) / peak);
+                    }
+
+                    simsMdd.Add(mdd);
+                }
+
+                //--- create distributions
+                allCagr[s] = simsCagr
+                    .OrderBy(x => x)
+                    .ToList();
+
+                allMdd[s] = simsMdd
+                    .OrderBy(x => x)
+                    .ToList();
+            }
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = "Monte-Carlo Analysis of Returns and Drawdowns";
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            xAxis.Title = "Probability [%]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis1 = new LinearAxis();
+            yAxis1.Title = "CAGR [%]";
+            yAxis1.Position = AxisPosition.Right;
+            yAxis1.StartPosition = 0.52;
+            yAxis1.EndPosition = 1.0;
+            yAxis1.Key = "y1";
+
+            var yAxis2 = new LinearAxis();
+            yAxis2.Title = "MDD [%]";
+            yAxis2.Position = AxisPosition.Right;
+            yAxis2.StartPosition = 0.0;
+            yAxis2.EndPosition = 0.48;
+            yAxis2.Key = "y2";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis1);
+            plotModel.Axes.Add(yAxis2);
+
+            //===== add series
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = distributions.Keys.Skip(s).First();
+                OxyColor color = CFG_COLORS[s];
+
+                //--- CAGR
+                var cagrSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(cagrSeries);
+
+                List<double> distrCagr = allCagr[yLabel];
+                for (int i = 0; i < distrCagr.Count; i++)
+                {
+                    double p = (double)i / distrCagr.Count;
+
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        cagrSeries.Points.Add(new DataPoint(
+                            100.0 * p,
+                            100.0 * distrCagr[i]));
+                }
+
+                //--- MDD
+                var mddSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(mddSeries);
+
+                List<double> distrMdd = allMdd[yLabel];
+                for (int i = 0; i < distrMdd.Count; i++)
+                {
+                    double p = (double)i / distrMdd.Count;
+
+                    if (Math.Abs(p - 0.5) < DISTR_CUTOFF)
+                        mddSeries.Points.Add(new DataPoint(
+                            100.0 * p,
+                            -100.0 * distrMdd[i]));
+                }
+
+                //--- CAGR marker
+                var cagrMarker = new ScatterSeries
+                {
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    MarkerType = MarkerType.Circle,
+                    MarkerSize = 5,
+                    MarkerStroke = color,
+                    MarkerFill = OxyColors.White,
+                };
+
+                plotModel.Series.Add(cagrMarker);
+
+                var cagrValue = _cagr(yLabel);
+                var cagrProb = _probabilityOfReturn(distrCagr, cagrValue);
+                cagrMarker.Points.Add(new ScatterPoint(100.0 * cagrProb, 100.0 * cagrValue));
+
+                //--- mdd marker
+                var mddMarker = new ScatterSeries
+                {
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    MarkerType = MarkerType.Circle,
+                    MarkerSize = 5,
+                    MarkerStroke = color,
+                    MarkerFill = OxyColors.White,
+                };
+
+                plotModel.Series.Add(mddMarker);
+
+                var mddValue = _mdd(yLabel);
+                var mddProb = _probabilityOfReturn(distrMdd, mddValue);
+                mddMarker.Points.Add(new ScatterPoint(100.0 * mddProb, -100.0 * mddValue));
+            }
+
+            return plotModel;
+        }
+        #endregion
+        #region protected PlotModel RenderExposure()
+        protected PlotModel RenderExposure(string selectedChart)
         {
             //===== get plot data
             var chartData = PlotData[selectedChart];
 
+            string xLabel = chartData
+                .First()      // first row is as good as any
+                .First().Key; // first column is x-axis
+
+            object xValue = chartData
+                .First()        // first row is as good as any
+                .First().Value; // first column is x-axis
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = selectedChart;
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = xValue.GetType() == typeof(DateTime)
+                ? new DateTimeAxis()
+                : new LinearAxis();
+            xAxis.Title = xLabel;
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Exposure [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            //===== create series
+            Dictionary<string, AreaSeries> allSeries = new Dictionary<string, AreaSeries>();
 
             foreach (var row in chartData)
             {
-                foreach (var val in row.Values)
+                xValue = row[xLabel];
+
+                foreach (var col in row)
                 {
-                    if (!IsNumeric(val))
-                        return true;
+                    if (col.Key == xLabel)
+                        continue;
+
+                    if (col.Value.GetType() != typeof(double)
+                    || double.IsInfinity((double)col.Value) || double.IsNaN((double)col.Value))
+                        continue;
+
+                    string yLabel = col.Key;
+                    double yValue = (double)col.Value;
+
+                    if (!allSeries.ContainsKey(yLabel))
+                    {
+                        var color = CFG_COLORS[allSeries.Count % CFG_COLORS.Count()];
+                        var newSeries = new AreaSeries
+                        {
+                            Title = yLabel,
+                            IsVisible = true,
+                            XAxisKey = "x",
+                            YAxisKey = "y",
+                            Color = color,
+                            Fill = color,
+                            //ConstantY2 = 0.0,
+                        };
+                        allSeries[yLabel] = newSeries;
+                    }
+
+                    double yStacked = 0.0;
+                    foreach (var col2 in row)
+                    {
+                        if (col2.Key == xLabel)
+                            continue;
+
+                        if (col2.Key == col.Key)
+                            break;
+
+                        yStacked += (double)col2.Value;
+                    }
+
+                    allSeries[col.Key].Points.Add(new DataPoint(
+                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
+                        100.0 * (yStacked + (double)yValue)));
+
+                    allSeries[col.Key].Points2.Add(new DataPoint(
+                        xValue.GetType() == typeof(DateTime) ? DateTimeAxis.ToDouble(xValue) : (double)xValue,
+                        100.0 * (yStacked /*+ (double)yValue*/)));
                 }
             }
 
-            return false;
+            //===== add series to plot model
+            foreach (var series in allSeries)
+                plotModel.Series.Add(series.Value);
+
+            return plotModel;
         }
         #endregion
-        #region protected bool IsScatter(string selectedChart)
-        /// <summary>
-        /// Determine if we should render as scatter plot.
-        /// </summary>
-        /// <param name="selectedChart">selected chart</param>
-        /// <returns>true for scatter</returns>
-        protected bool IsScatter(string selectedChart)
+        #region protected List<Dictionary<string, object>> RenderDash()
+        protected List<Dictionary<string, object>> RenderDash()
         {
-            var chartData = PlotData[selectedChart];
+            var retvalue = new List<Dictionary<string, object>>();
+            Dictionary<string, object> row = null;
 
-            object prevX = null;
+            DateTime dateLast = _endDate;
+            double navLast = _endValue(_firstYLabel);
 
-            foreach (var row in chartData)
+            //--- 12-months
             {
-                object curX = row.First().Value;
-                prevX = prevX ?? curX;
+                DateTime datePast = dateLast - TimeSpan.FromDays(365.25);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePast - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                double navPast = (double)rowPast[_firstYLabel];
 
-                // note how we cast everything to double here,
-                // unless it is DateTime:
-                if (curX.GetType() == typeof(DateTime))
-                {
-                    if ((DateTime)curX < (DateTime)prevX)
-                        return true;
-                }
-                else
-                {
-                    if ((double)curX < (double)prevX)
-                        return true;
-                }
-
-                prevX = curX;
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "12-Months Return";
+                row["Value"] = string.Format("{0:+0.0;-0.0;0.0}%", 100.0 * (navLast / navPast - 1.0));
+                retvalue.Add(row);
             }
 
-            return false;
+            //--- 3-months
+            {
+                DateTime datePast = dateLast - TimeSpan.FromDays(3 * 30.5);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePast - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                double navPast = (double)rowPast[_firstYLabel];
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "3-Months Return";
+                row["Value"] = string.Format("{0:+0.0;-0.0;0.0}%", 100.0 * (navLast / navPast - 1.0));
+                retvalue.Add(row);
+            }
+
+            //--- 1 months
+            {
+                DateTime datePast = dateLast - TimeSpan.FromDays(30.5);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePast - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                double navPast = (double)rowPast[_firstYLabel];
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "1-Month Return";
+                row["Value"] = string.Format("{0:+0.0;-0.0;0.0}%", 100.0 * (navLast / navPast - 1.0));
+                retvalue.Add(row);
+            }
+
+            //--- 1 week
+            {
+                DateTime datePast = dateLast - TimeSpan.FromDays(7);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePast - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                double navPast = (double)rowPast[_firstYLabel];
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "1-Week Return";
+                row["Value"] = string.Format("{0:+0.0;-0.0;0.0}%", 100.0 * (navLast / navPast - 1.0));
+                retvalue.Add(row);
+            }
+
+            return retvalue;
+
+        }
+        #endregion
+        #region protected List<Dictionary<string, object>> RenderComps()
+        protected List<Dictionary<string, object>> RenderComps()
+        {
+            var retvalue = new List<Dictionary<string, object>>();
+            Dictionary<string, object> row = null;
+
+            DateTime dateLast = _endDate;
+            double navLast = _endValue(_firstYLabel);
+
+            //--- cagr over various periods
+            var periods = new List<Tuple<string, double>>
+            {
+                //Tuple.Create("cagr-1y", 1.0),
+                //Tuple.Create("cagr-2y", 2.0),
+                //Tuple.Create("cagr-5y", 5.0),
+                //Tuple.Create("cagr-10y", 10.0),
+                Tuple.Create("cagr-max", 100.0),
+            };
+
+            foreach (var p in periods)
+            {
+                DateTime datePastTarget = dateLast - TimeSpan.FromDays(p.Item2 * 365.25);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePastTarget - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                DateTime datePast = (DateTime)rowPast[_xLabel];
+                double years = (dateLast - datePast).TotalDays / 365.25;
+                double navPast = (double)rowPast[_firstYLabel];
+                double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = p.Item1;
+                row["Value"] = cagr;
+                retvalue.Add(row);
+            }
+
+            //--- other metrics
+            var metrics = new List<Tuple<string, Func<double>>>
+            {
+                Tuple.Create<string, Func<double>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                //Tuple.Create<string, Func<double>>("mdd", () => MDD(FIRST_Y_LABEL)),
+                //Tuple.Create<string, Func<double>>("sharpe", () => SHARPE_RATIO(FIRST_Y_LABEL)),
+                Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
+                //Tuple.Create<string, Func<double>>("martin", () => ULCER_PERFORMANCE_INDEX(FIRST_Y_LABEL)),
+            };
+
+            foreach (var m in metrics)
+            {
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = m.Item1;
+                row["Value"] = m.Item2();
+                retvalue.Add(row);
+            }
+
+            return retvalue;
         }
         #endregion
 
@@ -401,6 +1648,89 @@ namespace TuringTrader
             }
         }
         #endregion
+        #region public void SaveAsJson(string chartToSave, string csvFilePath)
+        /// <summary>
+        /// save table as Json
+        /// </summary>
+        /// <param name="chartToSave">chart to save</param>
+        /// <param name="csvFilePath">path to Json</param>
+        public void SaveAsJson(string chartToSave, string csvFilePath)
+        {
+            using (StreamWriter sw = new StreamWriter(csvFilePath))
+            {
+
+                List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)GetModel(chartToSave);
+
+                List<string> columns = tableModel
+                    .SelectMany(row => row.Keys)
+                    .Distinct()
+                    .ToList();
+
+                sw.WriteLine("[");
+
+                //----- header row
+                sw.Write("[");
+                for (var col = 0; col < columns.Count; col++)
+                {
+                    sw.Write("\"{0}\"{1}",
+                        columns[col],
+                        col < columns.Count - 1
+                            ? ","
+                            : "");
+                }
+                sw.WriteLine("],");
+
+                //----- data rows
+                for (var row = 0; row < tableModel.Count; row++)
+                {
+                    sw.Write("[");
+                    for (var col = 0; col < columns.Count; col++)
+                    {
+                        sw.Write("\"{0}\"{1}",
+                            tableModel[row].ContainsKey(columns[col])
+                                ? tableModel[row][columns[col]]
+                                : "",
+                            col < columns.Count - 1
+                                ? ","
+                                : "");
+                    }
+
+                    sw.WriteLine("]{0}",
+                        row < tableModel.Count - 1
+                            ? ","
+                            : "");
+                }
+
+                sw.WriteLine("]");
+            }
+        }
+        #endregion
+        #region public void SaveAs(string chartToSave, string filePathWithoutExtension)
+        public void SaveAs(string chartToSave, string filePathWithoutExtension)
+        {
+            // FIXME: we are rendering the model twice:
+            //        once here, and once in SaveAsPng or SaveAsCsv
+
+            object model = GetModel(chartToSave);
+
+            if (model.GetType() == typeof(PlotModel))
+            {
+
+                string pngFilePath = Path.ChangeExtension(filePathWithoutExtension, ".png");
+                SaveAsPng(chartToSave, pngFilePath);
+            }
+            else
+            {
+                string csvFilePath = Path.ChangeExtension(filePathWithoutExtension, ".csv");
+                SaveAsCsv(chartToSave, csvFilePath);
+
+#if true
+                string jsonFilePath = Path.ChangeExtension(filePathWithoutExtension, ".json");
+                SaveAsJson(chartToSave, jsonFilePath);
+#endif
+            }
+        }
+        #endregion
 
         #region public Dictionary<string, List<Dictionary<string, object>>> PlotData
         /// <summary>
@@ -428,23 +1758,85 @@ namespace TuringTrader
         #endregion
         #region public virtual IEnumerable<string> AvailableCharts
         /// <summary>
-        /// Property providing list of available charts
+        /// Enumerate available charts.
         /// </summary>
         public virtual IEnumerable<string> AvailableCharts
         {
             get
             {
-                return PlotData.Keys;
+                if (CFG_IS_REPORT)
+                {
+                    yield return Plotter.SheetNames.EQUITY_CURVE;
+                    yield return Plotter.SheetNames.METRICS;
+                    yield return Plotter.SheetNames.ANNUAL_BARS;
+                    yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
+                    yield return Plotter.SheetNames.MONTE_CARLO;
+                }
+
+                foreach (string chart in PlotData.Keys.Skip(1))
+                    yield return chart;
+
+                if (CFG_IS_REPORT)
+                {
+                    yield return Plotter.SheetNames.DASH;
+                    yield return Plotter.SheetNames.COMPS;
+                    yield break;
+                }
             }
         }
         #endregion
-        #region public abstract object GetModel(string selectedChart)
+        #region public virtual object GetModel(string selectedChart)
         /// <summary>
-        /// Abstract method to render chart to model.
+        /// Get table or plot model for selected chart.
         /// </summary>
-        /// <param name="selectedChart">chart to render</param>
-        /// <returns>OxyPlot model</returns>
-        public abstract object GetModel(string selectedChart);
+        /// <param name="selectedChart"></param>
+        /// <returns>model</returns>
+        public virtual object GetModel(string selectedChart)
+        {
+            object retvalue = null;
+            switch (selectedChart)
+            {
+                case Plotter.SheetNames.EQUITY_CURVE:
+                    retvalue = RenderNavAndDrawdown();
+                    break;
+                case Plotter.SheetNames.METRICS:
+                    retvalue = RenderMetrics();
+                    break;
+                case Plotter.SheetNames.ANNUAL_BARS:
+                    retvalue = RenderAnnualColumns();
+                    break;
+                case Plotter.SheetNames.RETURN_DISTRIBUTION:
+                    retvalue = RenderReturnDistribution();
+                    break;
+                case Plotter.SheetNames.MONTE_CARLO:
+                    retvalue = RenderMonteCarlo();
+                    break;
+                case Plotter.SheetNames.EXPOSURE_VS_TIME:
+                    retvalue = RenderExposure(selectedChart);
+                    break;
+                case Plotter.SheetNames.DASH:
+                    retvalue = RenderDash();
+                    break;
+                case Plotter.SheetNames.COMPS:
+                    retvalue = RenderComps();
+                    break;
+                default:
+                    if (IsTable(selectedChart))
+                        retvalue = RenderTable(selectedChart);
+                    else if (IsScatter(selectedChart))
+                        retvalue = RenderScatter(selectedChart);
+                    else
+                        retvalue = RenderSimple(selectedChart);
+                    break;
+            };
+
+            if (retvalue.GetType() == typeof(PlotModel))
+            {
+                retvalue = _addLogo((PlotModel)retvalue);
+            }
+
+            return retvalue;
+        }
         #endregion
     }
 }

@@ -216,7 +216,8 @@ namespace TuringTrader.Simulator
                 FillPrice = fillPrice,
                 Commission = commission,
             };
-            ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
+            // do not remove instrument here, is required for MFE/ MAE analysis
+            //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
         private void _expireOption(Instrument instrument)

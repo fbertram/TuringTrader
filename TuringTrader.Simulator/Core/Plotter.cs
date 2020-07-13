@@ -254,6 +254,69 @@ namespace TuringTrader.Simulator
                 Renderer(this, fullPath);
         }
         #endregion
+
+        #region sheet names
+        /// <summary>
+        /// Standard report sheet names. These are defined here, so that 
+        /// they can be accessed by the algorithms (or the glue logic),
+        /// and by the report templates.
+        /// </summary>
+        public static class SheetNames
+        {
+            /// <summary>
+            /// Name of auto-generated sheet with equity curve and drawdown.
+            /// </summary>
+            public const string EQUITY_CURVE = "Equity Curve with Drawdown";
+            /// <summary>
+            /// Name of auto-generated sheet with performance metrics.
+            /// </summary>
+            public const string METRICS = "Performance Metrics";
+            /// <summary>
+            /// Name of auto-generated sheet with annual bars.
+            /// </summary>
+            public const string ANNUAL_BARS = "Annual Performance";
+            /// <summary>
+            /// Name of auto-generated sheet with performance dashboard.
+            /// </summary>
+            public const string DASH = "Performance Dashboard";
+            /// <summary>
+            /// Name of auto-generated sheet used to populate portfolio comparison chart.
+            /// </summary>
+            public const string COMPS = "Comparison Metrics";
+            /// <summary>
+            /// Name of auto-generated sheet with cumulative distribution of returns.
+            /// </summary>
+            public const string RETURN_DISTRIBUTION = "Cumulative Distribution of Returns";
+            /// <summary>
+            /// Name of auto-generated sheet with monte-carlo analysis of returns.
+            /// </summary>
+            public const string MONTE_CARLO = "Monte-Carlo Analysis";
+            /// <summary>
+            /// Name of explicitly generated sheet with strategy exposure over time.
+            /// </summary>
+            public const string EXPOSURE_VS_TIME = "Exposure vs Time";
+            /// <summary>
+            /// Name of explicitly generated sheet with PnL vs position hold time.
+            /// </summary>
+            public const string PNL_HOLD_TIME = "P&L vs Hold Time";
+            /// <summary>
+            /// Name of explicitly generated sheet with PnL versus maximum excursion.
+            /// </summary>
+            public const string PNL_MFE_MAE = "P&L vs Maximum Excursion";
+            /// <summary>
+            /// Name of explicitly generated sheet with most-recent target allocation.
+            /// </summary>
+            public const string HOLDINGS = "Target Allocation";
+            /// <summary>
+            /// Name of explicitly generated sheet with historical asset allocations.
+            /// </summary>
+            public const string HOLDINGS_HISTORY = "Historical Allocations";
+            /// <summary>
+            /// Name of explicitly generated sheet with last rebalancing date.
+            /// </summary>
+            public const string LAST_REBALANCE = "Last Rebalance";
+        }
+        #endregion
     }
 }
 

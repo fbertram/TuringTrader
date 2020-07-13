@@ -212,7 +212,8 @@ namespace TuringTrader.Algorithms.Glue
         }
         public static void AddTargetAllocation(this Plotter plotter, AllocationTracker alloc)
         {
-            plotter.SelectChart(string.Format("Target Allocation as of {0:MM/dd/yyyy}", alloc.LastUpdate), "Name");
+            plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}", 
+                Plotter.SheetNames.HOLDINGS, alloc.LastUpdate), "Name");
 
             foreach (Instrument i in alloc.Allocation.Keys.OrderByDescending(k => alloc.Allocation[k]))
             {
@@ -228,7 +229,7 @@ namespace TuringTrader.Algorithms.Glue
 
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, IEnumerable<Instrument> assets)
         {
-            plotter.SelectChart("Exposure vs Time", "date");
+            plotter.SelectChart(Plotter.SheetNames.EXPOSURE_VS_TIME, "date");
             plotter.SetX(sim.SimTime[0]);
 
             foreach (var i in assets)
@@ -244,7 +245,7 @@ namespace TuringTrader.Algorithms.Glue
         {
             var pcnt = asset.Position * asset.Close[0] / sim.NetAssetValue[0];
 
-            plotter.SelectChart("Exposure vs Time", "date");
+            plotter.SelectChart(Plotter.SheetNames.EXPOSURE_VS_TIME, "date");
             plotter.SetX(sim.SimTime[0]);
             plotter.Plot(asset.Symbol, pcnt);
         }
@@ -293,7 +294,7 @@ namespace TuringTrader.Algorithms.Glue
                 .GroupPositions(sim.Log, true)
                 .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-            plotter.SelectChart("P&L vs Hold Time", "Days Held");
+            plotter.SelectChart(Plotter.SheetNames.PNL_HOLD_TIME, "Days Held");
             foreach (var trade in tradeLog)
             {
                 var pnl = (trade.Quantity > 0 ? 100.0 : -100.0) * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
@@ -309,7 +310,7 @@ namespace TuringTrader.Algorithms.Glue
                 .GroupPositions(sim.Log, true)
                 .OrderBy(i => i.Entry.BarOfExecution.Time);
 
-            plotter.SelectChart("P&L vs Maximum Excursion", "Max Excursion");
+            plotter.SelectChart(Plotter.SheetNames.PNL_MFE_MAE, "Max Excursion");
             foreach (var trade in tradeLog)
             {
                 var pnl = 100.0 * (trade.Exit.FillPrice / trade.Entry.FillPrice - 1.0);
