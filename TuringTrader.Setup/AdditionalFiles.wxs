@@ -58,6 +58,10 @@
         <File Id="filDemo07" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo07_Subclassing.cs" />
       </Component>
 
+      <Component Id="cmpDemo08" Directory="DemoAlgorithmsDir" Guid="*">
+        <File Id="filDemo08" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo08_CustomData.cs" />
+      </Component>
+
       <Component Id="cmpBooksAndPubs" Directory="AlgorithmsDir" Guid="*">
         <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\BooksAndPubs.dll" />
       </Component>
@@ -177,12 +181,24 @@
         <File Id="filBooksAndPubs_Keller_DAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_DAA.cs" />
       </Component>
 
+      <Component Id="cmpBooksAndPubs_Keller_FAA" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Keller_FAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_FAA.cs" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_Keller_LAA" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_Keller_LAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_LAA.cs" />
+      </Component>
+      
       <Component Id="cmpBooksAndPubs_LazyPortfolios" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_LazyPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\LazyPortfolios.cs" />
       </Component>
 
       <Component Id="cmpBooksAndPubs_Livingston_MuscularPortfolios" Directory="BooksAndPubsDir" Guid="*">
         <File Id="filBooksAndPubs_Livingston_MuscularPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Livingston_MuscularPortfolios.cs" />
+      </Component>
+
+      <Component Id="cmpBooksAndPubs_SteadyOptions_AnchorTrade" Directory="BooksAndPubsDir" Guid="*">
+        <File Id="filBooksAndPubs_SteadyOptions_AnchorTrade" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\SteadyOptions_AnchorTrade.cs" />
       </Component>
 
       <Component Id="cmpBooksAndPubs_LaunchSettings" Directory="BooksAndPubsPropertiesDir" Guid="*">
