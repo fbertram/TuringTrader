@@ -535,8 +535,9 @@ namespace TuringTrader
                             // to the simple Run method, if required
                             // also, we need to convert the result to a list,
                             // in order to circumvent lazy execution
-                            var noLazyExec = _currentAlgorithm.Run(null, null)
-                                .ToList();
+                            //var noLazyExec = _currentAlgorithm.Run(null, null)
+                            //    .ToList();
+                            _currentAlgorithm.Run();
                         }
                         catch (Exception exception)
                         {
