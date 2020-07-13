@@ -89,7 +89,7 @@
 // 
 //==============================================================================
 
-//#define FAKE_OPTIONS
+#define FAKE_OPTIONS
 // if defined: run on synthetic fake data, instead of actual quotes
 
 //#define SPX_OPTIONS
@@ -98,7 +98,7 @@
 //#define XSP_OPTIONS
 // if defined: use XSP options
 
-#define SPY_OPTIONS
+//#define SPY_OPTIONS
 // if defined: use SPY options
 
 #define MAIN_POS

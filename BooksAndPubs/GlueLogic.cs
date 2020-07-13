@@ -43,7 +43,7 @@ namespace TuringTrader.Algorithms.Glue
     /// the Algorithm base, most notably
     /// a Plotter and an AllocationTracker.
     /// </summary>
-    public class AlgorithmPlusGlue : Algorithm
+    public abstract class AlgorithmPlusGlue : Algorithm
     {
         protected Plotter _plotter;
         public AllocationTracker Alloc;
