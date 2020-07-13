@@ -925,7 +925,7 @@ namespace TuringTrader
             row = new Dictionary<string, object>();
             row[METRIC_LABEL] = "Maximum Flat Days";
             foreach (var label in _yLabels)
-                row[_xamlLabel(label)] = string.Format("{0} days", _maxFlatDays(label));
+                row[_xamlLabel(label)] = string.Format("{0:F2} days", _maxFlatDays(label));
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
@@ -1771,16 +1771,16 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.ANNUAL_BARS;
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
-                }
 
-                foreach (string chart in PlotData.Keys.Skip(1))
-                    yield return chart;
+                    foreach (string chart in PlotData.Keys.Skip(1))
+                        yield return chart;
 
-                if (CFG_IS_REPORT)
-                {
-                    yield return Plotter.SheetNames.DASH;
-                    yield return Plotter.SheetNames.COMPS;
                     yield break;
+                }
+                else
+                {
+                    foreach (string chart in PlotData.Keys)
+                        yield return chart;
                 }
             }
         }
