@@ -34,7 +34,7 @@ namespace SimulatorEngine.Tests
     public class OptionSupport
     {
         #region class TestSimulator
-        private class TestSimulator : TuringTrader.Simulator.SimulatorCore
+        private class TestSimulator : Algorithm
         {
             private List<DataSource> _testDataSources;
             private double _iv;

@@ -30,21 +30,23 @@ using TuringTrader.Simulator;
 
 namespace SimulatorEngine.Tests
 {
-    class TestHelpers
+       class TestHelpers
     {
     }
 
     #region class DataSourceFromBars
     class DataSourceFromBars : DataSource
     {
+        private List<Bar> _bars = null;
+
         public DataSourceFromBars(List<Bar> bars, Dictionary<DataSourceParam, string> infos) : base(infos)
         {
-            Data = bars;
+            _bars = bars;
         }
 
-        public override void LoadData(DateTime startTime, DateTime endTime)
+        public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
         {
-            // nothing to do here
+            return _bars;
         }
     }
     #endregion
