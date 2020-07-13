@@ -1,12 +1,11 @@
 # Version History
 
-- 0.12
+- 0.12 - July 13, 2020
   - general
     - update to .Net Core 3.1
   - simulator core
     - make cache objects thread-local (except for data sources)
-	- add CheckParameters
-	- add FillModel
+	- add simulator hooks: CheckParameters, FillModel, CalcNextSimTime, IsValidSimTime, IsValidBar
     - keep full time series for NetAssetValue
     - implement infrastructure for child algorithms
   - optimizer
@@ -16,11 +15,10 @@
       - improve detecion of option contracts
     - fake options
 	  - interpolated volatility, based on 9d, 30d, 3m, 6m, and 12m vix
-	  - improved selection of expiry dates
-	  - fix issue w/ option prices not always maintained all the way to expiry
 	  - cache calculated option chain
     - CSV files
       - improve parsing of dates and floats
+      - make delimiter configurable
     - splicing souce
       - fix issue w/ missing last bar on 'master' instrument leading to data glitch
     - Norgate
