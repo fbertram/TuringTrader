@@ -71,7 +71,9 @@ namespace TuringTrader.Simulator
         #endregion
         #region public Algorithm Clone()
         /// <summary>
-        /// Clone algorithm, including all optimizer parameters
+        /// Clone algorithm, including all optimizer parameters. The application uses
+        /// this method to clone the 'master' instance, and create new algorithm 
+        /// instances before running them.
         /// </summary>
         /// <returns>new algorithm instance</returns>
         public Algorithm Clone()
@@ -95,7 +97,11 @@ namespace TuringTrader.Simulator
 
         #region protected DataSource AddChildAlgorithm(Algorithm algo)
         /// <summary>
-        /// Add a subclassed algorithm to simulator.
+        /// Add a subclassed algorithm to simulator. Child algorithms can be
+        /// used to create portfolios of portfolios. Note that a child algorithm 
+        /// is different from an algorithm data source: child algorithms make
+        /// use of lazy execution. In turn, algorithm data sources run before
+        /// the algorithm that uses them.
         /// </summary>
         /// <param name="algo">subclassed algorithm</param>
         /// <returns>newly created data source</returns>
@@ -142,7 +148,10 @@ namespace TuringTrader.Simulator
 
         #region public void SetAllocation(double totalDollars)
         /// <summary>
-        /// Set child algorithm capital allocation.
+        /// Set capital allocation for a child algorithm and move money
+        /// accordingly between the parent and child algorithm. Note that
+        /// setting allocations this way results in a zero-sum between
+        /// the parent and the child.
         /// </summary>
         /// <param name="totalDollars">total dollar amount to allocate</param>
         public void SetAllocation(double totalDollars)
@@ -175,7 +184,11 @@ namespace TuringTrader.Simulator
         /// care should be taken that the implementation of this method 
         /// initializes/ resets all parameters, to allow multiple runs.
         /// </summary>
-        public virtual void Run() { }
+        public virtual void Run() 
+        {
+            var noLazyExec = Run(null, null)
+                .ToList();
+        }
         #endregion
         #region public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         /// <summary>
