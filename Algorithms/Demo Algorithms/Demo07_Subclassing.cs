@@ -4,7 +4,7 @@
 // Description: demonstrate subclassable algorithms
 // History:     2019v21, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2098, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -24,7 +24,9 @@
 #region libraries
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 using TuringTrader.Simulator;
+using TuringTrader.Indicators;
 #endregion
 
 namespace Demos
@@ -33,20 +35,20 @@ namespace Demos
     // note how this class is not declared public
     // because of this, the class will not show up in TuringTrader's
     // algorithm selector, but it can still be instantiated
-    class Demo07_Subclassing_Child : SubclassableAlgorithm
+    class Demo07_Subclassing_Child : Algorithm
     {
         private static readonly string SPX = "$SPX";
         private Plotter _plotter = new Plotter();
 
-        public override string Name => "Demo 07: SPX/10";
+        public override string Name => "Algo as DataSource";
 
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
-            // SubclassedStartTime and SubclassedEndTime are passed in
-            // from the parent data-source, in case we are sub-classed
+            // startTime and endTime are passed in from the parent data-source, 
+            // and only in case we are sub-classed.
             // if running stand-alone, we are free to set any values
-            StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2008");
-            EndTime = SubclassedEndTime ?? DateTime.Now.Date - TimeSpan.FromDays(5);
+            StartTime = startTime ?? DateTime.Parse("01/01/2008");
+            EndTime = endTime ?? DateTime.Now.Date - TimeSpan.FromDays(5);
 
             AddDataSource(SPX);
             Instrument spx = null;
@@ -55,20 +57,24 @@ namespace Demos
             {
                 spx = spx ?? FindInstrument(SPX);
 
-                if (IsSubclassed)
-                {
-                    // this is where the sub-classed algorithm
-                    // adds a new bar to the parent data-source
-                    AddSubclassedBar(spx.Close[0] / 10.0);
-                }
-                else
+
+                if (IsDataSource)
                 {
                     // this is only relevant, if we are running
-                    // stand-alone
+                    // stand-alone. it is good practice not to write
+                    // to the plotter when running as a data source.
                     _plotter.SelectChart(Name, "date");
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot(spx.Name, spx.Close[0]);
                 }
+
+                // this is where the sub-classed algorithm
+                // adds a new bar to the parent data-source
+                var bar = Bar.NewOHLC(
+                    Name, SimTime[0],
+                    spx.Close[0] / 10.0, spx.Close[0] / 10.0, spx.Close[0] / 10.0, spx.Close[0] / 10.0, 0);
+
+                yield return bar;
             }
         }
 
@@ -103,6 +109,7 @@ namespace Demos
                 _plotter.SelectChart(Name, "date");
                 _plotter.SetX(SimTime[0]);
                 _plotter.Plot(data.Name, data.Close[0]);
+                _plotter.Plot("SMA( " + data.Name + " )", data.Close.SMA(200)[0]);
             }
         }
 
