@@ -4,7 +4,7 @@
 // Description: Data source providing fake option quotes
 // History:     2019i30, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -20,6 +20,10 @@
 //              License along with TuringTrader. If not, see 
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
+
+//#define MORE_VIX_PERIODS
+// MORE_VIX_PERIODS: define this to use 9d, 30d, 3m, 6, 12m VIX.
+// if undefined, uses only 30d VIX
 
 #region libraries
 using System;
@@ -38,12 +42,21 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private class SimFakeOptions : Algorithm
             {
+#if MORE_VIX_PERIODS
                 private static readonly string UNDERLYING = "$SPX";
                 private static readonly string VOLATILITY_9D = "$VIX9D";
                 private static readonly string VOLATILITY_30D = "$VIX";
                 private static readonly string VOLATILITY_3M = "$VIX3M";
                 private static readonly string VOLATILITY_6M = "$VIX6M";
                 private static readonly string VOLATILITY_12M = "$VIX1Y";
+#else
+                private static readonly string UNDERLYING = "$SPX";
+                private static readonly string VOLATILITY_9D = "$VIX";
+                private static readonly string VOLATILITY_30D = "$VIX";
+                private static readonly string VOLATILITY_3M = "$VIX";
+                private static readonly string VOLATILITY_6M = "$VIX";
+                private static readonly string VOLATILITY_12M = "$VIX";
+#endif
 
                 private List<Bar> _data;
                 private DateTime _startTime;
@@ -63,6 +76,7 @@ namespace TuringTrader.Simulator
 
                     AddDataSource(UNDERLYING);
 
+#if MORE_VIX_PERIODS
                     var volatilities = new Dictionary<double, DataSource>
                     {
                         { 9 / 365.25, AddDataSource(VOLATILITY_9D) },
@@ -71,6 +85,12 @@ namespace TuringTrader.Simulator
                         { 182 / 365.25, AddDataSource(VOLATILITY_6M) },
                         { 365 / 365.25, AddDataSource(VOLATILITY_12M) },
                     };
+#else
+                    var volatilities = new Dictionary<double, DataSource>
+                    {
+                        { 30 / 365.25, AddDataSource(VOLATILITY_30D) },
+                    };
+#endif
 
                     var lowStrikes = new Dictionary<DateTime, int>();
                     var highStrikes = new Dictionary<DateTime, int>();
