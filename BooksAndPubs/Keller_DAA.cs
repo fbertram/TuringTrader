@@ -201,6 +201,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.AddStrategyHoldings(this, Instruments
                         .Where(i => riskyUniverse.Contains(i.DataSource) || cashUniverse.Contains(i.DataSource))
                         .Select(i => AssetSub(i)));
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
                 }
             }
 
@@ -303,7 +305,7 @@ namespace TuringTrader.BooksAndPubs
             "GSG", // iShares S&P GSCI Commodity-Indexed Trust
             "GLD", // SPDR Gold Trust ETF
             "TLT", // iShares 20+ Year Treasury Bond ETF
-            "HYG", // iShares iBoxx High Yield Corporate Bond ETF
+            "splice:HYG,VWEAX", // iShares iBoxx High Yield Corporate Bond ETF
             "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
@@ -317,7 +319,7 @@ namespace TuringTrader.BooksAndPubs
         protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
             "VWO", // Vanguard FTSE Emerging Markets ETF
-            "BND"  // Vanguard Total Bond Market ETF
+            "splice:BND,AGG"  // Vanguard Total Bond Market ETF
         };
 
         protected override int T => 6; // (risky) top parameter

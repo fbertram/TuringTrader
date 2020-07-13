@@ -22,10 +22,10 @@ using TuringTrader.Algorithms.Glue;
 using System.Globalization;
 #endregion
 
-namespace TuringTrader.com.Algorithms
+namespace TuringTrader.BooksAndPubs
 {
     #region public class Connors_AlphaFormula_RisingAssets
-    public class Connors_AlphaFormula_RisingAssets : SubclassableAlgorithm
+    public class Connors_AlphaFormula_RisingAssets : Algorithm
     {
         public override string Name => "Connors' Rising Assets";
 
@@ -66,7 +66,7 @@ namespace TuringTrader.com.Algorithms
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -74,8 +74,8 @@ namespace TuringTrader.com.Algorithms
             StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2005", CultureInfo.InvariantCulture);
             EndTime = SubclassedEndTime ?? DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
 #endif
             WarmupStartTime = StartTime - TimeSpan.FromDays(252);
 
@@ -132,7 +132,13 @@ namespace TuringTrader.com.Algorithms
                     _plotter.AddStrategyHoldings(this, universe.Select(u => u.Instrument));
                 }
 
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                if (IsDataSource)
+                {
+                    var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                    yield return Bar.NewOHLC(
+                        this.GetType().Name, SimTime[0],
+                        v, v, v, v, 0);
+                }
             }
 
             //========== post processing ==========
@@ -159,7 +165,7 @@ namespace TuringTrader.com.Algorithms
     }
     #endregion
     #region public class Connors_AlphaFormula_WeeklyMeanReversion
-    public class Connors_AlphaFormula_WeeklyMeanReversion : SubclassableAlgorithm
+    public class Connors_AlphaFormula_WeeklyMeanReversion : Algorithm
     {
         public override string Name => "Connors' Weekly Mean Reversion";
 
@@ -167,7 +173,7 @@ namespace TuringTrader.com.Algorithms
         private Plotter _plotter;
         #endregion
         #region inputs
-        private Universe _universe = Universe.New("$SPX");
+        private Universe _universe = Universes.STOCKS_US_LG_CAP;
         public virtual Universe UNIVERSE => _universe;
         public virtual string IDLE_CASH => "splice:SHY,VFIRX";
         public virtual string BENCHMARK => "SPY";
@@ -180,7 +186,7 @@ namespace TuringTrader.com.Algorithms
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -188,8 +194,8 @@ namespace TuringTrader.com.Algorithms
             StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2003", CultureInfo.InvariantCulture);
             EndTime = SubclassedEndTime ?? DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
 #endif
             WarmupStartTime = StartTime - TimeSpan.FromDays(100);
 
@@ -309,7 +315,13 @@ namespace TuringTrader.com.Algorithms
                     //_plotter.AddStrategyHoldings(this, universe.Select(u => u.Instrument));
                 }
 
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                if (IsDataSource)
+                {
+                    var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                    yield return Bar.NewOHLC(
+                        this.GetType().Name, SimTime[0],
+                        v, v, v, v, 0);
+                }
             }
 
             //========== post processing ==========
@@ -336,7 +348,7 @@ namespace TuringTrader.com.Algorithms
     }
     #endregion
     #region public class Connors_AlphaFormula_DynanmicTreasuries
-    public class Connors_AlphaFormula_DynamicTreasuries : SubclassableAlgorithm
+    public class Connors_AlphaFormula_DynamicTreasuries : Algorithm
     {
         public override string Name => "Connors' Dynamic Treasuries";
 
@@ -368,7 +380,7 @@ namespace TuringTrader.com.Algorithms
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -376,8 +388,8 @@ namespace TuringTrader.com.Algorithms
             StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2005", CultureInfo.InvariantCulture);
             EndTime = SubclassedEndTime ?? DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
 #endif
             WarmupStartTime = StartTime - TimeSpan.FromDays(105);
 
@@ -426,7 +438,13 @@ namespace TuringTrader.com.Algorithms
                     _plotter.AddStrategyHoldings(this, Instruments.Where(i => universe.Contains(i.DataSource) || fallback == i.DataSource));
                 }
 
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                if (IsDataSource)
+                {
+                    var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                    yield return Bar.NewOHLC(
+                        this.GetType().Name, SimTime[0],
+                        v, v, v, v, 0);
+                }
             }
 
             //========== post processing ==========
@@ -453,7 +471,7 @@ namespace TuringTrader.com.Algorithms
     }
     #endregion
     #region public class Connors_AlphaFormula_EtfAvalanches
-    public class Connors_AlphaFormula_EtfAvalanches : SubclassableAlgorithm
+    public class Connors_AlphaFormula_EtfAvalanches : Algorithm
     {
         public override string Name => "Connors' ETF Avalanches";
 
@@ -514,7 +532,7 @@ namespace TuringTrader.com.Algorithms
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -522,8 +540,8 @@ namespace TuringTrader.com.Algorithms
             StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
             EndTime = SubclassedEndTime ?? DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
 #else
-            StartTime = SubclassedStartTime ?? Globals.START_TIME;
-            EndTime = SubclassedEndTime ?? Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
 #endif
             WarmupStartTime = StartTime - TimeSpan.FromDays(252);
 
@@ -629,7 +647,13 @@ namespace TuringTrader.com.Algorithms
                     _plotter.AddStrategyHoldings(this, universe.Select(u => u.Instrument).Concat(new List<Instrument> { idle.Instrument }));
                 }
 
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+                if (IsDataSource)
+                {
+                    var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                    yield return Bar.NewOHLC(
+                        this.GetType().Name, SimTime[0],
+                        v, v, v, v, 0);
+                }
             }
 
             //========== post processing ==========

@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		DocFX\articles\overview\Versions.md = DocFX\articles\overview\Versions.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.CustomApp", "More\TuringTrader.CustomApp\TuringTrader.CustomApp.csproj", "{5209DD87-E725-4971-AA21-0D3BB2441A4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "More", "More", "{0594F683-F733-4BBF-821F-B5EC1EE5385E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -45,9 +49,16 @@ Global
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Debug|x64.Build.0 = Debug|x64
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.ActiveCfg = Release|x64
 		{255CBB65-56DE-4C87-9DC4-DF0A9E4AD7E2}.Release|x64.Build.0 = Release|x64
+		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Debug|x64.ActiveCfg = Debug|x64
+		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Debug|x64.Build.0 = Debug|x64
+		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.ActiveCfg = Release|x64
+		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5209DD87-E725-4971-AA21-0D3BB2441A4B} = {0594F683-F733-4BBF-821F-B5EC1EE5385E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01740A88-D940-4010-ACCF-D5ACB06DF99A}

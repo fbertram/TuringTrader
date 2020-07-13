@@ -32,7 +32,7 @@ Yes, there is. Did you check the download section?
 
 ### Can you add feature XYZ?
 
-That depends. If it is a feature that is on our shortlist of things to do, we will appreciate your input, and probably just do it. If its a feature that is further down on our list, and you’d like us to change our roadmap, this will require some sponsorship. If it’s not even on our roadmap, this becomes a [consulting project](https://www.turingtrader.org/documentation/faq#consulting). It all starts with [reaching out to us](https://www.turingtrader.org/about/).
+That depends. If it is a feature that is on our shortlist of things to do, we will appreciate your input, and probably just do it. If its a feature that is further down on our list, and you’d like us to change our roadmap, this will require some sponsorship. If it’s not even on our roadmap, this becomes a [consulting project](https://www.turingtrader.org/help/articles/overview/FAQ.html#consulting). It all starts with [reaching out to us](https://www.turingtrader.org/about/).
 
 ## Licensing
 

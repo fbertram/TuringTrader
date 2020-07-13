@@ -389,6 +389,7 @@ namespace SimulatorEngine.Tests
             #region test vector #5 (David H. Bailey, Marcos Lopez de Prado)
             {
                 // Reference: An Open-Source Implementation of the Critical-Line Algorithm for Portfolio Optimization, David H. Bailey and Marcos Lopez de Prado
+                // section 5, A Numerical Example
                 double[] mean =
                 {
                     1.175,
@@ -446,7 +447,7 @@ namespace SimulatorEngine.Tests
                 };*/
 
                 double[] expectedReturn =
-                {   // FUB
+                {   // Table 2
                     1.18999999999995,
                     1.1802594588936,
                     1.16005645242179,
@@ -460,7 +461,7 @@ namespace SimulatorEngine.Tests
                 };
 
                 double[] expectedRisk =
-                {   // FUB
+                {   // Table 2
                     0.952000367646947,
                     0.545656874268239,
                     0.41725565037332,

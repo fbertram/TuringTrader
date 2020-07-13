@@ -51,6 +51,8 @@ namespace SimulatorEngine.Tests
                     executableDir,
                     "..",
                     "..",
+                    "..",
+                    "..",
                     "..");
                 GlobalSettings.HomePath = homePath;
 
@@ -69,9 +71,9 @@ namespace SimulatorEngine.Tests
                     if (dataSource.IsOption)
                         continue;
 
-                    dataSource.LoadData(DateTime.Parse("01/01/2018"), DateTime.Now.Date - TimeSpan.FromDays(5));
+                    var d = dataSource.LoadData(DateTime.Parse("01/01/2018"), DateTime.Now.Date - TimeSpan.FromDays(5));
 
-                    Assert.IsTrue(dataSource.Data.Count() > 100);
+                    Assert.IsTrue(d.Count() > 100);
 
                     Thread.Sleep(1000); // make sure Yahoo doesn't shut us off
                 }

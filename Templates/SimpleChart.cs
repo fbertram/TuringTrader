@@ -4,7 +4,7 @@
 // Description: C# report template for SimpleChart
 // History:     2019v28, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -32,27 +32,13 @@ using System.Linq;
 
 namespace TuringTrader.Simulator
 {
-    /// <summary>
-    /// C# report template for SimpleChart
-    /// </summary>
-    public class SimpleChart : ReportTemplate
+    // ReportTemplate contains many helper functions to create beautiful
+    // reports, which can be configured here. If that's not enough,
+    // you can modify the existing sheets to your liking, or add more
+    // sheets here. The sky's the limit.
+    public class CustomReport : ReportTemplate
     {
-        #region public override object GetModel(string selectedChart)
-        /// <summary>
-        /// Get table or plot model for selected chart.
-        /// </summary>
-        /// <param name="selectedChart"></param>
-        /// <returns>model</returns>
-        public override object GetModel(string selectedChart)
-        {
-            if (IsTable(selectedChart))
-                return RenderTable(selectedChart);
-            else if (IsScatter(selectedChart))
-                return RenderScatter(selectedChart);
-            else
-                return RenderSimple(selectedChart);
-        }
-        #endregion
+        protected override bool CFG_IS_REPORT => false;
     }
 }
 

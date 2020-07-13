@@ -34,7 +34,7 @@ using TuringTrader.Indicators;
 namespace TuringTrader.BooksAndPubs
 {
     #region LazyPortfolio core
-    public abstract class LazyPortfolio : SubclassableAlgorithm
+    public abstract class LazyPortfolio : Algorithm
     {
         #region internal data
         private Plotter _plotter = null;
@@ -49,6 +49,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual string BENCH => Assets.PORTF_60_40;
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
+        public virtual bool REBAL_MONTHLY => true;
         #endregion
 
         #region ctor
@@ -58,12 +59,13 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
-            StartTime = SubclassedStartTime ?? START_TIME;
-            EndTime = SubclassedEndTime ?? END_TIME;
+            StartTime = startTime ?? START_TIME;
+            EndTime = endTime ?? END_TIME;
+            WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = 0.0; // lazy portfolios w/o commissions
@@ -79,7 +81,7 @@ namespace TuringTrader.BooksAndPubs
                     continue;
 
                 //if (SimTime[0].Date.DayOfWeek > NextSimTime.Date.DayOfWeek)
-                if (SimTime[0].Date.Month != NextSimTime.Date.Month)
+                if (!REBAL_MONTHLY || SimTime[0].Date.Month != NextSimTime.Date.Month)
                 {
                     _alloc.LastUpdate = SimTime[0];
                     foreach (var a in ALLOCATION)
@@ -92,10 +94,14 @@ namespace TuringTrader.BooksAndPubs
                         i.Trade(targetShares - i.Position);
                     }
                 }
-                AddSubclassedBar(10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL);
+
+                var p = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                yield return Bar.NewOHLC(
+                    this.GetType().Name, SimTime[0],
+                    p, p, p, p, 0);
 
                 // plotter output
-                if (!IsOptimizing && TradingDays > 0)
+                if (!IsOptimizing && !IsDataSource && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, bench.Instrument);
                     _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
@@ -139,7 +145,7 @@ namespace TuringTrader.BooksAndPubs
             }
 #endif
 
-            if (!IsOptimizing)
+            if (!IsOptimizing && !IsDataSource)
             {
                 _plotter.AddTargetAllocation(_alloc);
                 _plotter.AddOrderLog(this);
@@ -188,6 +194,22 @@ namespace TuringTrader.BooksAndPubs
         };
         public override string BENCH => Assets.PORTF_60_40;
         //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
+    }
+    #endregion
+    #region Harry Browne's Permanent Portfolio
+    public class Browne_PermanentPortfolio : LazyPortfolio
+    {
+        public override string Name => "Browne's Permanent Portfolio";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // See Harry Browne, Fail Safe Investing
+            Tuple.Create(Assets.STOCKS_US_LG_CAP,   0.25),  // 25% S&P 500
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y, 0.25),  // 25% 20-25yr Treasuries
+            //Tuple.Create(Assets.BONDS_US_TREAS_3M,  0.25),  // 25% Treasury Bills
+            Tuple.Create(Assets.BONDS_US_TREAS_3Y,  0.25),  // 25% Short-Term Treasuries
+            Tuple.Create(Assets.GOLD,               0.25),  // 25% Gold
+        };
+        public override string BENCH => Assets.PORTF_60_40;
     }
     #endregion
 }

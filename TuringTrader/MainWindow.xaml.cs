@@ -28,6 +28,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -444,7 +445,14 @@ namespace TuringTrader
             var commandParam = menuItem.CommandParameter;
             var algoType = commandParam as AlgorithmInfo;
 
-            SelectAlgo(AlgoLookupName(algoType));
+            try
+            {
+                SelectAlgo(AlgoLookupName(algoType));
+            }
+            catch (Exception /*exc*/)
+            {
+                Output.WriteLine("failed to instantiate {0}", algoType);
+            }
         }
         #endregion
         #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
@@ -499,41 +507,60 @@ namespace TuringTrader
             if (_currentAlgorithm != null)
                 await Task.Run(() =>
                 {
-                    DateTime timeStamp1 = DateTime.Now;
+                    void uiThread()
+                    {
+                        DateTime timeStamp1 = DateTime.Now;
 
 #if true
-                    // replace current instance with a freshly cloned instance
-                    // this helps run poorly initialized algorithms
-                    var clonedAlgorithm = _currentAlgorithm.Clone();
-                    _currentAlgorithm = clonedAlgorithm;
+                        // replace current instance with a freshly cloned instance
+                        // this helps run poorly initialized algorithms
+                        var clonedAlgorithm = _currentAlgorithm.Clone();
+                        _currentAlgorithm = clonedAlgorithm;
 
-                    if (_optimizer != null)
-                        _optimizer.MasterInstance = _currentAlgorithm;
+                        if (_optimizer != null)
+                            _optimizer.MasterInstance = _currentAlgorithm;
 #endif
 
-                    WriteEventHandler(
-                        string.Format("running algorithm {0}", _currentAlgorithm.Name)
-                        + Environment.NewLine);
-                    try
-                    {
-#if true
-                        if (debug)
-                            System.Diagnostics.Debugger.Launch();
-#endif
-                        _currentAlgorithm.Run();
-                    }
-                    catch (Exception exception)
-                    {
                         WriteEventHandler(
-                            string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                            string.Format("running algorithm {0}", _currentAlgorithm.Name)
                             + Environment.NewLine);
-                    }
+                        try
+                        {
+#if true
+                            if (debug)
+                                System.Diagnostics.Debugger.Launch();
+#endif
+                            // make sure to enter the extended Run method
+                            // the default implementation will forward
+                            // to the simple Run method, if required
+                            // also, we need to convert the result to a list,
+                            // in order to circumvent lazy execution
+                            //var noLazyExec = _currentAlgorithm.Run(null, null)
+                            //    .ToList();
+                            _currentAlgorithm.Run();
+                        }
+                        catch (Exception exception)
+                        {
+                            WriteEventHandler(
+                                string.Format("EXCEPTION: {0}{1}", exception.Message, exception.StackTrace)
+                                + Environment.NewLine);
+                        }
 
-                    DateTime timeStamp2 = DateTime.Now;
-                    WriteEventHandler(
-                        string.Format("finished algorithm {0} after {1:F1} seconds", _currentAlgorithm.Name, (timeStamp2 - timeStamp1).TotalSeconds)
-                        + Environment.NewLine);
-                    //WriteEventHandler(""); // will force flush
+                        DateTime timeStamp2 = DateTime.Now;
+                        WriteEventHandler(
+                            string.Format("finished algorithm {0} after {1:F1} seconds", _currentAlgorithm.Name, (timeStamp2 - timeStamp1).TotalSeconds)
+                            + Environment.NewLine);
+                        //WriteEventHandler(""); // will force flush
+                    }
+#if false
+                    // run on same thread as ui
+                    uiThread();
+#else
+                    // run each simulation on new thread
+                    Thread thread = new Thread(uiThread);
+                    thread.Start();
+                    thread.Join(); // wait for window to close
+#endif
                 });
 
             RunButton.IsEnabled = true;

@@ -1,6 +1,42 @@
 # Version History
 
-- 0.11
+- 0.12 - July 13, 2020
+  - general
+    - update to .Net Core 3.1
+  - simulator core
+    - make cache objects thread-local (except for data sources)
+	- add simulator hooks: CheckParameters, FillModel, CalcNextSimTime, IsValidSimTime, IsValidBar
+    - keep full time series for NetAssetValue
+    - implement infrastructure for child algorithms
+  - optimizer
+    - fix issue w/ optimizer hanging when algos throw exceptions
+  - data sources
+    - general
+      - improve detecion of option contracts
+    - fake options
+	  - interpolated volatility, based on 9d, 30d, 3m, 6m, and 12m vix
+	  - cache calculated option chain
+    - CSV files
+      - improve parsing of dates and floats
+      - make delimiter configurable
+    - splicing souce
+      - fix issue w/ missing last bar on 'master' instrument leading to data glitch
+    - Norgate
+      - fix issue w/ universes not loading correctly in optimizer
+  - indicators
+    - new indicators for correlation and covariance
+  - showcase strategies
+    - update algorithms from Livingston's Muscular Portfolios to match book exactly
+    - add SteadyOption's Anchor Trades portfolio
+    - add Keller's Flexible Asset Allocation
+    - add Keller's Lethargic Asset Allocation
+  - renderer
+    - fix issue w/ C# template skipping integer values on charts
+  - project
+    - reorganize project files
+  - documentation
+    - add demo code for custom data sources
+- 0.11 - April 2020
   - simulator
     - add holiday calendar, to provide accurate NextSimTime on last bar
   - data sources
@@ -13,8 +49,9 @@
 	- add leveraged variants to Keller's DAA
 	- add lazy portfolios
 	- add Connors' Alpha Formula
+    - add Keller's Flexible Asset Allocation (FAA)
   - indicators
-    - improve robustnes of Markowitz CLA portfolios
+    - improve robustness of Markowitz CLA portfolios
 - 0.10
   - loader
     - allow loading algorithms from entry-assembly

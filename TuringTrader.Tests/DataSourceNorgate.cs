@@ -41,13 +41,13 @@ namespace SimulatorEngine.Tests
         {
             var ds = DataSource.New("norgate:msft");
 
-            ds.LoadData(DateTime.Parse("01/01/2019"), DateTime.Parse("01/12/2019"));
+            var d = ds.LoadData(DateTime.Parse("01/01/2019"), DateTime.Parse("01/12/2019"));
 
             Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("microsoft"));
-            Assert.IsTrue(((DateTime)ds.FirstTime).Date == DateTime.Parse("01/02/2019"));
-            Assert.IsTrue(((DateTime)ds.LastTime).Date == DateTime.Parse("01/11/2019"));
-            Assert.IsTrue(ds.Data.Count() == 8);
-            Assert.IsTrue(Math.Abs(ds.Data.Last().Close / ds.Data.First().Open - 102.36056 / 99.12445) < 1e-3);
+            Assert.IsTrue(d.First().Time.Date == DateTime.Parse("01/02/2019"));
+            Assert.IsTrue(d.Last().Time.Date == DateTime.Parse("01/11/2019"));
+            Assert.IsTrue(d.Count() == 8);
+            Assert.IsTrue(Math.Abs(d.Last().Close / d.First().Open - 102.36056 / 99.12445) < 1e-3);
         }
 
         [TestMethod]

@@ -59,6 +59,8 @@ namespace TuringTrader.BooksAndPubs
 
         public override void Run()
         {
+            //========== initialization ==========
+
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
@@ -66,8 +68,10 @@ namespace TuringTrader.BooksAndPubs
             var safeInstrument = AddDataSource(SAFE_INSTRUMENT);
             var benchmark = AddDataSource(BENCHMARK);
 
-            Deposit(1e6);
-            CommissionPerShare = 0.015;
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION;
+
+            //========== simulation loop ==========
 
             foreach (var s in SimTimes)
             {
@@ -159,16 +163,23 @@ namespace TuringTrader.BooksAndPubs
                 }
 
                 //---- plot output
-                _plotter.SelectChart(Name, "Date");
-                _plotter.SetX(SimTime[0]);
-                _plotter.Plot(Name, NetAssetValue[0]);
-                _plotter.Plot(benchmark.Instrument.Name, benchmark.Instrument.Close[0]);
-
-                _plotter.SelectChart("Strategy Positions", "Date");
-                _plotter.SetX(SimTime[0]);
-                foreach (var ds in universe)
-                    _plotter.Plot(ds.Instrument.Symbol, ds.Instrument.Position * ds.Instrument.Close[0] / NetAssetValue[0]);
+                _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
+                _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
             }
+
+            //========== post processing ==========
+
+            if (!IsOptimizing)
+            {
+                //_plotter.AddTargetAllocation(_alloc);
+                _plotter.AddOrderLog(this);
+                _plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                //_plotter.AddParameters(this);
+            }
+
+            FitnessValue = this.CalcFitness();
         }
 
         public override void Report()

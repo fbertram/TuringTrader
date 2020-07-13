@@ -38,7 +38,7 @@ using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Keller_CAA_Core : SubclassableAlgorithm
+    public abstract class Keller_CAA_Core : Algorithm
     {
         public override string Name => "Keller's CAA Strategy";
 
@@ -62,7 +62,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
 
         #region public override void Run()
-        public override void Run()
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
@@ -74,13 +74,11 @@ namespace TuringTrader.BooksAndPubs
             CommissionPerShare = Globals.COMMISSION;
 
             // our universe consists of risky & safe assets
-            var universe = RISKY_ASSETS
-                .Concat(SAFE_ASSETS).ToList();
+            var riskyAssets = AddDataSources(RISKY_ASSETS);
+            var safeAssets = AddDataSources(SAFE_ASSETS);
+            var universe = riskyAssets.Concat(safeAssets);
 
-            // add all data sources
-            AddDataSource(BENCHMARK);
-            foreach (var nick in universe)
-                AddDataSource(nick);
+            var bench = AddDataSource(BENCHMARK);
 
             //========== simulation loop ==========
 
@@ -96,7 +94,7 @@ namespace TuringTrader.BooksAndPubs
                             + 12.0 * i.Close.Momentum(252)[0]) / 22.0);
 
                 // skip if there are any instruments missing from our universe
-                if (!HasInstruments(universe))
+                if (!HasInstruments(universe) || !HasInstrument(bench))
                     continue;
 
                 // trigger rebalancing
@@ -108,11 +106,11 @@ namespace TuringTrader.BooksAndPubs
                     // calculate efficient frontier for universe
                     // note how momentum and covariance are annualized here
                     var cla = new PortfolioSupport.MarkowitzCLA(
-                        Instruments.Where(i => universe.Contains(i.Nickname)),
+                        universe.Select(ds => ds.Instrument),
                         i => 252.0 * momentum[i],
-                        (i, j) => 252.0 / covar.BarSize * covar[i, j], // TODO: is sqrt correct?
+                        (i, j) => 252.0 / covar.BarSize * covar[i, j],
                         i => 0.0,
-                        i => SAFE_ASSETS.Contains(i.Nickname) ? 1.0 : MAX_RISKY_ALLOC);
+                        i => safeAssets.Contains(i.DataSource) ? 1.0 : MAX_RISKY_ALLOC);
 
                     // find portfolio with specified risk
                     var pf = cla.TargetVolatility(TVOL);
@@ -143,9 +141,17 @@ namespace TuringTrader.BooksAndPubs
                 if (!IsOptimizing && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
-                    _plotter.AddStrategyHoldings(this, universe.Select(nick => FindInstrument(nick)));
+                    _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
+                    if (_alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(_alloc);
 
-                    if (IsSubclassed) AddSubclassedBar();
+                    if (IsDataSource)
+                    {
+                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                        yield return Bar.NewOHLC(
+                            this.GetType().Name, SimTime[0],
+                            v, v, v, v, 0);
+                    }
                 }
             }
 
@@ -182,13 +188,13 @@ namespace TuringTrader.BooksAndPubs
             "EEM", // Emerging Markets
             "QQQ", // US Technology Sector
             "EWJ", // Japanese Equities
-            "HYG", // High Yield Bonds
+            "splice:HYG,VWEAX", // High Yield Bonds
         };
 
         protected override List<string> SAFE_ASSETS => new List<string>
         {
             "IEF", // 10-Year Treasuries
-            "BIL", // T-Bills
+            "splice:BIL,PRTBX", // T-Bills
         };
     }
     #endregion

@@ -1,6 +1,6 @@
 # Creating Applications
 
-unfortunately, we didn't write this article yet. 
+unfortunately, we didn't write this article yet. However, the dev-branch contains a working sample: [https://github.com/fbertram/TuringTrader/tree/develop/More/TuringTrader.CustomApp](https://github.com/fbertram/TuringTrader/tree/develop/More/TuringTrader.CustomApp)
 
 In a nutshell, this is what you need to do:
 
