@@ -973,7 +973,8 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Determine next sim time. This hook is used by the simulator to
         /// determine the value for NextSimTime, after reaching the end of 
-        /// the available historical bars. 
+        /// the available historical bars. The default implementation assumes
+        /// the trading calendar for U.S. stock exchanges.
         /// </summary>
         /// <param name="timestamp"></param>
         /// <returns>next simulator timestamp</returns>

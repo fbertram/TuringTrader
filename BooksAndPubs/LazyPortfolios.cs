@@ -34,7 +34,7 @@ using TuringTrader.Indicators;
 namespace TuringTrader.BooksAndPubs
 {
     #region LazyPortfolio core
-    public abstract class LazyPortfolio : Algorithm
+    public abstract class LazyPortfolio : AlgorithmPlusGlue
     {
         #region internal data
         private Plotter _plotter = null;
@@ -52,12 +52,6 @@ namespace TuringTrader.BooksAndPubs
         public virtual bool REBAL_MONTHLY => true;
         #endregion
 
-        #region ctor
-        public LazyPortfolio()
-        {
-            _plotter = new Plotter(this);
-        }
-        #endregion
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
@@ -156,12 +150,6 @@ namespace TuringTrader.BooksAndPubs
             }
 
             FitnessValue = this.CalcFitness();
-        }
-        #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

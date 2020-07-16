@@ -1,11 +1,12 @@
 # Version History
 
+- 0.13 - work in progress
 - 0.12 - July 13, 2020
   - general
     - update to .Net Core 3.1
   - simulator core
     - make cache objects thread-local (except for data sources)
-	- add simulator hooks: CheckParameters, FillModel, CalcNextSimTime, IsValidSimTime, IsValidBar
+    - add simulator hooks: CheckParameters, FillModel, CalcNextSimTime, IsValidSimTime, IsValidBar
     - keep full time series for NetAssetValue
     - implement infrastructure for child algorithms
   - optimizer
