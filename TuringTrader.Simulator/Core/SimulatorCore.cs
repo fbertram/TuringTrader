@@ -517,17 +517,6 @@ namespace TuringTrader.Simulator
                     foreach (Instrument instr in optionsToExpire)
                         _expireOption(instr);
 
-                    // handle instrument de-listing
-                    if (!IsLastBar)
-                    {
-                        IEnumerable<Instrument> instrumentsToDelist = Instruments
-                            .Where(i => !hasData[i.DataSource])
-                            .ToList();
-
-                        foreach (Instrument instr in instrumentsToDelist)
-                            _delistInstrument(instr);
-                    }
-
                     // update net asset value
                     NetAssetValue.Value = _calcNetAssetValue();
                     ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
@@ -564,6 +553,18 @@ namespace TuringTrader.Simulator
                             && SimTime[0] <= EndTime
                             && IsValidSimTime(SimTime[0]))
                         yield return SimTime[0];
+
+                    // handle instrument de-listing
+                    if (!IsLastBar)
+                    {
+                        IEnumerable<Instrument> instrumentsToDelist = Instruments
+                            .Where(i => !hasData[i.DataSource])
+                            .ToList();
+
+                        foreach (Instrument instr in instrumentsToDelist)
+                            _delistInstrument(instr);
+                    }
+
                 }
 
                 //----- attempt to free up resources
