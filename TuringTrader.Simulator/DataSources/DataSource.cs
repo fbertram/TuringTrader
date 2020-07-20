@@ -491,6 +491,7 @@ namespace TuringTrader.Simulator
             if (infos[DataSourceParam.dataFeed].ToLower().Contains("csv"))
             {
                 defaultIfUndefined(DataSourceParam.dataPath);
+                defaultIfUndefined(DataSourceParam.delim);
             }
 
             //--- symbol mapping
