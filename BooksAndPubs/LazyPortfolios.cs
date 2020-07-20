@@ -37,7 +37,6 @@ namespace TuringTrader.BooksAndPubs
     public abstract class LazyPortfolio : AlgorithmPlusGlue
     {
         #region internal data
-        private Plotter _plotter = null;
         private AllocationTracker _alloc = new AllocationTracker();
         private List<double> _nav = new List<double>();
         private Dictionary<int, double> _minCagr = new Dictionary<int, double>();
