@@ -1,6 +1,8 @@
 # Version History
 
 - 0.13 - work in progress
+  - simulator core
+    - fix issue w/ instruments delisted one bar too early
 - 0.12 - July 13, 2020
   - general
     - update to .Net Core 3.1
