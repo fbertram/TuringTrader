@@ -38,7 +38,7 @@ namespace TuringTrader.BooksAndPubs
     // additional clarifications can be found here:
     // https://www.optimalmomentum.com/faq/
 
-    public abstract class Antonacci_DualMomentumInvesting_Core : Algorithm
+    public abstract class Antonacci_DualMomentumInvesting_Core : AlgorithmPlusGlue
     {
         public override string Name => "Antonacci's Dual Momentum";
 
@@ -80,16 +80,6 @@ namespace TuringTrader.BooksAndPubs
         /// </summary>
         protected virtual DateTime END_TIME => Globals.END_TIME;
         #endregion
-        #region internal data
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Antonacci_DualMomentumInvesting_Core()
-        {
-            _plotter = new Plotter(this);
-        }
-        #endregion
 
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -100,7 +90,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
-            Deposit(Globals.INITIAL_CAPITAL);
+            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
 
             // assets we can trade
@@ -165,10 +155,10 @@ namespace TuringTrader.BooksAndPubs
                     instrumentWeights[safeInstrument] += pcntTbill;
 
                     // submit orders
-                    _alloc.LastUpdate = SimTime[0];
+                    Alloc.LastUpdate = SimTime[0];
                     foreach (var ds in assets)
                     {
-                        _alloc.Allocation[ds.Instrument] = instrumentWeights[ds.Instrument];
+                        Alloc.Allocation[ds.Instrument] = instrumentWeights[ds.Instrument];
 
                         int targetShares = (int)Math.Floor(instrumentWeights[ds.Instrument] * NetAssetValue[0] / ds.Instrument.Close[0]);
                         int currentShares = ds.Instrument.Position;
@@ -188,24 +178,21 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     _plotter.AddStrategyHoldings(this, assets.Select(ds => ds.Instrument));
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
-
-                    if (IsDataSource)
-                    {
-                        var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
-                        yield return Bar.NewOHLC(
-                            this.GetType().Name, SimTime[0],
-                            v, v, v, v, 0);
-                    }
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
                 }
+
+                var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                yield return Bar.NewOHLC(
+                    this.GetType().Name, SimTime[0],
+                    v, v, v, v, 0);
             }
 
             //========== post processing ==========
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -214,12 +201,6 @@ namespace TuringTrader.BooksAndPubs
             }
 
             FitnessValue = this.CalcFitness();
-        }
-        #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

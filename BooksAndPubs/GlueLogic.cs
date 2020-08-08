@@ -195,6 +195,8 @@ namespace TuringTrader.Algorithms.Glue
     {
         public DateTime LastUpdate { get; set; }
         public Dictionary<Instrument, double> Allocation  = new Dictionary<Instrument, double>();
+
+        public void AdjustForPriceChanges(Algorithm algo) { }
     }
     #endregion
     #region plotter extension functions
@@ -203,13 +205,32 @@ namespace TuringTrader.Algorithms.Glue
     /// </summary>
     public static class PlotterExtensions
     {
-        public static void AddNavAndBenchmark(this Plotter plotter, SimulatorCore sim, Instrument benchmark)
+        /// <summary>
+        /// Add strategy NAV and benchmark to plotter. It is recommended
+        /// to call this method at least once per simulated trading day.
+        /// Some templates, especially the SimpleReport template, require
+        /// NAV and benchmark to be logged to the first plotter chart,
+        /// so that various charts can be generated from that:
+        /// equity curve, metrics, annual bars, return distribution,
+        /// and monte-carlo analysis.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="algo"></param>
+        /// <param name="benchmark"></param>
+        public static void AddNavAndBenchmark(this Plotter plotter, Algorithm algo, Instrument benchmark)
         {
-            plotter.SelectChart(sim.Name, "Date");
-            plotter.SetX(sim.SimTime[0]);
-            plotter.Plot(sim.Name, sim.NetAssetValue[0]);
+            plotter.SelectChart(algo.Name, "Date");
+            plotter.SetX(algo.SimTime[0]);
+            plotter.Plot(algo.Name, algo.NetAssetValue[0]);
             plotter.Plot(benchmark.Name, benchmark.Close[0]);
         }
+
+        /// <summary>
+        /// Add strategy target allocation to plotter. This method should
+        /// be called exactly once after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="alloc"></param>
         public static void AddTargetAllocation(this Plotter plotter, AllocationTracker alloc)
         {
             plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}", 
@@ -222,11 +243,26 @@ namespace TuringTrader.Algorithms.Glue
                 plotter.Plot("Allocation", string.Format("{0:P2}", alloc.Allocation[i]));
             }
         }
+
+        /// <summary>
+        /// Add new row with strategy target allocation to plotter. This
+        /// method should be called once for every time the strategy submits 
+        /// orders to adjust the target allocation.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="alloc"></param>
         public static void AddTargetAllocationRow(this Plotter plotter, AllocationTracker alloc)
         {
             // TODO: write historical allocations here
         }
 
+        /// <summary>
+        /// Add new row with strategy holdings to plotter. This method should
+        /// be called at least once per simulated trading day.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
+        /// <param name="assets"></param>
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, IEnumerable<Instrument> assets)
         {
             plotter.SelectChart(Plotter.SheetNames.EXPOSURE_VS_TIME, "date");
@@ -241,6 +277,13 @@ namespace TuringTrader.Algorithms.Glue
             //plotter.Plot("Total", sim.Positions.Sum(p => Math.Abs(p.Value * p.Key.Close[0] / sim.NetAssetValue[0])));
         }
 
+        /// <summary>
+        /// Add new row with strategy holdings to plotter. This method should
+        /// be called at least once per simulated trading day.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
+        /// <param name="asset"></param>
         public static void AddStrategyHoldings(this Plotter plotter, SimulatorCore sim, Instrument asset)
         {
             var pcnt = asset.Position * asset.Close[0] / sim.NetAssetValue[0];
@@ -250,6 +293,12 @@ namespace TuringTrader.Algorithms.Glue
             plotter.Plot(asset.Symbol, pcnt);
         }
 
+        /// <summary>
+        /// Add order log to plotter. This method should be called exactly
+        /// once after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
         public static void AddOrderLog(this Plotter plotter, SimulatorCore sim)
         {
             plotter.SelectChart("Order Log", "date");
@@ -267,6 +316,13 @@ namespace TuringTrader.Algorithms.Glue
                 plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
         }
+
+        /// <summary>
+        /// Add position log to plotter. This method should be called exactly
+        /// once after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
 
         public static void AddPositionLog(this Plotter plotter, SimulatorCore sim)
         {
@@ -288,6 +344,23 @@ namespace TuringTrader.Algorithms.Glue
             }
         }
 
+        /// <summary>
+        /// Add average strategy holdings to plotter. As a prerequisite, this method 
+        /// requires that strategy holdings have been logged. It should be called
+        /// exactly once after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="algo"></param>
+
+        public static void AddAverageHoldings(this Plotter plotter, Algorithm algo) { }
+
+        /// <summary>
+        /// Add PnL vs hold time to plotter. This method should be called once
+        /// after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
+
         public static void AddPnLHoldTime(this Plotter plotter, SimulatorCore sim)
         {
             var tradeLog = LogAnalysis
@@ -303,6 +376,13 @@ namespace TuringTrader.Algorithms.Glue
                 plotter.Plot(label, pnl);
             }
         }
+
+        /// <summary>
+        /// Add MFE/ MAE analysis to plotter. This method should be called once
+        /// after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="sim"></param>
 
         public static void AddMfeMae(this Plotter plotter, SimulatorCore sim)
         {
@@ -323,6 +403,13 @@ namespace TuringTrader.Algorithms.Glue
                 plotter.Plot(label, pnl);
             }
         }
+
+        /// <summary>
+        /// Add optimizable algorithm parameters to plotter. This method should
+        /// be called once after the simulation loop finished.
+        /// </summary>
+        /// <param name="plotter"></param>
+        /// <param name="algo"></param>
         public static void AddParameters(this Plotter plotter, Algorithm algo)
         {
             plotter.SelectChart("Parameters", "Name");

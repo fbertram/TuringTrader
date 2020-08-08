@@ -296,6 +296,10 @@ namespace TuringTrader.Simulator
             /// </summary>
             public const string EXPOSURE_VS_TIME = "Exposure vs Time";
             /// <summary>
+            /// Name of explicitly generated sheet with average strategy exposure.
+            /// </summary>
+            public const string EXPOSURE_AVG = "Average Exposure";
+            /// <summary>
             /// Name of explicitly generated sheet with PnL vs position hold time.
             /// </summary>
             public const string PNL_HOLD_TIME = "P&L vs Hold Time";
