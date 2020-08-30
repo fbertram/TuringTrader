@@ -3,8 +3,12 @@
 - 0.13 - work in progress
   - simulator core
     - fix issue w/ instruments delisted one bar too early
+    - make signature of AddDataSource(DataSource) consistent w/ AddDataSource(string)
   - data sources
     - fix issue w/ CSV delimiter not initialized properly
+    - fix issue w/ FRED source failing w/ regional settings not using '.' for decimals
+  - reports
+    - add average allocation
 - 0.12 - July 13, 2020
   - general
     - update to .Net Core 3.1
