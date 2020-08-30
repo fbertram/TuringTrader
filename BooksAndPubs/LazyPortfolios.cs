@@ -154,6 +154,17 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
+    #region all-cash/ zero-return portfolio
+    public class Benchmark_Zero : LazyPortfolio
+    {
+        public override string Name => "All-Cash/ Zero-Return";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            Tuple.Create(Assets.STOCKS_US_LG_CAP, 0.00),
+        };
+        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+    }
+    #endregion
     #region 60/40 benchmark
     public class Benchmark_60_40 : LazyPortfolio
     {
