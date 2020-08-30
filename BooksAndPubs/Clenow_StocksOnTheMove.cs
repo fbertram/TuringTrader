@@ -124,12 +124,6 @@ namespace TuringTrader.BooksAndPubs
         private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
         private readonly string SP500 = "$SPX";
         #endregion
-        #region ctor
-        public Clenow_StocksOnTheMove()
-        {
-            _plotter = new Plotter(this);
-        }
-        #endregion
 
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -268,12 +262,16 @@ namespace TuringTrader.BooksAndPubs
                         Output.WriteLine(message);
                     }
                 }
+                else // if (IsTradingDay)
+                {
+                    Alloc.AdjustForPriceChanges(this);
+                }
 
                 // create charts
                 if (!IsOptimizing && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
-                    //_plotter.AddStrategyHoldings(this, universeConstituents);
+                    _plotter.AddStrategyHoldings(this, constituents);
 
                     // plot strategy exposure
                     _plotter.SelectChart("Strategy Exposure", "Date");
@@ -306,6 +304,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
+                _plotter.AddAverageHoldings(this);
                 _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);

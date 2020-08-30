@@ -34,10 +34,9 @@ using TuringTrader.Indicators;
 namespace TuringTrader.BooksAndPubs
 {
     #region LazyPortfolio core
-    public abstract class LazyPortfolio : Algorithm
+    public abstract class LazyPortfolio : AlgorithmPlusGlue
     {
         #region internal data
-        private Plotter _plotter = null;
         private AllocationTracker _alloc = new AllocationTracker();
         private List<double> _nav = new List<double>();
         private Dictionary<int, double> _minCagr = new Dictionary<int, double>();
@@ -52,12 +51,6 @@ namespace TuringTrader.BooksAndPubs
         public virtual bool REBAL_MONTHLY => true;
         #endregion
 
-        #region ctor
-        public LazyPortfolio()
-        {
-            _plotter = new Plotter(this);
-        }
-        #endregion
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
@@ -158,15 +151,20 @@ namespace TuringTrader.BooksAndPubs
             FitnessValue = this.CalcFitness();
         }
         #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
-        #endregion
     }
     #endregion
 
+    #region all-cash/ zero-return portfolio
+    public class Benchmark_Zero : LazyPortfolio
+    {
+        public override string Name => "All-Cash/ Zero-Return";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            Tuple.Create(Assets.STOCKS_US_LG_CAP, 0.00),
+        };
+        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+    }
+    #endregion
     #region 60/40 benchmark
     public class Benchmark_60_40 : LazyPortfolio
     {

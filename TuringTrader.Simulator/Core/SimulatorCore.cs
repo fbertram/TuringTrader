@@ -517,17 +517,6 @@ namespace TuringTrader.Simulator
                     foreach (Instrument instr in optionsToExpire)
                         _expireOption(instr);
 
-                    // handle instrument de-listing
-                    if (!IsLastBar)
-                    {
-                        IEnumerable<Instrument> instrumentsToDelist = Instruments
-                            .Where(i => !hasData[i.DataSource])
-                            .ToList();
-
-                        foreach (Instrument instr in instrumentsToDelist)
-                            _delistInstrument(instr);
-                    }
-
                     // update net asset value
                     NetAssetValue.Value = _calcNetAssetValue();
                     ITimeSeries<double> filteredNAV = NetAssetValue.EMA(3);
@@ -564,6 +553,18 @@ namespace TuringTrader.Simulator
                             && SimTime[0] <= EndTime
                             && IsValidSimTime(SimTime[0]))
                         yield return SimTime[0];
+
+                    // handle instrument de-listing
+                    if (!IsLastBar)
+                    {
+                        IEnumerable<Instrument> instrumentsToDelist = Instruments
+                            .Where(i => !hasData[i.DataSource])
+                            .ToList();
+
+                        foreach (Instrument instr in instrumentsToDelist)
+                            _delistInstrument(instr);
+                    }
+
                 }
 
                 //----- attempt to free up resources
@@ -648,12 +649,22 @@ namespace TuringTrader.Simulator
         /// Add data source. If the data source already exists, the call is ignored.
         /// </summary>
         /// <param name="dataSource">new data source</param>
-        protected void AddDataSource(DataSource dataSource)
+        /// <returns>data source</returns>
+        protected DataSource AddDataSource(DataSource dataSource)
         {
             if (_dataSources.Contains(dataSource))
-                return;
+                return dataSource;
+
+            var ds = _dataSources
+                .Where(ds => ds.Info[DataSourceParam.nickName] == dataSource.Info[DataSourceParam.nickName])
+                .FirstOrDefault();
+
+            if (ds != null)
+                return ds;
 
             _dataSources.Add(dataSource);
+
+            return dataSource;
         }
         #endregion
 
@@ -973,7 +984,8 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Determine next sim time. This hook is used by the simulator to
         /// determine the value for NextSimTime, after reaching the end of 
-        /// the available historical bars. 
+        /// the available historical bars. The default implementation assumes
+        /// the trading calendar for U.S. stock exchanges.
         /// </summary>
         /// <param name="timestamp"></param>
         /// <returns>next simulator timestamp</returns>
