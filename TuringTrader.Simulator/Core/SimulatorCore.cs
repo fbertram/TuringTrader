@@ -649,12 +649,22 @@ namespace TuringTrader.Simulator
         /// Add data source. If the data source already exists, the call is ignored.
         /// </summary>
         /// <param name="dataSource">new data source</param>
-        protected void AddDataSource(DataSource dataSource)
+        /// <returns>data source</returns>
+        protected DataSource AddDataSource(DataSource dataSource)
         {
             if (_dataSources.Contains(dataSource))
-                return;
+                return dataSource;
+
+            var ds = _dataSources
+                .Where(ds => ds.Info[DataSourceParam.nickName] == dataSource.Info[DataSourceParam.nickName])
+                .FirstOrDefault();
+
+            if (ds != null)
+                return ds;
 
             _dataSources.Add(dataSource);
+
+            return dataSource;
         }
         #endregion
 
