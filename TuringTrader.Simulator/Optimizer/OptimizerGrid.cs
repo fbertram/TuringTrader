@@ -47,7 +47,10 @@ namespace TuringTrader.Simulator
         private int _numIterationsTotal;
         private int _numIterationsCompleted;
         private double? _maxFitness = null;
-        private DateTime _startTime;
+        private DateTime _optimizationStart;
+        private DateTime? _algoStart;
+        private DateTime? _algoEnd;
+        private bool _verbose;
         #endregion
         #region internal helpers
         #region private void RunIteration()
@@ -83,7 +86,7 @@ namespace TuringTrader.Simulator
                     // to the simple Run method, if required
                     // also, we need to convert the result to a list,
                     // in order to circumvent lazy execution
-                    var noLazyExec = instanceToRun.Run(null, null)
+                    var noLazyExec = instanceToRun.Run(_algoStart, _algoEnd)
                         .ToList();
 
                     result.NetAssetValue = instanceToRun.NetAssetValue[0];
@@ -97,7 +100,7 @@ namespace TuringTrader.Simulator
                     // we ignore any exeption while running the algo
                     lock (_optimizerLock)
                     {
-                        Output.WriteLine("{0}: Iteration failed. {1}", this.GetType().Name, e.Message);
+                        if (_verbose) Output.WriteLine("{0}: Iteration failed. {1}", this.GetType().Name, e.Message);
                     }
                 }
 
@@ -107,7 +110,7 @@ namespace TuringTrader.Simulator
                     {
                         _numIterationsCompleted++;
 
-                        TimeSpan t = DateTime.Now - _startTime;
+                        TimeSpan t = DateTime.Now - _optimizationStart;
                         TimeSpan eta = TimeSpan.FromSeconds(
                             (_numIterationsTotal - _numIterationsCompleted)
                             * t.TotalSeconds / _numIterationsCompleted);
@@ -117,7 +120,7 @@ namespace TuringTrader.Simulator
                                 ? Math.Max((double)_maxFitness, (double)result.Fitness)
                                 : (double)result.Fitness;
 
-                        Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
+                        if (_verbose) Output.WriteLine("GridOptimizer: {0} of {1} iterations completed, max fitness = {2:F4}, eta = {3}h{4}m{5}s",
                             _numIterationsCompleted, _numIterationsTotal, _maxFitness,
                             Math.Floor(eta.TotalHours), eta.Minutes, eta.Seconds);
                     }
@@ -190,9 +193,11 @@ namespace TuringTrader.Simulator
         /// Crearte and initialize new grid optimizer instance.
         /// </summary>
         /// <param name="masterInstance">algorithm to optimize</param>
-        public OptimizerGrid(Algorithm masterInstance)
+        /// <param name="verbose">show progress information</param>
+        public OptimizerGrid(Algorithm masterInstance, bool verbose = true)
         {
             MasterInstance = masterInstance;
+            _verbose = verbose;
         }
         #endregion
         #region public Algorithm MasterInstance
@@ -206,9 +211,14 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Run optimization.
         /// </summary>
-        public void Run()
+        /// <param name="startTime">optimization start time</param>
+        /// <param name="endTime">optimization end time</param>
+        public void Run(DateTime? startTime = null, DateTime? endTime = null)
         {
-            _startTime = DateTime.Now;
+            _algoStart = startTime;
+            _algoEnd = endTime;
+
+            _optimizationStart = DateTime.Now;
 
             // create new results list
             Results = new List<OptimizerResult>();
@@ -216,7 +226,7 @@ namespace TuringTrader.Simulator
             // figure out total number of iterations
             _numIterationsCompleted = 0;
             _numIterationsTotal = NumIterations(MasterInstance);
-            Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
+            if (_verbose) Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations
             IterateLevel(0);
@@ -224,8 +234,8 @@ namespace TuringTrader.Simulator
             // wait for completion
             _jobQueue.WaitForCompletion();
 
-            TimeSpan t = DateTime.Now - _startTime;
-            Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s @ {3} iterations/hour",
+            TimeSpan t = DateTime.Now - _optimizationStart;
+            if (_verbose) Output.WriteLine("GridOptimizer: finished after {0}h{1}m{2}s @ {3} iterations/hour",
                 Math.Floor(t.TotalHours), t.Minutes, t.Seconds,
                 Math.Round(_numIterationsTotal / t.TotalHours));
         }

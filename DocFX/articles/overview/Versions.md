@@ -1,6 +1,14 @@
 # Version History
 
 - 0.13 - work in progress
+  - data sources
+    - fix issue w/ child algorithms running one bar ahead of main
+  - indicators
+    - fix issue w/ some basic indicators ignoring parent cache id
+  - optimizer
+    - implement support for walk-forward-optimization
+  - demos
+    - implement demo for walk-forward-optimization
 - 0.12 - August 30, 2020
   - general
     - update to .Net Core 3.1
