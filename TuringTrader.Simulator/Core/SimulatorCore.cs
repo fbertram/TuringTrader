@@ -474,20 +474,23 @@ namespace TuringTrader.Simulator
                         // options have multiple bars with identical timestamps!
                         while (hasData[source] && enumData[source].Current.Time == SimTime[0])
                         {
-                            if (!_instruments.ContainsKey(enumData[source].Current.Symbol))
-                                _instruments[enumData[source].Current.Symbol] = new Instrument(this, source);
-                            Instrument instrument = _instruments[enumData[source].Current.Symbol];
+                            var theBar = enumData[source].Current;
 
-                            // we shouldn't need to check for duplicate bars here. unfortunately, this
-                            // happens with options having multiple roots. it is unclear what the best
-                            // course of action is here, for now we just skip the duplicates.
-                            // it seems that the duplicate issue stops 11/5/2013???
-                            if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
-                                instrument.Value = enumData[source].Current;
-                            else
+                            // algorithm data sources might send dummy bars.
+                            // these dummy bars have their symbol set to null
+                            // and we should not create any instruments for these.
+                            if (theBar.Symbol != null)
                             {
-                                //Output.WriteLine(string.Format("{0}: {1} has duplicate bar on {2}",
-                                //        Name, source.BarEnumerator.Current.Symbol, SimTime[0]));
+                                if (!_instruments.ContainsKey(theBar.Symbol))
+                                    _instruments[theBar.Symbol] = new Instrument(this, source);
+                                Instrument instrument = _instruments[enumData[source].Current.Symbol];
+
+                                // we shouldn't need to check for duplicate bars here. unfortunately, this
+                                // happens with options having multiple roots. it is unclear what the best
+                                // course of action is here, for now we just skip the duplicates.
+                                // it seems that the duplicate issue stops 11/5/2013???
+                                if (instrument.BarsAvailable == 0 || instrument.Time[0] != SimTime[0])
+                                    instrument.Value = theBar;
                             }
 
                             hasData[source] = enumData[source].MoveNext();
@@ -595,13 +598,13 @@ namespace TuringTrader.Simulator
             private set;
         }
         #endregion
-        #region protected bool IsLastBar
+        #region public bool IsLastBar
         /// <summary>
         /// Flag, indicating the last bar processed by the simulator. Algorithms
         /// may use this to implement special handling of this last bar, e.g.
         /// setting up live trades.
         /// </summary>
-        protected bool IsLastBar = false;
+        public bool IsLastBar = false;
         #endregion
 
         #region protected DataSource AddDataSource(string nickname)

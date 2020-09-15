@@ -73,7 +73,7 @@ namespace TuringTrader.Simulator
                 Info[DataSourceParam.name] = _algo.Name;
             }
             #endregion
-            #region public override void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Run sub-classed algorithm and return bars as enumerable.
             /// </summary>
@@ -91,7 +91,25 @@ namespace TuringTrader.Simulator
                     // child bar-for-bar and in sync with its parent
 
                     foreach (var bar in _algo.Run(startTime, endTime))
+                    {
                         yield return bar;
+
+                        if (!_algo.IsLastBar)
+                        {
+                            // the simulator core needs to know the next bar's
+                            // timestamp. at the same time, we want to avoid
+                            // child algorithms from running one bar ahead of
+                            // the main algo. we fix this issue by returning
+                            // a dummy bar, announcing the next timestamp.
+
+                            var dummy = Bar.NewOHLC(
+                                null, _algo.NextSimTime,
+                                0.0, 0.0, 0.0, 0.0, 0);
+
+                            yield return dummy;
+                        }
+                    }
+
                     yield break;
                 }
                 else
