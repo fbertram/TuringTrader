@@ -235,13 +235,20 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>range between highest and lowest value of past n bars</returns>
-        public static ITimeSeries<double> Range(this Instrument series, int n)
+        public static ITimeSeries<double> Range(this Instrument series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series.High
-                .Highest(n)
+                .Highest(n, cacheId)
                 .Subtract(series.Low
-                    .Lowest(n));
+                    .Lowest(n, cacheId), cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
@@ -250,13 +257,20 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>range between highest and lowest value of past n bars</returns>
-        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series
-                .Highest(n)
+                .Highest(n, cacheId)
                 .Subtract(series
-                    .Lowest(n));
+                    .Lowest(n, cacheId), cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
@@ -265,10 +279,17 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">normalizing period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>normalized time series</returns>
-        public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.Divide(series.EMA(n));
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series.Divide(series.EMA(n, cacheId), cacheId);
         }
         #endregion
 
