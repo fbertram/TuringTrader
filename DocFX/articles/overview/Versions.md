@@ -9,6 +9,8 @@
     - implement support for walk-forward-optimization
   - demos
     - implement demo for walk-forward-optimization
+  - showcase strategies
+    - add LogicalInvest's Universal Investment Strategy
 - 0.12 - August 30, 2020
   - general
     - update to .Net Core 3.1

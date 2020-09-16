@@ -37,11 +37,9 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using TuringTrader.Simulator;
 using TuringTrader.Algorithms.Glue;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -128,7 +126,7 @@ namespace TuringTrader.BooksAndPubs
             //========== initialization ==========
 
             StartTime = startTime != null ? (DateTime)startTime : Globals.START_TIME;
-            EndTime = endTime != null ? (DateTime)endTime : Globals.END_TIME - TimeSpan.FromDays(5);
+            EndTime = endTime != null ? (DateTime)endTime : Globals.END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(90);
 
             CommissionPerShare = Globals.COMMISSION;
