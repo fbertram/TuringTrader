@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, demo algorithms
 // Name:        LI_UniversalInvestmentStrategy
-// Description: Strategy as described by Logical Invest.
+// Description: Universal Investment Strategy as described by Logical Invest.
 //              https://logical-invest.com/app/strategy/uis/universal-investment-strategy
 //              https://logical-invest.com/universal-investment-strategy/
 // History:     2020viiii15, FUB, created
@@ -44,18 +44,18 @@ using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {
-    #region LI_UniversalInvestmentStrategy
+    #region LI_UniversalInvestmentStrategy_Core
     public abstract class LI_UniversalInvestmentStrategy_Core : AlgorithmPlusGlue
     {
         #region inputs
         [OptimizerParam(0, 100, 5)]
-        public int VOL_FACT { get; set; } = 250;
+        public virtual int VOL_FACT { get; set; } = 250;
 
-        [OptimizerParam(50, 80, 2)]
-        public int LOOKBACK_DAYS { get; set; } = 72;
+        [OptimizerParam(50, 80, 5)]
+        public virtual int LOOKBACK_DAYS { get; set; } = 72;
 
         [OptimizerParam(0, 100, 10)]
-        public int WFO_STOCK_PCNT { get; set; } = 60;
+        public int STOCK_PCNT { get; set; } = 60;
 
         public abstract string STOCKS { get; }
         public abstract string BONDS { get; }
@@ -63,28 +63,19 @@ namespace TuringTrader.BooksAndPubs
         public virtual string BENCHMARK => Assets.PORTF_60_40;
         #endregion
         #region internal helpers
-        private double UIS_ModifiedSharpe()
+        private double ModifiedSharpeRatio(double f)
         {
             // this code is only required for optimization
             if (!IsOptimizing)
                 return 0.0;
 
-            var collecting = false;
-            var dailyReturns = new List<double>();
-            for (var t = NetAssetValue.BarsAvailable - 1; t >= 0; t--)
-            {
-                if (NetAssetValue[t] > 0.0 && NetAssetValue[t] != Globals.INITIAL_CAPITAL)
-                    collecting = true;
-
-                if (collecting)
-                    dailyReturns.Add(Math.Log(NetAssetValue[t] / NetAssetValue[t + 1]));
-            }
-
+            var dailyReturns = Enumerable.Range(0, TradingDays)
+                .Select(t => Math.Log(NetAssetValue[t] / NetAssetValue[t + 1]))
+                .ToList();
             var rd = dailyReturns.Average();
             var vd = dailyReturns
                 .Select(r => Math.Pow(r - rd, 2.0))
                 .Average();
-            var f = VOL_FACT / 100.0;
 
             // modified sharpe ratio
             // f = 1.0: sharpe ratio
@@ -92,24 +83,37 @@ namespace TuringTrader.BooksAndPubs
             // f > 1.0: increased relevance of volatility
             return rd / Math.Pow(vd, 0.5 * f);
         }
+        private Dictionary<string, bool> SaveAndDisableOptimizerParams()
+        {
+            var isEnabled = new Dictionary<string, bool>();
+            foreach (var s in OptimizerParams)
+            {
+                isEnabled[s.Key] = s.Value.IsEnabled;
+                s.Value.IsEnabled = false;
+            }
+            return isEnabled;
+        }
+
+        private void RestoreOptimizerParams(Dictionary<string, bool> isEnabled)
+        {
+            foreach (var s in OptimizerParams)
+                s.Value.IsEnabled = isEnabled[s.Key];
+        }
         #endregion
 
-        #region OptimizeSettings - walk-forward-optimization
-        private void OptimizeSettings()
+        #region OptimizeParameter - walk-forward-optimization
+        private void OptimizeParameter(string parameter)
         {
-            // we only optimize settings on the top instance,
-            // not those used for walk-forward optimization
-            if (!IsOptimizing)
+            if (parameter == "STOCK_PCNT"
+                && !OptimizerParams["STOCK_PCNT"].IsEnabled)
             {
-                // enable optimizer parameters
-                foreach (var s in OptimizerParams)
-                    if (s.Value.Name.StartsWith("WFO_"))
-                        s.Value.IsEnabled = true;
+                var save = SaveAndDisableOptimizerParams();
 
                 // run optimization
                 var optimizer = new OptimizerGrid(this, false);
                 var end = SimTime[0];
                 var start = SimTime[LOOKBACK_DAYS];
+                OptimizerParams["STOCK_PCNT"].IsEnabled = true;
                 optimizer.Run(start, end);
 
                 // apply parameters from best result
@@ -117,6 +121,20 @@ namespace TuringTrader.BooksAndPubs
                     .OrderByDescending(r => r.Fitness)
                     .FirstOrDefault();
                 optimizer.SetParametersFromResult(best);
+
+                RestoreOptimizerParams(save);
+            }
+
+            // NOTE: Frank Grossmann does not mention optimization of the lookback period.
+            // this code fragment is only meant to demonstrate
+            // how we could expand optimzation to other parameters
+            if (parameter == "LOOKBACK_DAYS"
+                && !OptimizerParams["STOCK_PCNT"].IsEnabled
+                && !OptimizerParams["LOOKBACK_DAYS"].IsEnabled)
+            {
+                // var save = SaveAndDisableOptimizerParams();
+                // TODO: put optimizer code here
+                // RestoreOptimizerParams(save);
             }
         }
         #endregion
@@ -144,17 +162,32 @@ namespace TuringTrader.BooksAndPubs
                 if (!HasInstruments(new List<DataSource> { stocks, bonds, bench }))
                     continue;
 
-                // re-tune parameters on a monthly schedule
-                if (firstOptimization || NextSimTime.Month != SimTime[0].Month)
-                    OptimizeSettings();
+                if (SimTime[0] < StartTime)
+                    continue;
+
+#if false
+                // NOTE: the Universal Investment Strategy does not
+                // use walk-forward optimization for the lookback days.
+                // this code is only meant to demonstrate how optimization
+                // could be expanded to include more parameters.
+                if (firstOptimization 
+                || (NextSimTime.Month != SimTime[0].Month && new List<int> { 1, 7 }.Contains(NextSimTime.Month)))
+                    OptimizeParameter("LOOKBACK_DAYS");
+#endif
+
+                // re-tune asset allocation on monthly schedule
+                if (firstOptimization
+                || NextSimTime.Month != SimTime[0].Month)
+                    OptimizeParameter("STOCK_PCNT");
+
                 firstOptimization = false;
 
-                // rebalance on a monthly schedule
-                if (NextSimTime.Month != SimTime[0].Month)
+                // open positions on first execution, rebalance monthly
+                if (NextSimTime.Month != SimTime[0].Month || Positions.Count == 0)
                 {
                     Alloc.LastUpdate = SimTime[0];
 
-                    var stockPcnt = WFO_STOCK_PCNT / 100.0;
+                    var stockPcnt = STOCK_PCNT / 100.0;
                     var stockShares = (int)Math.Floor(NetAssetValue[0] * stockPcnt / stocks.Instrument.Close[0]);
                     stocks.Instrument.Trade(stockShares - stocks.Instrument.Position);
                     Alloc.Allocation[stocks.Instrument] = stockPcnt;
@@ -177,6 +210,11 @@ namespace TuringTrader.BooksAndPubs
 
                     if (Alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(Alloc);
+
+                    //_plotter.SelectChart("Walk-Forward Optimization", "Date");
+                    //_plotter.SetX(SimTime[0]);
+                    //_plotter.Plot("STOCK_PCNT", STOCK_PCNT);
+                    //_plotter.Plot("LOOKBACK_DAYS", LOOKBACK_DAYS);
                 }
             }
 
@@ -194,7 +232,7 @@ namespace TuringTrader.BooksAndPubs
             }
 
             // fitness value used for walk-forward-optimization
-            FitnessValue = UIS_ModifiedSharpe();
+            FitnessValue = ModifiedSharpeRatio(VOL_FACT / 100.0);
 
             yield break;
         }
@@ -213,7 +251,7 @@ namespace TuringTrader.BooksAndPubs
         public override string BONDS => "TLT";
     }
     #endregion
-    #region 'Hell on Fire' version (3x leveraged)
+    #region 3x Leveraged 'Hell on Fire'
     public class LI_UniversalInvestmentStrategy_3x : LI_UniversalInvestmentStrategy_Core
     {
         public override string Name => "Logical Invest's Universal Investment Strategy (3x Leveraged 'Hell on Fire')";
