@@ -917,7 +917,7 @@ namespace TuringTrader
 
 
             row = new Dictionary<string, object>();
-            row[METRIC_LABEL] = "Maximum Drawdown";
+            row[METRIC_LABEL] = "Maximum Drawdown (Daily)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}", _mdd(label));
             retvalue.Add(row);
@@ -929,7 +929,7 @@ namespace TuringTrader
             retvalue.Add(row);
 
             row = new Dictionary<string, object>();
-            row[METRIC_LABEL] = "Sharpe Ratio (Monthly, Annualized)";
+            row[METRIC_LABEL] = "Sharpe Ratio (Rf=T-Bill, Monthly, Annualized)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:F2}", _sharpeRatio(label));
             retvalue.Add(row);
