@@ -11,6 +11,8 @@
     - implement demo for walk-forward-optimization
   - showcase strategies
     - add LogicalInvest's Universal Investment Strategy
+  - indicators
+    - fix issue w/ TrueRange series always returning last value
 - 0.12 - August 30, 2020
   - general
     - update to .Net Core 3.1
