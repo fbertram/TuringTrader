@@ -23,6 +23,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 
@@ -165,6 +166,26 @@ namespace SimulatorEngine.Tests
                 }
                 //Output.WriteLine("},");
             }
+        }
+        #endregion
+        #region public void Test_AverageTrueRange
+        [TestMethod]
+        public void Test_AverageTrueRange()
+        {
+            var bars = new List<Bar>
+            {
+                Bar.NewOHLC("test", default, 100.0, 105.0, 95.0, 99.0, 0),
+                Bar.NewOHLC("test", default, 102.0, 108.0, 91.0, 103.0, 0),
+                Bar.NewOHLC("test", default, 108.0, 112.0, 93.0, 107.0, 0),
+                Bar.NewOHLC("test", default, 112.0, 118.0, 92.0, 113.0, 0),
+            };
+
+            var i = new Instrument(null, null);
+            foreach (var b in bars)
+                i.Value = b;
+
+            var atr = i.AverageTrueRange(3)[0];
+            Assert.IsTrue(Math.Abs(atr - 20.666666) < 1e-5);
         }
         #endregion
     }

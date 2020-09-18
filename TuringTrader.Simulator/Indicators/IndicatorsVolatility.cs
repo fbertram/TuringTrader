@@ -299,8 +299,8 @@ namespace TuringTrader.Indicators
             return IndicatorsBasic.Lambda(
                 (t) =>
                 {
-                    double high = Math.Max(series[0].High, series[1].Close);
-                    double low = Math.Min(series[0].Low, series[1].Close);
+                    double high = Math.Max(series[t].High, series[t + 1].Close);
+                    double low = Math.Min(series[t].Low, series[t + 1].Close);
                     return high - low;
                 },
                 cacheId);
