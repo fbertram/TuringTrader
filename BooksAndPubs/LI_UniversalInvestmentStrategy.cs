@@ -216,6 +216,11 @@ namespace TuringTrader.BooksAndPubs
                     //_plotter.Plot("STOCK_PCNT", STOCK_PCNT);
                     //_plotter.Plot("LOOKBACK_DAYS", LOOKBACK_DAYS);
                 }
+
+                var v = NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                yield return Bar.NewOHLC(
+                    this.GetType().Name, SimTime[0],
+                    v, v, v, v, 0);
             }
 
             //========== post processing ==========
@@ -233,8 +238,6 @@ namespace TuringTrader.BooksAndPubs
 
             // fitness value used for walk-forward-optimization
             FitnessValue = ModifiedSharpeRatio(VOL_FACT / 100.0);
-
-            yield break;
         }
         #endregion
     }
