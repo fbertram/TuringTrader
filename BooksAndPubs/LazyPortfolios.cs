@@ -193,6 +193,41 @@ namespace TuringTrader.BooksAndPubs
         public override string BENCH => Assets.PORTF_60_40;
         //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
     }
+#if false
+    public class Robbins_AllSeasonsPortfolio_2x : LazyPortfolio
+    {
+        public override string Name => "Robbins' All-Seasons Portfolio (2x Leverage)";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // see https://www.optimizedportfolio.com/all-weather-portfolio/
+            Tuple.Create(Assets.STOCKS_US_LG_CAP_2X,   0.30),  // 30% 2x S&P 500 (SSO)
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y_2X, 0.40),  // 40% 2x 20-25yr Treasuries (UBT)
+            Tuple.Create(Assets.BONDS_US_TREAS_10Y_2X, 0.15),  // 15% 2x 7-10yr Treasuries (UST)
+            Tuple.Create(Assets.GOLD_2X,               0.075), // 7.5% 2x Gold (UGL)
+            Tuple.Create("DIG",                        0.075), // 7.5% 2x Oil & Gas (DIG)
+        };
+        public override string BENCH => Assets.PORTF_60_40;
+        //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
+    }
+#endif
+#if false
+    public class Robbins_AllSeasonsPortfolio_3x : LazyPortfolio
+    {
+        public override string Name => "Robbins' All-Seasons Portfolio (2.89x Leverage)";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // replacing commodities w/ utilities
+            // see https://www.optimizedportfolio.com/all-weather-portfolio/
+            Tuple.Create(Assets.STOCKS_US_LG_CAP_3X,   0.289),  // 30% 3x S&P 500 (UPRO)
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y_3X, 0.385),  // 40% 3x 20-25yr Treasuries (TMF)
+            Tuple.Create(Assets.BONDS_US_TREAS_10Y_3X, 0.145),  // 15% 3x 7-10yr Treasuries (TYD)
+            Tuple.Create(Assets.GOLD_2X,               0.073),  // 7.5% 2x Gold (UGL)
+            Tuple.Create("UTSL",                       0.108),  // 7.5% 3x Utilities (UTSL)
+        };
+        public override string BENCH => Assets.PORTF_60_40;
+        //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
+    }
+#endif
     #endregion
     #region Harry Browne's Permanent Portfolio
     public class Browne_PermanentPortfolio : LazyPortfolio
@@ -209,6 +244,37 @@ namespace TuringTrader.BooksAndPubs
         };
         public override string BENCH => Assets.PORTF_60_40;
     }
+#if false
+    // NOTE: 3x Gold not available after summer 2020
+    public class Browne_PermanentPortfolio_2x : LazyPortfolio
+    {
+        public override string Name => "Browne's Permanent Portfolio (2x leveraged)";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // See https://www.optimizedportfolio.com/permanent-portfolio/
+            Tuple.Create(Assets.STOCKS_US_LG_CAP_3X,   0.167),  // 25% S&P 500
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y_3X, 0.167),  // 25% 20-25yr Treasuries
+            Tuple.Create(Assets.GOLD_3X,               0.166),  // 25% Gold
+            Tuple.Create(Assets.BONDS_US_TREAS_3Y,     0.500),  // 25% Short-Term Treasuries
+        };
+        public override string BENCH => Assets.PORTF_60_40;
+    }
+#endif
+#if false
+    public class Browne_PermanentPortfolio_2x : LazyPortfolio
+    {
+        public override string Name => "Browne's Permanent Portfolio (1.82x leveraged)";
+        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        {
+            // See https://www.optimizedportfolio.com/permanent-portfolio/
+            Tuple.Create(Assets.STOCKS_US_LG_CAP_3X,   0.15),  // 25% S&P 500 (UPRO)
+            Tuple.Create(Assets.BONDS_US_TREAS_30Y_3X, 0.15),  // 25% 20-25yr Treasuries (TMF)
+            Tuple.Create(Assets.GOLD_2X,               0.22),  // 25% Gold (UGL)
+            Tuple.Create(Assets.BONDS_US_TREAS_3Y,     0.48),  // 25% Short-Term Treasuries (BIL)
+        };
+        public override string BENCH => Assets.PORTF_60_40;
+    }
+#endif
     #endregion
 }
 

@@ -248,10 +248,10 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Logical Invest's Universal Investment Strategy (SPY/ TLT)";
 
-        public override string STOCKS => "SPY";
+        public override string STOCKS => "SPY"; // VFINX
 
         // LogicalInvest uses HEDGE here
-        public override string BONDS => "TLT";
+        public override string BONDS => "TLT"; // VUSTX
     }
     #endregion
     #region 3x Leveraged 'Hell on Fire'
