@@ -39,7 +39,7 @@ namespace TuringTrader
     /// <summary>
     /// Base class for C# plotter templates.
     /// </summary>
-    public abstract class ReportTemplate
+    public abstract class _ReportTemplate
     {
         #region chart configuration
         /// <summary>
@@ -1839,6 +1839,9 @@ namespace TuringTrader
         }
         #endregion
     }
+
+    public abstract class ReportTemplate : _ReportTemplate
+    { }
 }
 
 //==============================================================================
