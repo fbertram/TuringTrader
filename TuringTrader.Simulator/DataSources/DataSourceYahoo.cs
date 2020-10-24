@@ -294,7 +294,7 @@ namespace TuringTrader.Simulator
                     //if (endTime > (DateTime)LastTime)
                     //    endTime = (DateTime)LastTime;
 
-                    var cacheKey = new CacheId(null, "", 0,
+                    var cacheKey = new CacheId().AddParameters(
                         Info[DataSourceParam.nickName].GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());

@@ -119,7 +119,7 @@ namespace TuringTrader.Simulator
 
                     var algoNick = Info[DataSourceParam.nickName];
 
-                    var cacheKey = new CacheId(null, "", 0,
+                    var cacheKey = new CacheId().AddParameters(
                         algoNick.GetHashCode(), // _algoName.GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());

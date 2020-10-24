@@ -79,7 +79,7 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
-                var cacheKey = new CacheId(null, "", 0,
+                var cacheKey = new CacheId().AddParameters(
                     Info[DataSourceParam.nickName].GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());
