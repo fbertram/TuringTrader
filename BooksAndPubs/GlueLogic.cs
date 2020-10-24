@@ -185,6 +185,10 @@ namespace TuringTrader.Algorithms.Glue
         //----- portfolios
         public static readonly string PORTF_0 = "algorithm:ZeroReturn";
         public static readonly string PORTF_60_40 = "@60_40";
+
+        //----- leveraged
+        public static readonly string STOCKS_US_LG_CAP_3X = "SPXL";
+        public static readonly string BONDS_US_TREAS_30Y_3X = "TMF";
     }
     #endregion
     #region allocation tracker
