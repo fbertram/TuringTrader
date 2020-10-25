@@ -86,8 +86,10 @@ namespace TuringTrader.Simulator
             // keyCallStack = StackTraceId();
         }
 
-        private void ApplyParameters(params int[] parameterIds)
+        private void ApplyParameters(CacheId parentId, params int[] parameterIds)
         {
+            keyParameters = parentId != null ? parentId.keyParameters : SEED;
+
             foreach (var id in parameterIds)
                 keyParameters = CombineId(keyParameters, id);
         }
@@ -130,8 +132,7 @@ namespace TuringTrader.Simulator
         public CacheId(CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
             ApplyCallStack(parentId, memberName, lineNumber);
-
-            keyParameters = SEED;
+            ApplyParameters(parentId);
         }
 
 #if true
@@ -147,9 +148,7 @@ namespace TuringTrader.Simulator
         public CacheId(CacheId parentId, string memberName, int lineNumber, params int[] parameterIds)
         {
             ApplyCallStack(parentId, memberName, lineNumber);
-
-            keyParameters = SEED;
-            ApplyParameters(parameterIds);
+            ApplyParameters(parentId, parameterIds);
         }
 #endif
 
@@ -173,7 +172,9 @@ namespace TuringTrader.Simulator
         /// <returns>new cache id</returns>
         public CacheId AddParameters(params int[] parameterIds)
         {
-            return new CacheId(this).AddParameters(parameterIds);
+            var id = new CacheId(this);
+            id.ApplyParameters(id, parameterIds);
+            return id;
         }
         #endregion
     }
@@ -182,9 +183,8 @@ namespace TuringTrader.Simulator
     /// <summary>
     /// Cache template class. The cache is at the core of TuringTrader's
     /// auto-magic indicator objects, as well as the the data sources. Cache
-    /// objects are accessed via a cryptographic key, which is typically
-    /// created with either the object.GetHashCode() method, or the
-    /// Cache.UniqueId() method.
+    /// objects are accessed via a cryptographic key, which is created by
+    /// the CacheId class.
     /// </summary>
     /// <typeparam name="T">type of cache</typeparam>
     public static class Cache<T>
