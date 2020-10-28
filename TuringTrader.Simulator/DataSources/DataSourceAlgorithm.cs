@@ -65,11 +65,15 @@ namespace TuringTrader.Simulator
             public DataSourceAlgorithm(Algorithm algo) : base(new Dictionary<DataSourceParam, string>())
             {
                 _algo = algo;
-                Info[DataSourceParam.nickName] 
+
+                Info[DataSourceParam.nickName]
                     = Info[DataSourceParam.nickName2]
                     = Info[DataSourceParam.ticker]
                     = Info[DataSourceParam.symbolAlgo]
-                    = string.Format("algorithm:{0}", _algo.GetType().Name);
+                    = string.Format("algorithm:{0}{1}",
+                        _algo.GetType().Name,
+                        _algo.GetType().Name != _algo.Name ? ";" + _algo.Name : "");
+
                 Info[DataSourceParam.name] = _algo.Name;
             }
             #endregion
@@ -85,7 +89,7 @@ namespace TuringTrader.Simulator
 #if true
                 _algo.IsDataSource = true;
 
-                if (_algo.IsChildAlgorithm)
+                if (_algo.IsChildAlgorithm || _algo.SyncDataSource)
                 {
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent

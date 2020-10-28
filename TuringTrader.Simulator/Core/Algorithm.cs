@@ -139,6 +139,15 @@ namespace TuringTrader.Simulator
         /// </summary>
         public bool IsDataSource { get; set; } = false;
         #endregion
+        #region public bool SyncDataSource
+        /// <summary>
+        /// Property indicating that this algorithm should be
+        /// run synchronously with parent, if used as a
+        /// data source. This is similar to running as a
+        /// child algorithm.
+        /// </summary>
+        public bool SyncDataSource { get; set; } = false;
+        #endregion
         #region public IEnumerable<Algorithm> ChildAlgorithms
         /// <summary>
         /// Enumeration of child algorithms.
