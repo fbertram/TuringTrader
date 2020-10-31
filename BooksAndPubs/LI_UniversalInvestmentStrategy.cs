@@ -171,7 +171,7 @@ namespace TuringTrader.BooksAndPubs
             //========== initialization ==========
 
             StartTime = startTime ?? Globals.START_TIME;
-            EndTime = endTime ?? (Globals.END_TIME - TimeSpan.FromDays(5));
+            EndTime = endTime ?? Globals.END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(90);
 
             CommissionPerShare = Globals.COMMISSION;
