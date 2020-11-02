@@ -37,7 +37,7 @@ using TuringTrader.Algorithms.Glue;
 namespace TuringTrader.BooksAndPubs
 {
     #region common algorithm core
-    public abstract class Connors_ShortTermTrading_Core : Algorithm
+    public abstract class Connors_ShortTermTrading_Core : AlgorithmPlusGlue
     {
         #region internal data
         protected virtual string MARKET => "SPY";
@@ -48,15 +48,6 @@ namespace TuringTrader.BooksAndPubs
 #if INCLUDE_TRIN_STRATEGY
         private virtual string TRIN => "#SPXTRIN";
 #endif
-
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Connors_ShortTermTrading_Core()
-        {
-            _plotter = new Plotter(this);
-        }
         #endregion
 
         protected abstract int Rules(Instrument market);
@@ -86,19 +77,19 @@ namespace TuringTrader.BooksAndPubs
                 if (!HasInstrument(market) || !HasInstrument(volatility))
                     continue;
 
-                if (!_alloc.Allocation.ContainsKey(market.Instrument))
-                    _alloc.Allocation[market.Instrument] = 0.0;
+                if (!Alloc.Allocation.ContainsKey(market.Instrument))
+                    Alloc.Allocation[market.Instrument] = 0.0;
 
                 int buySell = Rules(market.Instrument);
 
-                _alloc.LastUpdate = SimTime[0];
+                Alloc.LastUpdate = SimTime[0];
 
                 //----- enter positions
 
                 if (market.Instrument.Position == 0 && buySell != 0)
                 {
                     int numShares = buySell * (int)Math.Floor(NetAssetValue[0] / market.Instrument.Close[0]);
-                    _alloc.Allocation[market.Instrument] += buySell;
+                    Alloc.Allocation[market.Instrument] += buySell;
                     market.Instrument.Trade(numShares, OrderType.closeThisBar);
                 }
 
@@ -106,7 +97,7 @@ namespace TuringTrader.BooksAndPubs
 
                 else if (market.Instrument.Position != 0 && buySell != 0)
                 {
-                    _alloc.Allocation[market.Instrument] = 0.0;
+                    Alloc.Allocation[market.Instrument] = 0.0;
                     market.Instrument.Trade(-market.Instrument.Position, ORDER_TYPE);
                 }
 
@@ -116,8 +107,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, market.Instrument);
                     _plotter.AddStrategyHoldings(this, market.Instrument);
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
                 }
             }
 
@@ -125,7 +116,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing && TradingDays > 0)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);

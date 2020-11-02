@@ -41,7 +41,7 @@ namespace TuringTrader.BooksAndPubs
 {
     //---------- core strategies
     #region Weekly Rotation
-    public class Bensdorp_30MinStockTrader_WR : Algorithm
+    public class Bensdorp_30MinStockTrader_WR : AlgorithmPlusGlue
     {
         public override string Name => "Bensdorp's Weekly Rotation";
 
@@ -58,15 +58,6 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
         private static readonly string SPX = Assets.STOCKS_US_LG_CAP;
-
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Bensdorp_30MinStockTrader_WR()
-        {
-            _plotter = new Plotter(this);
-        }
         #endregion
 
         #region public override void Run()
@@ -187,8 +178,8 @@ namespace TuringTrader.BooksAndPubs
                         .ToList();
 #endif
 
-                    _alloc.LastUpdate = SimTime[0];
-                    _alloc.Allocation.Clear();
+                    Alloc.LastUpdate = SimTime[0];
+                    Alloc.Allocation.Clear();
                     foreach (var i in Instruments)
                     {
                         double targetPercentage = nextHoldings.Contains(i)
@@ -197,7 +188,7 @@ namespace TuringTrader.BooksAndPubs
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * targetPercentage / i.Close[0]);
 
                         if (targetPercentage != 0.0)
-                            _alloc.Allocation[i] = targetPercentage;
+                            Alloc.Allocation[i] = targetPercentage;
 
                         i.Trade(targetShares - i.Position);
                     }
@@ -217,8 +208,8 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("Exposure", Instruments.Sum(i => i.Position * i.Close[0]) / NetAssetValue[0]);
                     //_plotter.Plot("Choices", nn);
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
 
                     if (IsDataSource)
                     {
@@ -234,7 +225,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);

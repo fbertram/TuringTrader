@@ -62,7 +62,7 @@ using TuringTrader.Algorithms.Glue;
 namespace TuringTrader.BooksAndPubs
 {
 
-    public abstract class Keller_FAA_Core : Algorithm
+    public abstract class Keller_FAA_Core : AlgorithmPlusGlue
     {
         public override string Name => string.Format(
             "Keller's FAA Strategy {0}/{1}; {2}m/{3}m/{4}m; {5}/{6}/{7}%",
@@ -125,20 +125,12 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         //private readonly string BENCHMARK = Assets.PORTF_60_40;
         private readonly string BENCHMARK = "algo:Keller_FAA_EW";
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
         protected struct indicatorValues
         {
             public double r;
             public double a;
             public double v;
             public double c;
-        }
-        #endregion
-        #region ctor
-        public Keller_FAA_Core()
-        {
-            _plotter = new Plotter(this);
         }
         #endregion
 
@@ -319,7 +311,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);

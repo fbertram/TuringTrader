@@ -37,7 +37,6 @@ namespace TuringTrader.BooksAndPubs
     public abstract class LazyPortfolio : AlgorithmPlusGlue
     {
         #region internal data
-        private AllocationTracker _alloc = new AllocationTracker();
         private List<double> _nav = new List<double>();
         private Dictionary<int, double> _minCagr = new Dictionary<int, double>();
         private Dictionary<int, double> _maxCagr = new Dictionary<int, double>();
@@ -76,12 +75,12 @@ namespace TuringTrader.BooksAndPubs
                 //if (SimTime[0].Date.DayOfWeek > NextSimTime.Date.DayOfWeek)
                 if (!REBAL_MONTHLY || SimTime[0].Date.Month != NextSimTime.Date.Month)
                 {
-                    _alloc.LastUpdate = SimTime[0];
+                    Alloc.LastUpdate = SimTime[0];
                     foreach (var a in ALLOCATION)
                     {
                         var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
                         var i = FindInstrument(a.Item1);
-                        _alloc.Allocation[i] = w;
+                        Alloc.Allocation[i] = w;
 
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * w / i.Close[0]);
                         i.Trade(targetShares - i.Position);
@@ -140,7 +139,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing && !IsDataSource)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);

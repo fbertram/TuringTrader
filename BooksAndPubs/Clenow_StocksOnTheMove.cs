@@ -141,7 +141,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = Globals.END_TIME;
 #endif
 
-            Deposit(IsChildAlgorithm ? 0.0 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             var all = AddDataSources(UNIVERSE.Constituents);

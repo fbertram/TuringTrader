@@ -81,7 +81,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // paper does not consider trade commissions
 
             var riskyUniverse = AddDataSources(RISKY_UNIVERSE);

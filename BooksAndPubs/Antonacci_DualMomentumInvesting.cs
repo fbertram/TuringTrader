@@ -90,7 +90,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
 
             // assets we can trade
