@@ -89,7 +89,7 @@ namespace TuringTrader.Simulator
 #if true
                 _algo.IsDataSource = true;
 
-                if (_algo.IsChildAlgorithm || _algo.SyncDataSource)
+                if (_algo.CanRunAsChild)
                 {
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent
@@ -202,6 +202,13 @@ namespace TuringTrader.Simulator
                 Data = data;
 #endif
             }
+            #endregion
+
+            #region public bool IsAlgorithm
+            public override bool IsAlgorithm => true;
+            #endregion
+            #region public Algorithm Algorithm
+            public override Algorithm Algorithm => _algo;
             #endregion
         }
     }

@@ -95,40 +95,11 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region protected DataSource AddChildAlgorithm(Algorithm algo)
+        #region public bool CanRunAsChild
         /// <summary>
-        /// Add a subclassed algorithm to simulator. Child algorithms can be
-        /// used to create portfolios of portfolios. Note that a child algorithm 
-        /// is different from an algorithm data source: child algorithms make
-        /// use of lazy execution. In turn, algorithm data sources run before
-        /// the algorithm that uses them.
+        /// True, if this algorithm can be run as a child algorithm.
         /// </summary>
-        /// <param name="algo">subclassed algorithm</param>
-        /// <returns>newly created data source</returns>
-        protected DataSource AddChildAlgorithm(Algorithm algo)
-        {
-            DataSource newSource = DataSource.New(algo);
-            AddDataSource(newSource);
-
-            algo.ParentAlgorithm = this;
-            _childAlgorithms.Add(algo);
-
-            return newSource;
-        }
-        #endregion
-        #region protected Algorithm ParentAlgorithm
-        /// <summary>
-        /// Parent algorithm. Null, if this instance is not a child
-        /// of another algorithm.
-        /// </summary>
-        protected Algorithm ParentAlgorithm { get; private set; } = null;
-        #endregion
-        #region public bool IsChildAlgorithm
-        /// <summary>
-        /// Property indicating if this algorithm is a child of
-        /// another algorithm.
-        /// </summary>
-        public bool IsChildAlgorithm => ParentAlgorithm != null;
+        public virtual bool CanRunAsChild => false;
         #endregion
         #region public bool IsDataSource
         /// <summary>
@@ -138,49 +109,6 @@ namespace TuringTrader.Simulator
         /// of plots and logs.
         /// </summary>
         public bool IsDataSource { get; set; } = false;
-        #endregion
-        #region public bool SyncDataSource
-        /// <summary>
-        /// Property indicating that this algorithm should be
-        /// run synchronously with parent, if used as a
-        /// data source. This is similar to running as a
-        /// child algorithm.
-        /// </summary>
-        public bool SyncDataSource { get; set; } = false;
-        #endregion
-        #region public IEnumerable<Algorithm> ChildAlgorithms
-        /// <summary>
-        /// Enumeration of child algorithms.
-        /// </summary>
-        public IEnumerable<Algorithm> ChildAlgorithms => _childAlgorithms;
-        #endregion
-
-        #region public void SetAllocation(double totalDollars)
-        /// <summary>
-        /// Set capital allocation for a child algorithm and move money
-        /// accordingly between the parent and child algorithm. Note that
-        /// setting allocations this way results in a zero-sum between
-        /// the parent and the child.
-        /// </summary>
-        /// <param name="totalDollars">total dollar amount to allocate</param>
-        public void SetAllocation(double totalDollars)
-        {
-            if (!IsChildAlgorithm)
-                throw new Exception("Algorithm: SetAllocation only valid for child algorithms");
-
-            var transferAmount = totalDollars - NetAssetValue[0];
-
-            if (transferAmount >= 0.0)
-            {
-                this.Deposit(transferAmount);
-                ParentAlgorithm.Withdraw(transferAmount);
-            }
-            else
-            {
-                this.Withdraw(-transferAmount);
-                ParentAlgorithm.Deposit(-transferAmount);
-            }
-        }
         #endregion
 
         #region public virtual void Run()

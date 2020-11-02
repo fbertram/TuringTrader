@@ -4,7 +4,7 @@
 // Description: Simulator engine core
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -20,6 +20,10 @@
 //              License along with TuringTrader. If not, see 
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
+
+// PRINT_ORDERS: if true, print orders to Output. Use this to debug some
+// hard-to-find algorithm issues.
+//#define PRINT_ORDERS
 
 #region libraries
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -45,6 +49,13 @@ namespace TuringTrader.Simulator
         #region internal helpers
         private void _execOrder(Order ticket)
         {
+#if PRINT_ORDERS
+            if (ticket.Type != OrderType.cash)
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2} {3}x {4}", 
+                    SimTime[0], Name,
+                    ticket.Quantity > 0 ? "Buy" : "Sell", ticket.Quantity, ticket.Instrument.Symbol);
+#endif
+
             if (ticket.Type == OrderType.cash)
             {
                 // to make things similar to stocks, a positive quantity

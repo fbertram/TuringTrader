@@ -1,8 +1,11 @@
 # Version History
 
 - 0.13 - work in progress
+  - algorithms
+    - breaking change: new interface for child algorithms
   - data sources
     - fix issue w/ child algorithms running one bar ahead of main
+    - add methods to identify algorithm data sources
   - indicators
     - fix issue w/ some basic indicators ignoring parent cache id
   - optimizer
