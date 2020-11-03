@@ -71,7 +71,6 @@ namespace TuringTrader.BooksAndPubs
         protected virtual int IsAllocValid(Dictionary<Instrument, double> alloc, double ret, double vol) => 1;
         protected virtual double VolatilityOverlay(ITimeSeries<double> rawPortfolioReturns) => 1.0;
         protected virtual Dictionary<Instrument, double> Tranching(Dictionary<Instrument, double> weights) => weights;
-        protected virtual IEnumerable<DataSource> AddDataSources(IEnumerable<object> assets) => base.AddDataSources((IEnumerable<string>)assets);
         #endregion
         #region asset allocation optimizer
         protected Dictionary<Instrument, double> Optimize(IEnumerable<Instrument> assets, Instrument tbill)
@@ -169,7 +168,9 @@ namespace TuringTrader.BooksAndPubs
             CommissionPerShare = Globals.COMMISSION;
             Deposit(Globals.INITIAL_CAPITAL);
 
-            var assets = AddDataSources(ASSETS);
+            var assets = ASSETS
+                .Select(o => AddDataSource(o))
+                .ToList();
             var tbill = TBILL != null ? AddDataSource(TBILL) : null;
             var bench = AddDataSource(BENCH);
 
