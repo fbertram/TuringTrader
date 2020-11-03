@@ -4,7 +4,7 @@
 // Description: Simple benchmarking portfolios.
 // History:     2019xii04, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -36,21 +36,15 @@ namespace TuringTrader.BooksAndPubs
     #region LazyPortfolio core
     public abstract class LazyPortfolio : AlgorithmPlusGlue
     {
-        #region internal data
-        private List<double> _nav = new List<double>();
-        private Dictionary<int, double> _minCagr = new Dictionary<int, double>();
-        private Dictionary<int, double> _maxCagr = new Dictionary<int, double>();
-        private List<int> _cagrPeriods = new List<int> { 1 * 252, 5 * 252, 10 * 252, 20 * 252 };
-        #endregion
         #region inputs
-        public abstract HashSet<Tuple<string, double>> ALLOCATION { get; }
+        public abstract HashSet<Tuple<object, double>> ALLOCATION { get; }
         public virtual string BENCH => Assets.PORTF_60_40;
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
-        public virtual bool REBAL_MONTHLY => true;
+        public virtual bool IsTradingDay => SimTime[0].Month != NextSimTime.Month;
         #endregion
 
-        #region public override void Run()
+        #region IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
@@ -62,23 +56,24 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = 0.0; // lazy portfolios w/o commissions
 
-            var universe = AddDataSources(ALLOCATION.Select(u => u.Item1));
+            var allocation = ALLOCATION
+                .Select(a => Tuple.Create(AddDataSource(a.Item1), a.Item2))
+                .ToList();
             var bench = AddDataSource(BENCH);
 
             //========== simulation loop ==========
 
             foreach (var s in SimTimes)
             {
-                if (!HasInstruments(universe) || !HasInstrument(bench))
+                if (!HasInstruments(allocation.Select(a => a.Item1)) || !HasInstrument(bench))
                     continue;
 
-                //if (SimTime[0].Date.DayOfWeek > NextSimTime.Date.DayOfWeek)
-                if (!REBAL_MONTHLY || SimTime[0].Date.Month != NextSimTime.Date.Month)
+                if (IsTradingDay)
                 {
-                    foreach (var a in ALLOCATION)
+                    foreach (var a in allocation)
                     {
                         var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
-                        var i = FindInstrument(a.Item1);
+                        var i = a.Item1.Instrument;
                         Alloc.Allocation[i] = w;
 
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * w / i.Close[0]);
@@ -95,46 +90,13 @@ namespace TuringTrader.BooksAndPubs
                 if (!IsOptimizing && !IsDataSource && TradingDays > 0)
                 {
                     _plotter.AddNavAndBenchmark(this, bench.Instrument);
-                    _plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
+                    _plotter.AddStrategyHoldings(this, allocation.Select(a => a.Item1.Instrument));
                 }
-
-#if false
-                if (_nav.Count() == 0)
-                {
-                    Output.WriteLine("First simulation timestamp {0:MM/dd/yyyy}", SimTime[0]);
-                    foreach (var ds in universe)
-                        Output.WriteLine("  {0}: start at {1:MM/dd/yyyy}", ds.Instrument.Name, ds.FirstTime);
-                }
-
-                _nav.Add(NetAssetValue[0]);
-
-                foreach (var d in _cagrPeriods)
-                {
-                    if (_nav.Count > d)
-                    {
-                        var cagr = Math.Exp(252.0 / d * Math.Log(_nav.Last() / _nav[_nav.Count() - 1 - d])) - 1.0;
-                        if (!_minCagr.ContainsKey(d))
-                        {
-                            _minCagr[d] = cagr;
-                            _maxCagr[d] = cagr;
-                        } 
-                        else
-                        {
-                            _minCagr[d] = Math.Min(_minCagr[d], cagr);
-                            _maxCagr[d] = Math.Max(_maxCagr[d], cagr);
-                        }
-                    }
-                }
-#endif
             }
 
             //========== post processing ==========
-#if false
-            foreach (var d in _minCagr.Keys)
-            {
-                Output.WriteLine("{0}-year return: min = {1:P2}, max = {2:P2}", d / 252, _minCagr[d], _maxCagr[d]);
-            }
-#endif
 
             if (!IsOptimizing && !IsDataSource)
             {
@@ -156,9 +118,9 @@ namespace TuringTrader.BooksAndPubs
     public class Benchmark_Zero : LazyPortfolio
     {
         public override string Name => "All-Cash/ Zero-Return";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create(Assets.STOCKS_US_LG_CAP, 0.00),
+            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP, 0.00),
         };
         public override string BENCH => Assets.STOCKS_US_LG_CAP;
     }
@@ -167,10 +129,10 @@ namespace TuringTrader.BooksAndPubs
     public class Benchmark_60_40 : LazyPortfolio
     {
         public override string Name => "Vanilla 60/40";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create(Assets.STOCKS_US_LG_CAP, 0.60),
-            Tuple.Create(Assets.BONDS_US_TOTAL, 0.40),
+            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP, 0.60),
+            new Tuple<object, double>(Assets.BONDS_US_TOTAL, 0.40),
         };
         public override string BENCH => Assets.STOCKS_US_LG_CAP;
     }
@@ -179,14 +141,14 @@ namespace TuringTrader.BooksAndPubs
     public class Robbins_AllSeasonsPortfolio : LazyPortfolio
     {
         public override string Name => "Robbins' All-Seasons Portfolio";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
             // See Tony Robbins "Money, Master the Game", Chapter 5
-            Tuple.Create(Assets.STOCKS_US_LG_CAP,   0.30),  // 30% S&P 500
-            Tuple.Create(Assets.BONDS_US_TREAS_10Y, 0.15),  // 15% 7-10yr Treasuries
-            Tuple.Create(Assets.BONDS_US_TREAS_30Y, 0.40),  // 40% 20-25yr Treasuries
-            Tuple.Create(Assets.GOLD,               0.075), // 7.5% Gold
-            Tuple.Create(Assets.COMMODITIES,        0.075), // 7.5% Commodities
+            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP,   0.30),  // 30% S&P 500
+            new Tuple<object, double>(Assets.BONDS_US_TREAS_10Y, 0.15),  // 15% 7-10yr Treasuries
+            new Tuple<object, double>(Assets.BONDS_US_TREAS_30Y, 0.40),  // 40% 20-25yr Treasuries
+            new Tuple<object, double>(Assets.GOLD,               0.075), // 7.5% Gold
+            new Tuple<object, double>(Assets.COMMODITIES,        0.075), // 7.5% Commodities
         };
         public override string BENCH => Assets.PORTF_60_40;
         //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
@@ -231,14 +193,14 @@ namespace TuringTrader.BooksAndPubs
     public class Browne_PermanentPortfolio : LazyPortfolio
     {
         public override string Name => "Browne's Permanent Portfolio";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
             // See Harry Browne, Fail Safe Investing
-            Tuple.Create(Assets.STOCKS_US_LG_CAP,   0.25),  // 25% S&P 500
-            Tuple.Create(Assets.BONDS_US_TREAS_30Y, 0.25),  // 25% 20-25yr Treasuries
-            //Tuple.Create(Assets.BONDS_US_TREAS_3M,  0.25),  // 25% Treasury Bills
-            Tuple.Create(Assets.BONDS_US_TREAS_3Y,  0.25),  // 25% Short-Term Treasuries
-            Tuple.Create(Assets.GOLD,               0.25),  // 25% Gold
+            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP,   0.25),  // 25% S&P 500
+            new Tuple<object, double>(Assets.BONDS_US_TREAS_30Y, 0.25),  // 25% 20-25yr Treasuries
+            //new Tuple<object, double>(Assets.BONDS_US_TREAS_3M,  0.25),  // 25% Treasury Bills
+            new Tuple<object, double>(Assets.BONDS_US_TREAS_3Y,  0.25),  // 25% Short-Term Treasuries
+            new Tuple<object, double>(Assets.GOLD,               0.25),  // 25% Gold
         };
         public override string BENCH => Assets.PORTF_60_40;
     }

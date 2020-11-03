@@ -374,15 +374,15 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Keller's FAA: EW Benchmark";
 
-        private HashSet<Tuple<string, double>> _allocation;
+        private HashSet<Tuple<object, double>> _allocation;
         public Keller_FAA_EW()
         {
-            _allocation = new HashSet<Tuple<string, double>>();
+            _allocation = new HashSet<Tuple<object, double>>();
 
             foreach (var a in Keller_FAA_U7.Universe)
-                _allocation.Add(Tuple.Create(a, 0.0));
+                _allocation.Add(new Tuple<object, double>(a, 0.0));
         }
-        public override HashSet<Tuple<string, double>> ALLOCATION => _allocation;
+        public override HashSet<Tuple<object, double>> ALLOCATION => _allocation;
         public override string BENCH => Assets.PORTF_60_40;
     }
     #endregion

@@ -545,10 +545,10 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Bensdorp's WR + MRS";
 
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_WR",  0.50),
-            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
+            new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_WR",  0.50),
+            new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
         };
         public override string BENCH => Assets.STOCKS_US_LG_CAP;
 
@@ -561,10 +561,10 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Bensdorp's MRL + MRS";
 
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRL", 0.50),
-            Tuple.Create("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
+            new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRL", 0.50),
+            new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
         };
         public override string BENCH => Assets.STOCKS_US_LG_CAP;
 

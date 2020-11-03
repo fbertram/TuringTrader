@@ -684,12 +684,12 @@ namespace TuringTrader.BooksAndPubs
     public class Connors_AlphaFormula_NonLeveragedPortfolio : LazyPortfolio
     {
         public override string Name => "Connors' Alpha Portfolio (No Leverage)";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("algo:Connors_AlphaFormula_RisingAssets",        0.30),
-            Tuple.Create("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.30),
-            Tuple.Create("algo:Connors_AlphaFormula_DynamicTreasuries",   0.20),
-            Tuple.Create("algo:Connors_AlphaFormula_EtfAvalanches",       0.20),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_RisingAssets",        0.30),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.30),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_DynamicTreasuries",   0.20),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.20),
         };
 
         public override string BENCH => Assets.PORTF_60_40;
@@ -704,12 +704,12 @@ namespace TuringTrader.BooksAndPubs
     public class Connors_AlphaFormula_LeveragedPortfolio : LazyPortfolio
     {
         public override string Name => "Connors' Alpha Portfolio (With 1.5x Leverage)";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("algo:Connors_AlphaFormula_RisingAssets",        0.45),
-            Tuple.Create("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.45),
-            Tuple.Create("algo:Connors_AlphaFormula_DynamicTreasuries",   0.30),
-            Tuple.Create("algo:Connors_AlphaFormula_EtfAvalanches",       0.30),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_RisingAssets",        0.45),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_WeeklyMeanReversion", 0.45),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_DynamicTreasuries",   0.30),
+            new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.30),
         };
         public override string BENCH => Assets.PORTF_60_40;
 

@@ -251,10 +251,10 @@ namespace TuringTrader.BooksAndPubs
     public class Livingston_MuscularPortfolios_BabyBear : LazyPortfolio
     {
         public override string Name => "Livingston's Baby Bear";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("VT",   0.50),
-            Tuple.Create("splice:AGG,BND", 0.50),
+            new Tuple<object, double>("VT",   0.50),
+            new Tuple<object, double>("splice:AGG,BND", 0.50),
         };
         public override string BENCH => Assets.PORTF_60_40;
     }

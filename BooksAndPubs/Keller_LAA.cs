@@ -359,11 +359,11 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Keller's LAA: constructed World ETF (named WRLD)";
 
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("SPY", 3.0 / 6.0),
-            Tuple.Create("VEA", 2.0 / 6.0),
-            Tuple.Create("VWO", 1.0 / 6.0),
+            new Tuple<object, double>("SPY", 3.0 / 6.0),
+            new Tuple<object, double>("VEA", 2.0 / 6.0),
+            new Tuple<object, double>("VWO", 1.0 / 6.0),
         };
         public override string BENCH => Assets.PORTF_60_40;
     }
