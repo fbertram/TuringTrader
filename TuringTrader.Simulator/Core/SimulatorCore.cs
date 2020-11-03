@@ -618,14 +618,14 @@ namespace TuringTrader.Simulator
         public bool IsLastBar = false;
         #endregion
 
-        #region protected DataSource AddDataSource(string nickname)
+        #region protected DataSource AddDataSource(...)
         /// <summary>
-        /// Create new data source and add to simulator. If the simulator 
-        /// already has a data source with the given nickname, the call 
-        /// is ignored.
+        /// Create new data source and attach it to the simulator. If the 
+        /// simulator already has a data source with the given nickname
+        /// attached, the call is ignored.
         /// </summary>
-        /// <param name="nickname">nickname of data source</param>
-        /// <returns>newly created data source</returns>
+        /// <param name="nickname">nickname to create data source for</param>
+        /// <returns>data source created and attached</returns>
         protected DataSource AddDataSource(string nickname)
         {
             string nickLower = nickname; //.ToLower();
@@ -638,32 +638,33 @@ namespace TuringTrader.Simulator
             _dataSources.Add(newSource);
             return newSource;
         }
-        #endregion
-        #region protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
+
         /// <summary>
-        /// Add multiple data sources at once and return an enumeration
-        /// of datasources. If the simulator already has data sources
-        /// with any of the given nicknames, those data sources will be
-        /// re-used.
+        /// Create new data source and attach it to the simulator. If the
+        /// simulator already has a data source representing the given algo
+        /// attached, the call call is ignored.
         /// </summary>
-        /// <param name="nicknames">enumerable of nicknames</param>
-        /// <returns>enumerable of newly created data sources</returns>
-        protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
+        /// <param name="algo">algorithm to create data source for</param>
+        /// <returns>data source created and attached</returns>
+        protected DataSource AddDataSource(Algorithm algo)
         {
-            List<DataSource> retval = new List<DataSource>();
+            foreach (DataSource source in _dataSources)
+                if (source.Algorithm == algo)
+                    return source;
 
-            foreach (var nickname in nicknames)
-                retval.Add(AddDataSource(nickname));
-
-            return retval;
+            DataSource newSource = DataSource.New(algo);
+            _dataSources.Add(newSource);
+            return newSource;
         }
-        #endregion
-        #region protected void AddDataSource(DataSource dataSource)
+
         /// <summary>
-        /// Add data source. If the data source already exists, the call is ignored.
+        /// Attach existing data source to the simulator. If this data source
+        /// has already been attached to the simulator, the call is ignored.
+        /// This call is typically used to attach custom data sources, which
+        /// have been created without using TuringTrader's object factory.
         /// </summary>
         /// <param name="dataSource">new data source</param>
-        /// <returns>data source</returns>
+        /// <returns>data source attached</returns>
         protected DataSource AddDataSource(DataSource dataSource)
         {
             if (_dataSources.Contains(dataSource))
@@ -679,6 +680,43 @@ namespace TuringTrader.Simulator
             _dataSources.Add(dataSource);
 
             return dataSource;
+        }
+
+        /// <summary>
+        /// Create new data source and attach it to the simulator. This 
+        /// overload allows to flexibly create data sources from various types.
+        /// </summary>
+        /// <param name="obj">nickname, algorithm object, or data source object</param>
+        /// <returns>data source created and attached</returns>
+        protected DataSource AddDataSource(object obj)
+        {
+            if (obj as string != null)
+                return AddDataSource((string)obj);
+            else if (obj as Algorithm != null)
+                return AddDataSource((Algorithm)obj);
+            else if (obj as DataSource != null)
+                return AddDataSource((DataSource)obj);
+
+            throw new Exception("AddDataSource: invalid type for parameter 'obj'");
+        }
+        #endregion
+        #region protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
+        /// <summary>
+        /// Add multiple data sources at once and return an enumeration
+        /// of data sources. If the simulator already has data sources
+        /// with any of the given nicknames, those data sources will be
+        /// re-used.
+        /// </summary>
+        /// <param name="nicknames">enumerable of nicknames</param>
+        /// <returns>enumerable of newly created data sources</returns>
+        protected IEnumerable<DataSource> AddDataSources(IEnumerable<string> nicknames)
+        {
+            List<DataSource> retval = new List<DataSource>();
+
+            foreach (var nickname in nicknames)
+                retval.Add(AddDataSource(nickname));
+
+            return retval;
         }
         #endregion
 
@@ -697,7 +735,7 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region protected bool HasInstrument(string nickname)
+        #region protected bool HasInstrument(...)
         /// <summary>
         /// Check, if the we have an instrument with the given nickname. Use this
         /// to check if an instrument is available for a given data source.
@@ -708,8 +746,7 @@ namespace TuringTrader.Simulator
         {
             return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
         }
-        #endregion
-        #region protected bool HasInstrument(DataSource ds)
+
         /// <summary>
         /// Check if we have an instrument for the given datasource.
         /// </summary>
@@ -720,7 +757,7 @@ namespace TuringTrader.Simulator
             return ds.Instrument != null;
         }
         #endregion
-        #region protected bool HasInstruments(IEnumerable<string> nicknames)
+        #region protected bool HasInstruments(...)
         /// <summary>
         /// Check, if we have instruments for all given nicknames
         /// </summary>
@@ -733,8 +770,7 @@ namespace TuringTrader.Simulator
                     true,
                     (prev, nick) => prev && HasInstrument(nick));
         }
-        #endregion
-        #region protected bool HasInstruments(IEnumerable<DataSource> sources)
+
         /// <summary>
         /// Check, if we have instruments for all given data sources
         /// </summary>
@@ -772,7 +808,7 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
-        #region protected List<Instrument> OptionChain(string)
+        #region protected List<Instrument> OptionChain(...)
         /// <summary>
         /// Retrieve option chain by its nickname. This will return a list of
         /// all instruments with the given nickname, marked as options, and with 
@@ -799,8 +835,7 @@ namespace TuringTrader.Simulator
 
             return optionChain;
         }
-        #endregion
-        #region protected List<Instrument> OptionChain(DataSource ds)
+
         /// <summary>
         /// Retrieve option chain by its data source. This will return a list of
         /// all instruments with the given data source, marked as options, and with 
