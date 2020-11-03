@@ -110,7 +110,6 @@ namespace TuringTrader.BooksAndPubs
                     Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
                     // adjust all positions
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var i in pf.Weights.Keys)
                     {
                         Alloc.Allocation[i] = pf.Weights[i];

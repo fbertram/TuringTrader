@@ -74,8 +74,6 @@ namespace TuringTrader.BooksAndPubs
 
                 double percentToBuySell = Rules(market.Instrument);
 
-                Alloc.LastUpdate = SimTime[0];
-
                 //----- entries
 
                 if (market.Instrument.Position >= 0 && percentToBuySell > 0

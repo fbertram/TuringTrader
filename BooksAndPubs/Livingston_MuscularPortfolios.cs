@@ -188,8 +188,6 @@ namespace TuringTrader.BooksAndPubs
                 // rebalance once per month, and only if we need adjustments exceeding 20%
                 if (REBAL_TODAY(maxOff))
                 {
-                    Alloc.LastUpdate = SimTime[0];
-
                     foreach (var i in menu.Select(ds => ds.Instrument))
                     {
                         Alloc.Allocation[i] = top3.Contains(i) ? targetPercentage : 0.0;

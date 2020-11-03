@@ -159,7 +159,6 @@ namespace TuringTrader.BooksAndPubs
                     foreach (Instrument i in topInstruments)
                         weights[i] += (1.0 - CF) / t;
 
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (Instrument i in Instruments)
                     {
                         // skip instruments not in our relevant universes

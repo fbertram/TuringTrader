@@ -72,14 +72,6 @@ namespace TuringTrader.BooksAndPubs
         protected virtual double VolatilityOverlay(ITimeSeries<double> rawPortfolioReturns) => 1.0;
         protected virtual Dictionary<Instrument, double> Tranching(Dictionary<Instrument, double> weights) => weights;
         protected virtual IEnumerable<DataSource> AddDataSources(IEnumerable<object> assets) => base.AddDataSources((IEnumerable<string>)assets);
-        protected virtual void TrackAllocation(Dictionary<Instrument, double> weights)
-        {
-            if (Alloc.LastUpdate != SimTime[0])
-                Alloc.LastUpdate = SimTime[0];
-
-            foreach (var i in weights.Keys)
-                Alloc.Allocation[i] = weights[i];
-        }
         #endregion
         #region asset allocation optimizer
         protected Dictionary<Instrument, double> Optimize(IEnumerable<Instrument> assets, Instrument tbill)
@@ -215,12 +207,11 @@ namespace TuringTrader.BooksAndPubs
                     {
                         var i = kv.Key;
                         var w = volAdj[0] * kv.Value;
+                        Alloc.Allocation[i] = w;
 
                         var shares = (int)Math.Floor(w * NetAssetValue[0] / i.Close[0]);
                         i.Trade(shares - i.Position);
                     }
-
-                    TrackAllocation(weights);
                 }
 
                 if (!IsOptimizing && TradingDays > 0)

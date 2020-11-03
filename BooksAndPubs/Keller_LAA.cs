@@ -117,7 +117,6 @@ namespace TuringTrader.BooksAndPubs
                                 .Sum(a => a.Item2));
 
                     // submit orders
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var i in weights.Keys)
                     {
                         Alloc.Allocation[i] = weights[i];

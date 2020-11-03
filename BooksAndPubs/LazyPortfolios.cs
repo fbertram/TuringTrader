@@ -75,7 +75,6 @@ namespace TuringTrader.BooksAndPubs
                 //if (SimTime[0].Date.DayOfWeek > NextSimTime.Date.DayOfWeek)
                 if (!REBAL_MONTHLY || SimTime[0].Date.Month != NextSimTime.Date.Month)
                 {
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var a in ALLOCATION)
                     {
                         var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;

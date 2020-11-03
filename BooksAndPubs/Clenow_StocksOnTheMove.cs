@@ -241,7 +241,6 @@ namespace TuringTrader.BooksAndPubs
                     ManageWeights(weights);
 
                     // submit trades
-                    Alloc.LastUpdate = SimTime[0];
                     Alloc.Allocation.Clear();
                     foreach (var i in Instruments)
                     {
@@ -261,10 +260,6 @@ namespace TuringTrader.BooksAndPubs
 
                         Output.WriteLine(message);
                     }
-                }
-                else // if (IsTradingDay)
-                {
-                    Alloc.AdjustForPriceChanges(this);
                 }
 
                 // create charts

@@ -130,7 +130,6 @@ namespace TuringTrader.BooksAndPubs
                     double equityUnit = NetAssetValue[0] / totalWeight;
 
                     // create orders
-                    Alloc.LastUpdate = SimTime[0];
                     string message = string.Format("{0:MM/dd/yyyy}: ", SimTime[0]);
                     foreach (var i in instrumentWeights.Keys)
                     {

@@ -178,7 +178,6 @@ namespace TuringTrader.BooksAndPubs
                         .ToList();
 #endif
 
-                    Alloc.LastUpdate = SimTime[0];
                     Alloc.Allocation.Clear();
                     foreach (var i in Instruments)
                     {

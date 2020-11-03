@@ -155,7 +155,6 @@ namespace TuringTrader.BooksAndPubs
                     instrumentWeights[safeInstrument] += pcntTbill;
 
                     // submit orders
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var ds in assets)
                     {
                         Alloc.Allocation[ds.Instrument] = instrumentWeights[ds.Instrument];

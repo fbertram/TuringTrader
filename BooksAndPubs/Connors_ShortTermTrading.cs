@@ -82,8 +82,6 @@ namespace TuringTrader.BooksAndPubs
 
                 int buySell = Rules(market.Instrument);
 
-                Alloc.LastUpdate = SimTime[0];
-
                 //----- enter positions
 
                 if (market.Instrument.Position == 0 && buySell != 0)
