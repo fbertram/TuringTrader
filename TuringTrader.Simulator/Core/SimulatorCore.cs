@@ -26,7 +26,6 @@
 //#define PRINT_ORDERS
 
 #region libraries
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +46,7 @@ namespace TuringTrader.Simulator
         private readonly List<DataSource> _dataSources = new List<DataSource>();
         #endregion
         #region internal helpers
-// IDE1006: Naming rule violation: Prefix '_' is not expected
+        // IDE1006: Naming rule violation: Prefix '_' is not expected
 #pragma warning disable IDE1006
         private void _execOrder(Order ticket)
         {
@@ -235,7 +234,7 @@ namespace TuringTrader.Simulator
         }
 #pragma warning restore IDE1006
 
-// IDE1006: Naming rule violation: Prefix '_' is not expected
+        // IDE1006: Naming rule violation: Prefix '_' is not expected
 #pragma warning disable IDE1006
         private void _expireOption(Instrument instrument)
         {
@@ -262,7 +261,7 @@ namespace TuringTrader.Simulator
         }
 #pragma warning restore IDE1006
 
-// IDE1006: Naming rule violation: Prefix '_' is not expected
+        // IDE1006: Naming rule violation: Prefix '_' is not expected
 #pragma warning disable IDE1006
         private void _delistInstrument(Instrument instrument)
         {
@@ -287,7 +286,7 @@ namespace TuringTrader.Simulator
 
         private bool _navInvalidFirst = true;
 
-// IDE1006: Naming rule violation: Prefix '_' is not expected
+        // IDE1006: Naming rule violation: Prefix '_' is not expected
 #pragma warning disable IDE1006
         /// <summary>
         /// calculate algorithm's net asset value.
@@ -347,8 +346,8 @@ namespace TuringTrader.Simulator
                 _navInvalidFirst = false;
             }
 
-            return navValid 
-                ? nav 
+            return navValid
+                ? nav
                 : NetAssetValue[0]; // yesterday's value
         }
 #pragma warning restore IDE1006
@@ -579,7 +578,7 @@ namespace TuringTrader.Simulator
                     }
 
                     // run user algorithm here
-                    if (SimTime[0] >= (DateTime)WarmupStartTime 
+                    if (SimTime[0] >= (DateTime)WarmupStartTime
                             && SimTime[0] <= EndTime
                             && IsValidSimTime(SimTime[0]))
                         yield return SimTime[0];
@@ -763,7 +762,7 @@ namespace TuringTrader.Simulator
             return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
         }
 
-// CA1822: Member HasInstrument does not access instance data an can be marked as static
+        // CA1822: Member HasInstrument does not access instance data an can be marked as static
 #pragma warning disable CA1822
         /// <summary>
         /// Check if we have an instrument for the given datasource.

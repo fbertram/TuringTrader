@@ -103,13 +103,13 @@ namespace TuringTrader.Simulator
         /// care should be taken that the implementation of this method 
         /// initializes/ resets all parameters, to allow multiple runs.
         /// </summary>
-        public virtual void Run() 
+        public virtual void Run()
         {
             // Unnecessary assignment of a value to 'noLazyExec'
-            #pragma warning disable IDE0059
-                var noLazyExec = Run(null, null)
-                    .ToList();
-            #pragma warning restore IDE0059
+#pragma warning disable IDE0059
+            var noLazyExec = Run(null, null)
+                .ToList();
+#pragma warning restore IDE0059
         }
         #endregion
         #region public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -157,7 +157,7 @@ namespace TuringTrader.Simulator
                     double totalDays = ((DateTime)EndTime - (DateTime)WarmupStartTime).TotalDays;
                     return 100.0 * doneDays / totalDays;
                 }
-// CA1031: Modify get_Progress to catch a more specific exception type, or rethrow the exception
+                // CA1031: Modify get_Progress to catch a more specific exception type, or rethrow the exception
 #pragma warning disable CA1031
                 catch (Exception)
                 {

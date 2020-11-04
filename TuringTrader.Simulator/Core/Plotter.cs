@@ -95,7 +95,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Create and initialize logger object.
         /// </summary>
-        public Plotter(Algorithm parentAlgorithm = null) 
+        public Plotter(Algorithm parentAlgorithm = null)
         {
             ParentAlgorithm = parentAlgorithm;
         }

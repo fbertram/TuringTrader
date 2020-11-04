@@ -36,8 +36,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -152,7 +150,7 @@ namespace TuringTrader.Simulator
         /// Algorithms only: return algorithm instance.
         /// </summary>
 
-        public virtual Algorithm Algorithm => null; 
+        public virtual Algorithm Algorithm => null;
         #endregion
 
         //----- mapping to simulator instruments

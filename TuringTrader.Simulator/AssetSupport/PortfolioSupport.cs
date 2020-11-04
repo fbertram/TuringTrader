@@ -26,7 +26,6 @@ using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 #endregion
@@ -1325,7 +1324,7 @@ namespace TuringTrader.Support
     /// </summary>
     public static class IndicatorsPortfolio
     {
-        #region public static ITimeSeries<double> Covariance(this Instrument series, Instrument otherSeries, int n = 10)
+    #region public static ITimeSeries<double> Covariance(this Instrument series, Instrument otherSeries, int n = 10)
         /// <summary>
         /// Calculate historical covariance.
         /// </summary>
@@ -1352,8 +1351,8 @@ namespace TuringTrader.Support
                 }, 0.0,
                 cacheId);
         }
-        #endregion
-        #region public static ITimeSeries<double> Correlation(this Instrument series, Instrument otherSeries, int n = 10)
+    #endregion
+    #region public static ITimeSeries<double> Correlation(this Instrument series, Instrument otherSeries, int n = 10)
         /// <summary>
         /// Calculate historical correlation.
         /// </summary>
@@ -1382,7 +1381,7 @@ namespace TuringTrader.Support
                 }, 0.0, 
                 cacheId);
         }
-        #endregion
+    #endregion
     }
 #endif
 }

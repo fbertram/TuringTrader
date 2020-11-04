@@ -25,8 +25,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -126,7 +124,7 @@ namespace TuringTrader.Simulator
                         || entries[order.Symbol].Count() == 0)
                         {
                             throw new Exception(
-                                string.Format("LogAnalysis.GroupPositions: no matching entry found for symbol {0}", 
+                                string.Format("LogAnalysis.GroupPositions: no matching entry found for symbol {0}",
                                     order.Symbol));
                         }
 
@@ -146,14 +144,14 @@ namespace TuringTrader.Simulator
                             Entry = entryOrder.Entry,
                             Exit = order,
                             HighestHigh = order.OrderTicket.Instrument == null
-                                    || order.OrderTicket.Instrument.IsOption 
+                                    || order.OrderTicket.Instrument.IsOption
                                     || order.OrderTicket.Instrument.DataSource.CachedData == null
                                 ? 0.0
                                 : order.OrderTicket.Instrument.DataSource.CachedData
                                     .Where(b => b.Time >= entryOrder.Entry.BarOfExecution.Time
                                         && b.Time <= order.BarOfExecution.Time)
                                     .Max(b => b.High),
-                            LowestLow = order.OrderTicket.Instrument == null 
+                            LowestLow = order.OrderTicket.Instrument == null
                                     || order.OrderTicket.Instrument.IsOption
                                     || order.OrderTicket.Instrument.DataSource.CachedData == null
                                 ? 0.0

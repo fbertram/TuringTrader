@@ -24,20 +24,14 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Compression; // requires reference to System.IO.Compression.dll
-using System.Text.RegularExpressions;
 #endregion
 
 namespace TuringTrader.Simulator
 {
     public partial class DataSourceCollection
     {
-        class DataSourceSplice: DataSource
+        class DataSourceSplice : DataSource
         {
             #region internal data
             private List<string> _symbols = null;

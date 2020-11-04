@@ -24,12 +24,9 @@
 #pragma warning disable 1591 // CS1591: missing XML comment
 
 #region libraries
+using IBApi;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IBApi;
 #endregion
 
 namespace TuringTrader.Simulator

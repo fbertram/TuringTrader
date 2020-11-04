@@ -23,6 +23,7 @@
 //==============================================================================
 
 #region libraries
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,7 +31,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Win32;
 using NDU = NorgateData.DataAccess;
 using NDW = NorgateData.WatchListLibrary;
 #endregion
@@ -209,10 +209,10 @@ namespace TuringTrader.Simulator
 
                 return new Bar(
                                 Info[DataSourceParam.ticker], barTime,
-                                (double)norgate.Open * priceMultiplier, 
-                                (double)norgate.High * priceMultiplier, 
-                                (double)norgate.Low * priceMultiplier, 
-                                (double)norgate.Close * priceMultiplier, 
+                                (double)norgate.Open * priceMultiplier,
+                                (double)norgate.High * priceMultiplier,
+                                (double)norgate.Low * priceMultiplier,
+                                (double)norgate.Close * priceMultiplier,
                                 (long)norgate.Volume, true,
                                 0.0, 0.0, 0, 0, false,
                                 default(DateTime), 0.0, false);
@@ -229,17 +229,17 @@ namespace TuringTrader.Simulator
                 NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                 //--- run NDU as required
-            #if false
+#if false
                 // this should work, but seems broken as of 01/09/2019
                 DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
-            #else
+#else
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
                 DateTime dbTimeStamp = q
                     .Select(ohlc => ohlc.Date)
                     .OrderByDescending(d => d)
                     .First();
-            #endif
+#endif
 
                 if (endTime > dbTimeStamp)
                     NorgateHelpers.RunNDU();

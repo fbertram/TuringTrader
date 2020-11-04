@@ -145,7 +145,7 @@ namespace TuringTrader.Simulator
                 {
                     return null;
                 }
-                
+
                 if (!json.HasValues)
                     return null;
 
