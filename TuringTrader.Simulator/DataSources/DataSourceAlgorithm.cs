@@ -59,6 +59,10 @@ namespace TuringTrader.Simulator
 
                 _algo.SubclassedParam = algoParam;
                 Info[DataSourceParam.name] = _algo.Name;
+
+                // by default, we run the data source through the cache,
+                // if it was instantiated from an info dictionary
+                // Info[DataSourceParam.allowSync] = "true";
             }
             #endregion
             #region  public DataSourceAlgorithm(SubclassableAlgorithm algo)
@@ -75,6 +79,10 @@ namespace TuringTrader.Simulator
                         _algo.GetType().Name != _algo.Name ? ";" + _algo.Name : "");
 
                 Info[DataSourceParam.name] = _algo.Name;
+
+                // by default, we run the data source in sync, if it was
+                // instantiated from an algorithm instance
+                Info[DataSourceParam.allowSync] = "true";
             }
             #endregion
             #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
@@ -89,7 +97,7 @@ namespace TuringTrader.Simulator
 #if true
                 _algo.IsDataSource = true;
 
-                if (_algo.CanRunAsChild)
+                if (_algo.CanRunAsChild && Info.ContainsKey(DataSourceParam.allowSync))
                 {
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent
