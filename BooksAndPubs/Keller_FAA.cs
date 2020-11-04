@@ -50,13 +50,10 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Support;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -140,7 +137,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by decreasing momentum
             var rankR = indicators
                 .OrderByDescending(kv => kv.Value.r)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -148,7 +145,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by increasing volatility
             var rankV = indicators
                 .OrderBy(kv => kv.Value.v)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -156,7 +153,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by increasing correlation
             var rankC = indicators
                 .OrderBy(kv => kv.Value.c)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -227,8 +224,8 @@ namespace TuringTrader.BooksAndPubs
                                 .Where(i2 => i != i2)
                                 // FIXME: how exactly are we calculating correlation here?
                                 .Average(i2 => i.Close.Correlation(i2.Close, LOOKBACK_C)[0])
-                                //.Average(i2 => i.Close.Return().Correlation(i2.Close.Return(), LOOKBACK_C)[0])
-                                //.Average(i2 => i.Close.LogReturn().Correlation(i2.Close.LogReturn(), LOOKBACK_C)[0])
+                            //.Average(i2 => i.Close.Return().Correlation(i2.Close.Return(), LOOKBACK_C)[0])
+                            //.Average(i2 => i.Close.LogReturn().Correlation(i2.Close.LogReturn(), LOOKBACK_C)[0])
                         });
 
                 // trigger monthly rebalancing
@@ -454,7 +451,7 @@ namespace TuringTrader.BooksAndPubs
             var L = indicators.Keys
                 .ToDictionary(
                     i => i,
-                    i => -1.0 * 
+                    i => -1.0 *
                         (WR / 100.0 * Math.Log(indicators[i].r / rmax)
                         + WV / 100.0 * Math.Log(vmin / indicators[i].v)
                         + WC / 100.0 * Math.Log((cmin + 1.0) / (indicators[i].c + 1.0)))

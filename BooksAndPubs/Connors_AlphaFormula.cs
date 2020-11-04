@@ -13,13 +13,10 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Text;
-using TuringTrader.Simulator;
-using TuringTrader.Indicators;
-using TuringTrader.BooksAndPubs;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
-using System.Globalization;
+using TuringTrader.Indicators;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -236,8 +233,8 @@ namespace TuringTrader.BooksAndPubs
                 var weights = Instruments
                     .ToDictionary(
                         i => i,
-                        i => constituents.Contains(i) && i.Position > 0 
-                            ? 1.0 / NUM_POS 
+                        i => constituents.Contains(i) && i.Position > 0
+                            ? 1.0 / NUM_POS
                             : 0.0);
 
                 // sell, if stock closes 10% below entry price
@@ -305,7 +302,7 @@ namespace TuringTrader.BooksAndPubs
                     int targetShares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
                     // don't rebalance our mean-reversion instruments
                     if (i != idle.Instrument && i.Position > 0 && targetShares > 0)
-                            targetShares = i.Position;
+                        targetShares = i.Position;
                     i.Trade(targetShares - i.Position, OrderType.closeThisBar);
                 }
 

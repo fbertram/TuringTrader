@@ -31,8 +31,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using TuringTrader.Simulator;
 #endregion
 
@@ -218,7 +216,7 @@ namespace TuringTrader.Algorithms.Glue
             public double this[Instrument instr]
             {
                 get => _weights[instr];
-                set 
+                set
                 {
                     _weights[instr] = value;
                     _lastUpdate = _algo.SimTime[0];
@@ -274,7 +272,7 @@ namespace TuringTrader.Algorithms.Glue
         /// <param name="alloc"></param>
         public static void AddTargetAllocation(this Plotter plotter, AllocationTracker alloc)
         {
-            plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}", 
+            plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}",
                 Plotter.SheetNames.HOLDINGS, alloc.LastUpdate), "Name");
 
             foreach (Instrument i in alloc.Allocation.Keys.OrderByDescending(k => alloc.Allocation[k]))
@@ -473,7 +471,7 @@ namespace TuringTrader.Algorithms.Glue
         public static double CalcFitness(this SimulatorCore sim)
         {
 #if true
-            double cagr = Math.Exp(252.0 / Math.Max(1, sim.TradingDays) 
+            double cagr = Math.Exp(252.0 / Math.Max(1, sim.TradingDays)
                 * Math.Log(sim.NetAssetValue[0] / Globals.INITIAL_CAPITAL)) - 1.0;
             double mdd = Math.Max(0.01, sim.NetAssetValueMaxDrawdown);
             return cagr / mdd;

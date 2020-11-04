@@ -23,12 +23,10 @@
 
 #region libraries
 using System;
-using System.Linq;
-using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 using System.Collections.Generic;
-using System.Globalization;
-using TuringTrader.Indicators;
+using System.Linq;
+using TuringTrader.Algorithms.Glue;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs

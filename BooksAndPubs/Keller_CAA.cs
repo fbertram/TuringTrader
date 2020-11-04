@@ -27,13 +27,11 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -45,7 +43,7 @@ namespace TuringTrader.BooksAndPubs
         #region inputs
         protected abstract double TVOL { get; }
         protected abstract List<string> RISKY_ASSETS { get; }
-        protected abstract List<string> SAFE_ASSETS { get;  }
+        protected abstract List<string> SAFE_ASSETS { get; }
         protected virtual double MAX_RISKY_ALLOC => 0.25;
         #endregion
         #region internal data

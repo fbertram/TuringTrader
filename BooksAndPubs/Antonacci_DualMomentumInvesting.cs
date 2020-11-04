@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -379,7 +379,7 @@ namespace TuringTrader.BooksAndPubs
     // Real estate: VNQ/ REM
     // Economic stress: GLD/ TLT
     // safe instrument: BIL
-    public class Antonacci_4PairsDualMomentum: Antonacci_DualMomentumInvesting_Core
+    public class Antonacci_4PairsDualMomentum : Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Antonacci's Dual Momentum w/ 4 Pairs";
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
