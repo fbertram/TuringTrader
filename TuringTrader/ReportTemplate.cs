@@ -22,15 +22,13 @@
 //==============================================================================
 
 #region libraries
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
 using TuringTrader.Simulator;
 #endregion
 
@@ -239,7 +237,7 @@ namespace TuringTrader
             {
                 if (_rfMonthlyReturnsCache == null)
                 {
-                    var dsRiskFree = DataSource.New(RF_YIELD); 
+                    var dsRiskFree = DataSource.New(RF_YIELD);
                     var data = dsRiskFree.LoadData(_startDate, _endDate);
 
                     _rfMonthlyReturnsCache = new Dictionary<DateTime, double>();

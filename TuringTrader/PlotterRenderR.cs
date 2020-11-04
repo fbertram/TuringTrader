@@ -23,10 +23,8 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using TuringTrader.Simulator;
 #endregion
@@ -67,8 +65,8 @@ namespace TuringTrader
                 // see https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions
                 Func<object, string> _convertToString = (o) =>
                 {
-                        // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
-                        if (o.GetType() == typeof(DateTime))
+                    // see https://stackoverflow.com/questions/298976/is-there-a-better-alternative-than-this-to-switch-on-type/299001#299001
+                    if (o.GetType() == typeof(DateTime))
                     {
                         DateTime d = (DateTime)o;
                         return string.Format("{0:MM/dd/yyyy}", d);

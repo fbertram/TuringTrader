@@ -23,9 +23,6 @@
 
 using Avalon.Windows.Dialogs;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Threading;
 using TuringTrader.Simulator;
 
 namespace TuringTrader
