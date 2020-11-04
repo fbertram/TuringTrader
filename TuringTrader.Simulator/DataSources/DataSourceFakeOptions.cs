@@ -50,17 +50,13 @@ namespace TuringTrader.Simulator
                 private static readonly string VOLATILITY_6M = "$VIX6M";
                 private static readonly string VOLATILITY_12M = "$VIX1Y";
 #else
-                private static readonly string UNDERLYING = "$SPX";
-                private static readonly string VOLATILITY_9D = "$VIX";
-                private static readonly string VOLATILITY_30D = "$VIX";
-                private static readonly string VOLATILITY_3M = "$VIX";
-                private static readonly string VOLATILITY_6M = "$VIX";
-                private static readonly string VOLATILITY_12M = "$VIX";
+                private const string UNDERLYING = "$SPX";
+                private const string VOLATILITY_30D = "$VIX";
 #endif
 
-                private List<Bar> _data;
-                private DateTime _startTime;
-                private DateTime _endTime;
+                private readonly List<Bar> _data;
+                private readonly DateTime _startTime;
+                private readonly DateTime _endTime;
 
                 public SimFakeOptions(List<Bar> data, DateTime startTime, DateTime endTime)
                 {
@@ -161,7 +157,7 @@ namespace TuringTrader.Simulator
                                     double vol = volatility * (1.0 + 0.30 * Math.Abs(z));
 
                                     double price = OptionSupport.GBlackScholes(
-                                        putCall == 0 ? false : true,
+                                        putCall != 0,
                                         underlying[0],
                                         strike,
                                         T,
@@ -170,13 +166,12 @@ namespace TuringTrader.Simulator
                                         vol);
 
                                     Bar bar = new Bar(
-                                        "SPX", //symbol,
-                                        SimTime[0],
-                                        default(double), default(double), default(double), default(double), default(long), false,
+                                        "SPX", SimTime[0],
+                                        default, default, default, default, default, false, // OHLCV, hasOHLC
                                         price * 0.99, price * 1.01, 100, 100, true,
                                         expiry.Date,
                                         strike,
-                                        putCall == 0 ? true : false);
+                                        putCall == 0);
 
                                     _data.Add(bar);
                                 }

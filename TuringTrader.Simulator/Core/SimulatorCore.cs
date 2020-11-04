@@ -43,10 +43,12 @@ namespace TuringTrader.Simulator
     public abstract class SimulatorCore
     {
         #region internal data
-        private Dictionary<string, Instrument> _instruments = new Dictionary<string, Instrument>();
-        private List<DataSource> _dataSources = new List<DataSource>();
+        private readonly Dictionary<string, Instrument> _instruments = new Dictionary<string, Instrument>();
+        private readonly List<DataSource> _dataSources = new List<DataSource>();
         #endregion
         #region internal helpers
+// IDE1006: Naming rule violation: Prefix '_' is not expected
+#pragma warning disable IDE1006
         private void _execOrder(Order ticket)
         {
 #if PRINT_ORDERS
@@ -89,7 +91,7 @@ namespace TuringTrader.Simulator
 
             Instrument instrument = ticket.Instrument;
             Bar execBar = null;
-            DateTime execTime = default(DateTime);
+            DateTime execTime = default;
             double price = 0.00;
             switch (ticket.Type)
             {
@@ -231,6 +233,10 @@ namespace TuringTrader.Simulator
             //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
             Log.Add(log);
         }
+#pragma warning restore IDE1006
+
+// IDE1006: Naming rule violation: Prefix '_' is not expected
+#pragma warning disable IDE1006
         private void _expireOption(Instrument instrument)
         {
             Instrument underlying = _instruments[instrument.OptionUnderlying];
@@ -254,6 +260,10 @@ namespace TuringTrader.Simulator
 
             _instruments.Remove(instrument.Symbol);
         }
+#pragma warning restore IDE1006
+
+// IDE1006: Naming rule violation: Prefix '_' is not expected
+#pragma warning disable IDE1006
         private void _delistInstrument(Instrument instrument)
         {
             if (instrument.Position != 0)
@@ -273,7 +283,12 @@ namespace TuringTrader.Simulator
 
             _instruments.Remove(instrument.Symbol);
         }
+#pragma warning restore IDE1006
+
         private bool _navInvalidFirst = true;
+
+// IDE1006: Naming rule violation: Prefix '_' is not expected
+#pragma warning disable IDE1006
         /// <summary>
         /// calculate algorithm's net asset value.
         /// </summary>
@@ -336,15 +351,16 @@ namespace TuringTrader.Simulator
                 ? nav 
                 : NetAssetValue[0]; // yesterday's value
         }
+#pragma warning restore IDE1006
         #endregion
 
-        #region public SimulatorCore()
+        #region protected SimulatorCore()
         /// <summary>
         /// Initialize simulator engine. Only very little is happening here,
         /// most of the engine initialization is performed in SimTimes, to
         /// allow multiple runs of the same algorithm instance.
         /// </summary>
-        public SimulatorCore()
+        protected SimulatorCore()
         {
             // this is not required, a new object will be assigned
             // during SimTime's initialization. we assign an object
@@ -747,6 +763,8 @@ namespace TuringTrader.Simulator
             return Instruments.Where(i => i.Nickname == nickname).Count() > 0;
         }
 
+// CA1822: Member HasInstrument does not access instance data an can be marked as static
+#pragma warning disable CA1822
         /// <summary>
         /// Check if we have an instrument for the given datasource.
         /// </summary>
@@ -754,8 +772,15 @@ namespace TuringTrader.Simulator
         /// <returns>true, if instrument exists</returns>
         protected bool HasInstrument(DataSource ds)
         {
+            // FIXME: the code below would be better. 
+            // however, we are concerned of subtle differences
+            // in behavior and did not want to change this
+            // right now.
+            //return Instruments.Where(i => i.DataSource == ds).Count() > 0;
+
             return ds.Instrument != null;
         }
+#pragma warning restore CA1822
         #endregion
         #region protected bool HasInstruments(...)
         /// <summary>
@@ -871,7 +896,7 @@ namespace TuringTrader.Simulator
         public void QueueOrder(Order order)
         {
             order.QueueTime = SimTime.BarsAvailable > 0
-                ? SimTime[0] : default(DateTime);
+                ? SimTime[0] : default;
             PendingOrders.Add(order);
         }
         #endregion

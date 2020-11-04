@@ -36,24 +36,6 @@ namespace TuringTrader.Simulator
     /// </summary>
     public abstract class Algorithm : SimulatorCore
     {
-        #region internal data
-        private List<Algorithm> _childAlgorithms = new List<Algorithm>();
-        #endregion
-        #region internal helpers
-        /// <summary>
-        /// calculate algorithm's net asset value.
-        /// </summary>
-        /// <returns>nav</returns>
-        protected override double _calcNetAssetValue()
-        {
-            var assets = base._calcNetAssetValue();
-            var childAlgos = _childAlgorithms
-                .Sum(a => a.NetAssetValue[0]);
-
-            return assets + childAlgos;
-        }
-        #endregion
-
         #region public Algorithm()
         /// <summary>
         /// Initialize trading algorithm. Most trading algorithms will
@@ -61,7 +43,7 @@ namespace TuringTrader.Simulator
         /// should be performed in Run(), to allow multiple runs of
         /// the same instance.
         /// </summary>
-        public Algorithm()
+        protected Algorithm()
         {
             // create a dictionary of optimizer parameters
             OptimizerParams = new Dictionary<string, OptimizerParam>();
@@ -123,8 +105,11 @@ namespace TuringTrader.Simulator
         /// </summary>
         public virtual void Run() 
         {
-            var noLazyExec = Run(null, null)
-                .ToList();
+            // Unnecessary assignment of a value to 'noLazyExec'
+            #pragma warning disable IDE0059
+                var noLazyExec = Run(null, null)
+                    .ToList();
+            #pragma warning restore IDE0059
         }
         #endregion
         #region public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -172,10 +157,13 @@ namespace TuringTrader.Simulator
                     double totalDays = ((DateTime)EndTime - (DateTime)WarmupStartTime).TotalDays;
                     return 100.0 * doneDays / totalDays;
                 }
+// CA1031: Modify get_Progress to catch a more specific exception type, or rethrow the exception
+#pragma warning disable CA1031
                 catch (Exception)
                 {
                     return 0.0;
                 }
+#pragma warning restore CA1031
             }
         }
         #endregion
