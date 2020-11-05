@@ -4,7 +4,7 @@
 // Description: some glue to help re-using algorithms for other applications
 // History:     2019x02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2098, Bertram Solutions LLC
+// Copyright:   (c) 2011-2020, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -31,7 +31,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using TuringTrader.Simulator;
 #endregion
 
@@ -45,13 +44,13 @@ namespace TuringTrader.Algorithms.Glue
     /// </summary>
     public abstract class AlgorithmPlusGlue : Algorithm
     {
-        protected Plotter _plotter;
-        public AllocationTracker Alloc;
+        protected readonly Plotter _plotter;
+        public readonly AllocationTracker Alloc;
 
         public AlgorithmPlusGlue()
         {
             _plotter = new Plotter(this);
-            Alloc = new AllocationTracker();
+            Alloc = new AllocationTracker(this);
         }
 
         public override void Report()
@@ -185,6 +184,10 @@ namespace TuringTrader.Algorithms.Glue
         //----- portfolios
         public static readonly string PORTF_0 = "algorithm:ZeroReturn";
         public static readonly string PORTF_60_40 = "@60_40";
+
+        //----- leveraged
+        public static readonly string STOCKS_US_LG_CAP_3X = "SPXL";
+        public static readonly string BONDS_US_TREAS_30Y_3X = "TMF";
     }
     #endregion
     #region allocation tracker
@@ -193,10 +196,46 @@ namespace TuringTrader.Algorithms.Glue
     /// </summary>
     public class AllocationTracker
     {
-        public DateTime LastUpdate { get; set; }
-        public Dictionary<Instrument, double> Allocation  = new Dictionary<Instrument, double>();
+        #region internal data
+        private readonly _Allocation _alloc;
+        #endregion
+        #region internal helpers
+        public interface IAllocation
+        {
+            double this[Instrument instr] { get; set; }
+            IEnumerable<Instrument> Keys { get; }
+            bool ContainsKey(Instrument instr);
+            void Clear();
+        }
+        private class _Allocation : IAllocation
+        {
+            private readonly Dictionary<Instrument, double> _weights = new Dictionary<Instrument, double>();
+            private readonly Algorithm _algo;
 
-        public void AdjustForPriceChanges(Algorithm algo) { }
+            public _Allocation(Algorithm algo) => _algo = algo;
+            public double this[Instrument instr]
+            {
+                get => _weights[instr];
+                set
+                {
+                    _weights[instr] = value;
+                    _lastUpdate = _algo.SimTime[0];
+                }
+            }
+            public IEnumerable<Instrument> Keys => _weights.Keys;
+            public void Clear()
+            {
+                _weights.Clear();
+                _lastUpdate = _algo.SimTime[0];
+            }
+            public bool ContainsKey(Instrument instr) => _weights.ContainsKey(instr);
+            public DateTime _lastUpdate { get; private set; }
+        }
+        #endregion
+
+        public AllocationTracker(Algorithm algo) => _alloc = new _Allocation(algo);
+        public DateTime LastUpdate => _alloc._lastUpdate;
+        public IAllocation Allocation => _alloc;
     }
     #endregion
     #region plotter extension functions
@@ -233,7 +272,7 @@ namespace TuringTrader.Algorithms.Glue
         /// <param name="alloc"></param>
         public static void AddTargetAllocation(this Plotter plotter, AllocationTracker alloc)
         {
-            plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}", 
+            plotter.SelectChart(string.Format("{0} as of {1:MM/dd/yyyy}",
                 Plotter.SheetNames.HOLDINGS, alloc.LastUpdate), "Name");
 
             foreach (Instrument i in alloc.Allocation.Keys.OrderByDescending(k => alloc.Allocation[k]))
@@ -432,7 +471,7 @@ namespace TuringTrader.Algorithms.Glue
         public static double CalcFitness(this SimulatorCore sim)
         {
 #if true
-            double cagr = Math.Exp(252.0 / Math.Max(1, sim.TradingDays) 
+            double cagr = Math.Exp(252.0 / Math.Max(1, sim.TradingDays)
                 * Math.Log(sim.NetAssetValue[0] / Globals.INITIAL_CAPITAL)) - 1.0;
             double mdd = Math.Max(0.01, sim.NetAssetValueMaxDrawdown);
             return cagr / mdd;

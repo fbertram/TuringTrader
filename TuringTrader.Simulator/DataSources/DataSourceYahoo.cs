@@ -41,7 +41,7 @@ namespace TuringTrader.Simulator
         {
             #region internal helpers
             private static object _lockCache = new object();
-            private static readonly DateTime _epochOrigin 
+            private static readonly DateTime _epochOrigin
                 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             private static DateTime fromUnixTime(long unixTime)
@@ -294,7 +294,7 @@ namespace TuringTrader.Simulator
                     //if (endTime > (DateTime)LastTime)
                     //    endTime = (DateTime)LastTime;
 
-                    var cacheKey = new CacheId(null, "", 0,
+                    var cacheKey = new CacheId().AddParameters(
                         Info[DataSourceParam.nickName].GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());

@@ -25,18 +25,16 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
 {
     #region common algorithm core
-    public abstract class Connors_HighProbEtfTrading_Core : Algorithm
+    public abstract class Connors_HighProbEtfTrading_Core : AlgorithmPlusGlue
     {
         #region settings
         protected virtual string MARKET => "SPY";
@@ -45,16 +43,6 @@ namespace TuringTrader.BooksAndPubs
         public virtual int AGGRESSIVE_ON { get; set; } = 0;
 
         public virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
-        #endregion
-        #region internal data
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Connors_HighProbEtfTrading_Core()
-        {
-            _plotter = new Plotter(this);
-        }
         #endregion
 
         protected abstract double Rules(Instrument i);
@@ -79,12 +67,10 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (var s in SimTimes)
             {
-                if (!_alloc.Allocation.ContainsKey(market.Instrument))
-                    _alloc.Allocation[market.Instrument] = 0.0;
+                if (!Alloc.Allocation.ContainsKey(market.Instrument))
+                    Alloc.Allocation[market.Instrument] = 0.0;
 
                 double percentToBuySell = Rules(market.Instrument);
-
-                _alloc.LastUpdate = SimTime[0];
 
                 //----- entries
 
@@ -94,7 +80,7 @@ namespace TuringTrader.BooksAndPubs
                     int sharesToBuySell = (int)(Math.Sign(percentToBuySell) * Math.Floor(
                         Math.Abs(percentToBuySell) * NetAssetValue[0] / market.Instrument.Close[0]));
 
-                    _alloc.Allocation[market.Instrument] += percentToBuySell;
+                    Alloc.Allocation[market.Instrument] += percentToBuySell;
                     market.Instrument.Trade(sharesToBuySell, ORDER_TYPE);
                 }
 
@@ -105,7 +91,7 @@ namespace TuringTrader.BooksAndPubs
                 {
                     // none of the algorithms attempt to gradually
                     // exit positions, so this is good enough
-                    _alloc.Allocation[market.Instrument] = 0.0;
+                    Alloc.Allocation[market.Instrument] = 0.0;
                     market.Instrument.Trade(-market.Instrument.Position, OrderType.closeThisBar);
                 }
 
@@ -115,8 +101,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, market.Instrument);
                     _plotter.AddStrategyHoldings(this, market.Instrument);
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
                 }
             }
 
@@ -124,7 +110,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);

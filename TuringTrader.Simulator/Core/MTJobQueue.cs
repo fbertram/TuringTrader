@@ -30,11 +30,7 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -58,7 +54,7 @@ namespace TuringTrader.Simulator
         #region private void CheckQueue()
         private void CheckQueue()
         {
-            lock(_queueLock)
+            lock (_queueLock)
             {
                 while (_jobsRunning < _maximumNumberOfThreads
                 && _jobQueue.Count > 0)
@@ -126,7 +122,7 @@ namespace TuringTrader.Simulator
 #if NO_THREADS
             job();
 #else
-            lock(_queueLock)
+            lock (_queueLock)
             {
                 Thread queuedThread = new Thread(() => JobRunner(job));
                 _jobQueue.Enqueue(queuedThread);

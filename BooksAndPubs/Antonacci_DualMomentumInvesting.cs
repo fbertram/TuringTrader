@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -90,7 +90,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = END_TIME;
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // it is unclear, if Antonacci considers commissions
 
             // assets we can trade
@@ -155,7 +155,6 @@ namespace TuringTrader.BooksAndPubs
                     instrumentWeights[safeInstrument] += pcntTbill;
 
                     // submit orders
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var ds in assets)
                     {
                         Alloc.Allocation[ds.Instrument] = instrumentWeights[ds.Instrument];
@@ -380,7 +379,7 @@ namespace TuringTrader.BooksAndPubs
     // Real estate: VNQ/ REM
     // Economic stress: GLD/ TLT
     // safe instrument: BIL
-    public class Antonacci_4PairsDualMomentum: Antonacci_DualMomentumInvesting_Core
+    public class Antonacci_4PairsDualMomentum : Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Antonacci's Dual Momentum w/ 4 Pairs";
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>

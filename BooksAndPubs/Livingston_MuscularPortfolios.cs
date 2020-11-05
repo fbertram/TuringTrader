@@ -118,17 +118,14 @@ end if
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TuringTrader.Simulator;
 using TuringTrader.Algorithms.Glue;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
 {
-    public abstract class Livingston_MuscularPortfolios : Algorithm
+    public abstract class Livingston_MuscularPortfolios : AlgorithmPlusGlue
     {
         #region inputs
         protected abstract HashSet<string> ETF_MENU { get; }
@@ -140,16 +137,6 @@ namespace TuringTrader.BooksAndPubs
         protected virtual bool REBAL_TODAY(double maxOff)
         {
             return SimTime[0].Month != NextSimTime.Month && maxOff > REBAL_TRIGGER;
-        }
-        #endregion
-        #region internal data
-        protected Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Livingston_MuscularPortfolios()
-        {
-            _plotter = new Plotter(this);
         }
         #endregion
 
@@ -198,11 +185,9 @@ namespace TuringTrader.BooksAndPubs
                 // rebalance once per month, and only if we need adjustments exceeding 20%
                 if (REBAL_TODAY(maxOff))
                 {
-                    _alloc.LastUpdate = SimTime[0];
-
                     foreach (var i in menu.Select(ds => ds.Instrument))
                     {
-                        _alloc.Allocation[i] = top3.Contains(i) ? targetPercentage : 0.0;
+                        Alloc.Allocation[i] = top3.Contains(i) ? targetPercentage : 0.0;
 
                         // determine current and target shares per instrument...
                         double targetEquity = (top3.Contains(i) ? targetPercentage : 0.0) * NetAssetValue[0];
@@ -230,8 +215,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, ETF_MENU.Select(nick => FindInstrument(nick)));
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
 
                     if (IsDataSource)
                     {
@@ -246,7 +231,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -257,22 +242,16 @@ namespace TuringTrader.BooksAndPubs
             FitnessValue = this.CalcFitness();
         }
         #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
-        #endregion
     }
 
     #region Baby Bear
     public class Livingston_MuscularPortfolios_BabyBear : LazyPortfolio
     {
         public override string Name => "Livingston's Baby Bear";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("VT",   0.50),
-            Tuple.Create("splice:AGG,BND", 0.50),
+            new Tuple<object, double>("VT",   0.50),
+            new Tuple<object, double>("splice:AGG,BND", 0.50),
         };
         public override string BENCH => Assets.PORTF_60_40;
     }

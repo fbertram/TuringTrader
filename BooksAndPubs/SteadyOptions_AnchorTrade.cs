@@ -124,11 +124,9 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
-using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
@@ -196,7 +194,7 @@ namespace TuringTrader.BooksAndPubs
             {
                 // target shares: calculated from target exposure,
                 // (not from price paid for call)
-                _mainPositionTargetLots = (int)(Math.Round(NetAssetValue[0] * MAIN_W / 100.0 
+                _mainPositionTargetLots = (int)(Math.Round(NetAssetValue[0] * MAIN_W / 100.0
                     / _underlying.Close[0] / 100.0));
 
                 if (_mainPositionTargetLots < 1)
@@ -372,7 +370,7 @@ namespace TuringTrader.BooksAndPubs
                 || _incomePosition.Position == 0
                 || NextSimTime.Date > _incomePosition.OptionExpiry)
                     return 0;
-                
+
                 return _incomePositionTargetLots;
             }
         }
@@ -427,7 +425,7 @@ namespace TuringTrader.BooksAndPubs
                     .FirstOrDefault();
 
                 // target strike: ATM
-                var targetStrike = _underlying.Close[0] 
+                var targetStrike = _underlying.Close[0]
                     * (1.0 + INCOME_POS_STRIKE / 1e4);
 
                 // select the closest strike
@@ -446,7 +444,7 @@ namespace TuringTrader.BooksAndPubs
 
                 _incomePositionPremiumRecv = _incomePosition.Bid[0];
                 _incomePositionInitialTV = _incomePosition.Bid[0]
-                    -Math.Max(0.0, _incomePosition.OptionStrike - _underlying.Close[0]);
+                    - Math.Max(0.0, _incomePosition.OptionStrike - _underlying.Close[0]);
 
                 // sell put for income
                 _incomePosition.Trade(-_incomePositionTargetLots, ORDER_TYPE)
@@ -647,9 +645,9 @@ namespace TuringTrader.BooksAndPubs
                     _plotter.SetX(SimTime[0]);
                     _plotter.Plot("NAV", NetAssetValue[0]);
                     _plotter.Plot("Main Position", _mainPosition != null
-                        ? (_mainPosition.IsOption 
-                            ? 100.0 * _mainPosition.Position * _mainPosition.Bid[0] 
-                            : _mainPosition.Position * _mainPosition.Close[0]) 
+                        ? (_mainPosition.IsOption
+                            ? 100.0 * _mainPosition.Position * _mainPosition.Bid[0]
+                            : _mainPosition.Position * _mainPosition.Close[0])
                         : 0.0);
                     _plotter.Plot("Main Hedge", _mainHedge != null ? 100.0 * _mainHedgeCurrentLots * _mainHedge.Bid[0] : 0.0);
                     _plotter.Plot("Income Position", _incomePosition != null ? 100.0 * _incomePositionCurrentLots * _incomePosition.Ask[0] : 0.0);

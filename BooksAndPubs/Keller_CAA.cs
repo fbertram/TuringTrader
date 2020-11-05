@@ -27,13 +27,11 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -45,7 +43,7 @@ namespace TuringTrader.BooksAndPubs
         #region inputs
         protected abstract double TVOL { get; }
         protected abstract List<string> RISKY_ASSETS { get; }
-        protected abstract List<string> SAFE_ASSETS { get;  }
+        protected abstract List<string> SAFE_ASSETS { get; }
         protected virtual double MAX_RISKY_ALLOC => 0.25;
         #endregion
         #region internal data
@@ -62,7 +60,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
 
             // our universe consists of risky & safe assets
@@ -110,7 +108,6 @@ namespace TuringTrader.BooksAndPubs
                     Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
                     // adjust all positions
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var i in pf.Weights.Keys)
                     {
                         Alloc.Allocation[i] = pf.Weights[i];

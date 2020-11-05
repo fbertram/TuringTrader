@@ -60,6 +60,11 @@ namespace TuringTrader.Simulator
         /// </summary>
         ticker,
 
+        /// <summary>
+        /// allow synchronous execution
+        /// </summary>
+        allowSync,
+
         //----- CSV files
         /// <summary>
         /// timestamp, data part

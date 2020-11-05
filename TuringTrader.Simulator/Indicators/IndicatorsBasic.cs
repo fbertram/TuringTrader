@@ -53,6 +53,9 @@ namespace TuringTrader.Indicators
             // to go from, this will blow up when running multiple instances in the optimizer
             // a possible idea to fix this, would be to add the thread id... food for thought.
 
+            // NOTE #2:
+            // this should no longer be of much concern since we made cache objects thread-local.
+
 #if false
             // CAUTION:
             // lambda.GetHashCode() might not work w/ .Net Core
@@ -92,7 +95,7 @@ namespace TuringTrader.Indicators
             }
         }
         #endregion
-        #region public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first, params int[] identifier)
+        #region public static ITimeSeries<double> BufferedLambda(Func<double, double> lambda, double first)
         /// <summary>
         /// Create time series based on lambda, with lambda being executed once for
         /// every new bar.
@@ -110,6 +113,9 @@ namespace TuringTrader.Indicators
             // this can be instantiated without parent cache id. As we don't have any data series
             // to go from, this will blow up when running multiple instances in the optimizer
             // a possible idea to fix this, would be to add the thread id... food for thought.
+
+            // NOTE #2:
+            // this should no longer be of much concern since we made cache objects thread-local.
 
 #if false
             // CAUTION:
@@ -130,6 +136,39 @@ namespace TuringTrader.Indicators
                 () => new TimeSeries<double>());
 
             double prevValue = timeSeries.BarsAvailable >= 1
+                ? timeSeries[0]
+                : first;
+
+            timeSeries.Value = lambda(prevValue);
+
+            return timeSeries;
+        }
+        #endregion
+
+        #region public static ITimeSeries<T> BufferedLambda<T>(Func<T, T> lambda, T first)
+        /// <summary>
+        /// Create time series based on lambda, with lambda being executed once fore
+        /// every new bar.
+        /// </summary>
+        /// <typeparam name="T">type of time series</typeparam>
+        /// <param name="lambda">lambda, with previous value as parameter and returning current time series value</param>
+        /// <param name="first">first value to return</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>lambda time series</returns>
+        public static ITimeSeries<T> BufferedLambda<T>(Func<T, T> lambda, T first,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            // NOTE: BufferedLambda() === BufferedLambda<double>()
+
+            var cacheId = new CacheId(parentId, memberName, lineNumber);
+
+            var timeSeries = Cache<TimeSeries<T>>.GetData(
+                cacheId,
+                () => new TimeSeries<T>());
+
+            T prevValue = timeSeries.BarsAvailable >= 1
                 ? timeSeries[0]
                 : first;
 
@@ -235,13 +274,20 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series (OHLC)</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>range between highest and lowest value of past n bars</returns>
-        public static ITimeSeries<double> Range(this Instrument series, int n)
+        public static ITimeSeries<double> Range(this Instrument series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series.High
-                .Highest(n)
+                .Highest(n, cacheId)
                 .Subtract(series.Low
-                    .Lowest(n));
+                    .Lowest(n, cacheId), cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
@@ -250,13 +296,20 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">number of bars to search</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>range between highest and lowest value of past n bars</returns>
-        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Range(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
             return series
-                .Highest(n)
+                .Highest(n, cacheId)
                 .Subtract(series
-                    .Lowest(n));
+                    .Lowest(n, cacheId), cacheId);
         }
         #endregion
         #region public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
@@ -265,10 +318,17 @@ namespace TuringTrader.Indicators
         /// </summary>
         /// <param name="series">input time series</param>
         /// <param name="n">normalizing period</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
         /// <returns>normalized time series</returns>
-        public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n)
+        public static ITimeSeries<double> Normalize(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
         {
-            return series.Divide(series.EMA(n));
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series.Divide(series.EMA(n, cacheId), cacheId);
         }
         #endregion
 

@@ -24,20 +24,14 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Compression; // requires reference to System.IO.Compression.dll
-using System.Text.RegularExpressions;
 #endregion
 
 namespace TuringTrader.Simulator
 {
     public partial class DataSourceCollection
     {
-        class DataSourceSplice: DataSource
+        class DataSourceSplice : DataSource
         {
             #region internal data
             private List<string> _symbols = null;
@@ -79,7 +73,7 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
-                var cacheKey = new CacheId(null, "", 0,
+                var cacheKey = new CacheId().AddParameters(
                     Info[DataSourceParam.nickName].GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());

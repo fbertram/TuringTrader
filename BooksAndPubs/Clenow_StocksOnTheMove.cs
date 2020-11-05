@@ -31,11 +31,10 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -106,12 +105,12 @@ namespace TuringTrader.BooksAndPubs
         /// <summary>
         /// traded stock universe
         /// </summary>
-        protected virtual Universe UNIVERSE { get; set; }  = Universes.STOCKS_US_LG_CAP;
+        protected virtual Universe UNIVERSE { get; set; } = Universes.STOCKS_US_LG_CAP;
 
         /// <summary>
         /// day of weekly rebalancing
         /// </summary>
-        protected virtual bool IsTradingDay 
+        protected virtual bool IsTradingDay
             => SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday;
 
         /// <summary>
@@ -141,7 +140,7 @@ namespace TuringTrader.BooksAndPubs
             EndTime = Globals.END_TIME;
 #endif
 
-            Deposit(IsChildAlgorithm ? 0.0 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // Clenow is not considering commissions
 
             var all = AddDataSources(UNIVERSE.Constituents);
@@ -178,7 +177,7 @@ namespace TuringTrader.BooksAndPubs
                 // NOTE: the 10-day SMA on the benchmark is _not_ mentioned in
                 //       the book. We added it here, to compensate for the
                 //       simplified re-balancing schedule.
-                bool allowNewEntries = sp500.Instrument.Close.SMA(INDEX_FLT)[0] 
+                bool allowNewEntries = sp500.Instrument.Close.SMA(INDEX_FLT)[0]
                     > sp500.Instrument.Close.SMA(INDEX_TREND)[0];
 
                 // determine current S&P 500 constituents
@@ -241,7 +240,6 @@ namespace TuringTrader.BooksAndPubs
                     ManageWeights(weights);
 
                     // submit trades
-                    Alloc.LastUpdate = SimTime[0];
                     Alloc.Allocation.Clear();
                     foreach (var i in Instruments)
                     {
@@ -261,10 +259,6 @@ namespace TuringTrader.BooksAndPubs
 
                         Output.WriteLine(message);
                     }
-                }
-                else // if (IsTradingDay)
-                {
-                    Alloc.AdjustForPriceChanges(this);
                 }
 
                 // create charts

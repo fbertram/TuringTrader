@@ -31,13 +31,10 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Support;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -64,7 +61,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
 
             var risky = RISKY_PORTFOLIO
@@ -117,7 +114,6 @@ namespace TuringTrader.BooksAndPubs
                                 .Sum(a => a.Item2));
 
                     // submit orders
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (var i in weights.Keys)
                     {
                         Alloc.Allocation[i] = weights[i];
@@ -360,11 +356,11 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Keller's LAA: constructed World ETF (named WRLD)";
 
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            Tuple.Create("SPY", 3.0 / 6.0),
-            Tuple.Create("VEA", 2.0 / 6.0),
-            Tuple.Create("VWO", 1.0 / 6.0),
+            new Tuple<object, double>("SPY", 3.0 / 6.0),
+            new Tuple<object, double>("VEA", 2.0 / 6.0),
+            new Tuple<object, double>("VWO", 1.0 / 6.0),
         };
         public override string BENCH => Assets.PORTF_60_40;
     }

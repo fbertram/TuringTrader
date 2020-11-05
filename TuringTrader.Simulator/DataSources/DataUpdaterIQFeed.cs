@@ -34,15 +34,11 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 //using IQFeed.CSharpApiClient;
 //using IQFeed.CSharpApiClient.Lookup;
 //using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
 //using IQFeed.CSharpApiClient.Lookup.Chains.Equities;
 //using IQFeed.CSharpApiClient.Streaming.Level1;
-using Microsoft.Win32;
 //using IQFeed.CSharpApiClient.Streaming.Level1.Messages;
 //using IQFeed.CSharpApiClient.Lookup.Chains;
 #endregion

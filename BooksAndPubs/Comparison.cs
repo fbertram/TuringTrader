@@ -21,12 +21,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TuringTrader.Simulator;
 using TuringTrader.Algorithms.Glue;
+using TuringTrader.Simulator;
 
 namespace TuringTrader.BooksAndPubs
 {

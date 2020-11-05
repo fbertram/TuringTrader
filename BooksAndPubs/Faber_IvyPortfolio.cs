@@ -41,17 +41,16 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
 {
     #region Ivy Portfolio Core
-    public abstract class Faber_IvyPortfolio_Core : Algorithm
+    public abstract class Faber_IvyPortfolio_Core : AlgorithmPlusGlue
     {
         #region inputs
         protected struct AssetClass
@@ -66,14 +65,6 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         private readonly string BENCHMARK = Assets.PORTF_60_40;
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
-        #endregion
-        #region ctor
-        public Faber_IvyPortfolio_Core()
-        {
-            _plotter = new Plotter(this);
-        }
         #endregion
 
         #region public override void Run()
@@ -138,11 +129,10 @@ namespace TuringTrader.BooksAndPubs
                     double equityUnit = NetAssetValue[0] / totalWeight;
 
                     // create orders
-                    _alloc.LastUpdate = SimTime[0];
                     string message = string.Format("{0:MM/dd/yyyy}: ", SimTime[0]);
                     foreach (var i in instrumentWeights.Keys)
                     {
-                        _alloc.Allocation[i] = instrumentWeights[i] / totalWeight;
+                        Alloc.Allocation[i] = instrumentWeights[i] / totalWeight;
                         message += string.Format("{0} = {1:P2}, ", i.Symbol, instrumentWeights[i]);
 
                         int targetShares = (int)Math.Floor(instrumentWeights[i] * equityUnit / i.Close[0]);
@@ -166,8 +156,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
                     _plotter.AddStrategyHoldings(this, ASSETS.Select(nick => FindInstrument(nick)));
-                    if (_alloc.LastUpdate == SimTime[0])
-                        _plotter.AddTargetAllocationRow(_alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
                 }
             }
 
@@ -175,7 +165,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -184,12 +174,6 @@ namespace TuringTrader.BooksAndPubs
             }
 
             FitnessValue = this.CalcFitness();
-        }
-        #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

@@ -36,8 +36,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -140,6 +138,19 @@ namespace TuringTrader.Simulator
                 return Info[DataSourceParam.optionUnderlying];
             }
         }
+        #endregion
+        #region public bool IsAlgorithm
+        /// <summary>
+        /// True, if this data source is describes an algorithm
+        /// </summary>
+        public virtual bool IsAlgorithm => false;
+        #endregion
+        #region public Algorithm
+        /// <summary>
+        /// Algorithms only: return algorithm instance.
+        /// </summary>
+
+        public virtual Algorithm Algorithm => null;
         #endregion
 
         //----- mapping to simulator instruments

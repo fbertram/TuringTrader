@@ -22,9 +22,7 @@
 //==============================================================================
 
 #region Libraries
-using Microsoft.CSharp;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -329,7 +327,8 @@ namespace TuringTrader.Simulator
                 if (info.DllType != null)
                 {
                     Output.WriteLine("{0}: {1} ({2})", i++, info.Name, info.DllPath);
-                } else
+                }
+                else
                 {
                     Output.WriteLine("{0}: {1} ({2})", i++, info.Name, info.SourcePath);
                 }

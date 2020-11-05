@@ -24,15 +24,12 @@
 #pragma warning disable 1591 // CS1591: missing XML comment
 
 #region libraries
+using IBApi;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using IBApi;
-using Microsoft.Win32;
 #endregion
 
 /*
@@ -466,7 +463,7 @@ namespace TuringTrader.Simulator
                         reader.processMsgs();
                     }
                 })
-                { IsBackground = true }.Start();
+            { IsBackground = true }.Start();
 
             while (NextOrderId <= 0)
             {
@@ -580,7 +577,7 @@ namespace TuringTrader.Simulator
         override public void marketDataType(int reqId, int marketDataType)
         {
         }
-        override public  void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+        override public void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
         {
         }
         public void RequestMarketData(InstrumentInfo info, AutoResetEvent sync = null)

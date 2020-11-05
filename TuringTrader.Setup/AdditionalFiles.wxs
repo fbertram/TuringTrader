@@ -62,6 +62,10 @@
         <File Id="filDemo08" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo08_CustomData.cs" />
       </Component>
 
+      <Component Id="cmpDemo09" Directory="DemoAlgorithmsDir" Guid="*">
+        <File Id="filDemo09" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo09_WalkForwardOptimization.cs" />
+      </Component>
+
       <Component Id="cmpBooksAndPubs" Directory="AlgorithmsDir" Guid="*">
         <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\BooksAndPubs.dll" />
       </Component>

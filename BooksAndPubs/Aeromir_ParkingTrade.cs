@@ -61,7 +61,7 @@ namespace TuringTrader.BooksAndPubs
 {
     public class Aeromir_ParkingTrade : Algorithm
     {
-        public override string Name => "Parking Trade"; 
+        public override string Name => "Parking Trade";
 
         #region inputs
         private readonly double INITIAL_CASH = 1e6;

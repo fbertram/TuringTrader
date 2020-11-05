@@ -23,12 +23,10 @@
 //==============================================================================
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Algorithms.Glue;
 
 namespace TuringTrader.BooksAndPubs
 {
@@ -76,7 +74,7 @@ namespace TuringTrader.BooksAndPubs
             foreach (var s in SimTimes)
             {
                 //----- skip until all required instruments are valid
-                if (!HasInstruments(universe) 
+                if (!HasInstruments(universe)
                 || !HasInstrument(safeInstrument)
                 || !HasInstrument(benchmark))
                     continue;

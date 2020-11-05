@@ -59,21 +59,33 @@ namespace TuringTrader.Simulator
 
                 _algo.SubclassedParam = algoParam;
                 Info[DataSourceParam.name] = _algo.Name;
+
+                // by default, we run the data source through the cache,
+                // if it was instantiated from an info dictionary
+                // Info[DataSourceParam.allowSync] = "true";
             }
             #endregion
             #region  public DataSourceAlgorithm(SubclassableAlgorithm algo)
             public DataSourceAlgorithm(Algorithm algo) : base(new Dictionary<DataSourceParam, string>())
             {
                 _algo = algo;
-                Info[DataSourceParam.nickName] 
+
+                Info[DataSourceParam.nickName]
                     = Info[DataSourceParam.nickName2]
                     = Info[DataSourceParam.ticker]
                     = Info[DataSourceParam.symbolAlgo]
-                    = string.Format("algorithm:{0}", _algo.GetType().Name);
+                    = string.Format("algorithm:{0}{1}",
+                        _algo.GetType().Name,
+                        _algo.GetType().Name != _algo.Name ? ";" + _algo.Name : "");
+
                 Info[DataSourceParam.name] = _algo.Name;
+
+                // by default, we run the data source in sync, if it was
+                // instantiated from an algorithm instance
+                Info[DataSourceParam.allowSync] = "true";
             }
             #endregion
-            #region public override void LoadData(DateTime startTime, DateTime endTime)
+            #region public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             /// <summary>
             /// Run sub-classed algorithm and return bars as enumerable.
             /// </summary>
@@ -85,13 +97,31 @@ namespace TuringTrader.Simulator
 #if true
                 _algo.IsDataSource = true;
 
-                if (_algo.IsChildAlgorithm)
+                if (_algo.CanRunAsChild && Info.ContainsKey(DataSourceParam.allowSync))
                 {
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent
 
                     foreach (var bar in _algo.Run(startTime, endTime))
+                    {
                         yield return bar;
+
+                        if (!_algo.IsLastBar)
+                        {
+                            // the simulator core needs to know the next bar's
+                            // timestamp. at the same time, we want to avoid
+                            // child algorithms from running one bar ahead of
+                            // the main algo. we fix this issue by returning
+                            // a dummy bar, announcing the next timestamp.
+
+                            var dummy = Bar.NewOHLC(
+                                null, _algo.NextSimTime,
+                                0.0, 0.0, 0.0, 0.0, 0);
+
+                            yield return dummy;
+                        }
+                    }
+
                     yield break;
                 }
                 else
@@ -101,7 +131,7 @@ namespace TuringTrader.Simulator
 
                     var algoNick = Info[DataSourceParam.nickName];
 
-                    var cacheKey = new CacheId(null, "", 0,
+                    var cacheKey = new CacheId().AddParameters(
                         algoNick.GetHashCode(), // _algoName.GetHashCode(),
                         startTime.GetHashCode(),
                         endTime.GetHashCode());
@@ -180,6 +210,13 @@ namespace TuringTrader.Simulator
                 Data = data;
 #endif
             }
+            #endregion
+
+            #region public bool IsAlgorithm
+            public override bool IsAlgorithm => true;
+            #endregion
+            #region public Algorithm Algorithm
+            public override Algorithm Algorithm => _algo;
             #endregion
         }
     }

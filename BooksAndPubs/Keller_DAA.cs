@@ -30,13 +30,9 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TuringTrader.BooksAndPubs;
-using TuringTrader.Simulator;
 using TuringTrader.Algorithms.Glue;
+using TuringTrader.Simulator;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
@@ -81,7 +77,7 @@ namespace TuringTrader.BooksAndPubs
             StartTime = Globals.START_TIME;
             EndTime = Globals.END_TIME;
 
-            Deposit(IsChildAlgorithm ? 0.00 : Globals.INITIAL_CAPITAL);
+            Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION; // paper does not consider trade commissions
 
             var riskyUniverse = AddDataSources(RISKY_UNIVERSE);
@@ -159,7 +155,6 @@ namespace TuringTrader.BooksAndPubs
                     foreach (Instrument i in topInstruments)
                         weights[i] += (1.0 - CF) / t;
 
-                    Alloc.LastUpdate = SimTime[0];
                     foreach (Instrument i in Instruments)
                     {
                         // skip instruments not in our relevant universes

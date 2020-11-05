@@ -50,19 +50,16 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using TuringTrader.BooksAndPubs;
+using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
 using TuringTrader.Simulator;
-using TuringTrader.Support;
-using TuringTrader.Algorithms.Glue;
 #endregion
 
 namespace TuringTrader.BooksAndPubs
 {
 
-    public abstract class Keller_FAA_Core : Algorithm
+    public abstract class Keller_FAA_Core : AlgorithmPlusGlue
     {
         public override string Name => string.Format(
             "Keller's FAA Strategy {0}/{1}; {2}m/{3}m/{4}m; {5}/{6}/{7}%",
@@ -125,20 +122,12 @@ namespace TuringTrader.BooksAndPubs
         #region internal data
         //private readonly string BENCHMARK = Assets.PORTF_60_40;
         private readonly string BENCHMARK = "algo:Keller_FAA_EW";
-        private Plotter _plotter;
-        private AllocationTracker _alloc = new AllocationTracker();
         protected struct indicatorValues
         {
             public double r;
             public double a;
             public double v;
             public double c;
-        }
-        #endregion
-        #region ctor
-        public Keller_FAA_Core()
-        {
-            _plotter = new Plotter(this);
         }
         #endregion
 
@@ -148,7 +137,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by decreasing momentum
             var rankR = indicators
                 .OrderByDescending(kv => kv.Value.r)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -156,7 +145,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by increasing volatility
             var rankV = indicators
                 .OrderBy(kv => kv.Value.v)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -164,7 +153,7 @@ namespace TuringTrader.BooksAndPubs
             // rank by increasing correlation
             var rankC = indicators
                 .OrderBy(kv => kv.Value.c)
-                .Select((kv, i) => new { instr = kv.Key, rank = i + 1})
+                .Select((kv, i) => new { instr = kv.Key, rank = i + 1 })
                 .ToDictionary(
                     x => x.instr,
                     x => x.rank);
@@ -235,8 +224,8 @@ namespace TuringTrader.BooksAndPubs
                                 .Where(i2 => i != i2)
                                 // FIXME: how exactly are we calculating correlation here?
                                 .Average(i2 => i.Close.Correlation(i2.Close, LOOKBACK_C)[0])
-                                //.Average(i2 => i.Close.Return().Correlation(i2.Close.Return(), LOOKBACK_C)[0])
-                                //.Average(i2 => i.Close.LogReturn().Correlation(i2.Close.LogReturn(), LOOKBACK_C)[0])
+                            //.Average(i2 => i.Close.Return().Correlation(i2.Close.Return(), LOOKBACK_C)[0])
+                            //.Average(i2 => i.Close.LogReturn().Correlation(i2.Close.LogReturn(), LOOKBACK_C)[0])
                         });
 
                 // trigger monthly rebalancing
@@ -319,7 +308,7 @@ namespace TuringTrader.BooksAndPubs
 
             if (!IsOptimizing)
             {
-                _plotter.AddTargetAllocation(_alloc);
+                _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
                 _plotter.AddPositionLog(this);
                 _plotter.AddPnLHoldTime(this);
@@ -382,15 +371,15 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Keller's FAA: EW Benchmark";
 
-        private HashSet<Tuple<string, double>> _allocation;
+        private HashSet<Tuple<object, double>> _allocation;
         public Keller_FAA_EW()
         {
-            _allocation = new HashSet<Tuple<string, double>>();
+            _allocation = new HashSet<Tuple<object, double>>();
 
             foreach (var a in Keller_FAA_U7.Universe)
-                _allocation.Add(Tuple.Create(a, 0.0));
+                _allocation.Add(new Tuple<object, double>(a, 0.0));
         }
-        public override HashSet<Tuple<string, double>> ALLOCATION => _allocation;
+        public override HashSet<Tuple<object, double>> ALLOCATION => _allocation;
         public override string BENCH => Assets.PORTF_60_40;
     }
     #endregion
@@ -462,7 +451,7 @@ namespace TuringTrader.BooksAndPubs
             var L = indicators.Keys
                 .ToDictionary(
                     i => i,
-                    i => -1.0 * 
+                    i => -1.0 *
                         (WR / 100.0 * Math.Log(indicators[i].r / rmax)
                         + WV / 100.0 * Math.Log(vmin / indicators[i].v)
                         + WC / 100.0 * Math.Log((cmin + 1.0) / (indicators[i].c + 1.0)))

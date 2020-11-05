@@ -22,11 +22,6 @@
 //==============================================================================
 
 #region libraries
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -72,7 +67,7 @@ namespace TuringTrader.Simulator
         {
             get
             {
-                switch(OrderTicket.Type)
+                switch (OrderTicket.Type)
                 {
                     case OrderType.cash:
                         if (OrderTicket.Quantity > 0) return LogEntryAction.Withdrawal;

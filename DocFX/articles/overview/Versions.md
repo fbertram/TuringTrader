@@ -1,15 +1,22 @@
 # Version History
 
 - 0.13 - work in progress
-  - simulator core
-    - fix issue w/ instruments delisted one bar too early
-    - make signature of AddDataSource(DataSource) consistent w/ AddDataSource(string)
+  - algorithms
+    - breaking change: new interface for child algorithms
   - data sources
-    - fix issue w/ CSV delimiter not initialized properly
-    - fix issue w/ FRED source failing w/ regional settings not using '.' for decimals
-  - reports
-    - add average allocation
-- 0.12 - July 13, 2020
+    - fix issue w/ child algorithms running one bar ahead of main
+    - add methods to identify algorithm data sources
+  - indicators
+    - fix issue w/ some basic indicators ignoring parent cache id
+  - optimizer
+    - implement support for walk-forward-optimization
+  - demos
+    - implement demo for walk-forward-optimization
+  - showcase strategies
+    - add LogicalInvest's Universal Investment Strategy
+  - indicators
+    - fix issue w/ TrueRange series always returning last value
+- 0.12 - August 30, 2020
   - general
     - update to .Net Core 3.1
   - simulator core
@@ -17,6 +24,8 @@
     - add simulator hooks: CheckParameters, FillModel, CalcNextSimTime, IsValidSimTime, IsValidBar
     - keep full time series for NetAssetValue
     - implement infrastructure for child algorithms
+    - fix issue w/ instruments delisted one bar too early
+    - make signature of AddDataSource(DataSource) consistent w/ AddDataSource(string)
   - optimizer
     - fix issue w/ optimizer hanging when algos throw exceptions
   - data sources
@@ -28,10 +37,13 @@
     - CSV files
       - improve parsing of dates and floats
       - make delimiter configurable
+      - fix issue w/ CSV delimiter not initialized properly
     - splicing souce
       - fix issue w/ missing last bar on 'master' instrument leading to data glitch
     - Norgate
       - fix issue w/ universes not loading correctly in optimizer
+    - FRED
+      - fix issue w/ regional settings not using '.' for decimals
   - indicators
     - new indicators for correlation and covariance
   - showcase strategies
@@ -41,6 +53,8 @@
     - add Keller's Lethargic Asset Allocation
   - renderer
     - fix issue w/ C# template skipping integer values on charts
+  - reports
+    - add average allocation
   - project
     - reorganize project files
   - documentation

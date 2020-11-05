@@ -25,15 +25,15 @@
 
 #if USE_ROSLYN
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace TuringTrader.Simulator
 {
@@ -52,8 +52,8 @@ namespace TuringTrader.Simulator
         {
             string sourceText = File.ReadAllText(sourcePath);
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
-                sourceText, 
-                path: sourcePath, 
+                sourceText,
+                path: sourcePath,
                 encoding: System.Text.Encoding.UTF8);
 
             string assemblyName = Path.GetRandomFileName();
@@ -118,9 +118,9 @@ namespace TuringTrader.Simulator
                         string errorSource = sourceText.Substring(0, errorChar);
                         int lineNumber = errorSource.Split('\n').Length;
 
-                        Output.WriteLine("Line {0}: {1} - {2}", 
+                        Output.WriteLine("Line {0}: {1} - {2}",
                             lineNumber,
-                            diagnostic.Id, 
+                            diagnostic.Id,
                             diagnostic.GetMessage());
                     }
                 }

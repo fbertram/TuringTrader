@@ -26,14 +26,11 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Compression; // requires reference to System.IO.Compression.dll
-using System.Text.RegularExpressions;
 using System.Globalization;
+using System.IO;
+using System.IO.Compression; // requires reference to System.IO.Compression.dll
+using System.Linq;
+using System.Text.RegularExpressions;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -135,7 +132,7 @@ namespace TuringTrader.Simulator
                         // there are a lot of things that can go wrong here
                         // we try to move on for as long as we can and
                         // parse at least some if not most of the fields
-                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}", 
+                        Output.WriteLine("DataSourceCsv: parsing exception: {0}, {1}, {2}={3}",
                             Info[DataSourceParam.nickName], line, mapping.Key, mapping.Value);
                     }
                 }
@@ -237,7 +234,7 @@ namespace TuringTrader.Simulator
                     if (data.Count == 0
                     && bar.Time > loadStartTime
                     && prevBar != null)
-                        data.Add(prevBar); 
+                        data.Add(prevBar);
 #endif
 
                     if (bar.Time >= loadStartTime
@@ -429,7 +426,7 @@ namespace TuringTrader.Simulator
                 }
 #endif
             }
-#endregion
+            #endregion
 
             //---------- API
             #region public DataSourceCsv(Dictionary<DataSourceValue, string> info)
@@ -467,7 +464,7 @@ namespace TuringTrader.Simulator
             /// <param name="endTime">end of load range</param>
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
-                var cacheKey = new CacheId(null, "", 0,
+                var cacheKey = new CacheId().AddParameters(
                     Info[DataSourceParam.nickName].GetHashCode(),
                     startTime.GetHashCode(),
                     endTime.GetHashCode());

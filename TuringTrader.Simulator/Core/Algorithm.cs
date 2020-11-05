@@ -36,24 +36,6 @@ namespace TuringTrader.Simulator
     /// </summary>
     public abstract class Algorithm : SimulatorCore
     {
-        #region internal data
-        private List<Algorithm> _childAlgorithms = new List<Algorithm>();
-        #endregion
-        #region internal helpers
-        /// <summary>
-        /// calculate algorithm's net asset value.
-        /// </summary>
-        /// <returns>nav</returns>
-        protected override double _calcNetAssetValue()
-        {
-            var assets = base._calcNetAssetValue();
-            var childAlgos = _childAlgorithms
-                .Sum(a => a.NetAssetValue[0]);
-
-            return assets + childAlgos;
-        }
-        #endregion
-
         #region public Algorithm()
         /// <summary>
         /// Initialize trading algorithm. Most trading algorithms will
@@ -61,7 +43,7 @@ namespace TuringTrader.Simulator
         /// should be performed in Run(), to allow multiple runs of
         /// the same instance.
         /// </summary>
-        public Algorithm()
+        protected Algorithm()
         {
             // create a dictionary of optimizer parameters
             OptimizerParams = new Dictionary<string, OptimizerParam>();
@@ -95,40 +77,11 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
-        #region protected DataSource AddChildAlgorithm(Algorithm algo)
+        #region public bool CanRunAsChild
         /// <summary>
-        /// Add a subclassed algorithm to simulator. Child algorithms can be
-        /// used to create portfolios of portfolios. Note that a child algorithm 
-        /// is different from an algorithm data source: child algorithms make
-        /// use of lazy execution. In turn, algorithm data sources run before
-        /// the algorithm that uses them.
+        /// True, if this algorithm can be run as a child algorithm.
         /// </summary>
-        /// <param name="algo">subclassed algorithm</param>
-        /// <returns>newly created data source</returns>
-        protected DataSource AddChildAlgorithm(Algorithm algo)
-        {
-            DataSource newSource = DataSource.New(algo);
-            AddDataSource(newSource);
-
-            algo.ParentAlgorithm = this;
-            _childAlgorithms.Add(algo);
-
-            return newSource;
-        }
-        #endregion
-        #region protected Algorithm ParentAlgorithm
-        /// <summary>
-        /// Parent algorithm. Null, if this instance is not a child
-        /// of another algorithm.
-        /// </summary>
-        protected Algorithm ParentAlgorithm { get; private set; } = null;
-        #endregion
-        #region public bool IsChildAlgorithm
-        /// <summary>
-        /// Property indicating if this algorithm is a child of
-        /// another algorithm.
-        /// </summary>
-        public bool IsChildAlgorithm => ParentAlgorithm != null;
+        public virtual bool CanRunAsChild => false;
         #endregion
         #region public bool IsDataSource
         /// <summary>
@@ -138,40 +91,6 @@ namespace TuringTrader.Simulator
         /// of plots and logs.
         /// </summary>
         public bool IsDataSource { get; set; } = false;
-        #endregion
-        #region public IEnumerable<Algorithm> ChildAlgorithms
-        /// <summary>
-        /// Enumeration of child algorithms.
-        /// </summary>
-        public IEnumerable<Algorithm> ChildAlgorithms => _childAlgorithms;
-        #endregion
-
-        #region public void SetAllocation(double totalDollars)
-        /// <summary>
-        /// Set capital allocation for a child algorithm and move money
-        /// accordingly between the parent and child algorithm. Note that
-        /// setting allocations this way results in a zero-sum between
-        /// the parent and the child.
-        /// </summary>
-        /// <param name="totalDollars">total dollar amount to allocate</param>
-        public void SetAllocation(double totalDollars)
-        {
-            if (!IsChildAlgorithm)
-                throw new Exception("Algorithm: SetAllocation only valid for child algorithms");
-
-            var transferAmount = totalDollars - NetAssetValue[0];
-
-            if (transferAmount >= 0.0)
-            {
-                this.Deposit(transferAmount);
-                ParentAlgorithm.Withdraw(transferAmount);
-            }
-            else
-            {
-                this.Withdraw(-transferAmount);
-                ParentAlgorithm.Deposit(-transferAmount);
-            }
-        }
         #endregion
 
         #region public virtual void Run()
@@ -184,10 +103,13 @@ namespace TuringTrader.Simulator
         /// care should be taken that the implementation of this method 
         /// initializes/ resets all parameters, to allow multiple runs.
         /// </summary>
-        public virtual void Run() 
+        public virtual void Run()
         {
+            // Unnecessary assignment of a value to 'noLazyExec'
+#pragma warning disable IDE0059
             var noLazyExec = Run(null, null)
                 .ToList();
+#pragma warning restore IDE0059
         }
         #endregion
         #region public virtual IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -235,10 +157,13 @@ namespace TuringTrader.Simulator
                     double totalDays = ((DateTime)EndTime - (DateTime)WarmupStartTime).TotalDays;
                     return 100.0 * doneDays / totalDays;
                 }
+                // CA1031: Modify get_Progress to catch a more specific exception type, or rethrow the exception
+#pragma warning disable CA1031
                 catch (Exception)
                 {
                     return 0.0;
                 }
+#pragma warning restore CA1031
             }
         }
         #endregion
