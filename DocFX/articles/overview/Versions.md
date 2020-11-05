@@ -1,6 +1,7 @@
 # Version History
 
-- 0.13 - work in progress
+- 0.14 - work in progress
+- 0.13 - November 4, 2020
   - algorithms
     - breaking change: new interface for child algorithms
   - data sources
