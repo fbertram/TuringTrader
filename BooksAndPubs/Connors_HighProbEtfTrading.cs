@@ -47,14 +47,14 @@ namespace TuringTrader.BooksAndPubs
 
         protected abstract double Rules(Instrument i);
 
-        #region public override void Run()
-        public override void Run()
+        #region public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
+        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
 
-            WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME;
+            StartTime = startTime ?? Globals.START_TIME;
+            EndTime = endTime ?? Globals.END_TIME;
+            WarmupStartTime = StartTime - TimeSpan.FromDays(63);
 
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = Globals.COMMISSION;
@@ -104,6 +104,12 @@ namespace TuringTrader.BooksAndPubs
                     if (Alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(Alloc);
                 }
+
+                var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
+                yield return Bar.NewOHLC(
+                    string.Format("{0}-{1}", this.GetType().Name, market.Instrument.Symbol),
+                    SimTime[0],
+                    v, v, v, v, 0);
             }
 
             //========== post processing ==========
@@ -119,12 +125,6 @@ namespace TuringTrader.BooksAndPubs
             }
 
             FitnessValue = this.CalcFitness();
-        }
-        #endregion
-        #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
         }
         #endregion
     }

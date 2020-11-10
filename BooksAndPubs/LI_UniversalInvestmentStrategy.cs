@@ -62,8 +62,8 @@ namespace TuringTrader.BooksAndPubs
         #region optional customization
         public virtual int NUM_ASSETS { get; set; } = 3;
 
-        protected virtual string TBILL => null;
-        protected virtual string BENCH => Assets.PORTF_60_40;
+        public virtual string TBILL { get; set; } = null;
+        public virtual string BENCH { get; set; } = Assets.PORTF_60_40;
 
         protected virtual bool IsOptimizationDay => SimTime[0].Month != NextSimTime.Month;
         protected virtual bool IsTradingDay => IsOptimizationDay;
@@ -73,6 +73,13 @@ namespace TuringTrader.BooksAndPubs
         protected virtual Dictionary<Instrument, double> Tranching(Dictionary<Instrument, double> weights) => weights;
         #endregion
         #region asset allocation optimizer
+        protected virtual (double, double) CalcReturnAndRisk(IEnumerable<double> returnSeries)
+        {
+            var annualizedReturn = 252.0 * returnSeries.Average();
+            var annualizedVolatility = 100.0 * Math.Sqrt(252.0) * returnSeries.StandardDeviation();
+
+            return (annualizedReturn, annualizedVolatility);
+        }
         protected Dictionary<Instrument, double> Optimize(IEnumerable<Instrument> assets, Instrument tbill)
         {
             // NOTE: this function is called not called on very bar, but
@@ -121,21 +128,21 @@ namespace TuringTrader.BooksAndPubs
                     else
                     {
                         // all weights set: calculate fitness
-                        var returnSeries = Enumerable.Range(0, WFO_LOOKBACK)
-                            .Select(t => currentWeights
-                                .Sum(kv => kv.Value / 100.0 * Math.Log(kv.Key.Close[t] / kv.Key.Close[t + 1])))
-                            .ToList();
-
-                        var annualizedReturn = 252.0 * returnSeries.Average();
-                        var annualizedVolatility = 100.0 * Math.Sqrt(252.0) * returnSeries.StandardDeviation();
-
-                        var currentFitness = (annualizedReturn - riskFreeRate)
-                            / Math.Pow(Math.Max(1e-10, annualizedVolatility), VOL_WEIGHT / 100.0);
-
                         var currentWeightsFloat = currentWeights
                             .ToDictionary(kv => kv.Key, kv => kv.Value / 100.0);
 
-                        var currentValidity = IsAllocValid(currentWeightsFloat, annualizedReturn, annualizedVolatility);
+                        var currentReturnSeries = Enumerable.Range(0, WFO_LOOKBACK)
+                            .Select(t => currentWeightsFloat
+                                .Sum(kv => kv.Value * Math.Log(kv.Key.Close[t] / kv.Key.Close[t + 1])))
+                            .ToList();
+
+                        // typically, this is annualized return and annualized volatility
+                        (var currentReturn, var currentRisk) = CalcReturnAndRisk(currentReturnSeries);
+
+                        var currentFitness = (currentReturn - riskFreeRate)
+                            / Math.Pow(Math.Max(1e-10, currentRisk), VOL_WEIGHT / 100.0);
+
+                        var currentValidity = IsAllocValid(currentWeightsFloat, currentReturn, currentRisk);
 
                         // we aim to improve our overall fitness score
                         // a new allocation can only replace the current allocation
