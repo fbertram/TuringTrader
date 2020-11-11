@@ -1,6 +1,8 @@
 # Version History
 
 - 0.14 - work in progress
+  - reports
+    - added rolling returns & drawdowns
 - 0.13 - November 4, 2020
   - algorithms
     - breaking change: new interface for child algorithms

@@ -1584,6 +1584,122 @@ namespace TuringTrader
             return retvalue;
         }
         #endregion
+        #region protected PlotModel RenderRollingReturns()
+        protected PlotModel RenderRollingReturns()
+        {
+            const double ROLLING_YEARS = 1.0;
+            const double ROLLING_DAYS = ROLLING_YEARS * 365.25;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = string.Format("{0}-Year Rolling Returns & Drawdowns", ROLLING_YEARS);
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.StartPosition = 0.35;
+            yAxis.EndPosition = 1.0;
+            yAxis.Key = "y";
+
+            var ddAxis = new LinearAxis();
+            ddAxis.Title = "Drawdown [%]";
+            ddAxis.Position = AxisPosition.Right;
+            ddAxis.StartPosition = 0.0;
+            ddAxis.EndPosition = 0.30;
+            ddAxis.Key = "dd";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+            plotModel.Axes.Add(ddAxis);
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var eqSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(eqSeries);
+
+                var ddSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                        Fill = color,
+                    }
+                    : new LineSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(ddSeries);
+
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var datePastRaw = dateCurrent - TimeSpan.FromDays(ROLLING_DAYS);
+                    var datePast = series.Keys
+                        .OrderBy(d => Math.Abs((d - datePastRaw).TotalDays))
+                        .First();
+
+                    if (Math.Abs((datePastRaw - datePast).TotalDays) > 5)
+                        continue;
+
+                    var navCurrent = point.Value;
+                    var navPast = series[datePast];
+                    var retCurrent = 100.0 * (Math.Pow(navCurrent / navPast, 1.0 / ROLLING_YEARS) - 1.0);
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        (double)retCurrent));
+
+                    var navPeak = series
+                        .Where(kv => kv.Key >= datePast && kv.Key <= dateCurrent)
+                        .Max(kv => kv.Value);
+                    var dd = 100.0 * (navCurrent / navPeak - 1.0);
+
+                    ddSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        dd));
+                }
+            }
+
+            return plotModel;
+        }
+        #endregion
 
         #region public void SaveAsPng(string chartToSave, string pngFilePath)
         /// <summary>
@@ -1769,6 +1885,7 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.ANNUAL_BARS;
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
+                    yield return Plotter.SheetNames.ROLLING_RETUNRS;
 
                     foreach (string chart in PlotData.Keys.Skip(1))
                         yield return chart;
@@ -1808,6 +1925,9 @@ namespace TuringTrader
                     break;
                 case Plotter.SheetNames.MONTE_CARLO:
                     retvalue = RenderMonteCarlo();
+                    break;
+                case Plotter.SheetNames.ROLLING_RETUNRS:
+                    retvalue = RenderRollingReturns();
                     break;
                 case Plotter.SheetNames.EXPOSURE_VS_TIME:
                     retvalue = RenderExposure(selectedChart);
