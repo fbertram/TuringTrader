@@ -1667,6 +1667,8 @@ namespace TuringTrader
 
                 plotModel.Series.Add(ddSeries);
 
+                var navCurrentFiltered = (double?)null;
+                var navPastFiltered = (double?)null;
                 foreach (var point in series)
                 {
                     var dateCurrent = point.Key;
@@ -1680,20 +1682,114 @@ namespace TuringTrader
 
                     var navCurrent = point.Value;
                     var navPast = series[datePast];
-                    var retCurrent = 100.0 * (Math.Pow(navCurrent / navPast, 1.0 / ROLLING_YEARS) - 1.0);
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navCurrentFiltered = navCurrentFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navCurrentFiltered) + navCurrentFiltered;
+                    navPastFiltered = navPastFiltered == null
+                        ? navPast
+                        : ALPHA * (navPast - navPastFiltered) + navPastFiltered;
+                    var retCurrent = 100.0 * (Math.Pow((double)(navCurrentFiltered / navPastFiltered), 1.0 / ROLLING_YEARS) - 1.0);
 
                     eqSeries.Points.Add(new DataPoint(
                         DateTimeAxis.ToDouble(dateCurrent),
-                        (double)retCurrent));
+                        retCurrent));
 
                     var navPeak = series
                         .Where(kv => kv.Key >= datePast && kv.Key <= dateCurrent)
                         .Max(kv => kv.Value);
-                    var dd = 100.0 * (navCurrent / navPeak - 1.0);
+                    var dd = 100.0 * ((double)navCurrentFiltered / navPeak - 1.0);
 
                     ddSeries.Points.Add(new DataPoint(
                         DateTimeAxis.ToDouble(dateCurrent),
                         dd));
+                }
+            }
+
+            return plotModel;
+        }
+        #endregion
+        #region protected PlotModel RenderTrackingToBenchmark()
+        protected PlotModel RenderTrackingToBenchmark()
+        {
+            if (_numYLabels < 2)
+                return null;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = "Tracking to Benchmark";
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Excess Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.StartPosition = 0.0;
+            yAxis.EndPosition = 1.0;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            var benchSeries = _getSeries(_benchYLabel);
+
+            //===== create series
+            for (int i = 0; i < _numYLabels - 1; i++)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var eqSeries = /*CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    :*/ new LineSeries
+                    {
+                        Title = yLabel + " vs " + _benchYLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(eqSeries);
+
+                var navFiltered = (double?)null;
+                var benchFiltered = (double?)null;
+                var scale = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var navCurrent = point.Value;
+                    var benchCurrent = benchSeries[dateCurrent];
+
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navFiltered = navFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                    benchFiltered = benchFiltered == null
+                        ? benchCurrent
+                        : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                    scale = scale ?? benchCurrent / navCurrent;
+
+                    var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        tracking));
                 }
             }
 
@@ -1886,6 +1982,7 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
                     yield return Plotter.SheetNames.ROLLING_RETUNRS;
+                    yield return Plotter.SheetNames.TRACKING_TO_BENCH;
 
                     foreach (string chart in PlotData.Keys.Skip(1))
                         yield return chart;
@@ -1928,6 +2025,9 @@ namespace TuringTrader
                     break;
                 case Plotter.SheetNames.ROLLING_RETUNRS:
                     retvalue = RenderRollingReturns();
+                    break;
+                case Plotter.SheetNames.TRACKING_TO_BENCH:
+                    retvalue = RenderTrackingToBenchmark();
                     break;
                 case Plotter.SheetNames.EXPOSURE_VS_TIME:
                     retvalue = RenderExposure(selectedChart);
