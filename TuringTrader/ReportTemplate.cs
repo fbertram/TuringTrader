@@ -106,22 +106,22 @@ namespace TuringTrader
         private const string RF_YIELD = "FRED:DTB3"; // 3-Month Treasury Bill: Secondary Market Rate
         #endregion
         #region internal helper functions
-        private string _firstChartName => PlotData.First().Key;
-        private List<Dictionary<string, object>> _firstChart => PlotData.First().Value;
+        protected string _firstChartName => PlotData.First().Key;
+        protected List<Dictionary<string, object>> _firstChart => PlotData.First().Value;
 
-        private string _xLabel => _firstChart.First().First().Key;
-        private Type xType => _firstChart.First().First().Value.GetType();
+        protected string _xLabel => _firstChart.First().First().Key;
+        protected Type xType => _firstChart.First().First().Value.GetType();
 
-        private List<string> _yLabels => _firstChart.First().Keys.Skip(1).ToList();
-        private int _numYLabels => _yLabels.Count();
-        private string _firstYLabel => _yLabels.First();
-        private string _benchYLabel => _yLabels.Last();
+        protected List<string> _yLabels => _firstChart.First().Keys.Skip(1).ToList();
+        protected int _numYLabels => _yLabels.Count();
+        protected string _firstYLabel => _yLabels.First();
+        protected string _benchYLabel => _yLabels.Last();
 
-        private DateTime _startDate => (DateTime)_firstChart.First()[_xLabel];
-        private DateTime _endDate => (DateTime)_firstChart.Last()[_xLabel];
-        private double _numYears => (_endDate - _startDate).TotalDays / 365.25;
+        protected DateTime _startDate => (DateTime)_firstChart.First()[_xLabel];
+        protected DateTime _endDate => (DateTime)_firstChart.Last()[_xLabel];
+        protected double _numYears => (_endDate - _startDate).TotalDays / 365.25;
 
-        private Dictionary<DateTime, double> _getSeries(string yLabel)
+        protected Dictionary<DateTime, double> _getSeries(string yLabel)
         {
             var xLabel = _xLabel;
             var series = new Dictionary<DateTime, double>();
@@ -133,11 +133,11 @@ namespace TuringTrader
             return series;
         }
 
-        private double _startValue(string label) => _getSeries(label).First().Value;
-        private double _endValue(string label) => _getSeries(label).Last().Value;
+        protected double _startValue(string label) => _getSeries(label).First().Value;
+        protected double _endValue(string label) => _getSeries(label).Last().Value;
 
-        private double _cagr(string label) => Math.Pow(_endValue(label) / _startValue(label), 1.0 / _numYears) - 1.0;
-        private double _mdd(string label)
+        protected double _cagr(string label) => Math.Pow(_endValue(label) / _startValue(label), 1.0 / _numYears) - 1.0;
+        protected double _mdd(string label)
         {
             double max = -1e99;
             double mdd = 0.0;
@@ -155,7 +155,7 @@ namespace TuringTrader
             return mdd;
         }
 
-        private Dictionary<DateTime, double> _monthlyReturns(string label)
+        protected Dictionary<DateTime, double> _monthlyReturns(string label)
         {
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
@@ -181,7 +181,7 @@ namespace TuringTrader
             return monthlyReturns;
         }
 
-        private Dictionary<DateTime, double> _monthlySpxReturns()
+        protected Dictionary<DateTime, double> _monthlySpxReturns()
         {
             DataSource spx = DataSource.New(SPXTR);
             var data = spx.LoadData(_startDate, _endDate);
@@ -210,13 +210,13 @@ namespace TuringTrader
             return monthlyReturns;
         }
 
-        double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
-        double _stdMonthlyReturn(string label)
+        protected double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
+        protected double _stdMonthlyReturn(string label)
         {
             double avg = _avgMonthlyReturrn(label);
             return Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
         }
-        double _sharpeRatio(string label)
+        protected double _sharpeRatio(string label)
         {
             var exc = _excMonthlyReturns(label);
             var avg = exc.Values.Average(r => r);
@@ -231,7 +231,7 @@ namespace TuringTrader
         private string _xamlLabel(string raw) { return raw.Replace("^", string.Empty); }
 
         private Dictionary<DateTime, double> _rfMonthlyReturnsCache = null;
-        private Dictionary<DateTime, double> _rfMonthlyReturns
+        protected private Dictionary<DateTime, double> _rfMonthlyReturns
         {
             get
             {
@@ -261,7 +261,7 @@ namespace TuringTrader
             }
         }
 
-        private double _maxFlatDays(string label)
+        protected double _maxFlatDays(string label)
         {
             double peakValue = -1e99;
             DateTime peakTime = _startDate;
@@ -285,7 +285,7 @@ namespace TuringTrader
             return maxFlat;
         }
 
-        private Dictionary<DateTime, double> _excMonthlyReturns(string label)
+        protected Dictionary<DateTime, double> _excMonthlyReturns(string label)
         {
             Dictionary<DateTime, double> rfMonthlyReturns = _rfMonthlyReturns;
             Dictionary<DateTime, double> monthlyReturns = _monthlyReturns(label)
@@ -296,7 +296,7 @@ namespace TuringTrader
                 .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - _rfMonthlyReturns[r.Key]));
         }
 
-        private double _beta(string seriesLabel, string benchLabel)
+        protected double _beta(string seriesLabel, string benchLabel)
         {
             var series = _monthlyReturns(seriesLabel);
             var seriesAvg = series.Values.Average(v => v);
@@ -312,7 +312,7 @@ namespace TuringTrader
             return covar / benchVar;
         }
 
-        private double _betaToSpx(string seriesLabel)
+        protected double _betaToSpx(string seriesLabel)
         {
             var bench = _monthlySpxReturns();
             var series = _monthlyReturns(seriesLabel)
@@ -330,7 +330,7 @@ namespace TuringTrader
             return covar / benchVar;
         }
 
-        private double _ulcerIndex(string label)
+        protected double _ulcerIndex(string label)
         {
             double peak = 0.0;
             double sumDd2 = 0.0;
@@ -346,7 +346,7 @@ namespace TuringTrader
             return Math.Sqrt(sumDd2 / N);
         }
 
-        private double _ulcerPerformanceIndex(string label)
+        protected double _ulcerPerformanceIndex(string label)
         {
             double perf = _cagr(label);
             double ulcer = _ulcerIndex(label);
@@ -354,7 +354,7 @@ namespace TuringTrader
             return martinRatio;
         }
 
-        private List<double> _returnDistribution(string label)
+        protected List<double> _returnDistribution(string label)
         {
             List<double> returns = new List<double>();
             double? prevValue = null;
@@ -374,7 +374,7 @@ namespace TuringTrader
                 .ToList();
         }
 
-        private double _probabilityOfReturn(List<double> distr, double val)
+        protected double _probabilityOfReturn(List<double> distr, double val)
         {
             var less = distr
                 .Where(v => v <= val)
