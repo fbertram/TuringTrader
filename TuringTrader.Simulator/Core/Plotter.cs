@@ -294,11 +294,11 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// Name of auto-generated sheet with comparison of rolling returns.
             /// </summary>
-            public const string ROLLING_RETUNRS = "Rolling Returns and Drawdowns";
+            public const string ROLLING_RETUNRS = "Rolling Returns and Tracking to Benchmark";
             /// <summary>
             /// Name of auto-generated sheet with tracking to benchmark.
             /// </summary>
-            public const string TRACKING_TO_BENCH = "Tracking to Benchmark";
+            //public const string TRACKING_TO_BENCH = "Tracking to Benchmark";
             /// <summary>
             /// Name of explicitly generated sheet with strategy exposure over time.
             /// </summary>

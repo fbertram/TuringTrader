@@ -1592,6 +1592,170 @@ namespace TuringTrader
 
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
+            plotModel.Title = string.Format("{0}-Year Rolling Returns & Tracking to Benchmark", ROLLING_YEARS);
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var retAxis = new LinearAxis();
+            retAxis.Title = "Annualized Rolling Return [%]";
+            retAxis.Position = AxisPosition.Right;
+            retAxis.StartPosition = 0.5;
+            retAxis.EndPosition = 1.0;
+            retAxis.Key = "ret";
+
+            var trkAxis = new LinearAxis();
+            trkAxis.Title = "Tracking to Benchmark [%]";
+            trkAxis.Position = AxisPosition.Right;
+            trkAxis.StartPosition = 0.0;
+            trkAxis.EndPosition = 0.5;
+            trkAxis.Key = "trk";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(retAxis);
+            plotModel.Axes.Add(trkAxis);
+
+            #region plotRollingReturn
+            void plotRollingReturn(int i)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var retSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "ret",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "ret",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(retSeries);
+
+                var navCurrentFiltered = (double?)null;
+                var navPastFiltered = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var datePastRaw = dateCurrent - TimeSpan.FromDays(ROLLING_DAYS);
+                    var datePast = series.Keys
+                        .OrderBy(d => Math.Abs((d - datePastRaw).TotalDays))
+                        .First();
+
+                    if (Math.Abs((datePastRaw - datePast).TotalDays) > 5)
+                        continue;
+
+                    var navCurrent = point.Value;
+                    var navPast = series[datePast];
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navCurrentFiltered = navCurrentFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navCurrentFiltered) + navCurrentFiltered;
+                    navPastFiltered = navPastFiltered == null
+                        ? navPast
+                        : ALPHA * (navPast - navPastFiltered) + navPastFiltered;
+                    var retCurrent = 100.0 * (Math.Pow((double)(navCurrentFiltered / navPastFiltered), 1.0 / ROLLING_YEARS) - 1.0);
+
+                    retSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        retCurrent));
+                }
+            }
+            #endregion
+            #region plotTracking
+            void plotTracking(int i)
+            {
+                if (i >= _numYLabels - 1)
+                    return;
+
+                var benchSeries = _getSeries(_benchYLabel);
+
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var trkSeries = /*CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    :*/ new LineSeries
+                        {
+                            //Title = yLabel + " vs " + _benchYLabel,
+                            IsVisible = true,
+                            XAxisKey = "x",
+                            YAxisKey = "trk",
+                            Color = color,
+                        };
+
+                plotModel.Series.Add(trkSeries);
+
+                var navFiltered = (double?)null;
+                var benchFiltered = (double?)null;
+                var scale = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var navCurrent = point.Value;
+                    var benchCurrent = benchSeries[dateCurrent];
+
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navFiltered = navFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                    benchFiltered = benchFiltered == null
+                        ? benchCurrent
+                        : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                    scale = scale ?? benchCurrent / navCurrent;
+
+                    var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                    trkSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        tracking));
+                }
+            }
+            #endregion
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                plotRollingReturn(i);
+                plotTracking(i);
+            }
+
+            return plotModel;
+        }
+#if false
+        protected PlotModel RenderRollingReturns()
+        {
+            const double ROLLING_YEARS = 1.0;
+            const double ROLLING_DAYS = ROLLING_YEARS * 365.25;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
             plotModel.Title = string.Format("{0}-Year Rolling Returns & Drawdowns", ROLLING_YEARS);
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
@@ -1708,8 +1872,10 @@ namespace TuringTrader
 
             return plotModel;
         }
+#endif
         #endregion
         #region protected PlotModel RenderTrackingToBenchmark()
+#if false
         protected PlotModel RenderTrackingToBenchmark()
         {
             if (_numYLabels < 2)
@@ -1795,6 +1961,7 @@ namespace TuringTrader
 
             return plotModel;
         }
+#endif
         #endregion
 
         #region public void SaveAsPng(string chartToSave, string pngFilePath)
@@ -1982,7 +2149,7 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
                     yield return Plotter.SheetNames.ROLLING_RETUNRS;
-                    yield return Plotter.SheetNames.TRACKING_TO_BENCH;
+                    //yield return Plotter.SheetNames.TRACKING_TO_BENCH;
 
                     foreach (string chart in PlotData.Keys.Skip(1))
                         yield return chart;
@@ -2026,9 +2193,9 @@ namespace TuringTrader
                 case Plotter.SheetNames.ROLLING_RETUNRS:
                     retvalue = RenderRollingReturns();
                     break;
-                case Plotter.SheetNames.TRACKING_TO_BENCH:
-                    retvalue = RenderTrackingToBenchmark();
-                    break;
+                //case Plotter.SheetNames.TRACKING_TO_BENCH:
+                //    retvalue = RenderTrackingToBenchmark();
+                //    break;
                 case Plotter.SheetNames.EXPOSURE_VS_TIME:
                     retvalue = RenderExposure(selectedChart);
                     break;
