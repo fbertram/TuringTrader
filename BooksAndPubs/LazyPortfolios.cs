@@ -63,7 +63,10 @@ namespace TuringTrader.BooksAndPubs
 
             foreach (var s in SimTimes)
             {
-                if (!HasInstruments(allocation.Select(a => a.Item1)) || !HasInstrument(bench))
+                if (!HasInstruments(allocation.Select(a => a.Item1)))
+                    continue;
+
+                if (!IsDataSource && !HasInstrument(bench))
                     continue;
 
                 if (IsTradingDay)
