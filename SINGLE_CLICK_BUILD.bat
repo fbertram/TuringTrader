@@ -25,21 +25,27 @@ echo ***************************************************************************
 echo *** version info
 echo ***************************************************************************
 
-rem example: git tag = 0.14-wip
-rem          => TT_GIT=0.14-wip-10-g3a495bf
+rem example: git tag = 0.13
+rem          git describe = 0.13-14-g87a9f97
+rem          TT_GIT = 0.13-14-g87a9f97
+rem          TT_VER = 0.13.14-g87a9f97
 for /f "tokens=*" %%g in ('git describe') do (set TT_GIT=%%g)
 
-set TT_SUF=%TT_GIT:*-=%
-call set TT_PRE=%%TT_GIT:%TT_SUF%=%%
-set TT_PRE=%TT_PRE:-=%
+set TT_VER=%TT_GIT:-g=#g%
+set TT_VER=%TT_VER:-=.%
+set TT_VER=%TT_VER:#g=-g%
+
+set _SUFFIX=%TT_VER:*-=%
+call set TT_V0=%%TT_VER:%_SUFFIX%=%%
+set TT_V0=%TT_V0:-=%
+
+echo *** GIT INFO:  %TT_GIT%
+echo *** VERSION:   %TT_VER%
+echo *** VERSION-0: %TT_V0%
 
 pushd TuringTrader
 echo public static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
 popd
-
-echo *** GIT TAG: %TT_GIT%
-echo *** PREFIX:  %TT_PRE%
-echo *** SUFFIX:  %TT_SUF%
 
 echo *
 echo *
@@ -47,8 +53,8 @@ echo ***************************************************************************
 echo *** build project
 echo ***************************************************************************
 
-dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64 /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
-dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
+dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
+dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
 
 echo *
 echo *
@@ -56,7 +62,7 @@ echo ***************************************************************************
 echo *** publish project
 echo ***************************************************************************
 
-dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
+dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:Version=%TT_VER%
 
 echo *
 echo *
@@ -64,6 +70,7 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
+rem * uses TT_V0 environment variable
 rem * 'dotnet build' cannot build WiX project
 devenv TuringTrader.sln /Build "Release|x64" /Project TuringTrader.Setup
 
