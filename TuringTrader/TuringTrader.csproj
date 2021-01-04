@@ -27,8 +27,4 @@
     <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="cd $(ProjectDir)&#xD;&#xA;echo public static class GitInfo { public static string Version = @^&quot; &gt; GitVersion.cs&#xD;&#xA;git describe &gt;&gt; GitVersion.cs&#xD;&#xA;echo ^&quot;; } &gt;&gt; GitVersion.cs" />
-  </Target>
-
 </Project>
