@@ -22,11 +22,33 @@ rd /s /q TuringTrader.Setup\obj
 echo *
 echo *
 echo ***************************************************************************
+echo *** version info
+echo ***************************************************************************
+
+rem example: git tag = 0.14-wip
+rem          => TT_GIT=0.14-wip-10-g3a495bf
+for /f "tokens=*" %%g in ('git describe') do (set TT_GIT=%%g)
+
+set TT_SUF=%TT_GIT:*-=%
+call set TT_PRE=%%TT_GIT:%TT_SUF%=%%
+set TT_PRE=%TT_PRE:-=%
+
+pushd TuringTrader
+echo public static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
+popd
+
+echo *** GIT TAG: %TT_GIT%
+echo *** PREFIX:  %TT_PRE%
+echo *** SUFFIX:  %TT_SUF%
+
+echo *
+echo *
+echo ***************************************************************************
 echo *** build project
 echo ***************************************************************************
 
-dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64
-dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64
+dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64 /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
+dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
 
 echo *
 echo *
@@ -34,7 +56,7 @@ echo ***************************************************************************
 echo *** publish project
 echo ***************************************************************************
 
-dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile
+dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:VersionPrefix=%TT_PRE% /p:VersionSuffix=%TT_SUF%
 
 echo *
 echo *
