@@ -296,10 +296,6 @@ namespace TuringTrader.Simulator
             /// </summary>
             public const string ROLLING_RETUNRS = "Rolling Returns and Tracking to Benchmark";
             /// <summary>
-            /// Name of auto-generated sheet with tracking to benchmark.
-            /// </summary>
-            //public const string TRACKING_TO_BENCH = "Tracking to Benchmark";
-            /// <summary>
             /// Name of explicitly generated sheet with strategy exposure over time.
             /// </summary>
             public const string EXPOSURE_VS_TIME = "Exposure vs Time";
