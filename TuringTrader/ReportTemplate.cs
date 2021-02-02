@@ -1539,10 +1539,10 @@ namespace TuringTrader
             //--- cagr over various periods
             var periods = new List<Tuple<string, double>>
             {
-                //Tuple.Create("cagr-1y", 1.0),
-                //Tuple.Create("cagr-2y", 2.0),
-                //Tuple.Create("cagr-5y", 5.0),
-                //Tuple.Create("cagr-10y", 10.0),
+                Tuple.Create("cagr-1y", 1.0),
+                Tuple.Create("cagr-2y", 2.0),
+                Tuple.Create("cagr-5y", 5.0),
+                Tuple.Create("cagr-10y", 10.0),
                 Tuple.Create("cagr-max", 100.0),
             };
 
@@ -1567,10 +1567,10 @@ namespace TuringTrader
             var metrics = new List<Tuple<string, Func<double>>>
             {
                 Tuple.Create<string, Func<double>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
-                //Tuple.Create<string, Func<double>>("mdd", () => MDD(FIRST_Y_LABEL)),
-                //Tuple.Create<string, Func<double>>("sharpe", () => SHARPE_RATIO(FIRST_Y_LABEL)),
+                Tuple.Create<string, Func<double>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
                 Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
-                //Tuple.Create<string, Func<double>>("martin", () => ULCER_PERFORMANCE_INDEX(FIRST_Y_LABEL)),
+                Tuple.Create<string, Func<double>>("sharpe", () => _sharpeRatio(_firstYLabel)),
+                Tuple.Create<string, Func<double>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
             };
 
             foreach (var m in metrics)
