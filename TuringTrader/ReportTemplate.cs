@@ -49,6 +49,11 @@ namespace TuringTrader
         /// </summary>
         protected virtual bool CFG_IS_REPORT => false;
         /// <summary>
+        /// Configure vertical axis. If this property is set to true,
+        /// the charts scale the vertical axis logarithmically.
+        /// </summary>
+        protected virtual bool CFG_IS_LOG => false;
+        /// <summary>
         /// Configure calculation of beta. If this property is set to false,
         /// beta is calculated vs the benchmark. If this property is set to true,
         /// beta is calculated vs the S&P 500.
@@ -581,7 +586,7 @@ namespace TuringTrader
             xAxis.Position = AxisPosition.Bottom;
             xAxis.Key = "x";
 
-            var yAxis = new LinearAxis();
+            var yAxis = CFG_IS_LOG ? (OxyPlot.Axes.Axis)new LogarithmicAxis() : new LinearAxis();
             yAxis.Position = AxisPosition.Right;
             yAxis.Key = "y";
 
