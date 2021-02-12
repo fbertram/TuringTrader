@@ -54,6 +54,11 @@ namespace TuringTrader
         /// </summary>
         protected virtual bool CFG_IS_LOG => false;
         /// <summary>
+        /// Configure chart legend. If this property is set to false,
+        /// the chart will not have a legend.
+        /// </summary>
+        protected virtual bool CFG_HAS_LEGEND => true;
+        /// <summary>
         /// Configure calculation of beta. If this property is set to false,
         /// beta is calculated vs the benchmark. If this property is set to true,
         /// beta is calculated vs the S&P 500.
@@ -621,7 +626,7 @@ namespace TuringTrader
                     if (!allSeries.ContainsKey(yLabel))
                     {
                         var newSeries = new LineSeries();
-                        newSeries.Title = yLabel;
+                        newSeries.Title = CFG_HAS_LEGEND ? yLabel : "";
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
