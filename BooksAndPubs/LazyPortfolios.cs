@@ -39,6 +39,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual string BENCH => Assets.PORTF_60_40;
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
+        public virtual double COMMISSION => 0.0; // lazy portfolios typically w/o commission
         public virtual bool IsTradingDay => SimTime[0].Month != NextSimTime.Month;
         #endregion
 
@@ -52,7 +53,7 @@ namespace TuringTrader.BooksAndPubs
             WarmupStartTime = StartTime - TimeSpan.FromDays(365);
 
             Deposit(Globals.INITIAL_CAPITAL);
-            CommissionPerShare = 0.0; // lazy portfolios w/o commissions
+            CommissionPerShare = COMMISSION;
 
             var allocation = ALLOCATION
                 .Select(a => Tuple.Create(AddDataSource(a.Item1), a.Item2))
