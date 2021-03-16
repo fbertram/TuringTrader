@@ -382,7 +382,8 @@ namespace TuringTrader.Support
             double vegai = GVega(S, X, T, r, b, vi);
             double minDiff = Math.Abs(cm - ci);
 
-            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff)
+            var maxIterations = 1000;
+            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff && maxIterations > 0)
             {
                 vi = vi - (ci - cm) / vegai;
                 vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
