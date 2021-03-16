@@ -383,7 +383,7 @@ namespace TuringTrader.Support
             double minDiff = Math.Abs(cm - ci);
 
             var maxIterations = 1000;
-            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff && maxIterations > 0)
+            while (Math.Abs(cm - ci) >= epsilon && Math.Abs(cm - ci) <= minDiff && maxIterations-- > 0)
             {
                 vi = vi - (ci - cm) / vegai;
                 vi = Math.Max(1e-5, vi); // FUB addition: vi must never become zero
