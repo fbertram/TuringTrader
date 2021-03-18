@@ -2,7 +2,7 @@
   <MemoryInMB>8192</MemoryInMB>
   <MappedFolders>
     <MappedFolder>
-      <HostFolder>C:\Users\Felix\Documents\Trading\TuringTrader\TuringTrader\More\TuringTrader.Sandbox\Scripts</HostFolder>
+      <HostFolder>C:\Users\fbert\Documents\TuringTrader\More\TuringTrader.Sandbox\Scripts</HostFolder>
       <ReadOnly>true</ReadOnly>
     </MappedFolder>
   </MappedFolders>
