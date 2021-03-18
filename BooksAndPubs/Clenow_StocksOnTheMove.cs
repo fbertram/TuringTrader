@@ -118,6 +118,14 @@ namespace TuringTrader.BooksAndPubs
         /// </summary>
         /// <param name="w"></param>
         protected virtual void ManageWeights(Dictionary<Instrument, double> w) { }
+
+        /// <summary>
+        /// allow new entries: this covers both new positions, and increasing of existing positions.
+        /// </summary>
+        /// <param name="sp500">S&P 500 instrument</param>
+        /// <returns>true, if new entries are allowed</returns>
+        protected virtual bool AllowNewEntries(Instrument sp500)
+            => sp500.Close.SMA(INDEX_FLT)[0] > sp500.Close.SMA(INDEX_TREND)[0];
         #endregion
         #region private data
         private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
@@ -177,8 +185,7 @@ namespace TuringTrader.BooksAndPubs
                 // NOTE: the 10-day SMA on the benchmark is _not_ mentioned in
                 //       the book. We added it here, to compensate for the
                 //       simplified re-balancing schedule.
-                bool allowNewEntries = sp500.Instrument.Close.SMA(INDEX_FLT)[0]
-                    > sp500.Instrument.Close.SMA(INDEX_TREND)[0];
+                bool allowNewEntries = AllowNewEntries(sp500.Instrument);
 
                 // determine current S&P 500 constituents
                 var constituents = Instruments
