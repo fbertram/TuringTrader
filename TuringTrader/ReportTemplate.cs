@@ -1980,16 +1980,23 @@ namespace TuringTrader
         /// </summary>
         /// <param name="chartToSave">chart to save</param>
         /// <param name="pngFilePath">path to PNG</param>
-        public void SaveAsPng(string chartToSave, string pngFilePath)
+        public void SaveAsPng(string chartToSave, string pngFilePath, int width = 1280, int height = 720)
         {
             PlotModel model = (PlotModel)GetModel(chartToSave);
 
+#if false
+            using (var stream = File.Create(pngFilePath))
+            {
+                var exporter = new OxyPlot.Wpf.SvgExporter();
+                exporter.Export(model, stream);
+            }
+#else
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
-                //1280, 1024, // Felix' odd one
-                //1920, 1080, // 1080p
-                1280, 720, // 720p
+                width, height,
                 OxyColors.White);
+                //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
+#endif
         }
         #endregion
         #region public void SaveAsCsv(string chartToSave, string csvFilePath)
