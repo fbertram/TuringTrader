@@ -128,7 +128,7 @@ namespace TuringTrader.BooksAndPubs
             => sp500.Close.SMA(INDEX_FLT)[0] > sp500.Close.SMA(INDEX_TREND)[0];
         #endregion
         #region private data
-        private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        protected virtual string BENCHMARK { get; set; } = Assets.STOCKS_US_LG_CAP;
         private readonly string SP500 = "$SPX";
         #endregion
 
