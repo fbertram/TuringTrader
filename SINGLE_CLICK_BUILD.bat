@@ -35,8 +35,9 @@ set TT_VER=%TT_GIT:-g=#g%
 set TT_VER=%TT_VER:-=.%
 set TT_VER=%TT_VER:#g=-g%
 
-set _SUFFIX=%TT_VER:*-=%
-call set TT_V0=%%TT_VER:%_SUFFIX%=%%
+set _TT_VER=%TT_VER%-gdummy
+set _SUFFIX=%_TT_VER:*-=%
+call set TT_V0=%%_TT_VER:%_SUFFIX%=%%
 set TT_V0=%TT_V0:-=%
 
 echo *** GIT INFO:  %TT_GIT%
