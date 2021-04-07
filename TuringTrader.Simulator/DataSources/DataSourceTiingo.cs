@@ -236,14 +236,23 @@ namespace TuringTrader.Simulator
                 //--- 4) write to disk
                 if (writeToDisk)
                 {
+                    var firstBar = jsonPrices.First;
+                    DateTime firstTime = DateTime.Parse((string)firstBar["date"], CultureInfo.InvariantCulture).Date
+                        + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
+                    var lastBar = jsonPrices.Last;
+                    DateTime lastTime = DateTime.Parse((string)lastBar["date"], CultureInfo.InvariantCulture).Date
+                        + DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
+
                     Directory.CreateDirectory(cachePath);
                     using (BinaryWriter pc = new BinaryWriter(File.Open(priceCache, FileMode.Create)))
                         pc.Write(rawPrices);
 
                     using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
                     {
-                        ts.Write(startTime.Ticks);
-                        ts.Write(endTime.Ticks);
+                        //ts.Write(startTime.Ticks);
+                        //ts.Write(endTime.Ticks);
+                        ts.Write(firstTime.Ticks);
+                        ts.Write(lastTime.Ticks);
                     }
                 }
 
