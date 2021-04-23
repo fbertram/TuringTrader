@@ -37,7 +37,7 @@ namespace TuringTrader.Simulator
     public class OptimizerParam
     {
         #region internal data
-        private readonly Algorithm _algorithm;
+        private readonly IAlgorithm _algorithm;
         private readonly OptimizerParamAttribute _attribute;
         #endregion
 
@@ -47,7 +47,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="algo">input algorithm</param>
         /// <returns>optimizable parameters</returns>
-        public static IEnumerable<OptimizerParam> GetParams(Algorithm algo)
+        public static IEnumerable<OptimizerParam> GetParams(IAlgorithm algo)
         {
             Type algoType = algo.GetType();
 
@@ -74,7 +74,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="algorithm">parent algorithm</param>
         /// <param name="name">name of parameter</param>
-        public OptimizerParam(Algorithm algorithm, string name)
+        public OptimizerParam(IAlgorithm algorithm, string name)
         {
             _algorithm = algorithm;
             Name = name;
