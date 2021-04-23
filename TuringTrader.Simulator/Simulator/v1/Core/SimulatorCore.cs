@@ -372,17 +372,22 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public string Name
+        private string _Name = null;
         /// <summary>
         /// Return class type name. This method will return the name of the
         /// derived class, typically a proprietary algorithm derived from
         /// Algorithm.
         /// </summary>
-        public virtual string Name
-        {
-            get
+        public virtual string Name 
+        { 
+            get 
             {
-                return this.GetType().Name;
+                _Name = _Name ?? GetType().Name;
+                return Name;
             }
+            set
+            { _Name = value; 
+            } 
         }
         #endregion
 

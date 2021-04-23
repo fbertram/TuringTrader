@@ -35,9 +35,9 @@ namespace TuringTrader
     /// </summary>
     public partial class OptimizerSettings : Window
     {
-        private Algorithm _algorithm;
+        private IAlgorithm _algorithm;
 
-        public OptimizerSettings(Algorithm algorithm)
+        public OptimizerSettings(IAlgorithm algorithm)
         {
             InitializeComponent();
 

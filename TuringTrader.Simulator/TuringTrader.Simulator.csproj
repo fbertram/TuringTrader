@@ -41,4 +41,8 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Simulator\v2\" />
+  </ItemGroup>
+
 </Project>
