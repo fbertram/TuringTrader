@@ -33,16 +33,10 @@ namespace TuringTrader.Simulator.v2.Demo
         [OptimizerParam(1, 10, 1)]
         public int TEST_PARAM { get; set; } = 1;
 
-        public override string Name => "Algo-01";
+        public override string Name => "A01_Hello";
 
-        public override void Run()
-        {
-            Output.WriteLine("Hello from Run: TEST_PARAM = {0}", TEST_PARAM);
-        }
-        public override void Report()
-        {
-            Output.WriteLine("Hello from Report");
-        }
+        public override void Run() => Output.WriteLine("Hello Trader. TEST_PARAM = {0}", TEST_PARAM);
+        public override void Report() => Output.WriteLine("Here is your report");
     }
 }
 

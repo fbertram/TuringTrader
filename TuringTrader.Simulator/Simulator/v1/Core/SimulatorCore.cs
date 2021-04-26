@@ -383,7 +383,7 @@ namespace TuringTrader.Simulator
             get 
             {
                 _Name = _Name ?? GetType().Name;
-                return Name;
+                return _Name;
             }
             set
             { _Name = value; 

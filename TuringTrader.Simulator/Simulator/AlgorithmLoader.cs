@@ -91,9 +91,12 @@ namespace TuringTrader.Simulator
             {
                 types = assembly.GetTypes();
             }
-            catch
+            catch (Exception e)
             {
                 // can't load types: ignore
+                // NOTE: no error message here, as we might look at many DLLs
+                // that intentionally don't contain algorithms.
+                //Output.WriteLine("AlgorithmLoader: failed to load {0}, {1}", assembly.FullName, e.Message);
                 yield break;
             }
 

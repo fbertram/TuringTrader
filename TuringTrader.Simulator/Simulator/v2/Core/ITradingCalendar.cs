@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A02_Calendar
-// Description: Develop & test trade calendar.
+// Name:        ITradingCalendar
+// Description: Trading calendar interface.
 // History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2021, Bertram Enterprises LLC
@@ -23,26 +23,30 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
-using TuringTrader.Simulator.v2;
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.Simulator.Simulator.v2
 {
-    public class A02_Calendar : Algorithm
+    /// <summary>
+    /// Trading calendar class to convert a date range to
+    /// an enumerable of valid trading days.
+    /// </summary>
+    public interface ITradingCalendar
     {
-        public override string Name => "A02_Calendar";
+        /// <summary>
+        /// Start of date range.
+        /// </summary>
+        public DateTime StartDate { get; set; }
 
-        public override void Run()
-        {
-            StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
+        /// <summary>
+        /// End of date range.
+        /// </summary>
+        public DateTime EndDate { get; set; }
 
-            foreach (var date in TradingDays)
-                Output.WriteLine("{0:ddd, MM/dd/yyyy}", date);
-        }
-
-        public override void Report() => Output.WriteLine("Here is your report");
+        /// <summary>
+        /// Enumerable of trading days between start and end dates.
+        /// </summary>
+        public IEnumerable<DateTime> TradingDays { get; }
     }
 }
 

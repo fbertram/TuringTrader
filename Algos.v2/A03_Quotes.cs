@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A02_Calendar
-// Description: Develop & test trade calendar.
+// Name:        A03_Quotes
+// Description: Develop & test quote import and alignment w/ trading calendar.
 // History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2021, Bertram Enterprises LLC
@@ -29,17 +29,24 @@ using TuringTrader.Simulator.v2;
 
 namespace TuringTrader.Simulator.v2.Demo
 {
-    public class A02_Calendar : Algorithm
+    public class A03_Quotes : Algorithm
     {
-        public override string Name => "A02_Calendar";
+        public override string Name => "A03_Quotes";
 
         public override void Run()
         {
             StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
             EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
 
+            var goldName = "fred:GOLDPMGBD228NLBM";
+
             foreach (var date in TradingDays)
-                Output.WriteLine("{0:ddd, MM/dd/yyyy}", date);
+            {
+                // NOTE: the first call loads the quotations,
+                // subsequent calls are served from a cache.
+                var goldAsset = Asset(goldName);
+                Output.WriteLine("{0:ddd, MM/dd/yyyy}: {1:C2}", date, 0.0);
+            }
         }
 
         public override void Report() => Output.WriteLine("Here is your report");

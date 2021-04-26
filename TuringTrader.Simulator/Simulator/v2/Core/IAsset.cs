@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A02_Calendar
-// Description: Develop & test trade calendar.
-// History:     2021iv23, FUB, created
+// Name:        IAsset
+// Description: Asset interface.
+// History:     2021iv24, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
@@ -23,26 +23,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
-using TuringTrader.Simulator.v2;
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.Simulator.Simulator.v2
 {
-    public class A02_Calendar : Algorithm
+    /// <summary>
+    /// Interface for tradeable assets.
+    /// </summary>
+    public interface IAsset
     {
-        public override string Name => "A02_Calendar";
 
-        public override void Run()
-        {
-            StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
-
-            foreach (var date in TradingDays)
-                Output.WriteLine("{0:ddd, MM/dd/yyyy}", date);
-        }
-
-        public override void Report() => Output.WriteLine("Here is your report");
     }
 }
 
