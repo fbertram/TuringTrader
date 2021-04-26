@@ -21,10 +21,17 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Text;
 using TuringTrader.Simulator.v2;
+#endregion
+
+// NOTE: the public interface between an application and the various
+// algorithms is identical between simulators v1 and v2. Consequently,
+// existing v1 algorithms won't need to be updated and can co-exist
+// with v2 algorithms for a while.
 
 namespace TuringTrader.Simulator.v2.Demo
 {

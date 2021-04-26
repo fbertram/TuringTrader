@@ -21,11 +21,19 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#region libraries
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using TuringTrader.Simulator.v2;
+#endregion
+
+// NOTE: with v2, the behavior of data sources changes. It is now possible
+// to add a new data source at any point in the simulation. This will ease
+// the implementation of universes later on. The example below shows how
+// the asset is brought in on every bar - but it will be served from the
+// cache in all but the very first call.
 
 namespace TuringTrader.Simulator.v2.Demo
 {
