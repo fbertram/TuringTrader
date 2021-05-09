@@ -56,12 +56,13 @@ namespace TuringTrader.Simulator
             }
             private double ParseDouble(string value)
             {
+                // FIXME: do we still need this? why?
                 if (!value.Contains('.'))
                     value += ".0";
 
                 try
                 {
-                    return double.Parse(value);
+                    return double.Parse(value, CultureInfo.InvariantCulture);
                 }
                 catch
                 {
