@@ -135,7 +135,7 @@ namespace TuringTrader.Simulator
 #endif
 
                     string url = string.Format(
-                        @"http://l1-query.finance.yahoo.com/v8/finance/chart/"
+                        @"http://query1.finance.yahoo.com/v8/finance/chart/"
                         + "{0}"
                         + "?interval=1d"
                         + "&period1={1}"
