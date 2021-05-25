@@ -111,6 +111,25 @@ namespace TuringTrader.Simulator
                 default(DateTime), default(double), false);
         }
         #endregion
+        #region static public Bar NewValue(...)
+        /// <summary>
+        /// Create new OHLC bar, with the same value copied
+        /// to the open, high, low, and close fields. This method 
+        /// is typically used by algorithms that act as data sources.
+        /// </summary>
+        /// <param name="ticker">ticker symbol</param>
+        /// <param name="t">time stamp</param>
+        /// <param name="v">value</param>
+        /// <returns>OHLC bar</returns>
+        static public Bar NewValue(string ticker, DateTime t, double v)
+        {
+            return new Bar(
+                ticker, t,
+                v, v, v, v, 0, true,
+                default(double), default(double), default(long), default(long), false,
+                default(DateTime), default(double), false);
+        }
+        #endregion
 
         #region public readonly string Symbol
         /// <summary>

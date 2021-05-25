@@ -372,17 +372,22 @@ namespace TuringTrader.Simulator
         }
         #endregion
         #region public string Name
+        private string _Name = null;
         /// <summary>
         /// Return class type name. This method will return the name of the
         /// derived class, typically a proprietary algorithm derived from
         /// Algorithm.
         /// </summary>
-        public virtual string Name
-        {
-            get
+        public virtual string Name 
+        { 
+            get 
             {
-                return this.GetType().Name;
+                _Name = _Name ?? GetType().Name;
+                return _Name;
             }
+            set
+            { _Name = value; 
+            } 
         }
         #endregion
 
@@ -487,6 +492,11 @@ namespace TuringTrader.Simulator
                 //----- loop, until we've consumed all data
                 while (hasData.Select(x => x.Value ? 1 : 0).Sum() > 0)
                 {
+                    // FIXME: this is most likely an issue. We do not
+                    // want to advance 'SimTime' for bars that we ignore
+                    // further down w/ 'IsValidSimTime'.
+                    // fixing this might be non-trivial, because
+                    // we might not be able to set 'LastSimTime' properly.
                     SimTime.Value = _dataSources
                         .Where(s => hasData[s])
                         .Min(s => enumData[s].Current.Time);
@@ -578,6 +588,9 @@ namespace TuringTrader.Simulator
                     }
 
                     // run user algorithm here
+                    // FIXME: this is most likely an issue. to fix this,
+                    // we want to 'continue' the loop before doing any
+                    // processing (e.g. order execution) on the bar
                     if (SimTime[0] >= (DateTime)WarmupStartTime
                             && SimTime[0] <= EndTime
                             && IsValidSimTime(SimTime[0]))

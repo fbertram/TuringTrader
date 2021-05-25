@@ -102,9 +102,20 @@ namespace TuringTrader.Simulator
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent
 
+                    // we don't want to rely on the algorithm to provide a unique name.
+                    // therefore, we replace the bar symbol with the algorithm's hash
+                    var algoHashHex = string.Format("{0:X}", _algo.Name, _algo.GetHashCode());
+
                     foreach (var bar in _algo.Run(startTime, endTime))
                     {
-                        yield return bar;
+                        var bar2 = new Bar(
+                            algoHashHex,
+                            bar.Time,
+                            bar.Open, bar.High, bar.Low, bar.Close, bar.Volume, bar.HasOHLC,
+                            bar.Bid, bar.Ask, bar.BidVolume, bar.AskVolume, bar.HasBidAsk,
+                            bar.OptionExpiry, bar.OptionStrike, bar.OptionIsPut);
+
+                        yield return bar2;
 
                         if (!_algo.IsLastBar)
                         {
@@ -114,9 +125,8 @@ namespace TuringTrader.Simulator
                             // the main algo. we fix this issue by returning
                             // a dummy bar, announcing the next timestamp.
 
-                            var dummy = Bar.NewOHLC(
-                                null, _algo.NextSimTime,
-                                0.0, 0.0, 0.0, 0.0, 0);
+                            var dummy = Bar.NewValue(
+                                null, _algo.NextSimTime, 0.0);
 
                             yield return dummy;
                         }

@@ -105,7 +105,13 @@ namespace TuringTrader.Simulator
                         DateTime cacheStartTime = new DateTime(ts.ReadInt64());
                         DateTime cacheEndTime = new DateTime(ts.ReadInt64());
 
-                        if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
+                        // NOTE: yahoo delivers intraday data. When we write to the cache,
+                        // we set the time of day to the expected end of the trading session.
+                        // consequently, we might cache an intraday quote and store it as if
+                        // it was the end-of-day quote. to fix that issue, we do not use the
+                        // cache if our request reaches the last bar.
+                        //if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
+                        if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date > endTime.Date)
                             jsonPrices = parsePrices(rawPrices);
                     }
                 }
@@ -129,7 +135,7 @@ namespace TuringTrader.Simulator
 #endif
 
                     string url = string.Format(
-                        @"http://l1-query.finance.yahoo.com/v8/finance/chart/"
+                        @"http://query1.finance.yahoo.com/v8/finance/chart/"
                         + "{0}"
                         + "?interval=1d"
                         + "&period1={1}"
@@ -169,14 +175,24 @@ namespace TuringTrader.Simulator
                 //--- 4) write to disk
                 if (writeToDisk)
                 {
+                    var timestamps = (JArray)jsonPrices["chart"]["result"][0]["timestamp"];
+                    // FIXME: we should consider the data source's time here:
+                    // timeOfDay = DateTime.Parse(Info[DataSourceParam.time]).TimeOfDay;
+                    var firstTime = fromUnixTime((long)timestamps.First).Date
+                        + DateTime.Parse("16:00").TimeOfDay;
+                    var lastTime = fromUnixTime((long)timestamps.Last).Date
+                        + DateTime.Parse("16:00").TimeOfDay;
+
                     Directory.CreateDirectory(cachePath);
                     using (BinaryWriter pc = new BinaryWriter(File.Open(priceCache, FileMode.Create)))
                         pc.Write(rawPrices);
 
                     using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
                     {
-                        ts.Write(startTime.Ticks);
-                        ts.Write(endTime.Ticks);
+                        //ts.Write(startTime.Ticks);
+                        //ts.Write(endTime.Ticks);
+                        ts.Write(firstTime.Ticks);
+                        ts.Write(lastTime.Ticks);
                     }
                 }
 

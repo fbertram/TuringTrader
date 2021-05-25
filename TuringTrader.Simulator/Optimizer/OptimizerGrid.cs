@@ -52,7 +52,7 @@ namespace TuringTrader.Simulator
         #region private void RunIteration()
         private void RunIteration()
         {
-            if (!MasterInstance.CheckParametersValid())
+            if (!MasterInstance.IsOptimizerParamsValid)
             {
                 // parameters are invalid. skip this iteration
                 _numIterationsTotal--;
@@ -60,7 +60,7 @@ namespace TuringTrader.Simulator
             }
 
             // create algorithm instance to run
-            Algorithm instanceToRun = MasterInstance.Clone();
+            IAlgorithm instanceToRun = MasterInstance.Clone();
 
             // mark this as an optimizer run
             instanceToRun.IsOptimizing = true;
@@ -77,6 +77,9 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
+#if true
+                    instanceToRun.Run();
+#else
                     // make sure to enter the extended Run method
                     // the default implementation will forward
                     // to the simple Run method, if required
@@ -84,9 +87,10 @@ namespace TuringTrader.Simulator
                     // in order to circumvent lazy execution
                     var noLazyExec = instanceToRun.Run(_algoStart, _algoEnd)
                         .ToList();
+#endif
 
-                    result.NetAssetValue = instanceToRun.NetAssetValue[0];
-                    result.MaxDrawdown = instanceToRun.NetAssetValueMaxDrawdown;
+                    result.NetAssetValue = instanceToRun.FitnessReturn;
+                    result.MaxDrawdown = instanceToRun.FitnessRisk;
                     result.Fitness = instanceToRun.FitnessValue;
                     instanceToRun = null;
                 }
@@ -160,7 +164,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="algo">algorithm to optimize</param>
         /// <returns># of iterations</returns>
-        public static int NumIterations(Algorithm algo)
+        public static int NumIterations(IAlgorithm algo)
         {
             // figure out total number of iterations
             int numIterationsTotal = 1;
@@ -190,7 +194,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="masterInstance">algorithm to optimize</param>
         /// <param name="verbose">show progress information</param>
-        public OptimizerGrid(Algorithm masterInstance, bool verbose = true)
+        public OptimizerGrid(IAlgorithm masterInstance, bool verbose = true)
         {
             MasterInstance = masterInstance;
             _verbose = verbose;
@@ -200,7 +204,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Master instance of algorithm to optimize.
         /// </summary>
-        public Algorithm MasterInstance = null;
+        public IAlgorithm MasterInstance = null;
         #endregion
 
         #region public void Run()

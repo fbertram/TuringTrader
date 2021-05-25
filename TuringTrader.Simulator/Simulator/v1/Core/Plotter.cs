@@ -292,6 +292,10 @@ namespace TuringTrader.Simulator
             /// </summary>
             public const string MONTE_CARLO = "Monte-Carlo Analysis";
             /// <summary>
+            /// Name of auto-generated sheet with comparison of rolling returns.
+            /// </summary>
+            public const string ROLLING_RETUNRS = "Rolling Returns and Tracking to Benchmark";
+            /// <summary>
             /// Name of explicitly generated sheet with strategy exposure over time.
             /// </summary>
             public const string EXPOSURE_VS_TIME = "Exposure vs Time";

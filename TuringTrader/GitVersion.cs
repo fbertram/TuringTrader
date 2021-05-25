@@ -1,3 +1,3 @@
-public static class GitInfo { public static string Version = @" 
-v0.13b1
-"; } 
+public static class GitInfo {
+    public static string Version = "version-not-set"; 
+} 

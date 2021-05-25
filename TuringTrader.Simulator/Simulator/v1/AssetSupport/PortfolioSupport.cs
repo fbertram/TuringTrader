@@ -785,6 +785,13 @@ namespace TuringTrader.Support
                 #region public Tuple<double, Vector<double>> GetMaxSR()
                 public Tuple<double, Vector<double>> GetMaxSR()
                 {
+                    if (_w.Count == 1)
+                    {
+                        // BUGBUG: sometimes we get here with only a single weight vector
+                        var portfolio = new Tuple<double, Vector<double>>(0.0, _w[0]);
+                        return portfolio;
+                    }
+
                     var portfolioCandidates = new List<Tuple<double, Vector<double>>>();
 
                     for (var i = 0; i < _w.Count - 1; i++)

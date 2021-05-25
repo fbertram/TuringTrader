@@ -1,8 +1,8 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader: SimulatorEngine.Tests
+// Name:        DataSourceStooq
+// Description: unit test for Stooq data source
+// History:     2019v09, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2019, Bertram Solutions LLC
 //              https://www.bertram.solutions
@@ -21,39 +21,36 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
+#region libraries
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Windows;
-using System.Windows.Data;
+using System.Text;
+using System.Threading.Tasks;
 using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader
+namespace SimulatorEngine.Tests
 {
-    /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
-    /// </summary>
-    public partial class OptimizerSettings : Window
+    [TestClass]
+    public class DataSourceStooq
     {
-        private IAlgorithm _algorithm;
-
-        public OptimizerSettings(IAlgorithm algorithm)
+        [TestMethod]
+        public void Test_DataRetrieval()
         {
-            InitializeComponent();
+            var ds = DataSource.New("stooq:MSFT.US");
 
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
-        }
+            var d = ds.LoadData(
+                DateTime.Parse("2021/01/01 9:30am", CultureInfo.InvariantCulture),  // January 2nd open
+                DateTime.Parse("2021/01/11 4pm", CultureInfo.InvariantCulture)); // January 11 close
 
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
+            Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("microsoft"));
+            Assert.IsTrue(d.First().Time.Date == DateTime.Parse("2021/01/04", CultureInfo.InvariantCulture));
+            Assert.IsTrue(d.Last().Time.Date == DateTime.Parse("2021/01/11", CultureInfo.InvariantCulture));
+            Assert.IsTrue(d.Count() == 6);
+            Assert.IsTrue(Math.Abs(d.Last().Close / d.First().Open - 216.9900 / 222.0200) < 1e-3);
         }
     }
 }

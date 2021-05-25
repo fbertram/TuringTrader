@@ -49,6 +49,16 @@ namespace TuringTrader
         /// </summary>
         protected virtual bool CFG_IS_REPORT => false;
         /// <summary>
+        /// Configure vertical axis. If this property is set to true,
+        /// the charts scale the vertical axis logarithmically.
+        /// </summary>
+        protected virtual bool CFG_IS_LOG => false;
+        /// <summary>
+        /// Configure chart legend. If this property is set to false,
+        /// the chart will not have a legend.
+        /// </summary>
+        protected virtual bool CFG_HAS_LEGEND => true;
+        /// <summary>
         /// Configure calculation of beta. If this property is set to false,
         /// beta is calculated vs the benchmark. If this property is set to true,
         /// beta is calculated vs the S&P 500.
@@ -106,22 +116,22 @@ namespace TuringTrader
         private const string RF_YIELD = "FRED:DTB3"; // 3-Month Treasury Bill: Secondary Market Rate
         #endregion
         #region internal helper functions
-        private string _firstChartName => PlotData.First().Key;
-        private List<Dictionary<string, object>> _firstChart => PlotData.First().Value;
+        protected string _firstChartName => PlotData.First().Key;
+        protected List<Dictionary<string, object>> _firstChart => PlotData.First().Value;
 
-        private string _xLabel => _firstChart.First().First().Key;
-        private Type xType => _firstChart.First().First().Value.GetType();
+        protected string _xLabel => _firstChart.First().First().Key;
+        protected Type xType => _firstChart.First().First().Value.GetType();
 
-        private List<string> _yLabels => _firstChart.First().Keys.Skip(1).ToList();
-        private int _numYLabels => _yLabels.Count();
-        private string _firstYLabel => _yLabels.First();
-        private string _benchYLabel => _yLabels.Last();
+        protected List<string> _yLabels => _firstChart.First().Keys.Skip(1).ToList();
+        protected int _numYLabels => _yLabels.Count();
+        protected string _firstYLabel => _yLabels.First();
+        protected string _benchYLabel => _yLabels.Last();
 
-        private DateTime _startDate => (DateTime)_firstChart.First()[_xLabel];
-        private DateTime _endDate => (DateTime)_firstChart.Last()[_xLabel];
-        private double _numYears => (_endDate - _startDate).TotalDays / 365.25;
+        protected DateTime _startDate => (DateTime)_firstChart.First()[_xLabel];
+        protected DateTime _endDate => (DateTime)_firstChart.Last()[_xLabel];
+        protected double _numYears => (_endDate - _startDate).TotalDays / 365.25;
 
-        private Dictionary<DateTime, double> _getSeries(string yLabel)
+        protected Dictionary<DateTime, double> _getSeries(string yLabel)
         {
             var xLabel = _xLabel;
             var series = new Dictionary<DateTime, double>();
@@ -133,11 +143,11 @@ namespace TuringTrader
             return series;
         }
 
-        private double _startValue(string label) => _getSeries(label).First().Value;
-        private double _endValue(string label) => _getSeries(label).Last().Value;
+        protected double _startValue(string label) => _getSeries(label).First().Value;
+        protected double _endValue(string label) => _getSeries(label).Last().Value;
 
-        private double _cagr(string label) => Math.Pow(_endValue(label) / _startValue(label), 1.0 / _numYears) - 1.0;
-        private double _mdd(string label)
+        protected double _cagr(string label) => Math.Pow(_endValue(label) / _startValue(label), 1.0 / _numYears) - 1.0;
+        protected double _mdd(string label)
         {
             double max = -1e99;
             double mdd = 0.0;
@@ -155,7 +165,7 @@ namespace TuringTrader
             return mdd;
         }
 
-        private Dictionary<DateTime, double> _monthlyReturns(string label)
+        protected Dictionary<DateTime, double> _monthlyReturns(string label)
         {
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
@@ -181,7 +191,7 @@ namespace TuringTrader
             return monthlyReturns;
         }
 
-        private Dictionary<DateTime, double> _monthlySpxReturns()
+        protected Dictionary<DateTime, double> _monthlySpxReturns()
         {
             DataSource spx = DataSource.New(SPXTR);
             var data = spx.LoadData(_startDate, _endDate);
@@ -210,13 +220,13 @@ namespace TuringTrader
             return monthlyReturns;
         }
 
-        double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
-        double _stdMonthlyReturn(string label)
+        protected double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
+        protected double _stdMonthlyReturn(string label)
         {
             double avg = _avgMonthlyReturrn(label);
             return Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
         }
-        double _sharpeRatio(string label)
+        protected double _sharpeRatio(string label)
         {
             var exc = _excMonthlyReturns(label);
             var avg = exc.Values.Average(r => r);
@@ -231,7 +241,7 @@ namespace TuringTrader
         private string _xamlLabel(string raw) { return raw.Replace("^", string.Empty); }
 
         private Dictionary<DateTime, double> _rfMonthlyReturnsCache = null;
-        private Dictionary<DateTime, double> _rfMonthlyReturns
+        protected private Dictionary<DateTime, double> _rfMonthlyReturns
         {
             get
             {
@@ -261,7 +271,7 @@ namespace TuringTrader
             }
         }
 
-        private double _maxFlatDays(string label)
+        protected double _maxFlatDays(string label)
         {
             double peakValue = -1e99;
             DateTime peakTime = _startDate;
@@ -285,7 +295,7 @@ namespace TuringTrader
             return maxFlat;
         }
 
-        private Dictionary<DateTime, double> _excMonthlyReturns(string label)
+        protected Dictionary<DateTime, double> _excMonthlyReturns(string label)
         {
             Dictionary<DateTime, double> rfMonthlyReturns = _rfMonthlyReturns;
             Dictionary<DateTime, double> monthlyReturns = _monthlyReturns(label)
@@ -296,7 +306,7 @@ namespace TuringTrader
                 .ToDictionary(r => r.Key, r => Math.Log(Math.Exp(r.Value) - _rfMonthlyReturns[r.Key]));
         }
 
-        private double _beta(string seriesLabel, string benchLabel)
+        protected double _beta(string seriesLabel, string benchLabel)
         {
             var series = _monthlyReturns(seriesLabel);
             var seriesAvg = series.Values.Average(v => v);
@@ -312,7 +322,7 @@ namespace TuringTrader
             return covar / benchVar;
         }
 
-        private double _betaToSpx(string seriesLabel)
+        protected double _betaToSpx(string seriesLabel)
         {
             var bench = _monthlySpxReturns();
             var series = _monthlyReturns(seriesLabel)
@@ -330,7 +340,7 @@ namespace TuringTrader
             return covar / benchVar;
         }
 
-        private double _ulcerIndex(string label)
+        protected double _ulcerIndex(string label)
         {
             double peak = 0.0;
             double sumDd2 = 0.0;
@@ -346,7 +356,7 @@ namespace TuringTrader
             return Math.Sqrt(sumDd2 / N);
         }
 
-        private double _ulcerPerformanceIndex(string label)
+        protected double _ulcerPerformanceIndex(string label)
         {
             double perf = _cagr(label);
             double ulcer = _ulcerIndex(label);
@@ -354,7 +364,7 @@ namespace TuringTrader
             return martinRatio;
         }
 
-        private List<double> _returnDistribution(string label)
+        protected List<double> _returnDistribution(string label)
         {
             List<double> returns = new List<double>();
             double? prevValue = null;
@@ -374,7 +384,7 @@ namespace TuringTrader
                 .ToList();
         }
 
-        private double _probabilityOfReturn(List<double> distr, double val)
+        protected double _probabilityOfReturn(List<double> distr, double val)
         {
             var less = distr
                 .Where(v => v <= val)
@@ -581,7 +591,7 @@ namespace TuringTrader
             xAxis.Position = AxisPosition.Bottom;
             xAxis.Key = "x";
 
-            var yAxis = new LinearAxis();
+            var yAxis = CFG_IS_LOG ? (OxyPlot.Axes.Axis)new LogarithmicAxis() : new LinearAxis();
             yAxis.Position = AxisPosition.Right;
             yAxis.Key = "y";
 
@@ -616,7 +626,7 @@ namespace TuringTrader
                     if (!allSeries.ContainsKey(yLabel))
                     {
                         var newSeries = new LineSeries();
-                        newSeries.Title = yLabel;
+                        newSeries.Title = CFG_HAS_LEGEND ? yLabel : "";
                         newSeries.IsVisible = true;
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
@@ -1539,10 +1549,13 @@ namespace TuringTrader
             //--- cagr over various periods
             var periods = new List<Tuple<string, double>>
             {
-                //Tuple.Create("cagr-1y", 1.0),
-                //Tuple.Create("cagr-2y", 2.0),
-                //Tuple.Create("cagr-5y", 5.0),
-                //Tuple.Create("cagr-10y", 10.0),
+                Tuple.Create("cagr-1w", 1 / 52.0),
+                Tuple.Create("cagr-1m", 1 / 12.0),
+                Tuple.Create("cagr-3m", 1 / 4.0),
+                Tuple.Create("cagr-1y", 1.0),
+                Tuple.Create("cagr-2y", 2.0),
+                Tuple.Create("cagr-5y", 5.0),
+                Tuple.Create("cagr-10y", 10.0),
                 Tuple.Create("cagr-max", 100.0),
             };
 
@@ -1567,10 +1580,10 @@ namespace TuringTrader
             var metrics = new List<Tuple<string, Func<double>>>
             {
                 Tuple.Create<string, Func<double>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
-                //Tuple.Create<string, Func<double>>("mdd", () => MDD(FIRST_Y_LABEL)),
-                //Tuple.Create<string, Func<double>>("sharpe", () => SHARPE_RATIO(FIRST_Y_LABEL)),
+                Tuple.Create<string, Func<double>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
                 Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
-                //Tuple.Create<string, Func<double>>("martin", () => ULCER_PERFORMANCE_INDEX(FIRST_Y_LABEL)),
+                Tuple.Create<string, Func<double>>("sharpe", () => _sharpeRatio(_firstYLabel)),
+                Tuple.Create<string, Func<double>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
             };
 
             foreach (var m in metrics)
@@ -1584,6 +1597,385 @@ namespace TuringTrader
             return retvalue;
         }
         #endregion
+        #region protected PlotModel RenderRollingReturns()
+        protected PlotModel RenderRollingReturns()
+        {
+            const double ROLLING_YEARS = 1.0;
+            const double ROLLING_DAYS = ROLLING_YEARS * 365.25;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = string.Format("{0}-Year Rolling Returns & Tracking to Benchmark", ROLLING_YEARS);
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var retAxis = new LinearAxis();
+            retAxis.Title = "Annualized Rolling Return [%]";
+            retAxis.Position = AxisPosition.Right;
+            retAxis.StartPosition = 0.5;
+            retAxis.EndPosition = 1.0;
+            retAxis.Key = "ret";
+
+            var trkAxis = new LinearAxis();
+            trkAxis.Title = "Tracking to Benchmark [%]";
+            trkAxis.Position = AxisPosition.Right;
+            trkAxis.StartPosition = 0.0;
+            trkAxis.EndPosition = 0.5;
+            trkAxis.Key = "trk";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(retAxis);
+            plotModel.Axes.Add(trkAxis);
+
+            #region plotRollingReturn
+            void plotRollingReturn(int i)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var retSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "ret",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "ret",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(retSeries);
+
+                var navCurrentFiltered = (double?)null;
+                var navPastFiltered = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var datePastRaw = dateCurrent - TimeSpan.FromDays(ROLLING_DAYS);
+                    var datePast = series.Keys
+                        .OrderBy(d => Math.Abs((d - datePastRaw).TotalDays))
+                        .First();
+
+                    if (Math.Abs((datePastRaw - datePast).TotalDays) > 5)
+                        continue;
+
+                    var navCurrent = point.Value;
+                    var navPast = series[datePast];
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navCurrentFiltered = navCurrentFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navCurrentFiltered) + navCurrentFiltered;
+                    navPastFiltered = navPastFiltered == null
+                        ? navPast
+                        : ALPHA * (navPast - navPastFiltered) + navPastFiltered;
+                    var retCurrent = 100.0 * (Math.Pow((double)(navCurrentFiltered / navPastFiltered), 1.0 / ROLLING_YEARS) - 1.0);
+
+                    retSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        retCurrent));
+                }
+            }
+            #endregion
+            #region plotTracking
+            void plotTracking(int i)
+            {
+                if (i >= _numYLabels - 1)
+                    return;
+
+                var benchSeries = _getSeries(_benchYLabel);
+
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var trkSeries = /*CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    :*/ new LineSeries
+                        {
+                            //Title = yLabel + " vs " + _benchYLabel,
+                            IsVisible = true,
+                            XAxisKey = "x",
+                            YAxisKey = "trk",
+                            Color = color,
+                        };
+
+                plotModel.Series.Add(trkSeries);
+
+                var navFiltered = (double?)null;
+                var benchFiltered = (double?)null;
+                var scale = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var navCurrent = point.Value;
+                    var benchCurrent = benchSeries[dateCurrent];
+
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navFiltered = navFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                    benchFiltered = benchFiltered == null
+                        ? benchCurrent
+                        : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                    scale = scale ?? benchCurrent / navCurrent;
+
+                    var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                    trkSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        tracking));
+                }
+            }
+            #endregion
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                plotRollingReturn(i);
+                plotTracking(i);
+            }
+
+            return plotModel;
+        }
+#if false
+        protected PlotModel RenderRollingReturns()
+        {
+            const double ROLLING_YEARS = 1.0;
+            const double ROLLING_DAYS = ROLLING_YEARS * 365.25;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = string.Format("{0}-Year Rolling Returns & Drawdowns", ROLLING_YEARS);
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.StartPosition = 0.35;
+            yAxis.EndPosition = 1.0;
+            yAxis.Key = "y";
+
+            var ddAxis = new LinearAxis();
+            ddAxis.Title = "Drawdown [%]";
+            ddAxis.Position = AxisPosition.Right;
+            ddAxis.StartPosition = 0.0;
+            ddAxis.EndPosition = 0.30;
+            ddAxis.Key = "dd";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+            plotModel.Axes.Add(ddAxis);
+
+            //===== create series
+            for (int i = 0; i < _numYLabels; i++)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var eqSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    : new LineSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(eqSeries);
+
+                var ddSeries = CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                        Fill = color,
+                    }
+                    : new LineSeries
+                    {
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "dd",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(ddSeries);
+
+                var navCurrentFiltered = (double?)null;
+                var navPastFiltered = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var datePastRaw = dateCurrent - TimeSpan.FromDays(ROLLING_DAYS);
+                    var datePast = series.Keys
+                        .OrderBy(d => Math.Abs((d - datePastRaw).TotalDays))
+                        .First();
+
+                    if (Math.Abs((datePastRaw - datePast).TotalDays) > 5)
+                        continue;
+
+                    var navCurrent = point.Value;
+                    var navPast = series[datePast];
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navCurrentFiltered = navCurrentFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navCurrentFiltered) + navCurrentFiltered;
+                    navPastFiltered = navPastFiltered == null
+                        ? navPast
+                        : ALPHA * (navPast - navPastFiltered) + navPastFiltered;
+                    var retCurrent = 100.0 * (Math.Pow((double)(navCurrentFiltered / navPastFiltered), 1.0 / ROLLING_YEARS) - 1.0);
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        retCurrent));
+
+                    var navPeak = series
+                        .Where(kv => kv.Key >= datePast && kv.Key <= dateCurrent)
+                        .Max(kv => kv.Value);
+                    var dd = 100.0 * ((double)navCurrentFiltered / navPeak - 1.0);
+
+                    ddSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        dd));
+                }
+            }
+
+            return plotModel;
+        }
+#endif
+        #endregion
+        #region protected PlotModel RenderTrackingToBenchmark()
+#if false
+        protected PlotModel RenderTrackingToBenchmark()
+        {
+            if (_numYLabels < 2)
+                return null;
+
+            //===== initialize plot model
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = "Tracking to Benchmark";
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new DateTimeAxis();
+            xAxis.Title = "Date";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis = new LinearAxis();
+            yAxis.Title = "Excess Return [%]";
+            yAxis.Position = AxisPosition.Right;
+            yAxis.StartPosition = 0.0;
+            yAxis.EndPosition = 1.0;
+            yAxis.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
+
+            var benchSeries = _getSeries(_benchYLabel);
+
+            //===== create series
+            for (int i = 0; i < _numYLabels - 1; i++)
+            {
+                string yLabel = _yLabels[i];
+                var series = _getSeries(yLabel);
+                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                var eqSeries = /*CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = color,
+                        ConstantY2 = 1.0,
+                    }
+                    :*/ new LineSeries
+                    {
+                        Title = yLabel + " vs " + _benchYLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                    };
+
+                plotModel.Series.Add(eqSeries);
+
+                var navFiltered = (double?)null;
+                var benchFiltered = (double?)null;
+                var scale = (double?)null;
+                foreach (var point in series)
+                {
+                    var dateCurrent = point.Key;
+                    var navCurrent = point.Value;
+                    var benchCurrent = benchSeries[dateCurrent];
+
+                    const double ALPHA = 2.0 / (40.0 + 1.0);
+                    navFiltered = navFiltered == null
+                        ? navCurrent
+                        : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                    benchFiltered = benchFiltered == null
+                        ? benchCurrent
+                        : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                    scale = scale ?? benchCurrent / navCurrent;
+
+                    var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                    eqSeries.Points.Add(new DataPoint(
+                        DateTimeAxis.ToDouble(dateCurrent),
+                        tracking));
+                }
+            }
+
+            return plotModel;
+        }
+#endif
+        #endregion
 
         #region public void SaveAsPng(string chartToSave, string pngFilePath)
         /// <summary>
@@ -1591,16 +1983,23 @@ namespace TuringTrader
         /// </summary>
         /// <param name="chartToSave">chart to save</param>
         /// <param name="pngFilePath">path to PNG</param>
-        public void SaveAsPng(string chartToSave, string pngFilePath)
+        public void SaveAsPng(string chartToSave, string pngFilePath, int width = 1280, int height = 720)
         {
             PlotModel model = (PlotModel)GetModel(chartToSave);
 
+#if false
+            using (var stream = File.Create(pngFilePath))
+            {
+                var exporter = new OxyPlot.Wpf.SvgExporter();
+                exporter.Export(model, stream);
+            }
+#else
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
-                //1280, 1024, // Felix' odd one
-                //1920, 1080, // 1080p
-                1280, 720, // 720p
+                width, height,
                 OxyColors.White);
+                //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
+#endif
         }
         #endregion
         #region public void SaveAsCsv(string chartToSave, string csvFilePath)
@@ -1769,6 +2168,8 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.ANNUAL_BARS;
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
+                    yield return Plotter.SheetNames.ROLLING_RETUNRS;
+                    //yield return Plotter.SheetNames.TRACKING_TO_BENCH;
 
                     foreach (string chart in PlotData.Keys.Skip(1))
                         yield return chart;
@@ -1809,6 +2210,12 @@ namespace TuringTrader
                 case Plotter.SheetNames.MONTE_CARLO:
                     retvalue = RenderMonteCarlo();
                     break;
+                case Plotter.SheetNames.ROLLING_RETUNRS:
+                    retvalue = RenderRollingReturns();
+                    break;
+                //case Plotter.SheetNames.TRACKING_TO_BENCH:
+                //    retvalue = RenderTrackingToBenchmark();
+                //    break;
                 case Plotter.SheetNames.EXPOSURE_VS_TIME:
                     retvalue = RenderExposure(selectedChart);
                     break;

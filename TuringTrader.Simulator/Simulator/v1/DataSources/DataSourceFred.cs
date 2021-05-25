@@ -183,7 +183,7 @@ namespace TuringTrader.Simulator
 #if true
                     // always request whole range here, to make
                     // offline behavior as pleasant as possible
-                    DateTime DATA_START = DateTime.Parse("01/01/1970", CultureInfo.InvariantCulture);
+                    DateTime DATA_START = DateTime.Parse("01/01/1950", CultureInfo.InvariantCulture);
 
                     startTime = ((DateTime)_firstTime) < DATA_START
                         ? DATA_START
