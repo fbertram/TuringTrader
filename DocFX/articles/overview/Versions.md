@@ -1,8 +1,16 @@
 # Version History
 
 - 0.14 - work in progress
+  - data sources
+    - fix URL of Yahoo API
+    - add Stooq data source
+    - fix CSV parsing issue on non-US systems
+    - fix caching issue with Yahoo and Tiingo
   - reports
     - added rolling returns & tracking to benchmark
+    - add more timeframes to dashbaord
+  - simulator core
+    - create ISimulator interface as prerequisite for v2 engine
 - 0.13 - November 4, 2020
   - algorithms
     - breaking change: new interface for child algorithms
