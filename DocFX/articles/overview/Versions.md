@@ -1,6 +1,6 @@
 # Version History
 
-- 0.14 - work in progress
+- 0.14 - May 25, 2021
   - data sources
     - fix URL of Yahoo API
     - add Stooq data source
