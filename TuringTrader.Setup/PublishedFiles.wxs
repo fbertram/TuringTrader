@@ -22,12 +22,6 @@
             <Component Id="cmp8235D7378D4616095A3B200711C3EC21" Directory="BINFOLDER" Guid="*">
                 <File Id="filF3F730EF9B4FF48A8DAD3F2E67BA3190" KeyPath="yes" Source="$(var.SourceDir)\Accessibility.dll" />
             </Component>
-            <Component Id="cmp3E17A6481A19595B0F54343D52A698C8" Directory="BINFOLDER" Guid="*">
-                <File Id="fil40F2F74E0A014F5DECB398E81331A419" KeyPath="yes" Source="$(var.SourceDir)\Algos.v2.dll" />
-            </Component>
-            <Component Id="cmp0AE8B3FD8864BED76E70864A6B5517EB" Directory="BINFOLDER" Guid="*">
-                <File Id="filDF0F39604356F7802DC3F8FE3C0D919E" KeyPath="yes" Source="$(var.SourceDir)\Algos.v2.pdb" />
-            </Component>
             <Component Id="cmpA2CF38F345364A51D7D42276D3ED2BE2" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5DD2AA2F8D08F26E24867502F91EA432" KeyPath="yes" Source="$(var.SourceDir)\api-ms-win-core-console-l1-1-0.dll" />
             </Component>
@@ -220,8 +214,8 @@
             <Component Id="cmp2AEB1D8B013BA9A730B011D0C259995F" Directory="BINFOLDER" Guid="*">
                 <File Id="fil75BE3DD33690026580A76C74059F921D" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmp1D1F3E29326FCDE5CD7FD0086E58ACEB" Directory="BINFOLDER" Guid="*">
-                <File Id="fil6695D139FBF305A5809441C6CCAC02EA" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.21.11102.dll" />
+            <Component Id="cmp756A826C76C10A364C6B441DBBA5C823" Directory="BINFOLDER" Guid="*">
+                <File Id="filD5A3D95C1854780402636F9F00C31A05" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.21.26205.dll" />
             </Component>
             <Component Id="cmpAF28CE66C6DA6E2E7F469E603E9CD404" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5A3F401CAE73B190C6C3DB8367EC383D" KeyPath="yes" Source="$(var.SourceDir)\mscordbi.dll" />

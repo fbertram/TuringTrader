@@ -28,14 +28,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace TuringTrader.Simulator.Simulator.v2
+namespace TuringTrader.Simulator.v2
 {
     /// <summary>
     /// Trading calendar for U.S. stock exchanges.
     /// </summary>
     public class TradingCalendar_US : ITradingCalendar
     {
-        #region holiday calendar
+        #region holiday list
         // NOTE: this is a rather disappointing solution. however, 
         // it is good enough to keep us going for the next 2 years
         // see here: https://www.nyse.com/markets/hours-calendars
@@ -369,6 +369,49 @@ namespace TuringTrader.Simulator.Simulator.v2
 
         };
         #endregion
+        #region internal helpers
+        private readonly DateTime _earliestTime = new DateTime(1990, 1, 1, 0, 1, 0, DateTimeKind.Utc);
+        private readonly TimeZoneInfo _exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); // New York, USA
+
+        /// <summary>
+        /// Check for weekends and holidays at exchange.
+        /// </summary>
+        /// <param name="exchangeDateTime">date and time to check, in exchange time zone</param>
+        /// <returns>true, if weekend or holiday</returns>
+        private bool IsHoliday(DateTime exchangeDateTime)
+        {
+            if (exchangeDateTime.DayOfWeek == DayOfWeek.Saturday 
+            || exchangeDateTime.DayOfWeek == DayOfWeek.Sunday)
+                return true;
+
+            if (_Holidays.Contains(exchangeDateTime.Date))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determine previous exchange close.
+        /// </summary>
+        /// <param name="localDateTime">date time, in local time zone</param>
+        /// <returns>previous close, in local time zone</returns>
+        private DateTime PreviousExchangeClose(DateTime localDateTime)
+        {
+            // convert to exchange time zone and set time to 4pm
+            var exchangeTime = TimeZoneInfo.ConvertTime(localDateTime, _exchangeTimeZone);
+            var exchangeAtClose = exchangeTime.Date + TimeSpan.FromHours(16);
+
+            // make sure time is in the past, skip weekends and holidays
+            while (exchangeAtClose > exchangeTime || IsHoliday(exchangeAtClose))
+                exchangeAtClose -= TimeSpan.FromDays(1);
+
+            // convert back to local time zone
+            var utcAtClose = TimeZoneInfo.ConvertTimeToUtc(exchangeAtClose, _exchangeTimeZone);
+            var localAtClose = utcAtClose.ToLocalTime();
+
+            return localAtClose;
+        }
+        #endregion
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -377,20 +420,26 @@ namespace TuringTrader.Simulator.Simulator.v2
         {
             get
             {
-                var earliestDate = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
-                var latestDate = DateTime.Now.Date;
+                var startDate = StartDate > _earliestTime ? StartDate : _earliestTime;
+                var endDate = EndDate < DateTime.Now ? EndDate : DateTime.Now;
 
-                var startDate = StartDate > earliestDate ? StartDate.Date : earliestDate;
-                var endDate = EndDate < latestDate ? EndDate.Date : latestDate;
+                var date = StartDate;
+                var previousClose = default(DateTime);
 
-                for (var date = startDate; date <= endDate; date += TimeSpan.FromDays(1))
+                while (date <= EndDate)
                 {
-                    if (date.DayOfWeek != DayOfWeek.Saturday
-                    && date.DayOfWeek != DayOfWeek.Sunday
-                    && !_Holidays.Contains(date))
-                        yield return date;
-                }
+                    var close = PreviousExchangeClose(date);
+                    if (close != previousClose)
+                    {
+                        yield return close;
+                        date = close; // make sure date is well-aligned w/ exchange's closing time
+                        previousClose = close;
+                    }
 
+                    // NOTE: we add 26 hours here, as we might start/ end daylight 
+                    // saving time in either the local or the exchange's time zone
+                    date += TimeSpan.FromHours(26);
+                }
                 yield break;
             }
         }

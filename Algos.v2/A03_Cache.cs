@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A02_Calendar
-// Description: Develop & test trade calendar.
-// History:     2021iv23, FUB, created
+// Name:        A03_Cache
+// Description: Develop & test cache.
+// History:     2021vi05, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
@@ -29,29 +29,31 @@ using System.Text;
 using TuringTrader.Simulator.v2;
 #endregion
 
-// NOTE: The v2 engine introduces the concept of a trading calendar. This
-// calendar makes sure all data sources are properly aligned to those days
-// where exchanges were open for trading. This concept addresses issues
-// caused by mixing data sources with various alignments, e.g., economic
-// data from FRED, or using the gold spot price to backfill a gold ETF.
-// For algorithm developers targeting the U.S. stock market, not much
-// changes, as the StartDate and EndDate properties are wired up to
-// work with the trading calendar. However, as the example below shows,
-// there will be proper time stamps, even when no data source is loaded.
+// NOTE: The cache is a central feature of TuringTrader. It is used to
+// store asset quotes and indicators. Objects in the cache are reffered
+// to by an id. On a cache miss, a method is called to retrieve the result.
 
 namespace TuringTrader.Simulator.v2.Demo
 {
-    public class A02_Calendar : Algorithm
+    public class A03_Cache : Algorithm
     {
-        public override string Name => "A02_Calendar";
+        public override string Name => "A03_Cache";
 
         public override void Run()
         {
-            StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
+            string toDo()
+            {
+                Output.WriteLine("working on my todos");
+                return "here is the result";
+            }
 
-            foreach (var date in TradingDays)
-                Output.WriteLine("{0:ddd, MM/dd/yyyy, HH:mm}", date);
+            string cacheId = "unique id";
+
+            var result1 = (string)Cache(cacheId, toDo);
+            Output.WriteLine(result1);
+
+            var result2 = (string)Cache(cacheId, toDo);
+            Output.WriteLine(result2);
         }
 
         public override void Report() => Output.WriteLine("Here is your report");
