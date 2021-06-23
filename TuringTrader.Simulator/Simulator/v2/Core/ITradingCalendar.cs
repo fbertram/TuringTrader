@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TuringTrader.Simulator.Simulator.v2
+namespace TuringTrader.Simulator.v2
 {
     /// <summary>
     /// Trading calendar class to convert a date range to

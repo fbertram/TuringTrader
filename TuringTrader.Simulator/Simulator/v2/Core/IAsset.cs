@@ -24,15 +24,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace TuringTrader.Simulator.Simulator.v2
+namespace TuringTrader.Simulator.v2
 {
     /// <summary>
     /// Interface for tradeable assets.
     /// </summary>
     public interface IAsset
     {
-
+        public Algorithm Algorithm { get; }
+        public string CacheId { get; }
+        public Task<object> Data { get; }
     }
 }
 

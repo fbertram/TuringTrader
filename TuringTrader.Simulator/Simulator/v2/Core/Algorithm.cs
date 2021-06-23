@@ -23,8 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using TuringTrader.Simulator.Simulator.v2;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -54,6 +52,22 @@ namespace TuringTrader.Simulator.v2
         /// enumerable of valid trading days.
         /// </summary>
         public ITradingCalendar TradingCalendar { get; set; } = new TradingCalendar_US();
+        #endregion
+        #region cache functionality
+        private Dictionary<string, object> _cache = new Dictionary<string, object>();
+        /// <summary>
+        /// Retrieve object from cache.
+        /// </summary>
+        /// <param name="cacheId">cache id</param>
+        /// <param name="missFun">retrieval function for cache miss</param>
+        /// <returns>cached object</returns>
+        protected object Cache(string cacheId, Func<object> missFun)
+        {
+            if (!_cache.ContainsKey(cacheId))
+                _cache[cacheId] = missFun();
+
+            return _cache[cacheId];
+        }
         #endregion
         #region assets
         /// <summary>
