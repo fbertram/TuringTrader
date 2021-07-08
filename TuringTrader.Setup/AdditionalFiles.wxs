@@ -95,6 +95,10 @@
         <File Id="fil6040Inf" KeyPath="yes" Source="$(var.HomeDir)\Data\@60_40.inf" />
       </Component>
 
+      <Component Id="cmpBrkBInf" Directory="DataDir" Guid="*">
+        <File Id="filBrkBInf" KeyPath="yes" Source="$(var.HomeDir)\Data\BRK.B.inf" />
+      </Component>
+
       <Component Id="cmpSpxOptionsCsv" Directory="DataSpxOptionsDir" Guid="*">
         <File Id="filSpxOptionsCsv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
       </Component>
