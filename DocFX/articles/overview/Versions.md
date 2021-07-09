@@ -1,11 +1,12 @@
 # Version History
 
-- 0.14 - May 25, 2021
+- 0.14 - July 8, 2021
   - data sources
     - fix URL of Yahoo API
     - add Stooq data source
     - fix CSV parsing issue on non-US systems
     - fix caching issue with Yahoo and Tiingo
+    - remove symbol cleanup from Yahoo source
   - reports
     - added rolling returns & tracking to benchmark
     - add more timeframes to dashbaord
