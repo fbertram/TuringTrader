@@ -204,7 +204,7 @@ namespace TuringTrader.Simulator
             double commission = ticket.Type != OrderType.optionExpiryClose
                             && ticket.Type != OrderType.instrumentDelisted
                             && ticket.Type != OrderType.endOfSimFakeClose
-                ? Math.Abs(numberOfShares) * CommissionPerShare
+                ? Math.Abs(numberOfShares * CommissionPerShare)
                 : 0.00;
 
             // pay for it, unless it's the end-of-sim order
