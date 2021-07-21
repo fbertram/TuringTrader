@@ -21,6 +21,11 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// LOAD_ALGOS_V2_DLL: with this switch turned on, the algorithm loader
+// looks for Algos.v2.dll in the same folder as the TuringTrader binary.
+// This is used for convenient testing of the v2 sim core.
+#define LOAD_ALGOS_V2_DLL
+
 #region Libraries
 using System;
 using System.Collections.Generic;
@@ -86,9 +91,12 @@ namespace TuringTrader.Simulator
             {
                 types = assembly.GetTypes();
             }
-            catch
+            catch (Exception e)
             {
                 // can't load types: ignore
+                // NOTE: no error message here, as we might look at many DLLs
+                // that intentionally don't contain algorithms.
+                //Output.WriteLine("AlgorithmLoader: failed to load {0}, {1}", assembly.FullName, e.Message);
                 yield break;
             }
 
@@ -109,7 +117,8 @@ namespace TuringTrader.Simulator
             foreach (Type type in types)
             {
                 if (!type.IsAbstract
-                && type.IsSubclassOf(typeof(Algorithm)))
+                //&& type.IsSubclassOf(typeof(Algorithm))) // NOTE: used until 04/23/2021
+                && type.GetInterface(nameof(IAlgorithm)) != null) // NOTE: new 04/23/2021
                 {
                     yield return new AlgorithmInfo
                     {
@@ -136,6 +145,21 @@ namespace TuringTrader.Simulator
 
             if (GlobalSettings.LoadAlgoDlls)
             {
+#if LOAD_ALGOS_V2_DLL
+                // FIXME: this is only temporary while we are 
+                // kicking of development of the v2 simulator core
+                var v2Simulator = Path.Combine(
+                    Path.GetDirectoryName(entry.Location),
+                    "Algos.v2.dll");
+
+                if (File.Exists(v2Simulator))
+                {
+                    var assembly = Assembly.LoadFrom(v2Simulator);
+                    foreach (var type in _enumAssyAlgorithms(assembly))
+                        yield return type;
+                }
+#endif
+
                 DirectoryInfo dirInfo = new DirectoryInfo(dllPath);
 
                 if (!dirInfo.Exists)
@@ -251,7 +275,7 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="algorithmName">class name</param>
         /// <returns>algorithm instance</returns>
-        public static Algorithm InstantiateAlgorithm(string algorithmName)
+        public static IAlgorithm InstantiateAlgorithm(string algorithmName)
         {
             List<AlgorithmInfo> allAlgorithms = GetAllAlgorithms(false);
             List<AlgorithmInfo> matchingAlgorithms = allAlgorithms
@@ -273,12 +297,12 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="algorithmInfo">algorithm info</param>
         /// <returns>algorithm instance</returns>
-        public static Algorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
+        public static IAlgorithm InstantiateAlgorithm(AlgorithmInfo algorithmInfo)
         {
             if (algorithmInfo.DllType != null)
             {
                 // instantiate from DLL
-                return (Algorithm)Activator.CreateInstance(algorithmInfo.DllType);
+                return (IAlgorithm)Activator.CreateInstance(algorithmInfo.DllType);
             }
             else
             {

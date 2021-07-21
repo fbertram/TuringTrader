@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        ITradingCalendar
+// Description: Trading calendar interface.
+// History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -21,40 +21,32 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
-using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using TuringTrader.Simulator;
-#endregion
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace TuringTrader
+namespace TuringTrader.Simulator.v2
 {
     /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
+    /// Trading calendar class to convert a date range to
+    /// an enumerable of valid trading days.
     /// </summary>
-    public partial class OptimizerSettings : Window
+    public interface ITradingCalendar
     {
-        private IAlgorithm _algorithm;
+        /// <summary>
+        /// Start of date range.
+        /// </summary>
+        public DateTime StartDate { get; set; }
 
-        public OptimizerSettings(IAlgorithm algorithm)
-        {
-            InitializeComponent();
+        /// <summary>
+        /// End of date range.
+        /// </summary>
+        public DateTime EndDate { get; set; }
 
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
-        }
-
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
-        }
+        /// <summary>
+        /// Enumerable of trading days between start and end dates.
+        /// </summary>
+        public IEnumerable<DateTime> TradingDays { get; }
     }
 }
 

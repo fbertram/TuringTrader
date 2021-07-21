@@ -30,6 +30,7 @@
 #define ENABLE_CSV
 #define ENABLE_YAHOO
 #define ENABLE_SPLICE
+#define ENABLE_STOOQ
 
 #region libraries
 using System;
@@ -579,6 +580,13 @@ namespace TuringTrader.Simulator
             if (dataSource.Contains("splice"))
             {
                 return new DataSourceSplice(infos);
+            }
+            else
+#endif
+#if ENABLE_STOOQ
+            if (dataSource.Contains("stooq"))
+            {
+                return new DataSourceStooq(infos);
             }
             else
 #endif

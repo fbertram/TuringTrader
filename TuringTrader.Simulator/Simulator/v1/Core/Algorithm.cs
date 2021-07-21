@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
     /// must be derived from this class, and override the Run() and Report()
     /// methods.
     /// </summary>
-    public abstract class Algorithm : SimulatorCore
+    public abstract class Algorithm : SimulatorCore, IAlgorithm
     {
         #region public Algorithm()
         /// <summary>
@@ -58,7 +58,7 @@ namespace TuringTrader.Simulator
         /// instances before running them.
         /// </summary>
         /// <returns>new algorithm instance</returns>
-        public Algorithm Clone()
+        public IAlgorithm Clone()
         {
             Type algoType = GetType();
             Algorithm clonedInstance = (Algorithm)Activator.CreateInstance(algoType);
@@ -173,11 +173,15 @@ namespace TuringTrader.Simulator
         /// Container holding all optimizable parameters, along with
         /// their settings.
         /// </summary>
-        public /*readonly*/ Dictionary<string, OptimizerParam> OptimizerParams;
+        public Dictionary<string, OptimizerParam> OptimizerParams { get; set; }
         #endregion
-        #region public virtual bool CheckParametersValid()
+        #region public bool IsOptimizerParamsValid
         /// <summary>
-        /// Check, if current parameterset is valid. This is used to weed out
+        /// Check if current optimizer params are valid.
+        /// </summary>
+        public bool IsOptimizerParamsValid { get => CheckParametersValid(); }
+        /// <summary>
+        /// Check, if current parameter set is valid. This is used to weed out
         /// illegal parameter combinations during grid optimization.
         /// </summary>
         /// <returns>true, if parameter set valid</returns>
@@ -212,7 +216,19 @@ namespace TuringTrader.Simulator
         /// unnecessary calculations and output, to speed up optimization
         /// and conserve memory.
         /// </summary>
-        public bool IsOptimizing = false;
+        public bool IsOptimizing { get; set; } = false;
+        #endregion
+        #region public double FitnessReturn
+        /// <summary>
+        /// Algorithm fitness: return
+        /// </summary>
+        public double FitnessReturn { get => NetAssetValue[0]; }
+        #endregion
+        #region public double FitnessRisk
+        /// <summary>
+        /// Algorithm fitness: risk
+        /// </summary>
+        public double FitnessRisk { get => NetAssetValueMaxDrawdown; }
         #endregion
         #region public double FitnessValue
         /// <summary>
@@ -223,7 +239,7 @@ namespace TuringTrader.Simulator
         public double FitnessValue
         {
             get;
-            protected set;
+            set;
         }
         #endregion
 

@@ -1549,6 +1549,9 @@ namespace TuringTrader
             //--- cagr over various periods
             var periods = new List<Tuple<string, double>>
             {
+                Tuple.Create("cagr-1w", 1 / 52.0),
+                Tuple.Create("cagr-1m", 1 / 12.0),
+                Tuple.Create("cagr-3m", 1 / 4.0),
                 Tuple.Create("cagr-1y", 1.0),
                 Tuple.Create("cagr-2y", 2.0),
                 Tuple.Create("cagr-5y", 5.0),

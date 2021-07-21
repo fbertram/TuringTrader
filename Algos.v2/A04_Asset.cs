@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        A04_Asset
+// Description: Develop & test asset import and alignment w/ trading calendar.
+// History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -21,40 +21,36 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
-using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using TuringTrader.Simulator;
+#region libraries
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using TuringTrader.Simulator.v2;
 #endregion
 
-namespace TuringTrader
+// NOTE: with v2, the behavior of data sources changes. It is now possible
+// to add a new data source at any point in the simulation. This will ease
+// the implementation of universes later on. The example below shows how
+// the asset is brought in on every bar - but it will be served from the
+// cache in all but the very first call.
+
+namespace TuringTrader.Simulator.v2.Demo
 {
-    /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
-    /// </summary>
-    public partial class OptimizerSettings : Window
+    public class A04_Asset : Algorithm
     {
-        private IAlgorithm _algorithm;
+        public override string Name => "A03_Quotes";
 
-        public OptimizerSettings(IAlgorithm algorithm)
+        public override async void Run()
         {
-            InitializeComponent();
+            StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
+            EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
 
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
+            var bars = await Asset("SPY").Data;
+
         }
 
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
-        }
+        public override void Report() => Output.WriteLine("Here is your report");
     }
 }
 

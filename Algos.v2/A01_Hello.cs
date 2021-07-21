@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        A01_Hello
+// Description: Develop & test 'hello world' algorithm.
+// History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -21,40 +21,29 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
-using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using TuringTrader.Simulator;
+#region libraries
+using System;
+using System.Collections.Generic;
+using System.Text;
+using TuringTrader.Simulator.v2;
 #endregion
 
-namespace TuringTrader
+// NOTE: the public interface between an application and the various
+// algorithms is identical between simulators v1 and v2. Consequently,
+// existing v1 algorithms won't need to be updated and can co-exist
+// with v2 algorithms for a while.
+
+namespace TuringTrader.Simulator.v2.Demo
 {
-    /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
-    /// </summary>
-    public partial class OptimizerSettings : Window
+    public class A01_Hello : Algorithm
     {
-        private IAlgorithm _algorithm;
+        [OptimizerParam(1, 10, 1)]
+        public int TEST_PARAM { get; set; } = 1;
 
-        public OptimizerSettings(IAlgorithm algorithm)
-        {
-            InitializeComponent();
+        public override string Name => "A01_Hello";
 
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
-        }
-
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
-        }
+        public override void Run() => Output.WriteLine("Hello Trader. TEST_PARAM = {0}", TEST_PARAM);
+        public override void Report() => Output.WriteLine("Here is your report");
     }
 }
 

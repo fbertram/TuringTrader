@@ -101,7 +101,7 @@ namespace TuringTrader
         public ObservableCollection<MenuItemViewModel> MenuItems { get; set; }
         #endregion
         #region internal data
-        private Algorithm _currentAlgorithm = null;
+        private IAlgorithm _currentAlgorithm = null;
         private AlgorithmInfo _currentAlgorithmInfo = null;
         private DateTime _currentAlgorithmTimestamp = default(DateTime);
         private OptimizerGrid _optimizer = null;

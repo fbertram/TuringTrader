@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        A03_Cache
+// Description: Develop & test cache.
+// History:     2021vi05, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -21,40 +21,42 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
-using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using TuringTrader.Simulator;
+#region libraries
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using TuringTrader.Simulator.v2;
 #endregion
 
-namespace TuringTrader
+// NOTE: The cache is a central feature of TuringTrader. It is used to
+// store asset quotes and indicators. Objects in the cache are reffered
+// to by an id. On a cache miss, a method is called to retrieve the result.
+
+namespace TuringTrader.Simulator.v2.Demo
 {
-    /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
-    /// </summary>
-    public partial class OptimizerSettings : Window
+    public class A03_Cache : Algorithm
     {
-        private IAlgorithm _algorithm;
+        public override string Name => "A03_Cache";
 
-        public OptimizerSettings(IAlgorithm algorithm)
+        public override void Run()
         {
-            InitializeComponent();
+            string toDo()
+            {
+                Output.WriteLine("working on my todos");
+                return "here is the result";
+            }
 
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
+            string cacheId = "unique id";
+
+            var result1 = (string)Cache(cacheId, toDo);
+            Output.WriteLine(result1);
+
+            var result2 = (string)Cache(cacheId, toDo);
+            Output.WriteLine(result2);
         }
 
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
-        }
+        public override void Report() => Output.WriteLine("Here is your report");
     }
 }
 

@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.CustomApp", "M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "More", "More", "{0594F683-F733-4BBF-821F-B5EC1EE5385E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algos.v2", "Algos.v2\Algos.v2.csproj", "{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -53,6 +55,9 @@ Global
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Debug|x64.Build.0 = Debug|x64
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.ActiveCfg = Release|x64
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.Build.0 = Release|x64
+		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Debug|x64.ActiveCfg = Debug|x64
+		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Debug|x64.Build.0 = Debug|x64
+		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -56,7 +56,18 @@ namespace TuringTrader.Simulator
 
             private string convertSymbol(string ticker)
             {
+#if true
+                // new 2021vii01
+                return ticker;
+#else
+                // retired 2021vii01
+                // this code was supposed to help with tickers like BRK.A, which
+                // Yahoo presents as BRK-A. However, it seems that with other stocks,
+                // e.g., IOZ.AX, Yahoo uses the colon. Ultimately, it seems better
+                // to substitute the symbols with a Data Source Descriptor file.
+                // For Yahoo's suffixes see https://au.help.yahoo.com/kb/exchanges-data-providers-yahoo-finance-sln2310.html
                 return ticker.Replace('.', '-');
+#endif
             }
 
             private JObject parsePrices(string raw)
@@ -135,7 +146,7 @@ namespace TuringTrader.Simulator
 #endif
 
                     string url = string.Format(
-                        @"http://l1-query.finance.yahoo.com/v8/finance/chart/"
+                        @"http://query1.finance.yahoo.com/v8/finance/chart/"
                         + "{0}"
                         + "?interval=1d"
                         + "&period1={1}"
@@ -254,7 +265,7 @@ namespace TuringTrader.Simulator
 
                 return rawMeta;
             }
-            #endregion
+#endregion
 
             //---------- API
             #region public DataSourceYahoo(Dictionary<DataSourceValue, string> info)
