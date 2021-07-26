@@ -189,6 +189,9 @@ namespace TuringTrader.BooksAndPubs
                     {
                         var shares = (int)Math.Round(weights[i] * NetAssetValue[0] / i.Close[0]);
                         i.Trade(shares - i.Position);
+
+                        if (universe.Select(ds => ds.Instrument).Contains(i))
+                            Alloc.Allocation[i] = weights[i];
                     }
                 }
 
