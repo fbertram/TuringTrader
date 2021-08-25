@@ -227,6 +227,12 @@ namespace TuringTrader.Simulator
         /// </summary>
         static public bool AdjustForDividends { get; set; } = true;
         #endregion
+        #region static public bool CacheDataGlobally
+        /// <summary>
+        /// Enable/ disable global caching of quote data. Default is true.
+        /// </summary>
+        static public bool CacheDataGlobally { get; set; } = true;
+        #endregion
 
         #region static public string DefaultDataFeed
         /// <summary>
