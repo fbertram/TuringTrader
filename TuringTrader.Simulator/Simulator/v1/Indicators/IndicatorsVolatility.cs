@@ -329,6 +329,29 @@ namespace TuringTrader.Indicators
         }
         #endregion
 
+        #region public static ITimeSeries<double> UlcerIndex(this ITimeSeries<double> series, int n = 10)
+        /// <summary>
+        /// Calculate Ulcer Index.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">length of observation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller's line number, optional</param>
+        /// <returns></returns>
+        public static ITimeSeries<double> UlcerIndex(this ITimeSeries<double> series, int n = 10,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return series.Drawdown(n, cacheId)
+                .Square(cacheId)
+                .SMA(n, cacheId)
+                .Sqrt(cacheId);
+        }
+        #endregion
+
         #region public static _BollingerBands BollingerBands(this ITimeSeries<double> series, int n = 20, double stdev = 2.0)
         /// <summary>
         /// Calculate Bollinger Bands, as described here:
