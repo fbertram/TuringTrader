@@ -223,8 +223,9 @@ namespace TuringTrader
         protected double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
         protected double _stdMonthlyReturn(string label)
         {
-            double avg = _avgMonthlyReturrn(label);
-            return Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+            var avg = _avgMonthlyReturrn(label);
+            var stdev = Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+            return stdev;
         }
         protected double _sharpeRatio(string label)
         {
@@ -920,7 +921,7 @@ namespace TuringTrader
             row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}",
-                    Math.Exp(Math.Sqrt(12.0 * _monthlyReturns(label).Values.Average(r => r * r))) - 1.0);
+                    Math.Sqrt(12.0) * _stdMonthlyReturn(label));
             retvalue.Add(row);
 
 
