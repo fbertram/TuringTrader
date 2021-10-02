@@ -550,7 +550,7 @@ namespace TuringTrader.Simulator
 
                     // handle option expiry on bar following expiry
                     List<Instrument> optionsToExpire = Positions.Keys
-                            .Where(i => i.IsOption && i.OptionExpiry.Date < NextSimTime)
+                            .Where(i => i.IsOption && i.OptionExpiry.Date < NextSimTime.Date)
                             .ToList();
 
                     foreach (Instrument instr in optionsToExpire)
