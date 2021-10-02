@@ -40,6 +40,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
         public virtual double COMMISSION => 0.0; // lazy portfolios typically w/o commission
+        public virtual double MGMT_FEE => 0.0; // no management fee
         public virtual bool IsTradingDay => SimTime[0].Month != NextSimTime.Month;
         #endregion
 
@@ -62,6 +63,7 @@ namespace TuringTrader.BooksAndPubs
 
             //========== simulation loop ==========
 
+            var accruedMgmtFee = 0.0;
             foreach (var s in SimTimes)
             {
                 if (!HasInstruments(allocation.Select(a => a.Item1)))
@@ -80,6 +82,17 @@ namespace TuringTrader.BooksAndPubs
 
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * w / i.Close[0]);
                         i.Trade(targetShares - i.Position);
+                    }
+                }
+
+                // management fees: acrue daily, deduct monthly
+                if (MGMT_FEE > 0.0)
+                {
+                    accruedMgmtFee += NetAssetValue[0] * MGMT_FEE / 252.0;
+                    if (SimTime[0].Month != NextSimTime.Month)
+                    {
+                        Withdraw(accruedMgmtFee);
+                        accruedMgmtFee = 0.0;
                     }
                 }
 
