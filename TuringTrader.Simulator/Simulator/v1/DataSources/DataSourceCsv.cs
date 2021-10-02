@@ -498,7 +498,7 @@ namespace TuringTrader.Simulator
 
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
-                if (data.Count == 0)
+                if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));
 
                 CachedData = data;
