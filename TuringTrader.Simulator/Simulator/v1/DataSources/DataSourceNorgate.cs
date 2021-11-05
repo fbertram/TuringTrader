@@ -334,13 +334,20 @@ namespace TuringTrader.Simulator
                 { "$SPX", "S&P 500 Current & Past"},
                 { "$MID", "S&P MidCap 400 Current & Past" },
                 { "$SML", "S&P SmallCap 600 Current & Past" },
-                { "$SP1500",  "S&P Composite 1500 Current & Past"},
+                { "$SP1500", "S&P Composite 1500 Current & Past" },
+                { "$SPDAUDP", "S&P 500 Dividend Aristocrats Current & Past" },
 
-                { "$NDX", "NASDAQ 100 Current & Past" },
 
                 { "$RUI", "Russell 1000 Current & Past" },
                 { "$RUT", "Russell 2000 Current & Past" },
                 { "$RUA", "Russell 3000 Current & Past" },
+                { "$RMC", "Russell Mid Cap Current & Past" },
+                { "$RUMIC", "Russell Micro Cap Current & Past" },
+
+                { "$NDX", "NASDAQ 100 Current & Past" },
+                { "$NGX", "Nasdaq Next Generation 100 Current & Past" },
+                { "$NXTQ", "Nasdaq Q-50 Current & Past" },
+                { "$DJI", "Dow Jones Industrial Average Current & Past" },
             };
             private string _nickname;
             // Norgate dll is loaded *while* first instance is created
