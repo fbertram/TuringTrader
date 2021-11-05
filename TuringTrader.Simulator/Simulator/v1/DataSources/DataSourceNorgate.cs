@@ -330,10 +330,16 @@ namespace TuringTrader.Simulator
             private static object mutex = new object(); // watchlist functionality not multi-threaded?
             private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
             {
-                { "$SPX", "S&P 500 Current & Past"},
-                { "$NDX", "NASDAQ 100 Current & Past" },
                 { "$OEX", "S&P 100 Current & Past" },
+                { "$SPX", "S&P 500 Current & Past"},
+                { "$MID", "S&P MidCap 400 Current & Past" },
+                { "$SML", "S&P SmallCap 600 Current & Past" },
                 { "$SP1500",  "S&P Composite 1500 Current & Past"},
+
+                { "$NDX", "NASDAQ 100 Current & Past" },
+
+                { "$RUI", "Russell 1000 Current & Past" },
+                { "$RUT", "Russell 2000 Current & Past" },
                 { "$RUA", "Russell 3000 Current & Past" },
             };
             private string _nickname;
