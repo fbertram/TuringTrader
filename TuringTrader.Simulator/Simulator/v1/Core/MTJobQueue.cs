@@ -49,6 +49,11 @@ namespace TuringTrader.Simulator
         private readonly Queue<Thread> _jobQueue = new Queue<Thread>();
         private readonly int _maximumNumberOfThreads;
         private int _jobsRunning = 0;
+
+        /// <summary>
+        /// Set child threads to STA. This may be required for threads interacting w/ GUI elements.
+        /// </summary>
+        public bool STA { get; set; } = false;
         #endregion
 
         #region private void CheckQueue()
@@ -125,6 +130,10 @@ namespace TuringTrader.Simulator
             lock (_queueLock)
             {
                 Thread queuedThread = new Thread(() => JobRunner(job));
+
+                if (STA)
+                    queuedThread.SetApartmentState(ApartmentState.STA);
+
                 _jobQueue.Enqueue(queuedThread);
             }
 
