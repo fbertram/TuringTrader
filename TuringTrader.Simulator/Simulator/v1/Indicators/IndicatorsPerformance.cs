@@ -153,6 +153,38 @@ namespace TuringTrader.Indicators
                 cacheId);
         }
         #endregion
+
+        #region public static ITimeSeries<double> Runup(this ITimeSeries<double> series, int n)
+        /// <summary>
+        /// Return current n-day runup as a value between 0 and 1.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">observation window</param>
+        /// <param name="parentId">caller cache id, optional</param>
+        /// <param name="memberName">caller's member name, optional</param>
+        /// <param name="lineNumber">caller line number, optional</param>
+        /// <returns>runup as time series</returns>
+        public static ITimeSeries<double> Runup(this ITimeSeries<double> series, int n,
+            CacheId parentId = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            var cacheId = new CacheId(parentId, memberName, lineNumber,
+                series.GetHashCode(), n);
+
+            return IndicatorsBasic.BufferedLambda(
+                (p) =>
+                {
+                    double lowestLow = 1e99;
+                    for (int t = n - 1; t >= 0; t--)
+                    {
+                        lowestLow = Math.Min(lowestLow, series[t]);
+                    }
+                    var runup = series[0] / lowestLow - 1.0;
+                    return runup;
+                },
+                0.0,
+                cacheId);
+        }
+        #endregion
     }
 }
 
