@@ -45,19 +45,23 @@ namespace TuringTrader.Simulator
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
             private static object _lockUnresolved = new object();
+            private static object _lockNDU = new object();
 
             public static void RunNDU()
             {
-                if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                lock (_lockNDU)
                 {
-                    _lastNDURun = DateTime.Now;
+                    if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                    {
+                        _lastNDURun = DateTime.Now;
 
-                    string nduBinPath;
-                    getNDUBinPath(out nduBinPath);
-                    string nduTrigger = Path.Combine(nduBinPath, "NDU.Trigger.exe");
+                        string nduBinPath;
+                        getNDUBinPath(out nduBinPath);
+                        string nduTrigger = Path.Combine(nduBinPath, "NDU.Trigger.exe");
 
-                    Process ndu = Process.Start(nduTrigger, "UPDATE CLOSE WAIT");
-                    ndu.WaitForExit();
+                        Process ndu = Process.Start(nduTrigger, "UPDATE CLOSE WAIT");
+                        ndu.WaitForExit();
+                    }
                 }
             }
             public static void HandleUnresovledAssemblies()
