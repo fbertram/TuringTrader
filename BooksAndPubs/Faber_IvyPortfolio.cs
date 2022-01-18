@@ -396,6 +396,127 @@ namespace TuringTrader.BooksAndPubs
         };
     }
     #endregion
+
+    #region Ned Davis Research: Three-Way Model
+    // from Greg Kuhn:
+    // Ned Davis three way model.  It is somewhat similar to the permeant
+    // portfolio, at least in asset choice.  The rules are invest in Gold,
+    // Stocks or bonds (GLD, TLT, VTI) if the assets'
+    // 3 month moving average > 10 month moving average.
+    // If only one asset satisfies the condition, invest all funds in that
+    // asset (if 2 satisfy the condition then funds are allocated evenly
+    // between these assets).
+    //
+    // see https://mebfaber.com/2015/06/16/three-way-model/
+    // This study was completed by Ned Davis Research (http://www.ndr.com/),
+    // and could not be more simple. Three asset classes: Stocks, bonds, gold.
+    // Invest equally in whatever is going up(defined as 3 month SMA > 10 month SMA).
+    // That’s it.Thumps the stock market with less risk.  
+   
+    public class Davis_ThreeWayModel : AlgorithmPlusGlue
+    {
+        public override string Name => "Davis' Three-Way System";
+
+        private readonly string BENCHMARK = Assets.PORTF_60_40;
+
+        public override void Run()
+        {
+            //========== initialization ==========
+
+            WarmupStartTime = Globals.WARMUP_START_TIME;
+            StartTime = Globals.START_TIME;
+            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
+
+            Deposit(Globals.INITIAL_CAPITAL);
+            CommissionPerShare = Globals.COMMISSION; // Faber does not consider commissions
+
+            var assets = new List<object>
+                {
+                    Assets.GLD,
+                    Assets.TLT,
+                    Assets.SPY, // should be VTI?
+                }
+                .Select(ticker => AddDataSource(ticker))
+                .ToList();
+
+            var bench = AddDataSource(BENCHMARK);
+
+            //========== simulation loop ==========
+
+            foreach (var simTime in SimTimes)
+            {
+                var instruments = assets
+                    .Select(ds => ds.Instrument)
+                    .ToList();
+
+                if (!HasInstruments(assets))
+                    continue;
+
+                var indicators = assets
+                    .ToDictionary(
+                        ds => ds,
+                        ds => new
+                        {
+                            mom3mo = ds.Instrument.Close.SMA(63),
+                            mom10mo = ds.Instrument.Close.SMA(210),
+                        });
+
+                if (SimTime[0].Month != NextSimTime.Month)
+                {
+                    var goingUp = assets
+                        .Where(ds => indicators[ds].mom3mo[0] > indicators[ds].mom10mo[0])
+                        .ToList();
+                    var weight = 1.0 / Math.Max(1.0, goingUp.Count());
+
+                    var weights = Instruments
+                        .ToDictionary(
+                            i => i,
+                            i => 0.0);
+                    foreach (var ds in goingUp)
+                        weights[ds.Instrument] = weight;
+
+                    foreach (var i in Instruments)
+                    { 
+                        var shares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
+                        i.Trade(shares - i.Position);
+                    }
+                }
+
+                // plotter output
+                if (TradingDays > 0)
+                {
+                    _plotter.AddNavAndBenchmark(this, FindInstrument(BENCHMARK));
+                    _plotter.AddStrategyHoldings(this, assets.Select(ds => ds.Instrument));
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
+
+                    foreach (var ds in assets)
+                    {
+                        _plotter.SelectChart("Asset " + ds.Instrument.Symbol, "Date");
+                        _plotter.SetX(SimTime[0]);
+                        _plotter.Plot(ds.Instrument.Symbol, ds.Instrument.Close[0]);
+                        _plotter.Plot("3-months SMA", indicators[ds].mom3mo[0]);
+                        _plotter.Plot("10-months SMA", indicators[ds].mom10mo[0]);
+                    }
+                }
+            }
+
+            //========== post processing ==========
+
+            if (!IsOptimizing)
+            {
+                _plotter.AddTargetAllocation(Alloc);
+                _plotter.AddOrderLog(this);
+                //_plotter.AddPositionLog(this);
+                _plotter.AddPnLHoldTime(this);
+                _plotter.AddMfeMae(this);
+                _plotter.AddParameters(this);
+            }
+
+            FitnessValue = this.CalcFitness();
+        }
+    }
+    #endregion
 }
 
 //==============================================================================
