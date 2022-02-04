@@ -194,6 +194,15 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region public static void RunNDU()
+        /// <summary>
+        /// Run Norgate Data Updater.
+        /// </summary>
+        public static void RunNDU()
+        {
+            NorgateHelpers.RunNDU(true);
+        }
+        #endregion
 
         private class DataSourceNorgate : DataSource
         {
@@ -268,13 +277,6 @@ namespace TuringTrader.Simulator
                     if (bar.Time >= startTime && bar.Time <= endTime)
                         data.Add(bar);
                 }
-            }
-            #endregion
-
-            #region public static void RunNDU()
-            public static void RunNDU()
-            {
-                NorgateHelpers.RunNDU(true);
             }
             #endregion
 
