@@ -98,7 +98,7 @@ namespace TuringTrader.BooksAndPubs
                         i => SCORING_FUNC(i));
 
                 // skip if there are any missing instruments,
-                // we want to make sure our strategy has all instruemnts available
+                // we want to make sure our strategy has all instruments available
                 if (!HasInstruments(assets) || !HasInstrument(benchmark))
                     continue;
 
@@ -515,6 +515,84 @@ namespace TuringTrader.BooksAndPubs
 
             FitnessValue = this.CalcFitness();
         }
+    }
+    #endregion
+
+    #region sector rotation strategy
+    // From Meb Faber - Relative Strength Strategies for Investing
+    // see https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1585517
+    // 
+    // Also discussed here: https://school.stockcharts.com/doku.php?id=trading_strategies:sector_rotation_roc
+    // Quote:
+    // The strategy described here is based on the findings in Faber's white
+    // paper. First, the strategy is based on monthly data and the portfolio
+    // is rebalanced once per month. Chartists can use the last day of the
+    // month, the first day of the month or a set date every month. The
+    // strategy is long when the S&P 500 is above its 10-month simple moving
+    // average and out of the market when the S&P 500 is below its 10-month
+    // SMA. This basic timing technique ensures that investors are out of
+    // the market during extended downtrends and in the market during extended
+    // uptrends. Such a strategy would have avoided the 2001-2002 bear
+    // market and the gut-wrenching decline in 2008.
+    //
+    // In his backtest, Faber used the 10 sector/industry groups from the
+    // French-Fama CRSP Data Library. These include Consumer Non-Durables,
+    // Consumer Durables, Manufacturing, Energy, Technology, Telecommunications,
+    // Shops, Health, Utilities and Other. “Other” includes Mines, Construction,
+    // Transportation, Hotels, Business Services, Entertainment, and Finance.
+    // Instead of searching for individual ETFs to match these groups, this
+    // strategy will simply use the nine sector SPDRs.
+    //
+    // The next step is to choose the performance interval. Chartists can
+    // choose anything from one to twelve months. One month may be a little
+    // short and cause excessive rebalancing. Twelve months may be a bit long
+    // and miss too much of the move. As a compromise, this example will use
+    // three months and define performance with the three-month Rate-of-Change,
+    // which is the percentage gain over a three-month period.
+    //
+    // Chartists must then decide how much capital to allocate to each sector and
+    // to the strategy as a whole.Chartists could buy the top three sectors and
+    // allocate equal amounts to all three (33%). Alternatively, investors could
+    // implement a weighted strategy by investing the most in the top sector and
+    // lower amounts in the subsequent sectors.
+    // * Buy Signal: When the S&P 500 is above its 10-month simple moving average,
+    //   buy the sectors with the biggest gains over a three-month timeframe.
+    // * Sell Signal: Exit all positions when the S&P 500 moves below its 10-month
+    //   simple moving average on a monthly closing basis.
+    // * Rebalance: Once per month, sell sectors that fall out of the top tier (three)
+    //   and buy the sectors that move into the top tier (three).
+
+    public class Faber_Sector_Rotation : Faber_IvyRotation_Core
+    {
+        // FIXME: Faber's paper describes an additional market-regime filter,
+        // which we didn't implement here. Instead, we have introduced the
+        // SAFE_INSTRUMENT, which the strategy falls back to when all
+        // sectors indicate negative momentum. While the regime filter is
+        // probably better, it will not make a huge difference to the
+        // overall behavior of the strategy.
+
+        public override string Name => "Faber's Sector Rotation";
+
+        protected override string SAFE_INSTRUMENT => Assets.BIL; // SPDR Barclays 1-3 Month T-Bill ETF
+        protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
+        {
+            new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
+                Assets.XLB,
+                //Assets.XLC,
+                Assets.XLE,
+                Assets.XLF,
+                Assets.XLI,
+                Assets.XLK,
+                Assets.XLP,
+                //Assets.XLRE,
+                //Assets.XLU,
+                Assets.XLV,
+                Assets.XLY,
+                SAFE_INSTRUMENT,
+                SAFE_INSTRUMENT,
+                SAFE_INSTRUMENT
+            } },
+        };
     }
     #endregion
 }
