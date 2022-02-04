@@ -47,11 +47,11 @@ namespace TuringTrader.Simulator
             private static object _lockUnresolved = new object();
             private static object _lockNDU = new object();
 
-            public static void RunNDU()
+            public static void RunNDU(bool runAlways = false)
             {
                 lock (_lockNDU)
                 {
-                    if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                    if (runAlways || DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
                     {
                         _lastNDURun = DateTime.Now;
 
@@ -233,7 +233,7 @@ namespace TuringTrader.Simulator
                 NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                 //--- run NDU as required
-#if false
+#if true
                 // this should work, but seems broken as of 01/09/2019
                 DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
@@ -268,6 +268,13 @@ namespace TuringTrader.Simulator
                     if (bar.Time >= startTime && bar.Time <= endTime)
                         data.Add(bar);
                 }
+            }
+            #endregion
+
+            #region public static void RunNDU()
+            public static void RunNDU()
+            {
+                NorgateHelpers.RunNDU(true);
             }
             #endregion
 
