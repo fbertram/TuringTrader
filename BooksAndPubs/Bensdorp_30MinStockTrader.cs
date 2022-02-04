@@ -55,8 +55,8 @@ namespace TuringTrader.BooksAndPubs
         public virtual int MAX_ENTRIES { get; set; } = 10;
         #endregion
         #region internal data
-        private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
-        private static readonly string SPX = Assets.STOCKS_US_LG_CAP;
+        private static readonly string BENCHMARK = Indices.SPXTR;
+        private static readonly string SPX = Assets.SPY;
         #endregion
 
         #region public override void Run()
@@ -549,7 +549,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_WR",  0.50),
             new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
         };
-        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+        public override string BENCH => Indices.SPXTR;
 
         public override DateTime START_TIME => Globals.START_TIME;
         public override DateTime END_TIME => Globals.END_TIME;
@@ -565,7 +565,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRL", 0.50),
             new Tuple<object, double>("algorithm:Bensdorp_30MinStockTrader_MRS", 0.50),
         };
-        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+        public override string BENCH => Indices.SPXTR;
 
         public override DateTime START_TIME => Globals.START_TIME;
         public override DateTime END_TIME => Globals.END_TIME;

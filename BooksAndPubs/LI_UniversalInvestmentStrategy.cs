@@ -63,7 +63,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual int NUM_ASSETS { get; set; } = 3;
 
         public virtual string TBILL { get; set; } = null;
-        public virtual string BENCH { get; set; } = Assets.PORTF_60_40;
+        public virtual string BENCH { get; set; } = Indices.PORTF_60_40;
 
         protected virtual bool IsOptimizationDay => SimTime[0].Month != NextSimTime.Month;
         protected virtual bool IsTradingDay => IsOptimizationDay;
@@ -492,8 +492,8 @@ namespace TuringTrader.BooksAndPubs
         // LogicalInvest shorts the 3x inverse ETFs instead
         protected override IEnumerable<object> ASSETS => new List<string>
         {
-            Assets.STOCKS_US_LG_CAP_3X,
-            Assets.BONDS_US_TREAS_30Y_3X,
+            Assets.SPXL,
+            Assets.TMF,
         };
     }
     #endregion

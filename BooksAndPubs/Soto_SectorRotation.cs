@@ -57,7 +57,7 @@ namespace TuringTrader.BooksAndPubs
         public virtual Algorithm PF_EARLY => new Soto_SectorRotation_Early();
         public virtual Algorithm PF_LATE => new Soto_SectorRotation_Late();
 
-        private readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        private readonly string BENCHMARK = Indices.SPXTR;
 
         public virtual DateTime START_DATE { get; set; } = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
         public virtual DateTime END_DATE { get; set; } = DateTime.Now.Date;
@@ -70,9 +70,9 @@ namespace TuringTrader.BooksAndPubs
             public override string Name => "Soto's Sector Rotation (Decline)";
             public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_STAPLES, 0.0), // XLP
+            new Tuple<object, double>(Assets.XLP, 0.0), // XLP
         };
-            public override string BENCH => Assets.STOCKS_US_LG_CAP;
+            public override string BENCH => Indices.SPXTR;
         }
         public class Soto_SectorRotation_Recovery : LazyPortfolio
         {
@@ -81,10 +81,10 @@ namespace TuringTrader.BooksAndPubs
             public override string Name => "Soto's Sector Rotation (Recovery)";
             public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_MATERIALS, 0.0), // XLB
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_DISCRETIONARY, 0.0), // XLY
+            new Tuple<object, double>(Assets.XLB, 0.0), // XLB
+            new Tuple<object, double>(Assets.XLY, 0.0), // XLY
         };
-            public override string BENCH => Assets.STOCKS_US_LG_CAP;
+            public override string BENCH => Indices.SPXTR;
         }
         public class Soto_SectorRotation_Early : LazyPortfolio
         {
@@ -93,11 +93,11 @@ namespace TuringTrader.BooksAndPubs
             public override string Name => "Soto's Sector Rotation (Early)";
             public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_ENERGY, 0.0), // XLE
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_FINANCIAL, 0.0), // XLF
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_INDUSTRIAL, 0.0), // XLI
+            new Tuple<object, double>(Assets.XLE, 0.0), // XLE
+            new Tuple<object, double>(Assets.XLF, 0.0), // XLF
+            new Tuple<object, double>(Assets.XLI, 0.0), // XLI
         };
-            public override string BENCH => Assets.STOCKS_US_LG_CAP;
+            public override string BENCH => Indices.SPXTR;
         }
         public class Soto_SectorRotation_Late : LazyPortfolio
         {
@@ -106,10 +106,10 @@ namespace TuringTrader.BooksAndPubs
             public override string Name => "Soto's Sector Rotation (Late)";
             public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_TECHNOLOGY, 0.0), // XLK
-            new Tuple<object, double>(Assets.STOCKS_US_SECT_HEALTH_CARE, 0.0), // XLV
+            new Tuple<object, double>(Assets.XLK, 0.0), // XLK
+            new Tuple<object, double>(Assets.XLV, 0.0), // XLV
         };
-            public override string BENCH => Assets.STOCKS_US_LG_CAP;
+            public override string BENCH => Indices.SPXTR;
         }
         #endregion
 

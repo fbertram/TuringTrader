@@ -48,7 +48,7 @@ namespace TuringTrader.BooksAndPubs
         #endregion
         #region internal data
         //private readonly string BENCHMARK = "^SPX.index";
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private readonly string BENCHMARK = Indices.PORTF_60_40;
         #endregion
 
         #region public override void Run()

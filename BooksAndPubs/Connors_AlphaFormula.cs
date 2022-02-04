@@ -48,7 +48,7 @@ namespace TuringTrader.BooksAndPubs
             "AGG", // US Aggregate Bonds
         };
 
-        public virtual string BENCHMARK => Assets.PORTF_60_40;
+        public virtual string BENCHMARK => Indices.PORTF_60_40;
 
         public virtual double MOMENTUM(Instrument i) =>
             ((i.Close[0] - i.Close[21]) / i.Close[21]
@@ -689,7 +689,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.20),
         };
 
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
 
 #if USE_BOOK_RANGE
         public override DateTime START_TIME => DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
@@ -708,7 +708,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algo:Connors_AlphaFormula_DynamicTreasuries",   0.30),
             new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.30),
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
 
 #if USE_BOOK_RANGE
         public override DateTime START_TIME => DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);

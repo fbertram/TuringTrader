@@ -64,7 +64,7 @@ namespace TuringTrader.BooksAndPubs
         protected abstract double SCORING_FUNC(Instrument i);
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private readonly string BENCHMARK = Indices.PORTF_60_40;
         #endregion
 
         #region public override void Run()
@@ -248,32 +248,32 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Faber's Ivy 5 Timing";
 
-        protected override string SAFE_INSTRUMENT => "BIL"; // SPDR Barclays 1-3 Month T-Bill ETF
+        protected override string SAFE_INSTRUMENT => Assets.BIL; // SPDR Barclays 1-3 Month T-Bill ETF
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             //--- domestic equity
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VTI", // Vanguard Total Stock Market ETF
+                Assets.VTI, // Vanguard Total Stock Market ETF
                 SAFE_INSTRUMENT
             } },
             //--- world equity
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VEU", // Vanguard FTSE All-World ex-US ETF
+                Assets.VEU, // Vanguard FTSE All-World ex-US ETF
                 SAFE_INSTRUMENT
             } },
             //--- credit
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "BND", // Vanguard Total Bond Market ETF
+                Assets.BND, // Vanguard Total Bond Market ETF
                 SAFE_INSTRUMENT
             } },
             //--- real estate
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "VNQ", // Vanguard REIT Index ETF
+                Assets.VNQ, // Vanguard REIT Index ETF
                 SAFE_INSTRUMENT
             } },
             //--- economic stress
             new AssetClass { weight = 0.20, numpicks = 1, assets = new List<string> {
-                "DBC", // PowerShares DB Commodity Index Tracking
+                Assets.DBC, // PowerShares DB Commodity Index Tracking
                 SAFE_INSTRUMENT
             } },
         };
@@ -284,20 +284,20 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Faber's Ivy 5 Rotation";
 
-        protected override string SAFE_INSTRUMENT => "splice:BIL,PRTBX"; // SPDR Barclays 1-3 Month T-Bill ETF
+        protected override string SAFE_INSTRUMENT => Assets.BIL; // SPDR Barclays 1-3 Month T-Bill ETF
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
             new AssetClass { weight = 1.00, numpicks = 3, assets = new List<string> {
                 //--- domestic equity
-                "VTI", // Vanguard Total Stock Market ETF
+                Assets.VTI, // Vanguard Total Stock Market ETF
                 //--- world equity
-                "splice:VEU,SCINX", // Vanguard FTSE All-World ex-US ETF
+                Assets.VEU, // Vanguard FTSE All-World ex-US ETF
                 //--- credit
-                "splice:BND,AGG", // Vanguard Total Bond Market ETF
+                Assets.BND, // Vanguard Total Bond Market ETF
                 //--- real estate
-                "VNQ", // Vanguard REIT Index ETF
+                Assets.VNQ, // Vanguard REIT Index ETF
                 //--- economic stress
-                "DBC", // PowerShares DB Commodity Index Tracking
+                Assets.DBC, // PowerShares DB Commodity Index Tracking
                 SAFE_INSTRUMENT,
                 SAFE_INSTRUMENT,
                 SAFE_INSTRUMENT
@@ -417,7 +417,7 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Davis' Three-Way System";
 
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private readonly string BENCHMARK = Indices.PORTF_60_40;
 
         public override void Run()
         {
