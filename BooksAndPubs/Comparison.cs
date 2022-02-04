@@ -34,7 +34,7 @@ namespace TuringTrader.BooksAndPubs
             "algorithm:Antonacci_ParityPortfolioWithAbsoluteMomentum",
             "algorithm:Keller_CAA_N8_TV5",
             "algorithm:Livingston_MuscularPortfolios_MamaBear",
-            Assets.PORTF_60_40,
+            Indices.PORTF_60_40,
         };
 
         private Plotter _plotter = null;
