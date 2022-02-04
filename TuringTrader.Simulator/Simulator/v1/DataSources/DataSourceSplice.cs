@@ -57,7 +57,7 @@ namespace TuringTrader.Simulator
                     var d = DataSource.New(nick);
 
                     name = name ?? d.Info[DataSourceParam.name];
-                    ticker = ticker ?? d.Info[DataSourceParam.ticker] + "++";
+                    ticker = ticker ?? d.Info[DataSourceParam.ticker] + ".";
                 }
 
                 Info[DataSourceParam.name] = name;
