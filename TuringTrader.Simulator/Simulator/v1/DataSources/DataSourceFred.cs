@@ -39,6 +39,10 @@ namespace TuringTrader.Simulator
     {
         private class DataSourceFred : DataSource
         {
+            #region internal data
+            private static object _lockGetMeta = new object();
+            private static object _lockGetData = new object();
+            #endregion
             #region internal helpers
             private static object _lockCache = new object();
             private string _apiKey
@@ -79,54 +83,57 @@ namespace TuringTrader.Simulator
             }
             private JObject getMeta()
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
-                string metaCache = Path.Combine(cachePath, "fred_meta");
-
-                bool writeToDisk = false;
-                string rawMeta = null;
-                JObject jsonMeta = null;
-
-                //--- 1) try to read raw json from disk
-                if (File.Exists(metaCache))
+                lock (_lockGetMeta)
                 {
-                    using (BinaryReader mc = new BinaryReader(File.Open(metaCache, FileMode.Open)))
-                        rawMeta = mc.ReadString();
+                    string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
+                    string metaCache = Path.Combine(cachePath, "fred_meta");
 
-                    jsonMeta = parseMeta(rawMeta);
+                    bool writeToDisk = false;
+                    string rawMeta = null;
+                    JObject jsonMeta = null;
+
+                    //--- 1) try to read raw json from disk
+                    if (File.Exists(metaCache))
+                    {
+                        using (BinaryReader mc = new BinaryReader(File.Open(metaCache, FileMode.Open)))
+                            rawMeta = mc.ReadString();
+
+                        jsonMeta = parseMeta(rawMeta);
+                    }
+
+                    //--- 2) if failed, try to retrieve from web
+                    if (jsonMeta == null)
+                    {
+                        Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
+
+                        string url = string.Format(
+                            "https://api.stlouisfed.org/fred/series"
+                                + "?series_id={0}"
+                                + "&api_key={1}&file_type=json",
+                            Info[DataSourceParam.symbolFred],
+                            _apiKey);
+
+                        using (var client = new WebClient())
+                            rawMeta = client.DownloadString(url);
+
+                        jsonMeta = parseMeta(rawMeta);
+                        writeToDisk = true;
+                    }
+
+                    //--- 3) if failed, return
+                    if (jsonMeta == null)
+                        return null;
+
+                    //--- 4) write to disk
+                    if (writeToDisk)
+                    {
+                        Directory.CreateDirectory(cachePath);
+                        using (BinaryWriter mc = new BinaryWriter(File.Open(metaCache, FileMode.Create)))
+                            mc.Write(rawMeta);
+                    }
+
+                    return jsonMeta;
                 }
-
-                //--- 2) if failed, try to retrieve from web
-                if (jsonMeta == null)
-                {
-                    Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
-
-                    string url = string.Format(
-                        "https://api.stlouisfed.org/fred/series"
-                            + "?series_id={0}"
-                            + "&api_key={1}&file_type=json",
-                        Info[DataSourceParam.symbolFred],
-                        _apiKey);
-
-                    using (var client = new WebClient())
-                        rawMeta = client.DownloadString(url);
-
-                    jsonMeta = parseMeta(rawMeta);
-                    writeToDisk = true;
-                }
-
-                //--- 3) if failed, return
-                if (jsonMeta == null)
-                    return null;
-
-                //--- 4) write to disk
-                if (writeToDisk)
-                {
-                    Directory.CreateDirectory(cachePath);
-                    using (BinaryWriter mc = new BinaryWriter(File.Open(metaCache, FileMode.Create)))
-                        mc.Write(rawMeta);
-                }
-
-                return jsonMeta;
             }
             private JObject parseData(string raw)
             {
@@ -153,101 +160,104 @@ namespace TuringTrader.Simulator
             }
             private JObject getData(DateTime startTime, DateTime endTime)
             {
-                string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
-                string timeStamps = Path.Combine(cachePath, "fred_timestamps");
-                string dataCache = Path.Combine(cachePath, "fred_data");
-
-                bool writeToDisk = false;
-                string rawData = null;
-                JObject jsonData = null;
-
-                //--- 1) try to read raw json from disk
-                if (File.Exists(timeStamps) && File.Exists(dataCache))
+                lock (_lockGetData)
                 {
-                    using (BinaryReader pc = new BinaryReader(File.Open(dataCache, FileMode.Open)))
-                        rawData = pc.ReadString();
+                    string cachePath = Path.Combine(GlobalSettings.HomePath, "Cache", Info[DataSourceParam.nickName2]);
+                    string timeStamps = Path.Combine(cachePath, "fred_timestamps");
+                    string dataCache = Path.Combine(cachePath, "fred_data");
 
-                    using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
+                    bool writeToDisk = false;
+                    string rawData = null;
+                    JObject jsonData = null;
+
+                    //--- 1) try to read raw json from disk
+                    if (File.Exists(timeStamps) && File.Exists(dataCache))
                     {
-                        DateTime cacheStartTime = new DateTime(ts.ReadInt64());
-                        DateTime cacheEndTime = new DateTime(ts.ReadInt64());
+                        using (BinaryReader pc = new BinaryReader(File.Open(dataCache, FileMode.Open)))
+                            rawData = pc.ReadString();
 
-                        if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
-                            jsonData = parseData(rawData);
+                        using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
+                        {
+                            DateTime cacheStartTime = new DateTime(ts.ReadInt64());
+                            DateTime cacheEndTime = new DateTime(ts.ReadInt64());
+
+                            if (cacheStartTime.Date <= startTime.Date && cacheEndTime.Date >= endTime.Date)
+                                jsonData = parseData(rawData);
+                        }
                     }
-                }
 
-                //--- 2) if failed, try to retrieve from web
-                if (jsonData == null)
-                {
+                    //--- 2) if failed, try to retrieve from web
+                    if (jsonData == null)
+                    {
 #if true
-                    // always request whole range here, to make
-                    // offline behavior as pleasant as possible
-                    DateTime DATA_START = DateTime.Parse("01/01/1950", CultureInfo.InvariantCulture);
+                        // always request whole range here, to make
+                        // offline behavior as pleasant as possible
+                        DateTime DATA_START = DateTime.Parse("01/01/1950", CultureInfo.InvariantCulture);
 
-                    startTime = ((DateTime)_firstTime) < DATA_START
-                        ? DATA_START
-                        : (DateTime)_firstTime;
+                        startTime = ((DateTime)_firstTime) < DATA_START
+                            ? DATA_START
+                            : (DateTime)_firstTime;
 
-                    endTime = DateTime.Now.Date + TimeSpan.FromDays(1);
+                        endTime = DateTime.Now.Date + TimeSpan.FromDays(1);
 #else
                     startTime = startTime.Date;
                     endTime = endTime.Date + TimeSpan.FromDays(5);
 #endif
 
-                    string url = string.Format(
-                        "https://api.stlouisfed.org/fred/series/observations"
-                            + "?series_id={0}"
-                            + "&api_key={1}"
-                            + "&file_type=json"
-                            + "&observation_start={2:yyyy}-{2:MM}-{2:dd}"
-                            + "&observation_end={3:yyyy}-{3:MM}-{3:dd}",
-                        Info[DataSourceParam.symbolFred],
-                        _apiKey,
-                        startTime,
-                        endTime);
+                        string url = string.Format(
+                            "https://api.stlouisfed.org/fred/series/observations"
+                                + "?series_id={0}"
+                                + "&api_key={1}"
+                                + "&file_type=json"
+                                + "&observation_start={2:yyyy}-{2:MM}-{2:dd}"
+                                + "&observation_end={3:yyyy}-{3:MM}-{3:dd}",
+                            Info[DataSourceParam.symbolFred],
+                            _apiKey,
+                            startTime,
+                            endTime);
 
-                    string tmpData = null;
-                    using (var client = new WebClient())
-                        tmpData = client.DownloadString(url);
+                        string tmpData = null;
+                        using (var client = new WebClient())
+                            tmpData = client.DownloadString(url);
 
-                    jsonData = parseData(tmpData);
+                        jsonData = parseData(tmpData);
 
-                    if (jsonData != null)
-                    {
-                        rawData = tmpData;
-                        writeToDisk = true;
+                        if (jsonData != null)
+                        {
+                            rawData = tmpData;
+                            writeToDisk = true;
+                        }
+                        else
+                        {
+                            // we might have discarded the data from disk before,
+                            // because the time frame wasn't what we were looking for. 
+                            // however, in case we can't load from web, e.g. because 
+                            // we don't have internet connectivity, it's still better 
+                            // to go with what we have cached before
+                            jsonData = parseData(rawData);
+                        }
                     }
-                    else
+
+                    //--- 3) if failed, return
+                    if (jsonData == null)
+                        return null;
+
+                    //--- 4) write to disk
+                    if (writeToDisk)
                     {
-                        // we might have discarded the data from disk before,
-                        // because the time frame wasn't what we were looking for. 
-                        // however, in case we can't load from web, e.g. because 
-                        // we don't have internet connectivity, it's still better 
-                        // to go with what we have cached before
-                        jsonData = parseData(rawData);
+                        Directory.CreateDirectory(cachePath);
+                        using (BinaryWriter pc = new BinaryWriter(File.Open(dataCache, FileMode.Create)))
+                            pc.Write(rawData);
+
+                        using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
+                        {
+                            ts.Write(startTime.Ticks);
+                            ts.Write(endTime.Ticks);
+                        }
                     }
+
+                    return jsonData;
                 }
-
-                //--- 3) if failed, return
-                if (jsonData == null)
-                    return null;
-
-                //--- 4) write to disk
-                if (writeToDisk)
-                {
-                    Directory.CreateDirectory(cachePath);
-                    using (BinaryWriter pc = new BinaryWriter(File.Open(dataCache, FileMode.Create)))
-                        pc.Write(rawData);
-
-                    using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
-                    {
-                        ts.Write(startTime.Ticks);
-                        ts.Write(endTime.Ticks);
-                    }
-                }
-
-                return jsonData;
             }
             private DateTime? _firstTime;
             private DateTime? _lastTime;

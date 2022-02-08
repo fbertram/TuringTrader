@@ -207,13 +207,18 @@ namespace TuringTrader.Simulator
         private class DataSourceNorgate : DataSource
         {
             #region internal data
+            private static object _lockSetName = new object();
+            private static object _lockLoadData = new object();
             #endregion
             #region internal helpers
             private void SetName()
             {
-                // no proper name given, try to retrieve from Norgate
-                string ticker = Info[DataSourceParam.symbolNorgate];
-                Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
+                lock (_lockSetName)
+                {
+                    // no proper name given, try to retrieve from Norgate
+                    string ticker = Info[DataSourceParam.symbolNorgate];
+                    Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
+                }
             }
             private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
             {
@@ -232,19 +237,21 @@ namespace TuringTrader.Simulator
             }
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
-                if (!NorgateHelpers.isAPIAvaliable)
-                    throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
+                lock (_lockLoadData)
+                {
+                    if (!NorgateHelpers.isAPIAvaliable)
+                        throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
 
-                //--- Norgate setup
-                NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
-                    ? NDU.AdjustmentType.TotalReturn
-                    : NDU.AdjustmentType.CapitalSpecial;
-                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
+                    //--- Norgate setup
+                    NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
+                        ? NDU.AdjustmentType.TotalReturn
+                        : NDU.AdjustmentType.CapitalSpecial;
+                    NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
-                //--- run NDU as required
+                    //--- run NDU as required
 #if true
-                // this should work, but seems broken as of 01/09/2019
-                DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
+                    // this should work, but seems broken as of 01/09/2019
+                    DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
@@ -254,28 +261,29 @@ namespace TuringTrader.Simulator
                     .First();
 #endif
 
-                if (endTime > dbTimeStamp)
-                    NorgateHelpers.RunNDU();
+                    if (endTime > dbTimeStamp)
+                        NorgateHelpers.RunNDU();
 
-                //--- get data from Norgate
-                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
+                    //--- get data from Norgate
+                    List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
+                    NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
 
-                //--- copy to TuringTrader bars
-                double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
-                    ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
-                    : 1.0;
+                    //--- copy to TuringTrader bars
+                    double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
+                        ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
+                        : 1.0;
 
-                foreach (var ohlc in norgateData)
-                {
-                    // Norgate bars only have dates, no time.
-                    // we need to make sure that we won't return bars
-                    // outside of the requested range, as otherwise
-                    // the simulator's IsLastBar will be incorrect
-                    Bar bar = CreateBar(ohlc, priceMultiplier);
+                    foreach (var ohlc in norgateData)
+                    {
+                        // Norgate bars only have dates, no time.
+                        // we need to make sure that we won't return bars
+                        // outside of the requested range, as otherwise
+                        // the simulator's IsLastBar will be incorrect
+                        Bar bar = CreateBar(ohlc, priceMultiplier);
 
-                    if (bar.Time >= startTime && bar.Time <= endTime)
-                        data.Add(bar);
+                        if (bar.Time >= startTime && bar.Time <= endTime)
+                            data.Add(bar);
+                    }
                 }
             }
             #endregion
