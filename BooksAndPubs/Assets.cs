@@ -165,6 +165,14 @@ namespace TuringTrader.Algorithms.Glue
         /// Vanguard MSCI Emerging Markets ETF
         /// </summary>
         public static readonly string VWO = "VWO";
+        /// <summary>
+        /// iShares MSCI Emerging Markets ETF
+        /// </summary>
+        public static readonly string EEM = "EEM";
+        /// <summary>
+        /// iShares MSCI EAFE ETF
+        /// </summary>
+        public static readonly string EFA = "EFA";
         #endregion
         #endregion
         #region bonds

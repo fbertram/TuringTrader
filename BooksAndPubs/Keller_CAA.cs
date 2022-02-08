@@ -163,18 +163,18 @@ namespace TuringTrader.BooksAndPubs
     {
         protected override List<string> RISKY_ASSETS => new List<string>
         {
-            "SPY", // S&P 500
-            "EFA", // EAFE
-            "EEM", // Emerging Markets
-            "QQQ", // US Technology Sector
-            "EWJ", // Japanese Equities
-            "splice:HYG,VWEAX", // High Yield Bonds
+            Assets.SPY, // S&P 500
+            Assets.EFA, // EAFE
+            Assets.EEM, // Emerging Markets
+            Assets.QQQ, // US Technology Sector
+            Assets.EWJ, // Japanese Equities
+            Assets.HYG, // High Yield Bonds
         };
 
         protected override List<string> SAFE_ASSETS => new List<string>
         {
-            "IEF", // 10-Year Treasuries
-            "splice:BIL,PRTBX", // T-Bills
+            Assets.IEF, // 10-Year Treasuries
+            Assets.BIL, // T-Bills
         };
     }
     #endregion
