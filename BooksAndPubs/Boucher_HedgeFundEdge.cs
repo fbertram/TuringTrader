@@ -55,31 +55,38 @@ namespace Algorithms.TTorg
     {
         public override string Name => string.Format("Heine Bond Model");
 
-        public virtual object BOND { get; set; } = Assets.IEF; // since 01/1968
+        #region inputs
+        public virtual object BOND { get; set; } = Assets.IEF; // Heine uses Dow Jones 20 Bond Price Index
+        [OptimizerParam(30, 130, 5)]
+        public virtual int BOND_PER { get; set; } = 24 * 5;
 
-        public virtual object BOND_INDEX { get => BOND; set { } } // Heine uses Dow Jones 20 Bond Price Index
-        public virtual int BOND_INDEX_PER { get; set; } = 24 * 5;
-
-        //public virtual string BOND_LT_YIELD { get; set; } = "%TYX"; // 30-year T-Bond Yield (since 11/1993)
-        //public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS30"; // 30-year T-Bond Yield (since 02/1977)
         public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS20"; // 20-year T-Bond Yield (since 01/1962)
+        [OptimizerParam(20, 60, 5)]
         public virtual int BOND_LT_YIELD_PER { get; set; } = 6 * 5;
 
         public virtual string BOND_ST_YIELD { get; set; } = "fred:DTB3"; // 13-week T-Bill Yield (since 01/1954)
+        [OptimizerParam(20, 60, 5)]
         public virtual int BOND_ST_YIELD_PER { get; set; } = 6 * 5;
 
         public virtual string UTILITY_INDEX { get; set; } = "$DJU"; // Dow Jones Utility Average (since 01/1929)
+        [OptimizerParam(30, 90, 5)]
         public virtual int UTILITY_INDEX_PER { get; set; } = 10 * 5;
 
         //public virtual string COMMODITY_INDEX { get; set; } = "$CRB"; // Core Commodity CRB Index (since 01/1994)
         public virtual string COMMODITY_INDEX { get; set; } = "fred:PPIACO"; // producer price index to substitute CRB (since 01/1913)
+        [OptimizerParam(50, 150, 5)]
         public virtual int COMMODITY_INDEX_PER { get; set; } = 20 * 5;
 
-        public virtual object ASSET { get => BOND; set { } } // it is unclear, which asset Heine is trading
         public virtual object BENCHMARK { get => BOND; set { } } // it is fair to benchmark agains the traded asset
+        public virtual object SAFE { get; set; } = null; // it is unclear if Heine is rotating into a safe asset
 
+        public virtual double COMMISSION { get; set; } = 0.0; // Heine is not mentioning commission
         protected virtual bool IsTradingDay
             => SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday;
+        protected virtual bool IsTrendingUp(ITimeSeries<double> series, int period) => series.EMA(5)[0] > series.EMA(period)[0];
+        protected virtual bool IsTrendingDown(ITimeSeries<double> series, int period) => !IsTrendingUp(series, period);
+        #endregion
+        #region strategy logic
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
@@ -95,26 +102,25 @@ namespace Algorithms.TTorg
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
-            //CommissionPerShare = Globals.COMMISSION;
+            CommissionPerShare = COMMISSION;
 
-            var bondIndex = AddDataSource(BOND_INDEX);
+            var bondAsset = AddDataSource(BOND);
+            var safeAsset = SAFE != null ? AddDataSource(SAFE) : null;
             var bondLtYield = AddDataSource(BOND_LT_YIELD);
             var bondStYield = AddDataSource(BOND_ST_YIELD);
             var utilityIndex = AddDataSource(UTILITY_INDEX);
             var commodityIndex = AddDataSource(COMMODITY_INDEX);
-
-            var asset = AddDataSource(ASSET);
-            var bench = AddDataSource(BENCHMARK);
+            var benchmark = AddDataSource(BENCHMARK);
 
             var allDs = new List<DataSource>
             {
-                bondIndex,
+                bondAsset,
+                safeAsset ?? bondAsset,
                 bondLtYield,
                 bondStYield,
                 utilityIndex,
                 commodityIndex,
-                asset,
-                bench,
+                benchmark,
             };
 
             var holdBonds = false;
@@ -127,17 +133,7 @@ namespace Algorithms.TTorg
                 if (!HasInstruments(allDs))
                     continue;
 
-#if true
-                // this code matches Boucher's book
-                bool IsTrendingUp(ITimeSeries<double> series, int period) => series.EMA(5)[0] > series.EMA(period)[0];
-                bool IsTrendingDown(ITimeSeries<double> series, int period) => series.EMA(5)[0] < series.EMA(period)[0];
-#else
-                // TuringTrader's modified method
-                bool IsTrendingUp(ITimeSeries<double> series, int period) => series.Return().EMA(3).EMA(3).EMA(period)[0] > 0.0;
-                bool IsTrendingDown(ITimeSeries<double> series, int period) => series.Return().EMA(3).EMA(3).EMA(period)[0] < 0.0;
-#endif
-
-                var bondIndexRising = IsTrendingUp(bondIndex.Instrument.Close, BOND_INDEX_PER) ? 1 : 0;
+                var bondIndexRising = IsTrendingUp(bondAsset.Instrument.Close, BOND_PER) ? 1 : 0;
                 var bondLtYieldFalling = IsTrendingDown(bondLtYield.Instrument.Close, BOND_LT_YIELD_PER) ? 1 : 0;
                 var bondStYieldFalling = IsTrendingDown(bondStYield.Instrument.Close, BOND_ST_YIELD_PER) ? 1 : 0;
                 var utilityIndexRising = IsTrendingUp(utilityIndex.Instrument.Close, UTILITY_INDEX_PER) ? 1 : 0;
@@ -161,23 +157,30 @@ namespace Algorithms.TTorg
 
                 if (IsTradingDay)
                 {
-                    var weight = holdBonds ? 1.0 : 0.0;
-                    var shares = (int)Math.Floor(weight * NetAssetValue[0] / asset.Instrument.Close[0]);
-                    asset.Instrument.Trade(shares - asset.Instrument.Position);
+                    var bondWeight = holdBonds ? 1.0 : 0.0;
+                    var bondShares = (int)Math.Floor(bondWeight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
+                    bondAsset.Instrument.Trade(bondShares - bondAsset.Instrument.Position);
+
+                    if (safeAsset != null)
+                    {
+                        var safeWeight = 1.0 - bondWeight;
+                        var safeShares = (int)Math.Floor(safeWeight * NetAssetValue[0] / safeAsset.Instrument.Close[0]);
+                        safeAsset.Instrument.Trade(safeShares - safeAsset.Instrument.Position);
+                    }
                 }
 
                 // plotter output
                 if (!IsOptimizing && TradingDays > 0)
                 {
-                    _plotter.AddNavAndBenchmark(this, bench.Instrument);
+                    _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     //_plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
                     //if (Alloc.LastUpdate == SimTime[0])
                     //    _plotter.AddTargetAllocationRow(Alloc);
 
                     _plotter.SelectChart("Bond Index", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name, bondIndex.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name + " - MA", bondIndex.Instrument.Close.EMA(BOND_INDEX_PER)[0]);
+                    _plotter.Plot(bondAsset.Instrument.Name, bondAsset.Instrument.Close.EMA(5)[0]);
+                    _plotter.Plot(bondAsset.Instrument.Name + " - MA", bondAsset.Instrument.Close.EMA(BOND_PER)[0]);
 
                     _plotter.SelectChart("Bond LT Yield", "Date");
                     _plotter.SetX(SimTime[0]);
@@ -201,12 +204,12 @@ namespace Algorithms.TTorg
 
                     _plotter.SelectChart("Buy/ Sell Signals", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name + " Rising", bondIndexRising + 16.0);
-                    _plotter.Plot(bondLtYield.Instrument.Name + " Falling", bondLtYieldFalling + 14.0);
-                    _plotter.Plot(bondStYield.Instrument.Name + " Falling", bondStYieldFalling + 12.0);
-                    _plotter.Plot(utilityIndex.Instrument.Name + " Rising", utilityIndexRising + 10.0);
-                    _plotter.Plot(commodityIndex.Instrument.Name + " Falling", commodityIndexFalling + 8.0);
-                    _plotter.Plot("Score", score + 2); // 2 - 7
+                    _plotter.Plot(bondAsset.Instrument.Name + " Rising", bondIndexRising + 14.0);
+                    _plotter.Plot(bondLtYield.Instrument.Name + " Falling", bondLtYieldFalling + 12.0);
+                    _plotter.Plot(bondStYield.Instrument.Name + " Falling", bondStYieldFalling + 10.0);
+                    _plotter.Plot(utilityIndex.Instrument.Name + " Rising", utilityIndexRising + 8.0);
+                    _plotter.Plot(commodityIndex.Instrument.Name + " Falling", commodityIndexFalling + 6.0);
+                    _plotter.Plot("Score", score); // 2 - 7
                     _plotter.Plot("Hold Bonds", holdBonds ? 1 : 0);
                 }
 
@@ -230,41 +233,49 @@ namespace Algorithms.TTorg
 
             FitnessValue = this.CalcFitness();
         }
+        #endregion
     }
     #endregion
     #region Heine Bond Model instances
     public class Boucher_HeineBondModel_AGG : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (AGG)";
-        public override object BOND => Assets.AGG; // since 01/1968
+        public override object BOND => Assets.AGG;
     }
     public class Boucher_HeineBondModel_SHY : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (SHY)";
-        public override object BOND => Assets.SHY; // since 01/1968
+        public override object BOND => Assets.SHY;
     }
-    public class Boucher_HeineBondModel_IEF : Boucher_HeineBondModel_Core
+    public class Boucher_HeineBondModel_IEF: Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (IEF)";
-        public override object BOND => Assets.IEF; // since 01/1968
+        public override object BOND => Assets.IEF;
     }
-
+    public class Boucher_HeineBondModel_TLH : Boucher_HeineBondModel_Core
+    {
+        public override string Name => base.Name + " (TLH)";
+        public override object BOND => Assets.TLH;
+    }
     public class Boucher_HeineBondModel_TLT : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (TLT)";
-        public override object BOND => Assets.TLT; // since 01/1968
+        public override object BOND => Assets.TLT;
     }
-
+    public class Boucher_HeineBondModel_TIP : Boucher_HeineBondModel_Core
+    {
+        public override string Name => base.Name + " (TIP)";
+        public override object BOND => Assets.TIP;
+    }
     public class Boucher_HeineBondModel_LQD : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (LQD)";
-        public override object BOND => Assets.LQD; // since 01/1968
+        public override object BOND => Assets.LQD;
     }
-
     public class Boucher_HeineBondModel_JNK : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (JNK)";
-        public override object BOND => Assets.JNK; // since 05/2007
+        public override object BOND => Assets.JNK;
     }
     #endregion
 
@@ -280,7 +291,8 @@ namespace Algorithms.TTorg
     {
         public override string Name => string.Format("Bond-Bill-Utility Model");
 
-        public virtual object BOND { get; set; } = Assets.IEF; // since 01/1968
+        #region inputs
+        public virtual object BOND { get; set; } = Assets.IEF;
 
         public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS20"; // 20-year T-Bond Yield (since 01/1962)
         [OptimizerParam(50, 250, 5)]
@@ -294,11 +306,16 @@ namespace Algorithms.TTorg
         [OptimizerParam(50, 250, 5)]
         public virtual int UTILITY_INDEX_PER { get; set; } = 10 * 5;
 
-        public virtual object ASSET { get => BOND; set { } }
         public virtual object BENCHMARK { get => BOND; set { } }
+        public virtual object SAFE { get; set; } = null; // optional: rotate into safe asset
 
+        public virtual double COMMISSION { get; set; } = 0.0; // Heine is not mentioning commission
         protected virtual bool IsTradingDay
             => SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday;
+        protected virtual bool IsTrendingUp(ITimeSeries<double> series, int period) => series.EMA(5)[0] > series.EMA(period)[0];
+        protected virtual bool IsTrendingDown(ITimeSeries<double> series, int period) => !IsTrendingUp(series, period);
+        #endregion
+        #region strategy logic
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
             //========== initialization ==========
@@ -314,22 +331,23 @@ namespace Algorithms.TTorg
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
-            //CommissionPerShare = Globals.COMMISSION;
+            CommissionPerShare = COMMISSION;
 
+            var bondAsset = AddDataSource(BOND);
+            var safeAsset = SAFE != null ? AddDataSource(SAFE) : null;
             var bondLtYield = AddDataSource(BOND_LT_YIELD);
             var bondStYield = AddDataSource(BOND_ST_YIELD);
             var utilityIndex = AddDataSource(UTILITY_INDEX);
-
-            var asset = AddDataSource(ASSET);
-            var bench = AddDataSource(BENCHMARK);
+            var benchmark = AddDataSource(BENCHMARK);
 
             var allDs = new List<DataSource>
             {
+                bondAsset,
+                safeAsset ?? bondAsset,
                 bondLtYield,
                 bondStYield,
                 utilityIndex,
-                asset,
-                bench,
+                benchmark,
             };
 
             //========== simulation loop ==========
@@ -338,16 +356,6 @@ namespace Algorithms.TTorg
             {
                 if (!HasInstruments(allDs))
                     continue;
-
-#if true
-                // this is the tend-detection method used int the book
-                bool IsTrendingDown(ITimeSeries<double> series, int period) => series[0] < series.EMA(period)[0];
-                bool IsTrendingUp(ITimeSeries<double> series, int period) => series[0] > series.EMA(period)[0];
-#else
-                // TuringTrader's modified code
-                //bool IsTrendingDown(ITimeSeries<double> series, int period) => series.Return().EMA(period / 4).EMA(period / 2).EMA(period)[0] < 0.0;
-                //bool IsTrendingUp(ITimeSeries<double> series, int period) => series.Return().EMA(period / 4).EMA(period / 2).EMA(period)[0] > 0.0;
-#endif
 
                 var bondLtYieldFalling = IsTrendingDown(bondLtYield.Instrument.Close, BOND_LT_YIELD_PER);
                 var bondStYieldFalling = IsTrendingDown(bondStYield.Instrument.Close, BOND_ST_YIELD_PER);
@@ -358,14 +366,14 @@ namespace Algorithms.TTorg
                 if (IsTradingDay)
                 {
                     var weight = holdBonds ? 1.0 : 0.0;
-                    var shares = (int)Math.Floor(weight * NetAssetValue[0] / asset.Instrument.Close[0]);
-                    asset.Instrument.Trade(shares - asset.Instrument.Position);
+                    var shares = (int)Math.Floor(weight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
+                    bondAsset.Instrument.Trade(shares - bondAsset.Instrument.Position);
                 }
 
                 // plotter output
                 if (!IsOptimizing && TradingDays > 0)
                 {
-                    _plotter.AddNavAndBenchmark(this, bench.Instrument);
+                    _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     //_plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
                     //if (Alloc.LastUpdate == SimTime[0])
                     //    _plotter.AddTargetAllocationRow(Alloc);
@@ -413,227 +421,44 @@ namespace Algorithms.TTorg
 
             FitnessValue = this.CalcFitness();
         }
+        #endregion
     }
     #endregion
     #region Bond-Bill-Utility Model instances
     public class Boucher_BondBillUtilityModel_AGG : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (AGG)";
-        public override object BOND => Assets.AGG; // since 01/1968
+        public override object BOND => Assets.AGG;
     }
     public class Boucher_BondBillUtilityModel_SHY : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (SHY)";
-        public override object BOND => Assets.SHY; // since 01/1968
+        public override object BOND => Assets.SHY;
     }
     public class Boucher_BondBillUtilityModel_IEF : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (IEF)";
-        public override object BOND => Assets.IEF; // since 01/1968
+        public override object BOND => Assets.IEF;
+    }
+    public class Boucher_BondBillUtilityModel_TLH : Boucher_BondBillUtilityModel_Core
+    {
+        public override string Name => base.Name + " (TLH)";
+        public override object BOND => Assets.TLH;
     }
     public class Boucher_BondBillUtilityModel_TLT : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (TLT)";
-        public override object BOND => Assets.TLT; // since 01/1968
+        public override object BOND => Assets.TLT;
     }
     public class Boucher_BondBillUtilityModel_LQD : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (LQD)";
-        public override object BOND => Assets.LQD; // since 01/1968
+        public override object BOND => Assets.LQD;
     }
     public class Boucher_BondBillUtilityModel_JNK : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (JNK)";
-        public override object BOND => Assets.JNK; // since 05/2007
+        public override object BOND => Assets.JNK;
     }
     #endregion
-
-
-    #region experimental code
-
-    public class TTcom_HeineBondModel_Core : AlgorithmPlusGlue
-    {
-        public override string Name => string.Format("Heine Bond Model");
-
-        public virtual object BOND { get; set; } = Assets.IEF; // since 01/1968
-
-        public virtual object BOND_INDEX { get => BOND; set { } } // Heine uses Dow Jones 20 Bond Price Index
-        public virtual int BOND_INDEX_PER { get; set; } = 24 * 5;
-        [OptimizerParam(25, 200, 5)]
-        public virtual int BOND_INDEX_WGT { get; set; } = 100;
-
-        //public virtual string BOND_LT_YIELD { get; set; } = "%TYX"; // 30-year T-Bond Yield (since 11/1993)
-        //public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS30"; // 30-year T-Bond Yield (since 02/1977)
-        public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS20"; // 20-year T-Bond Yield (since 01/1962)
-        public virtual int BOND_LT_YIELD_PER { get; set; } = 6 * 5;
-        [OptimizerParam(25, 200, 5)]
-        public virtual int BOND_LT_YIELD_WGT { get; set; } = 100;
-
-        public virtual string BOND_ST_YIELD { get; set; } = "fred:DTB3"; // 13-week T-Bill Yield (since 01/1954)
-        public virtual int BOND_ST_YIELD_PER { get; set; } = 6 * 5;
-        [OptimizerParam(25, 200, 5)]
-        public virtual int BOND_ST_YIELD_WGT { get; set; } = 100;
-
-        public virtual string UTILITY_INDEX { get; set; } = "$DJU"; // Dow Jones Utility Average (since 01/1929)
-        public virtual int UTILITY_INDEX_PER { get; set; } = 10 * 5;
-        [OptimizerParam(25, 200, 5)]
-        public virtual int UTILITY_INDEX_WGT { get; set; } = 100;
-
-        //public virtual string COMMODITY_INDEX { get; set; } = "$CRB"; // Core Commodity CRB Index (since 01/1994)
-        public virtual string COMMODITY_INDEX { get; set; } = "fred:PPIACO"; // producer price index to substitute CRB (since 01/1913)
-        public virtual int COMMODITY_INDEX_PER { get; set; } = 20 * 5;
-        [OptimizerParam(25, 200, 5)]
-        public virtual int COMMODITY_INDEX_WGT { get; set; } = 100;
-
-        public virtual object ASSET { get => BOND; set { } } // it is unclear, which asset Heine is trading
-        public virtual object BENCHMARK { get => BOND; set { } } // it is fair to benchmark agains the traded asset
-
-        protected virtual bool IsTradingDay
-            => SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday;
-        public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
-        {
-            //========== initialization ==========
-
-#if true
-            //WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = DateTime.Parse("01/01/1965");
-            EndTime = DateTime.Parse("01/16/2022");
-#else
-            WarmupStartTime = Globals.WARMUP_START_TIME;
-            StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
-#endif
-
-            Deposit(Globals.INITIAL_CAPITAL);
-            //CommissionPerShare = Globals.COMMISSION;
-
-            var bondIndex = AddDataSource(BOND_INDEX);
-            var bondLtYield = AddDataSource(BOND_LT_YIELD);
-            var bondStYield = AddDataSource(BOND_ST_YIELD);
-            var utilityIndex = AddDataSource(UTILITY_INDEX);
-            var commodityIndex = AddDataSource(COMMODITY_INDEX);
-
-            var asset = AddDataSource(ASSET);
-            var bench = AddDataSource(BENCHMARK);
-
-            var allDs = new List<DataSource>
-            {
-                bondIndex,
-                bondLtYield,
-                bondStYield,
-                utilityIndex,
-                commodityIndex,
-                asset,
-                bench,
-            };
-
-            var holdBonds = false;
-            var holdBondsTimeStamp = StartTime;
-
-            //========== simulation loop ==========
-
-            foreach (var simTime in SimTimes)
-            {
-                if (!HasInstruments(allDs))
-                    continue;
-
-                double Trend(ITimeSeries<double> series, int period) => series.LogReturn().EMA(3).EMA(3).EMA(period)[0];
-
-                var bondIndexRising = BOND_INDEX_WGT/100.0 * Trend(bondIndex.Instrument.Close, BOND_INDEX_PER);
-                var bondLtYieldFalling = -BOND_LT_YIELD_WGT / 100.0 * Trend(bondLtYield.Instrument.Close, BOND_LT_YIELD_PER);
-                var bondStYieldFalling = -BOND_ST_YIELD_WGT / 100.0 * Trend(bondStYield.Instrument.Close, BOND_ST_YIELD_PER);
-                var utilityIndexRising = UTILITY_INDEX_WGT/100.0 * Trend(utilityIndex.Instrument.Close, UTILITY_INDEX_PER);
-                var commodityIndexFalling = -COMMODITY_INDEX_WGT/100.0 * Trend(commodityIndex.Instrument.Close, COMMODITY_INDEX_PER);
-
-                var score = bondIndexRising + bondLtYieldFalling + bondStYieldFalling
-                    + utilityIndexRising + commodityIndexFalling;
-                var newHoldBonds = score >= 0;
-
-#if true
-                // this code reflects Boucher's book
-                holdBonds = newHoldBonds;
-#else
-                // TuringTrader's modified method to reduce whipsaws
-                if (holdBonds != newHoldBonds && (SimTime[0] - holdBondsTimeStamp).TotalDays > 10.0)
-                {
-                    holdBonds = newHoldBonds;
-                    holdBondsTimeStamp = SimTime[0];
-                }
-#endif
-
-                if (IsTradingDay)
-                {
-                    var weight = holdBonds ? 1.0 : 0.0;
-                    var shares = (int)Math.Floor(weight * NetAssetValue[0] / asset.Instrument.Close[0]);
-                    asset.Instrument.Trade(shares - asset.Instrument.Position);
-                }
-
-                // plotter output
-                if (!IsOptimizing && TradingDays > 0)
-                {
-                    _plotter.AddNavAndBenchmark(this, bench.Instrument);
-                    //_plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
-                    //if (Alloc.LastUpdate == SimTime[0])
-                    //    _plotter.AddTargetAllocationRow(Alloc);
-
-                    _plotter.SelectChart("Bond Index", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name, bondIndex.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name + " - MA", bondIndex.Instrument.Close.EMA(BOND_INDEX_PER)[0]);
-
-                    _plotter.SelectChart("Bond LT Yield", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondLtYield.Instrument.Name, bondLtYield.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(bondLtYield.Instrument.Name + " - MA", bondLtYield.Instrument.Close.EMA(BOND_LT_YIELD_PER)[0]);
-
-                    _plotter.SelectChart("Bond ST Yield", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondStYield.Instrument.Name, bondStYield.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(bondStYield.Instrument.Name + " - MA", bondStYield.Instrument.Close.EMA(BOND_ST_YIELD_PER)[0]);
-
-                    _plotter.SelectChart("Utility Index", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(utilityIndex.Instrument.Name, utilityIndex.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(utilityIndex.Instrument.Name + " - MA", utilityIndex.Instrument.Close.EMA(UTILITY_INDEX_PER)[0]);
-
-                    _plotter.SelectChart("Commodity Index", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(commodityIndex.Instrument.Name, commodityIndex.Instrument.Close.EMA(5)[0]);
-                    _plotter.Plot(commodityIndex.Instrument.Name + " - MA", commodityIndex.Instrument.Close.EMA(COMMODITY_INDEX_PER)[0]);
-
-                    _plotter.SelectChart("Buy/ Sell Signals", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(bondIndex.Instrument.Name + " Rising", 10.0 * bondIndexRising + 12.0);
-                    _plotter.Plot(bondLtYield.Instrument.Name + " Falling", 10.0 * bondLtYieldFalling + 10.0);
-                    _plotter.Plot(bondStYield.Instrument.Name + " Falling", 10.0 * bondStYieldFalling + 8.0);
-                    _plotter.Plot(utilityIndex.Instrument.Name + " Rising", 10.0 * utilityIndexRising + 6.0);
-                    _plotter.Plot(commodityIndex.Instrument.Name + " Falling", 10.0 * commodityIndexFalling + 4.0);
-                    _plotter.Plot("Score", 10.0 * score + 2); // 2 - 7
-                    _plotter.Plot("Hold Bonds", holdBonds ? 1 : 0);
-                }
-
-                var v = 10.0 * NetAssetValue[0] / Globals.INITIAL_CAPITAL;
-                yield return Bar.NewOHLC(
-                    this.GetType().Name, SimTime[0],
-                    v, v, v, v, 0);
-            }
-
-            //========== post processing ==========
-
-            if (!IsOptimizing)
-            {
-                _plotter.AddTargetAllocation(Alloc);
-                _plotter.AddOrderLog(this);
-                _plotter.AddPositionLog(this);
-                _plotter.AddPnLHoldTime(this);
-                _plotter.AddMfeMae(this);
-                _plotter.AddParameters(this);
-            }
-
-            FitnessValue = this.CalcFitness();
-        }
-    }
-
-    #endregion
-
 }
