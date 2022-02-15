@@ -22,6 +22,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// FULL_RANGE: if defined, start simulation as early as possible (1968)
+//#define FULL_RANGE
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -32,7 +35,7 @@ using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
 
-namespace Algorithms.TTorg
+namespace TuringTrader.BooksAndPubs
 {
     // Heine Bond Model
     // Looks at five variables each week and compare
@@ -91,14 +94,13 @@ namespace Algorithms.TTorg
         {
             //========== initialization ==========
 
-#if true
-            //WarmupStartTime = Globals.WARMUP_START_TIME;
+#if FULL_RANGE
             StartTime = DateTime.Parse("01/01/1965");
-            EndTime = DateTime.Parse("01/16/2022");
+            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
 #else
             WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
+            EndTime = Globals.END_TIME;
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
@@ -160,12 +162,14 @@ namespace Algorithms.TTorg
                     var bondWeight = holdBonds ? 1.0 : 0.0;
                     var bondShares = (int)Math.Floor(bondWeight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
                     bondAsset.Instrument.Trade(bondShares - bondAsset.Instrument.Position);
+                    Alloc.Allocation[bondAsset.Instrument] = bondWeight;
 
                     if (safeAsset != null)
                     {
                         var safeWeight = 1.0 - bondWeight;
                         var safeShares = (int)Math.Floor(safeWeight * NetAssetValue[0] / safeAsset.Instrument.Close[0]);
                         safeAsset.Instrument.Trade(safeShares - safeAsset.Instrument.Position);
+                        Alloc.Allocation[safeAsset.Instrument] = safeWeight;
                     }
                 }
 
@@ -174,8 +178,9 @@ namespace Algorithms.TTorg
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     //_plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
-                    //if (Alloc.LastUpdate == SimTime[0])
-                    //    _plotter.AddTargetAllocationRow(Alloc);
+
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
 
                     _plotter.SelectChart("Bond Index", "Date");
                     _plotter.SetX(SimTime[0]);
@@ -307,7 +312,7 @@ namespace Algorithms.TTorg
         public virtual int UTILITY_INDEX_PER { get; set; } = 10 * 5;
 
         public virtual object BENCHMARK { get => BOND; set { } }
-        public virtual object SAFE { get; set; } = null; // optional: rotate into safe asset
+        public virtual object SAFE { get; set; } = Assets.BIL; // T-Bil as safe instrument
 
         public virtual double COMMISSION { get; set; } = 0.0; // Heine is not mentioning commission
         protected virtual bool IsTradingDay
@@ -365,9 +370,13 @@ namespace Algorithms.TTorg
 
                 if (IsTradingDay)
                 {
-                    var weight = holdBonds ? 1.0 : 0.0;
-                    var shares = (int)Math.Floor(weight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
-                    bondAsset.Instrument.Trade(shares - bondAsset.Instrument.Position);
+                    var bondWeight = holdBonds ? 1.0 : 0.0;
+                    var bondShares = (int)Math.Floor(bondWeight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
+                    bondAsset.Instrument.Trade(bondShares - bondAsset.Instrument.Position);
+
+                    var safeWeight = 1.0 - bondWeight;
+                    var safeShares = (int)Math.Floor(safeWeight * NetAssetValue[0] / safeAsset.Instrument.Close[0]);
+                    safeAsset.Instrument.Trade(safeShares - safeAsset.Instrument.Position);
                 }
 
                 // plotter output
