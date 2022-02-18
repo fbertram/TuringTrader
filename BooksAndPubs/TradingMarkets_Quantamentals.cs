@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Connors Quantamentals
+// Name:        TradingMarkets Quantamentals
 // Description: Strategies as presented in TradingMarkets.com
-//              Quantamentals Seminar.
+//              Quantamentals Seminar in early 2020.
 // History:     2022ii15, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Solutions LLC
