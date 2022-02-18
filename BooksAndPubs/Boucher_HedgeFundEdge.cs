@@ -38,11 +38,10 @@ using TuringTrader.Support;
 namespace TuringTrader.BooksAndPubs
 {
     // Heine Bond Model
-    // Looks at five variables each week and compare
-    // them to their moving average. Score +1 if bullish,
-    // and 0 if bearish. Next, total all five variables.
-    // Result becomes bullish if total 3 or more and
-    // bearish if less than 3. The variables are:
+    // Looks at five variables each week and compare them to their moving
+    // average. Score +1 if bullish, and 0 if bearish. Next, total all five
+    // variables. Result becomes bullish if total 3 or more and bearish if
+    // less than 3. The variables are:
     // (1) Dow Jones 20 bond index and 24-wk MA. If above MA give
     //     +1 point, otherwise give 0 points.
     // (2) Long bond Treasury yield and 6-wk MA. If yield is below
@@ -59,7 +58,15 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => string.Format("Heine Bond Model");
 
         #region inputs
-        public virtual object BOND { get; set; } = Assets.IEF; // Heine uses Dow Jones 20 Bond Price Index
+        // It is unclear how Heine envisions to trade various bonds,
+        // we see two possibilities:
+        // (1) we use BOND_IDX to time the bond market, but trade ASSET
+        // (2) we use ASSET for timing and trade it as well
+        // In our opinion only (2) makes sense, because we want to consider
+        // the trade asset's price action. However, we tend to believe that
+        // Heine envisioned option (1).
+        public virtual object ASSET { get; set; } = Assets.IEF; 
+        public virtual object BOND_IDX { get => ASSET; set { } } // Heine uses Dow Jones 20 Bond Price Index here?
         [OptimizerParam(30, 130, 5)]
         public virtual int BOND_PER { get; set; } = 24 * 5;
 
@@ -80,12 +87,11 @@ namespace TuringTrader.BooksAndPubs
         [OptimizerParam(50, 150, 5)]
         public virtual int COMMODITY_INDEX_PER { get; set; } = 20 * 5;
 
-        public virtual object BENCHMARK { get => BOND; set { } } // it is fair to benchmark agains the traded asset
-        public virtual object SAFE { get; set; } = null; // it is unclear if Heine is rotating into a safe asset
+        public virtual object BENCHMARK { get => ASSET; set { } } // it is fair to benchmark agains the traded asset
+        public virtual object SAFE { get; set; } = Assets.BIL; // it is unclear if Heine is rotating into a safe asset
 
         public virtual double COMMISSION { get; set; } = 0.0; // Heine is not mentioning commission
-        protected virtual bool IsTradingDay
-            => SimTime[0].DayOfWeek <= DayOfWeek.Wednesday && NextSimTime.DayOfWeek > DayOfWeek.Wednesday;
+        protected virtual bool IsTradingDay => SimTime[0].DayOfWeek > NextSimTime.DayOfWeek;
         protected virtual bool IsTrendingUp(ITimeSeries<double> series, int period) => series.EMA(5)[0] > series.EMA(period)[0];
         protected virtual bool IsTrendingDown(ITimeSeries<double> series, int period) => !IsTrendingUp(series, period);
         #endregion
@@ -106,7 +112,8 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = COMMISSION;
 
-            var bondAsset = AddDataSource(BOND);
+            var bondAsset = AddDataSource(ASSET);
+            var bondIndex = AddDataSource(BOND_IDX);
             var safeAsset = SAFE != null ? AddDataSource(SAFE) : null;
             var bondLtYield = AddDataSource(BOND_LT_YIELD);
             var bondStYield = AddDataSource(BOND_ST_YIELD);
@@ -135,7 +142,7 @@ namespace TuringTrader.BooksAndPubs
                 if (!HasInstruments(allDs))
                     continue;
 
-                var bondIndexRising = IsTrendingUp(bondAsset.Instrument.Close, BOND_PER) ? 1 : 0;
+                var bondIndexRising = IsTrendingUp(bondIndex.Instrument.Close, BOND_PER) ? 1 : 0;
                 var bondLtYieldFalling = IsTrendingDown(bondLtYield.Instrument.Close, BOND_LT_YIELD_PER) ? 1 : 0;
                 var bondStYieldFalling = IsTrendingDown(bondStYield.Instrument.Close, BOND_ST_YIELD_PER) ? 1 : 0;
                 var utilityIndexRising = IsTrendingUp(utilityIndex.Instrument.Close, UTILITY_INDEX_PER) ? 1 : 0;
@@ -245,48 +252,48 @@ namespace TuringTrader.BooksAndPubs
     public class Boucher_HeineBondModel_AGG : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (AGG)";
-        public override object BOND => Assets.AGG;
+        public override object ASSET => Assets.AGG;
     }
     public class Boucher_HeineBondModel_SHY : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (SHY)";
-        public override object BOND => Assets.SHY;
+        public override object ASSET => Assets.SHY;
     }
     public class Boucher_HeineBondModel_IEF: Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (IEF)";
-        public override object BOND => Assets.IEF;
+        public override object ASSET => Assets.IEF;
     }
     public class Boucher_HeineBondModel_TLH : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (TLH)";
-        public override object BOND => Assets.TLH;
+        public override object ASSET => Assets.TLH;
     }
     public class Boucher_HeineBondModel_TLT : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (TLT)";
-        public override object BOND => Assets.TLT;
+        public override object ASSET => Assets.TLT;
     }
     public class Boucher_HeineBondModel_TIP : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (TIP)";
-        public override object BOND => Assets.TIP;
+        public override object ASSET => Assets.TIP;
     }
     public class Boucher_HeineBondModel_LQD : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (LQD)";
-        public override object BOND => Assets.LQD;
+        public override object ASSET => Assets.LQD;
     }
     public class Boucher_HeineBondModel_JNK : Boucher_HeineBondModel_Core
     {
         public override string Name => base.Name + " (JNK)";
-        public override object BOND => Assets.JNK;
+        public override object ASSET => Assets.JNK;
     }
     #endregion
 
     // Bond-Bill-Utility Model
-    // Buy bonds when the 30-year government bond yield is
-    // below its 10-week moving average and either
+    // Buy bonds when the 30-year government bond yield is below its 10-week
+    // moving average and either
     // (a) the 3-month government T-bill yield is below its
     //     30-week moving average, or
     // (b) the Dow Jones Utility Average Index is above its
@@ -297,7 +304,7 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => string.Format("Bond-Bill-Utility Model");
 
         #region inputs
-        public virtual object BOND { get; set; } = Assets.IEF;
+        public virtual object ASSET { get; set; } = Assets.IEF;
 
         public virtual string BOND_LT_YIELD { get; set; } = "fred:DGS20"; // 20-year T-Bond Yield (since 01/1962)
         [OptimizerParam(50, 250, 5)]
@@ -311,7 +318,7 @@ namespace TuringTrader.BooksAndPubs
         [OptimizerParam(50, 250, 5)]
         public virtual int UTILITY_INDEX_PER { get; set; } = 10 * 5;
 
-        public virtual object BENCHMARK { get => BOND; set { } }
+        public virtual object BENCHMARK { get => ASSET; set { } }
         public virtual object SAFE { get; set; } = Assets.BIL; // T-Bil as safe instrument
 
         public virtual double COMMISSION { get; set; } = 0.0; // Heine is not mentioning commission
@@ -338,7 +345,7 @@ namespace TuringTrader.BooksAndPubs
             Deposit(Globals.INITIAL_CAPITAL);
             CommissionPerShare = COMMISSION;
 
-            var bondAsset = AddDataSource(BOND);
+            var bondAsset = AddDataSource(ASSET);
             var safeAsset = SAFE != null ? AddDataSource(SAFE) : null;
             var bondLtYield = AddDataSource(BOND_LT_YIELD);
             var bondStYield = AddDataSource(BOND_ST_YIELD);
@@ -437,37 +444,37 @@ namespace TuringTrader.BooksAndPubs
     public class Boucher_BondBillUtilityModel_AGG : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (AGG)";
-        public override object BOND => Assets.AGG;
+        public override object ASSET => Assets.AGG;
     }
     public class Boucher_BondBillUtilityModel_SHY : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (SHY)";
-        public override object BOND => Assets.SHY;
+        public override object ASSET => Assets.SHY;
     }
     public class Boucher_BondBillUtilityModel_IEF : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (IEF)";
-        public override object BOND => Assets.IEF;
+        public override object ASSET => Assets.IEF;
     }
     public class Boucher_BondBillUtilityModel_TLH : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (TLH)";
-        public override object BOND => Assets.TLH;
+        public override object ASSET => Assets.TLH;
     }
     public class Boucher_BondBillUtilityModel_TLT : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (TLT)";
-        public override object BOND => Assets.TLT;
+        public override object ASSET => Assets.TLT;
     }
     public class Boucher_BondBillUtilityModel_LQD : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (LQD)";
-        public override object BOND => Assets.LQD;
+        public override object ASSET => Assets.LQD;
     }
     public class Boucher_BondBillUtilityModel_JNK : Boucher_BondBillUtilityModel_Core
     {
         public override string Name => base.Name + " (JNK)";
-        public override object BOND => Assets.JNK;
+        public override object ASSET => Assets.JNK;
     }
     #endregion
 }
