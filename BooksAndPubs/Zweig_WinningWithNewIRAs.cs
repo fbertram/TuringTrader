@@ -42,7 +42,7 @@ using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
 
-namespace Algorithms.TTorg
+namespace TuringTrader.BooksAndPubs
 {
     #region Zweig Bond Model core
     abstract public class Zweig_BondModel : AlgorithmPlusGlue

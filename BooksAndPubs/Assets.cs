@@ -205,7 +205,7 @@ namespace TuringTrader.Algorithms.Glue
         public static readonly string SHY = "splice:SHY,SHY++";
         /// <summary>
         /// iShares 3-7 Year Treasury Bond ETF
-        /// (since Jan 2007)
+        /// (since Jan 2007, backfilled to Jan 1968)
         /// </summary>
         public static readonly string IEI = "splice:IEI,IEI++";
         /// <summary>
@@ -228,8 +228,10 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Nov 2009, backfilled to Jan 1968)
         /// </summary>
         public static readonly string VGLT = "splice:VGLT,VGLT++";
-        // iShares TIPS bond ETF
-        // (since Dec 2003, backfilled to Jun 2000)
+        /// <summary>
+        /// iShares TIPS bond ETF
+        /// (since Dec 2003, backfilled to Jun 2000)
+        /// </summary>
         public static readonly string TIP = "splice:TIP,TIP++";
         #endregion
         #region U.S. Corporate
@@ -248,11 +250,15 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Apr 2007, backfilled to Jan 1980)
         /// </summary>
         public static readonly string HYG = "splice:HYG,HYG++";
-        // SPDR Bloomberg Barclays High Yield Bond ETF
-        // (since Dec 2007, backfilled to April 2007)
+        /// <summary>
+        /// SPDR Bloomberg Barclays High Yield Bond ETF
+        /// (since Dec 2007, backfilled to Jan 1980)
+        /// </summary>
         public static readonly string JNK = "splice:JNK,JNK++";
-        // SPDR Boomberg Barclay's Convertible Securities ETF
-        // (since April 2009, backfilled to April 2007)
+        /// <summary>
+        /// SPDR Boomberg Barclay's Convertible Securities ETF
+        /// (since April 2009, backfilled to April 2007)
+        /// </summary>
         public static readonly string CWB = "splice:CWB,CWB++";
         #endregion
         #endregion
