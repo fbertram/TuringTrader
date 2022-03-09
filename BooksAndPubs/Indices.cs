@@ -22,11 +22,11 @@ namespace TuringTrader.Algorithms.Glue
         /// <summary>
         /// S&amp;P 500 Index
         /// </summary>
-        public static readonly string SPX = "splice:$SPX";
+        public static readonly string SPX = "splice:$SPX,$SPX++";
         /// <summary>
         /// S&amp;P 500 Total Return Index
         /// </summary>
-        public static readonly string SPXTR = "splice:$SPXTR,$SPXTR1970,$SPXTR1936";
+        public static readonly string SPXTR = "splice:$SPXTR,$SPXTR++";
         // Cboe Volatility Index
         public static readonly string VIX = "$VIX";
         /// <summary>

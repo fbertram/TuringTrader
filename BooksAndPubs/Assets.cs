@@ -46,7 +46,7 @@ namespace TuringTrader.Algorithms.Glue
         /// </summary>
         public static readonly string VTI = "VTI";
         /// <summary>
-        /// SPDR S&P 500 Trust ETF
+        /// SPDR S&amp;P 500 Trust ETF
         /// (since Jan 1993, backfilled to Jan 1950)
         /// </summary>
         public static readonly string SPY = "splice:SPY,SPY++";
@@ -200,7 +200,7 @@ namespace TuringTrader.Algorithms.Glue
         public static readonly string BIL = "splice:BIL,BIL++";
         /// <summary>
         ///  iShares 1-3 Year Treasury Bond ETF
-        ///  (since Jul 2002, backfilled to Jun 1976)
+        ///  (since Jul 2002, backfilled to Jan 1968)
         /// </summary>
         public static readonly string SHY = "splice:SHY,SHY++";
         /// <summary>
