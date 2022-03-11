@@ -1,0 +1,10 @@
+name=IEI backfill
+ticker=IEI++
+dataFeed=csv
+dataPath=Data\Backfills\IEI++.csv
+date={1:MM/dd/yyyy}
+open={2:F}
+high={3:F}
+low={4:F}
+close={5:F}
+volume={6}

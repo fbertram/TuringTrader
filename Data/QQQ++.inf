@@ -1,0 +1,10 @@
+name=QQQ backfill
+ticker=QQQ++
+dataFeed=csv
+dataPath=Data\Backfills\QQQ++.csv
+date={1:MM/dd/yyyy}
+open={2:F}
+high={3:F}
+low={4:F}
+close={5:F}
+volume={6}
