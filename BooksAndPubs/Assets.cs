@@ -50,8 +50,18 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Jan 1993, backfilled to Jan 1950)
         /// </summary>
         public static readonly string SPY = "splice:SPY,SPY++";
+        /// <summary>
+        /// SPDR Portfolio S&P 500 Growth ETF (since Sep 2000)
+        /// </summary>
         public static readonly string SPYG = "SPYG";
+        /// <summary>
+        /// SPDR Portfolio S&P 500 Value ETF (since Sep 2000)
+        /// </summary>
         public static readonly string SPYV = "SPYV";
+        /// <summary>
+        /// Invesco S&P 500 Equal Weight ETF
+        /// (since Apr 2003)
+        /// </summary>
         public static readonly string RSP = "RSP";
         /// <summary>
         /// Invesco QQQ Trust Series 1 ETF
@@ -77,14 +87,26 @@ namespace TuringTrader.Algorithms.Glue
         /// (since May 1995, backfilled to July 1991)
         /// </summary>
         public static readonly string MDY = "splice:MDY,MDY++";
+        /// <summary>
+        /// SPDR S&P 400 Mid Cap Growth ETF (since Nov 2005)
+        /// </summary>
         public static readonly string MDYG = "MDYG";
+        /// <summary>
+        /// SPDR S&P 400 Mid Cap Value ETF (since Nov 2005)
+        /// </summary>
         public static readonly string MDYV = "MDYV";
         /// <summary>
         /// SPDR S&P 600 SmallCap ETF
         /// (since Nov 2005, backfilled to Jan 1995)
         /// </summary>
         public static readonly string SLY = "splice:SLY,SLY++";
+        /// <summary>
+        /// SPDR S&P 600 Small Cap Growth ETF (since Sep 2000)
+        /// </summary>
         public static readonly string SLYG = "SLYG";
+        /// <summary>
+        /// SPDR S&P 600 Small Cap Value ETF (since Sep 2000)
+        /// </summary>
         public static readonly string SLYV = "SLYV";
         #endregion
         #region S&P 500 Sectors
@@ -274,6 +296,9 @@ namespace TuringTrader.Algorithms.Glue
         /// SPDR Gold Shares ETF (since Nov 2004, backfilled to Jul 1982)
         /// </summary>
         public static readonly string GLD = "splice:GLD,GLD++";
+        /// <summary>
+        /// iShares Silver Trust ETF (since Apr 2006)
+        /// </summary>
         public static readonly string SLV = "SLV";
         /// <summary>
         /// Invesco DB Commodity Index Tracking ETF
@@ -417,6 +442,11 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Jan 2018, backfilled to Jan 2008)
         /// </summary>
         public static readonly string VXX = "splice:VXX,VXX++";
+        /// <summary>
+        /// ProShares VIX Short-Term Futures ETF
+        /// (since Jan 2011, backfilled to Jan 2008)
+        /// </summary>
+        public static readonly string VIXY = "splice:VIXY,VXX++";
         #endregion
     }
 }

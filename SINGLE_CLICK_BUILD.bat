@@ -1,7 +1,7 @@
 @echo off
 
 rem * TODO: there should be a better way to find the path to MSVC
-PATH=%PATH%;"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE"
+PATH=%PATH%;"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE"
 
 echo *
 echo *

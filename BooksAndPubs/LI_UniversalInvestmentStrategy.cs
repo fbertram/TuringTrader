@@ -57,7 +57,7 @@ namespace TuringTrader.BooksAndPubs
         #region inputs
         public virtual int WFO_LOOKBACK { get; set; } = 72;
         public virtual int VOL_WEIGHT { get; set; } = 250;
-        protected abstract IEnumerable<object> ASSETS { get; }
+        public abstract IEnumerable<object> ASSETS { get; }
         #endregion
         #region optional customization
         public virtual int NUM_ASSETS { get; set; } = 3;
@@ -477,7 +477,7 @@ namespace TuringTrader.BooksAndPubs
     {
         public override string Name => "Logical Invest's Universal Investment Strategy (SPY/ TLT)";
 
-        protected override IEnumerable<object> ASSETS => new List<string>
+        public override IEnumerable<object> ASSETS => new List<string>
         {
             "SPY", // VFINX
             "TLT", // VUSTX. LogicalInvest uses HEDGE strategy here
@@ -490,7 +490,7 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Logical Invest's Universal Investment Strategy (3x Leveraged 'Hell on Fire')";
 
         // LogicalInvest shorts the 3x inverse ETFs instead
-        protected override IEnumerable<object> ASSETS => new List<string>
+        public override IEnumerable<object> ASSETS => new List<string>
         {
             Assets.SPXL,
             Assets.TMF,
