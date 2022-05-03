@@ -61,6 +61,8 @@ namespace TuringTrader.BooksAndPubs
                 .ToList();
             var bench = AddDataSource(BENCH);
 
+            var autoAlloc = allocation.Sum(a => a.Item2) == 0.0;
+
             //========== simulation loop ==========
 
             var accruedMgmtFee = 0.0;
@@ -76,7 +78,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     foreach (var a in allocation)
                     {
-                        var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
+                        //var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
+                        var w = autoAlloc ? 1.0 / ALLOCATION.Count : a.Item2;
                         var i = a.Item1.Instrument;
                         Alloc.Allocation[i] = w;
 
