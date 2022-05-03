@@ -437,6 +437,11 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Jan 2018, backfilled to Jan 2008)
         /// </summary>
         public static readonly string VXX = "splice:VXX,VXX++";
+        /// <summary>
+        /// ProShares VIX Short-Term Futures ETF
+        /// (since Jan 2011, backfilled to Jan 2008)
+        /// </summary>
+        public static readonly string VIXY = "splice:VIXY,VXX++";
         #endregion
     }
 }
