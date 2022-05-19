@@ -359,13 +359,21 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Feb 2010, backfilled to May 1995)
         /// </summary>
         public static readonly string UMDD = "splice:UMDD,UMDD++";
+        /// <summary>
+        /// Direxion Daily Mid Cap Bull 3X Shares ETF
+        /// (since Jan 2009)
+        /// </summary>
+        public static readonly string MIDU = "MIDU";
 
         /// <summary>
         /// ProShares Ultra SmallCap600 ETF
         /// (since Jan 2007, backfilled to Oct 1994)
         /// </summary>
         public static readonly string SAA = "splice:SAA,SAA++";
-
+        /// <summary>
+        /// Direxion Daily Small Cap Bull 3X ETF
+        /// (since Nov 2008)
+        /// </summary>
         public static readonly string TNA = "TNA"; // Small Cap bull 3x (since Nov 2008)
         #endregion
         #region Nasdaq
@@ -399,6 +407,38 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Feb 2010, backfilled to May 2000)
         /// </summary>
         public static readonly string URTY = "splice:URTY,URTY++";
+        /// <summary>
+        /// Direxion Daily MSCI Emerging Markets Bull 3x Shs ETF
+        /// (since Dec 2008)
+        /// </summary>
+        public static readonly string EDC = "EDC";
+        #endregion
+        #region sectors
+        /// <summary>
+        /// Direxion Daily Energy Bull 2x Shares ETF
+        /// (since Nov 2008)
+        /// </summary>
+        public static readonly string ERX = "ERX";
+        /// <summary>
+        /// Direxion Daily Financial Bull 3x Shares ETF
+        /// (since Nov 2008)
+        /// </summary>
+        public static readonly string FAS = "FAS";
+        /// <summary>
+        /// Direxion Daily Technology Bull 3X Shares ETF
+        /// (since Dec 2008)
+        /// </summary>
+        public static readonly string TECL = "TECL";
+        /// <summary>
+        /// Direxion Daily Healthcare Bull 3X Shares ETF
+        /// (since June 2011)
+        /// </summary>
+        public static readonly string CURE = "CURE";
+        /// <summary>
+        /// Direxion Daily Retail Bull 3X Shares ETF
+        /// (since July 2010)
+        /// </summary>
+        public static readonly string RETL = "RETL";
         #endregion
         #endregion
         #region bonds
@@ -430,6 +470,11 @@ namespace TuringTrader.Algorithms.Glue
         /// </summary>
         public static readonly string UGL = "splice:UGL,UGL++";
         /// <summary>
+        /// DB Gold Double Long ETN
+        /// (since Feb 2008, backfilled to Jul 1982)
+        /// </summary>
+        public static readonly string DGP = "splice:DGP,UGL++";
+        /// <summary>
         /// Credit Suisse VelocityShares 3x Long Gold SP GSCI Gold Index ER ETN
         /// (since Oct 2011, backfilled to Jul 1982)
         /// </summary>
@@ -447,6 +492,10 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Jan 2011, backfilled to Jan 2008)
         /// </summary>
         public static readonly string VIXY = "splice:VIXY,VXX++";
+        /// <summary>
+        /// ProShares Ultra VIX Short Term Futures ETF
+        /// </summary>
+        public static readonly string UVXY = "UVXY";
         #endregion
     }
 }
