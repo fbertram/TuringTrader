@@ -1585,6 +1585,7 @@ namespace TuringTrader
                 Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
                 Tuple.Create<string, Func<double>>("sharpe", () => _sharpeRatio(_firstYLabel)),
                 Tuple.Create<string, Func<double>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
+                Tuple.Create<string, Func<double>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
             };
 
             foreach (var m in metrics)
