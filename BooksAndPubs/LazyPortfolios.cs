@@ -138,7 +138,7 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "All-Cash/ Zero-Return";
         public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.SPY, 0.00),
+            new Tuple<object, double>(Assets.BIL, 1e-10),
         };
         public override string BENCH => Assets.SPY;
     }

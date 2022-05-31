@@ -1370,6 +1370,132 @@ namespace TuringTrader
             return plotModel;
         }
         #endregion
+        #region protected PlotModel RenderMonteCarlo2()
+        protected PlotModel RenderMonteCarlo2()
+        {
+            //===== create distributions
+            var distributions = new Dictionary<string, List<double>>();
+            foreach (var label in _yLabels)
+                distributions[label] = _monthlyReturns(label)
+                    .Select(kv => kv.Value)
+                    .ToList();
+
+            //===== create swarm of pathes
+            var TRIALS = 10000;
+            var WORST_CASE = 5;
+            var WORST_CASE_PICKS = TRIALS * WORST_CASE / 100;
+
+            var pathes = new Dictionary<string, List<List<double>>>();
+            Random rnd = new Random();
+
+            foreach (var label in _yLabels)
+            {
+                pathes[label] = new List<List<double>>();
+
+                for (var trials = 0; trials < 10000; trials++)
+                {
+                    var path = new List<double>();
+                    path.Add(1.0);
+                    pathes[label].Add(path);
+
+                    for (var years = 0; years < 25; years++)
+                    {
+                        var yearlyRet = 0.0;
+                        for (var months = 0; months < 12; months++)
+                        {
+                            var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
+                            yearlyRet += monthlyRet; // log-returns add up
+                        }
+                        path.Add(path.Last() * Math.Exp(yearlyRet));
+                    }
+                }
+            }
+
+            //===== create 5-th percentile envelope
+            var envelopes = new Dictionary<string, List<double>>();
+
+            foreach (var label in _yLabels)
+            {
+                envelopes[label] = Enumerable.Range(0, pathes[label].First().Count())
+                    .Select(t => pathes[label]
+                        .Select(path => path[t])
+                        .OrderBy(ret => ret)
+                        .Take(WORST_CASE_PICKS)
+                        .Last())
+                    .ToList();
+            }
+
+            //===== calculate 5-th percentile CAGR over time
+            var cagr = new Dictionary<string, List<double>>();
+
+            foreach (var label in _yLabels)
+            {
+                cagr[label] = Enumerable.Range(0, envelopes[label].Count())
+                    .Select(years => Math.Pow(envelopes[label][years], 1.0 / years) - 1.0)
+                    .ToList();
+            }
+
+            //===== plot results
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = "Worst-Case CAGR over Investment Period";
+            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            xAxis.Title = "Investment Period [years]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+
+            var yAxis1 = new LinearAxis();
+            yAxis1.Title = "5-th Percentile CAGR [%]";
+            yAxis1.Position = AxisPosition.Right;
+            yAxis1.StartPosition = 0.0;
+            yAxis1.EndPosition = 1.0;
+            yAxis1.Key = "y";
+
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis1);
+
+            //===== add series
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = distributions.Keys.Skip(s).First();
+                OxyColor color = CFG_COLORS[s];
+
+                //--- CAGR
+                var cagrSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                    Fill = color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(cagrSeries);
+
+                for (int years = 1; years < cagr[yLabel].Count; years++)
+                {
+                    cagrSeries.Points.Add(new DataPoint(
+                        years,
+                        100.0 * cagr[yLabel][years]));
+                }
+            }
+
+            return plotModel;
+        }
+        #endregion
         #region protected PlotModel RenderExposure()
         protected PlotModel RenderExposure(string selectedChart)
         {
@@ -2169,6 +2295,7 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.ANNUAL_BARS;
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
+                    yield return Plotter.SheetNames.MONTE_CARLO_2;
                     yield return Plotter.SheetNames.ROLLING_RETUNRS;
                     //yield return Plotter.SheetNames.TRACKING_TO_BENCH;
 
@@ -2210,6 +2337,9 @@ namespace TuringTrader
                     break;
                 case Plotter.SheetNames.MONTE_CARLO:
                     retvalue = RenderMonteCarlo();
+                    break;
+                case Plotter.SheetNames.MONTE_CARLO_2:
+                    retvalue = RenderMonteCarlo2();
                     break;
                 case Plotter.SheetNames.ROLLING_RETUNRS:
                     retvalue = RenderRollingReturns();
