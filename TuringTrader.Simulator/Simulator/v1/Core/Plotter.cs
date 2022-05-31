@@ -294,7 +294,7 @@ namespace TuringTrader.Simulator
             /// <summary>
             /// Name of auto-generated sheet with monte-carlo analysis of returns.
             /// </summary>
-            public const string MONTE_CARLO_2 = "Monte-Carlo Analysis of Worst-Case Returns";
+            public const string MONTE_CARLO_2 = "Monte-Carlo Analysis of Left-Tail Returns";
             /// <summary>
             /// Name of auto-generated sheet with comparison of rolling returns.
             /// </summary>

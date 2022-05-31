@@ -214,8 +214,8 @@
             <Component Id="cmp2AEB1D8B013BA9A730B011D0C259995F" Directory="BINFOLDER" Guid="*">
                 <File Id="fil75BE3DD33690026580A76C74059F921D" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmpA79507B5FE8BEDF85E0A8224D8F64F1E" Directory="BINFOLDER" Guid="*">
-                <File Id="fil6AACD6A560B06BFC58E0A507CEB3C728" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.22.11601.dll" />
+            <Component Id="cmp50F64331CEE16D31AAE868E97BA5F3BA" Directory="BINFOLDER" Guid="*">
+                <File Id="fil8E2BA71A842C8F0A0A5104F71D8329B8" KeyPath="yes" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_4.700.22.16002.dll" />
             </Component>
             <Component Id="cmpAF28CE66C6DA6E2E7F469E603E9CD404" Directory="BINFOLDER" Guid="*">
                 <File Id="fil5A3F401CAE73B190C6C3DB8367EC383D" KeyPath="yes" Source="$(var.SourceDir)\mscordbi.dll" />

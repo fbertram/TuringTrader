@@ -170,12 +170,16 @@ namespace TuringTrader
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
             double? prevValue = null;
+            double? prevMonthEndValue = null;
 
             foreach (var row in _firstChart)
             {
                 DateTime curTime = (DateTime)row.First().Value;
                 double curValue = (double)row[label];
 
+#if false
+                // code retired 05/31/2022
+                // BUGBUG: this code calculates monthly returns from first-to-first
                 if (curTime.Month != prevTime.Month)
                 {
                     DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
@@ -186,6 +190,22 @@ namespace TuringTrader
                     prevTime = curTime;
                     prevValue = curValue;
                 }
+#else
+                // new code 05/31/2022
+                // this code calculates monthly returns from last-to-last
+                if (curTime.Month != prevTime.Month)
+                {
+                    if (prevMonthEndValue != null)
+                    {
+                        DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                        monthlyReturns[ts] = Math.Log((double)prevValue / (double)prevMonthEndValue);
+                    }
+
+                    prevMonthEndValue = prevValue;
+                }
+                prevTime = curTime;
+                prevValue = curValue;
+#endif
             }
 
             return monthlyReturns;
@@ -1376,14 +1396,21 @@ namespace TuringTrader
             //===== create distributions
             var distributions = new Dictionary<string, List<double>>();
             foreach (var label in _yLabels)
+            {
                 distributions[label] = _monthlyReturns(label)
                     .Select(kv => kv.Value)
                     .ToList();
+                /*Output.WriteLine("{0}: monthly returns: avg = {1:P2}, num = {2}",
+                    label,
+                    distributions[label].Select(r => Math.Exp(r) - 1.0).Average(),
+                    distributions[label].Count);*/
+            }
 
             //===== create swarm of pathes
-            var TRIALS = 10000;
+            var TRIALS = 25000;
             var WORST_CASE = 5;
             var WORST_CASE_PICKS = TRIALS * WORST_CASE / 100;
+            var YEARLY_PATHES = true;
 
             var pathes = new Dictionary<string, List<List<double>>>();
             Random rnd = new Random();
@@ -1392,7 +1419,7 @@ namespace TuringTrader
             {
                 pathes[label] = new List<List<double>>();
 
-                for (var trials = 0; trials < 10000; trials++)
+                for (var trials = 0; trials < TRIALS; trials++)
                 {
                     var path = new List<double>();
                     path.Add(1.0);
@@ -1400,13 +1427,26 @@ namespace TuringTrader
 
                     for (var years = 0; years < 25; years++)
                     {
-                        var yearlyRet = 0.0;
-                        for (var months = 0; months < 12; months++)
+                        if (YEARLY_PATHES)
                         {
-                            var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
-                            yearlyRet += monthlyRet; // log-returns add up
+                            // yearly pathes
+                            var yearlyValue = path.Last();
+                            for (var months = 0; months < 12; months++)
+                            {
+                                var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
+                                yearlyValue *= Math.Exp(monthlyRet);
+                            }
+                            path.Add(yearlyValue);
                         }
-                        path.Add(path.Last() * Math.Exp(yearlyRet));
+                        else
+                        {
+                            // monthly pathes
+                            for (var months = 0; months < 12; months++)
+                            {
+                                var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
+                                path.Add(path.Last() * Math.Exp(monthlyRet));
+                            }
+                        }
                     }
                 }
             }
@@ -1423,6 +1463,9 @@ namespace TuringTrader
                         .Take(WORST_CASE_PICKS)
                         .Last())
                     .ToList();
+                /*Output.WriteLine("{0}: last nav = {1:P2}",
+                    label,
+                    envelopes[label].Last());*/
             }
 
             //===== calculate 5-th percentile CAGR over time
@@ -1430,14 +1473,25 @@ namespace TuringTrader
 
             foreach (var label in _yLabels)
             {
-                cagr[label] = Enumerable.Range(0, envelopes[label].Count())
-                    .Select(years => Math.Pow(envelopes[label][years], 1.0 / years) - 1.0)
-                    .ToList();
+                if (YEARLY_PATHES)
+                {
+                    cagr[label] = Enumerable.Range(0, envelopes[label].Count())
+                        // yearly pathes
+                        .Select(years => Math.Pow(envelopes[label][years], 1.0 / years) - 1.0)
+                        .ToList();
+                }
+                else
+                {
+                    cagr[label] = Enumerable.Range(0, envelopes[label].Count())
+                        // monthy pathes
+                        .Select(months => Math.Pow(envelopes[label][months], 12.0 / months) - 1.0)
+                        .ToList();
+                }
             }
 
             //===== plot results
             PlotModel plotModel = new PlotModel();
-            plotModel.Title = "Worst-Case CAGR over Investment Period";
+            plotModel.Title = "Left-Tail Returns over Investment Period";
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
@@ -1447,7 +1501,7 @@ namespace TuringTrader
             xAxis.Key = "x";
 
             var yAxis1 = new LinearAxis();
-            yAxis1.Title = "5-th Percentile CAGR [%]";
+            yAxis1.Title = String.Format("CAGR at {0}-th Percentile [%]", WORST_CASE);
             yAxis1.Position = AxisPosition.Right;
             yAxis1.StartPosition = 0.0;
             yAxis1.EndPosition = 1.0;
@@ -1485,11 +1539,23 @@ namespace TuringTrader
 
                 plotModel.Series.Add(cagrSeries);
 
-                for (int years = 1; years < cagr[yLabel].Count; years++)
+                for (int t = 1; t < cagr[yLabel].Count; t++)
                 {
-                    cagrSeries.Points.Add(new DataPoint(
-                        years,
-                        100.0 * cagr[yLabel][years]));
+                    if (YEARLY_PATHES)
+                    {
+                        // yearly pathes
+                        var years = t;
+                        cagrSeries.Points.Add(new DataPoint(
+                            years,
+                            100.0 * cagr[yLabel][t]));
+                    }
+                    else
+                    {
+                        // monthly pathes
+                        var years = t / 12.0;
+                        var cagrValue = Math.Max(-20, 100.0 * cagr[yLabel][t]);
+                        cagrSeries.Points.Add(new DataPoint(years, cagrValue));
+                    }
                 }
             }
 
