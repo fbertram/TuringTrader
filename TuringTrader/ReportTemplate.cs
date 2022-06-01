@@ -219,14 +219,18 @@ namespace TuringTrader
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
             double? prevValue = null;
+            double? prevMonthEndValue = null;
 
             foreach (var bar in data)
             {
                 DateTime curTime = (DateTime)bar.Time;
                 double curValue = (double)bar.Close;
 
+#if false
                 if (curTime.Month != prevTime.Month)
                 {
+                    // code retired 05/31/2022
+                    // BUGBUG: this code calculates monthly returns from first-to-first
                     DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
 
                     if (prevValue != null)
@@ -234,16 +238,86 @@ namespace TuringTrader
 
                     prevTime = curTime;
                     prevValue = curValue;
+            }
+#else
+                // new code 05/31/2022
+                // calculate monthly returns from last-to-last
+                if (curTime.Month != prevTime.Month)
+                {
+                    if (prevMonthEndValue != null)
+                    {
+                        DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                        monthlyReturns[ts] = Math.Log((double)prevValue / (double)prevMonthEndValue);
+                    }
+
+                    prevMonthEndValue = prevValue;
                 }
+                prevTime = curTime;
+                prevValue = curValue;
+#endif
             }
 
             return monthlyReturns;
         }
 
-        protected double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
+        protected Dictionary<double, double> _leftTailReturns(string label, double LEFT_TAIL)
+        {
+            //===== create distribution
+            var monthlyDistribution = _monthlyReturns(label)
+                .Select(kv => kv.Value)
+                .ToList();
+
+            //===== create swarm of pathes
+            var TRIALS = 25000;
+            var LEFT_TAIL_PICKS = (int)Math.Round(TRIALS * LEFT_TAIL);
+
+            Random rnd = new Random();
+            var pathes = new List<List<double>>();
+
+            for (var trials = 0; trials < TRIALS; trials++)
+            {
+                var path = new List<double>();
+                path.Add(1.0);
+                pathes.Add(path);
+
+                for (var years = 0; years < 25; years++)
+                {
+                    for (var months = 0; months < 12; months++)
+                    {
+                        var monthlyRet = monthlyDistribution[rnd.Next(monthlyDistribution.Count)];
+                        path.Add(path.Last() * Math.Exp(monthlyRet));
+                    }
+                }
+            }
+
+            //===== create 5-th percentile envelope
+            var envelope = new List<double>();
+
+            envelope = Enumerable.Range(0, pathes.First().Count())
+                .Select(t => pathes
+                    .Select(path => path[t])
+                    .OrderBy(ret => ret)
+                    .Take(LEFT_TAIL_PICKS)
+                    .Last())
+                .ToList();
+            /*Output.WriteLine("{0}: last nav = {1:P2}",
+                label,
+                envelopes[label].Last());*/
+
+            //===== calculate 5-th percentile CAGR over time
+            var leftTailCagr = Enumerable.Range(0, envelope.Count())
+                    // monthy pathes
+                    .ToDictionary(
+                        months => months / 12.0,
+                        months => Math.Pow(envelope[months], 12.0 / months) - 1.0);
+
+            return leftTailCagr;
+        }
+
+        protected double _avgMonthlyReturn(string label) => _monthlyReturns(label).Values.Average(r => r);
         protected double _stdMonthlyReturn(string label)
         {
-            var avg = _avgMonthlyReturrn(label);
+            var avg = _avgMonthlyReturn(label);
             var stdev = Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
             return stdev;
         }
@@ -1393,101 +1467,7 @@ namespace TuringTrader
         #region protected PlotModel RenderMonteCarlo2()
         protected PlotModel RenderMonteCarlo2()
         {
-            //===== create distributions
-            var distributions = new Dictionary<string, List<double>>();
-            foreach (var label in _yLabels)
-            {
-                distributions[label] = _monthlyReturns(label)
-                    .Select(kv => kv.Value)
-                    .ToList();
-                /*Output.WriteLine("{0}: monthly returns: avg = {1:P2}, num = {2}",
-                    label,
-                    distributions[label].Select(r => Math.Exp(r) - 1.0).Average(),
-                    distributions[label].Count);*/
-            }
-
-            //===== create swarm of pathes
-            var TRIALS = 25000;
-            var WORST_CASE = 5;
-            var WORST_CASE_PICKS = TRIALS * WORST_CASE / 100;
-            var YEARLY_PATHES = true;
-
-            var pathes = new Dictionary<string, List<List<double>>>();
-            Random rnd = new Random();
-
-            foreach (var label in _yLabels)
-            {
-                pathes[label] = new List<List<double>>();
-
-                for (var trials = 0; trials < TRIALS; trials++)
-                {
-                    var path = new List<double>();
-                    path.Add(1.0);
-                    pathes[label].Add(path);
-
-                    for (var years = 0; years < 25; years++)
-                    {
-                        if (YEARLY_PATHES)
-                        {
-                            // yearly pathes
-                            var yearlyValue = path.Last();
-                            for (var months = 0; months < 12; months++)
-                            {
-                                var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
-                                yearlyValue *= Math.Exp(monthlyRet);
-                            }
-                            path.Add(yearlyValue);
-                        }
-                        else
-                        {
-                            // monthly pathes
-                            for (var months = 0; months < 12; months++)
-                            {
-                                var monthlyRet = distributions[label][rnd.Next(distributions[label].Count)];
-                                path.Add(path.Last() * Math.Exp(monthlyRet));
-                            }
-                        }
-                    }
-                }
-            }
-
-            //===== create 5-th percentile envelope
-            var envelopes = new Dictionary<string, List<double>>();
-
-            foreach (var label in _yLabels)
-            {
-                envelopes[label] = Enumerable.Range(0, pathes[label].First().Count())
-                    .Select(t => pathes[label]
-                        .Select(path => path[t])
-                        .OrderBy(ret => ret)
-                        .Take(WORST_CASE_PICKS)
-                        .Last())
-                    .ToList();
-                /*Output.WriteLine("{0}: last nav = {1:P2}",
-                    label,
-                    envelopes[label].Last());*/
-            }
-
-            //===== calculate 5-th percentile CAGR over time
-            var cagr = new Dictionary<string, List<double>>();
-
-            foreach (var label in _yLabels)
-            {
-                if (YEARLY_PATHES)
-                {
-                    cagr[label] = Enumerable.Range(0, envelopes[label].Count())
-                        // yearly pathes
-                        .Select(years => Math.Pow(envelopes[label][years], 1.0 / years) - 1.0)
-                        .ToList();
-                }
-                else
-                {
-                    cagr[label] = Enumerable.Range(0, envelopes[label].Count())
-                        // monthy pathes
-                        .Select(months => Math.Pow(envelopes[label][months], 12.0 / months) - 1.0)
-                        .ToList();
-                }
-            }
+            var LEFT_TAIL = 5;
 
             //===== plot results
             PlotModel plotModel = new PlotModel();
@@ -1501,7 +1481,7 @@ namespace TuringTrader
             xAxis.Key = "x";
 
             var yAxis1 = new LinearAxis();
-            yAxis1.Title = String.Format("CAGR at {0}-th Percentile [%]", WORST_CASE);
+            yAxis1.Title = String.Format("CAGR at {0}-th Percentile [%]", LEFT_TAIL);
             yAxis1.Position = AxisPosition.Right;
             yAxis1.StartPosition = 0.0;
             yAxis1.EndPosition = 1.0;
@@ -1513,7 +1493,8 @@ namespace TuringTrader
             //===== add series
             for (int s = 0; s < _numYLabels; s++)
             {
-                string yLabel = distributions.Keys.Skip(s).First();
+                string yLabel = _yLabels[s];
+                var leftTailCagr = _leftTailReturns(yLabel, LEFT_TAIL / 100.0);
                 OxyColor color = CFG_COLORS[s];
 
                 //--- CAGR
@@ -1539,23 +1520,12 @@ namespace TuringTrader
 
                 plotModel.Series.Add(cagrSeries);
 
-                for (int t = 1; t < cagr[yLabel].Count; t++)
+                foreach (var kv in leftTailCagr)
                 {
-                    if (YEARLY_PATHES)
-                    {
-                        // yearly pathes
-                        var years = t;
-                        cagrSeries.Points.Add(new DataPoint(
-                            years,
-                            100.0 * cagr[yLabel][t]));
-                    }
-                    else
-                    {
-                        // monthly pathes
-                        var years = t / 12.0;
-                        var cagrValue = Math.Max(-20, 100.0 * cagr[yLabel][t]);
-                        cagrSeries.Points.Add(new DataPoint(years, cagrValue));
-                    }
+                    var years = kv.Key;
+                    var cagr = kv.Value;
+
+                    cagrSeries.Points.Add(new DataPoint(years, Math.Max(-5.0, 100.0 * cagr)));
                 }
             }
 
@@ -1770,14 +1740,18 @@ namespace TuringTrader
             }
 
             //--- other metrics
-            var metrics = new List<Tuple<string, Func<double>>>
+            var metrics = new List<Tuple<string, Func<object>>>
             {
-                Tuple.Create<string, Func<double>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
-                Tuple.Create<string, Func<double>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("sharpe", () => _sharpeRatio(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                Tuple.Create<string, Func<object>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("sharpe", () => _sharpeRatio(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("left-tail", () => _leftTailReturns(_firstYLabel, 0.05)
+                    .Where(kv => kv.Key > 0.0 && Math.Abs(kv.Key - Math.Round(kv.Key)) < 1.0 / 24.0)
+                    .Select(kv => kv.Value)
+                    .Aggregate("", (agg, item) => agg + "," + string.Format("{0:P2}", item))),
             };
 
             foreach (var m in metrics)
