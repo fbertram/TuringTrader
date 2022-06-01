@@ -280,7 +280,7 @@ namespace TuringTrader
                 path.Add(1.0);
                 pathes.Add(path);
 
-                for (var years = 0; years < 25; years++)
+                for (var years = 0; years < 50; years++)
                 {
                     for (var months = 0; months < 12; months++)
                     {
@@ -1475,7 +1475,8 @@ namespace TuringTrader
             plotModel.LegendPosition = LegendPosition.LeftTop;
             plotModel.Axes.Clear();
 
-            Axis xAxis = new LinearAxis();
+            //Axis xAxis = new LinearAxis();
+            Axis xAxis = new LogarithmicAxis();
             xAxis.Title = "Investment Period [years]";
             xAxis.Position = AxisPosition.Bottom;
             xAxis.Key = "x";
@@ -1525,7 +1526,8 @@ namespace TuringTrader
                     var years = kv.Key;
                     var cagr = kv.Value;
 
-                    cagrSeries.Points.Add(new DataPoint(years, Math.Max(-5.0, 100.0 * cagr)));
+                    if (years >= 0.49)
+                        cagrSeries.Points.Add(new DataPoint(years, Math.Max(-5.0, 100.0 * cagr)));
                 }
             }
 
@@ -1748,10 +1750,13 @@ namespace TuringTrader
                 Tuple.Create<string, Func<object>>("sharpe", () => _sharpeRatio(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
-                Tuple.Create<string, Func<object>>("left-tail", () => _leftTailReturns(_firstYLabel, 0.05)
-                    .Where(kv => kv.Key > 0.0 && Math.Abs(kv.Key - Math.Round(kv.Key)) < 1.0 / 24.0)
+                Tuple.Create<string, Func<object>>("min-cagr", () => "[" + _leftTailReturns(_firstYLabel, 0.05)
+                    .Where(kv => kv.Key > 0.0 && kv.Key < 25.1 
+                        && Math.Abs(kv.Key - Math.Round(kv.Key)) < 1.0 / 24.0)
                     .Select(kv => kv.Value)
-                    .Aggregate("", (agg, item) => agg + "," + string.Format("{0:P2}", item))),
+                    .Aggregate("", (agg, item) => agg 
+                        + (agg.Length > 0 ? "," : "") 
+                        + string.Format("{0:F2}", 100.0 * item)) + "]"),
             };
 
             foreach (var m in metrics)
