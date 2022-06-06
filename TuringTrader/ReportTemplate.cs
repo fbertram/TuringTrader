@@ -1651,7 +1651,7 @@ namespace TuringTrader
 
             //===== plot results
             PlotModel plotModel = new PlotModel();
-            plotModel.Title = String.Format("Monte Carlo Analysis of Expeced Returns and Drawdowns", LEFT_TAIL, RIGHT_TAIL);
+            plotModel.Title = String.Format("Monte Carlo Analysis of Expected Returns and Drawdowns", LEFT_TAIL, RIGHT_TAIL);
             plotModel.LegendPosition = LegendPosition.RightBottom;
             plotModel.Axes.Clear();
 
