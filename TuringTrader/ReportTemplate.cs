@@ -2013,6 +2013,8 @@ namespace TuringTrader
                     var dummy = _leftTailReturns(_firstYLabel, 0.05, out mdd);
                     return mdd;
                 }),
+                Tuple.Create<string, Func<object>>("date-end", () => string.Format("{0:MM/dd/yyyy}", _endDate)),
+                Tuple.Create<string, Func<object>>("updated", () => DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm'Z'")),
             };
 
             foreach (var m in metrics)
