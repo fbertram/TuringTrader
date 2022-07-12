@@ -262,6 +262,11 @@ namespace TuringTrader.Algorithms.Glue
         /// (since Dec 2003, backfilled to Jun 2000)
         /// </summary>
         public static readonly string TIP = "splice:TIP,TIP++";
+        /// <summary>
+        /// Vanguard Sht-Term Inflation-Protected Sec Idx ETF
+        /// (since Oct 2012, backfilled to Jun 2000)
+        /// </summary>
+        public static readonly string VTIP = "splice:VTIP,TIP++";
         #endregion
         #region U.S. Corporate
         /// <summary>
@@ -496,6 +501,11 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares Ultra VIX Short Term Futures ETF
         /// </summary>
         public static readonly string UVXY = "UVXY";
+        #endregion
+        #region currencies
+        public static readonly string UDN = "UDN"; // Invesco DB US Dollar Index Bearish ETF
+        public static readonly string USDU = "USDU"; //WisdomTree Bloomberg US Dollar Bullish ETF
+
         #endregion
     }
 }

@@ -43,7 +43,7 @@ namespace TuringTrader.Algorithms.Glue
         public static readonly string NDXTR = "$NDXTR";
         #endregion
         #region benchmarks
-        public static readonly string PORTF_0 = "algorithm:ZeroReturn";
+        public static readonly string PORTF_0 = "algorithm:Benchmark_Zero";
         public static readonly string PORTF_60_40 = "algorithm:Benchmark_60_40";
         #endregion
     }
