@@ -99,6 +99,7 @@ namespace TuringTrader
             OxyColor.FromRgb(210, 96, 18),   // brown
             //OxyColor.FromRgb(132, 132, 132), // grey
         };
+        protected virtual OxyColor CFG_COLOR0_FILL => CFG_COLORS[0];
         /// <summary>
         /// Configre graph format. Return true for area chart, and false for
         /// line charts. The default implementation shows the first colum/
@@ -1052,7 +1053,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -1073,7 +1074,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "dd",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new LineSeries
                     {
@@ -1310,7 +1311,8 @@ namespace TuringTrader
                         IsVisible = true,
                         XAxisKey = "x",
                         YAxisKey = "y",
-                        FillColor = color,
+                        StrokeColor = color,
+                        FillColor = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new ColumnSeries
                     {
@@ -1379,7 +1381,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1512,7 +1514,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y1",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1546,7 +1548,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y2",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1698,7 +1700,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y1",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1761,7 +1763,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y2",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -2029,6 +2031,7 @@ namespace TuringTrader
                 catch (Exception)
                 {
                     // ignore for now
+                    Output.WriteLine("Error: metric {0} failed", m.Item1);
                 }
             }
 
@@ -2085,7 +2088,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "ret",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -2149,7 +2152,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     :*/ new LineSeries
@@ -2249,7 +2252,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -2270,7 +2273,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "dd",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new LineSeries
                     {
@@ -2370,7 +2373,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     :*/ new LineSeries
