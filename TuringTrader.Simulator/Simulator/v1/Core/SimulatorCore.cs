@@ -294,10 +294,12 @@ namespace TuringTrader.Simulator
         /// <returns>nav</returns>
         protected virtual double _calcNetAssetValue()
         {
-            //string navCalc = string.Format("{0:MM/dd/yyyy}: cash = {1:C2}", SimTime[0], Cash);
-            //var d = SimTime[0];
-            //var n = this.Name;
-            //var t = d > DateTime.Parse("05/20/2020") && n.StartsWith("Antonacci");
+#if true
+            var debugNavCalc = false;
+#else
+            var debugNavCalc = (EndTime - SimTime[0]).TotalDays < 5;
+#endif
+            var debugNavCalcMsg = debugNavCalc ? string.Format("{0:MM/dd/yyyy}: cash=${1:C2}", SimTime[0], Cash) : "";
 
             double nav = Cash;
 
@@ -332,19 +334,19 @@ namespace TuringTrader.Simulator
                     ? 100.0 * Positions[instrument]
                     : Positions[instrument];
 
-                //if (t) Output.WriteLine("{0}: {1} = {2} x {3:C2} = {4:C2}", SimTime[0], instrument.Symbol, quantity, price, quantity * price);
                 nav += quantity * price;
-            }
 
-            //navCalc += string.Format(", nav = {0:C2}", nav);
-            //if (SimTime[0].Year == 2020 && SimTime[0].Month == 4)
-            //    Output.WriteLine(navCalc);
+                debugNavCalcMsg += debugNavCalc ? string.Format(", {0}={1}@{2:C2}={3:C2}", instrument.Symbol, quantity, price, quantity * price) : "";
+            }
 
             if (!navValid && _navInvalidFirst)
             {
                 Output.WriteLine("{0:MM/dd/yyyy}: NAV invalid, instrument {1}", SimTime[0], invalidInstrument);
                 _navInvalidFirst = false;
             }
+
+            if (debugNavCalcMsg.Length > 0)
+                Output.WriteLine(debugNavCalcMsg);
 
             return navValid
                 ? nav
