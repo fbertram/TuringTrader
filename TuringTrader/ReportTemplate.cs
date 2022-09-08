@@ -99,6 +99,7 @@ namespace TuringTrader
             OxyColor.FromRgb(210, 96, 18),   // brown
             //OxyColor.FromRgb(132, 132, 132), // grey
         };
+        protected virtual OxyColor CFG_COLOR0_FILL => CFG_COLORS[0];
         /// <summary>
         /// Configre graph format. Return true for area chart, and false for
         /// line charts. The default implementation shows the first colum/
@@ -170,12 +171,16 @@ namespace TuringTrader
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
             double? prevValue = null;
+            double? prevMonthEndValue = null;
 
             foreach (var row in _firstChart)
             {
                 DateTime curTime = (DateTime)row.First().Value;
                 double curValue = (double)row[label];
 
+#if false
+                // code retired 05/31/2022
+                // BUGBUG: this code calculates monthly returns from first-to-first
                 if (curTime.Month != prevTime.Month)
                 {
                     DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
@@ -186,6 +191,22 @@ namespace TuringTrader
                     prevTime = curTime;
                     prevValue = curValue;
                 }
+#else
+                // new code 05/31/2022
+                // this code calculates monthly returns from last-to-last
+                if (curTime.Month != prevTime.Month)
+                {
+                    if (prevMonthEndValue != null)
+                    {
+                        DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                        monthlyReturns[ts] = Math.Log((double)prevValue / (double)prevMonthEndValue);
+                    }
+
+                    prevMonthEndValue = prevValue;
+                }
+                prevTime = curTime;
+                prevValue = curValue;
+#endif
             }
 
             return monthlyReturns;
@@ -199,14 +220,18 @@ namespace TuringTrader
             var monthlyReturns = new Dictionary<DateTime, double>();
             DateTime prevTime = _startDate;
             double? prevValue = null;
+            double? prevMonthEndValue = null;
 
             foreach (var bar in data)
             {
                 DateTime curTime = (DateTime)bar.Time;
                 double curValue = (double)bar.Close;
 
+#if false
                 if (curTime.Month != prevTime.Month)
                 {
+                    // code retired 05/31/2022
+                    // BUGBUG: this code calculates monthly returns from first-to-first
                     DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
 
                     if (prevValue != null)
@@ -214,17 +239,235 @@ namespace TuringTrader
 
                     prevTime = curTime;
                     prevValue = curValue;
+            }
+#else
+                // new code 05/31/2022
+                // calculate monthly returns from last-to-last
+                if (curTime.Month != prevTime.Month)
+                {
+                    if (prevMonthEndValue != null)
+                    {
+                        DateTime ts = new DateTime(curTime.Year, curTime.Month, 1) - TimeSpan.FromDays(1);
+                        monthlyReturns[ts] = Math.Log((double)prevValue / (double)prevMonthEndValue);
+                    }
+
+                    prevMonthEndValue = prevValue;
                 }
+                prevTime = curTime;
+                prevValue = curValue;
+#endif
             }
 
             return monthlyReturns;
         }
 
-        protected double _avgMonthlyReturrn(string label) => _monthlyReturns(label).Values.Average(r => r);
+        protected (Dictionary<double, double>, Dictionary<double, double>) _tailCagr(string label, int LEFT_TAIL, int RIGHT_TAIL)
+        {
+            //===== create distribution
+            var monthlyDistribution = _monthlyReturns(label)
+                .Select(kv => kv.Value)
+                .ToList();
+
+            //===== create swarm of price pathes
+            //var TRIALS = 25000;
+            var TRIALS = 500 * 100 / LEFT_TAIL;
+            var YEARS = 25;
+
+            Random rnd = new Random();
+            var pathes = new List<List<double>>();
+
+            for (var trials = 0; trials < TRIALS; trials++)
+            {
+                var path = new List<double>();
+                var nav = 1.0;
+                path.Add(nav); // FIXME: do all pathes need to start at 1.0?
+
+                pathes.Add(path);
+
+                for (var months = 0; months < 12 * YEARS; months++)
+                {
+                    var monthlyRet = Math.Exp(monthlyDistribution[rnd.Next(monthlyDistribution.Count)]);
+                    nav *= monthlyRet;
+                    path.Add(nav);
+                }
+            }
+
+            //===== create 5-th percentile envelopes
+            var envelopeLeft = new Dictionary<double, double>();
+            var envelopeRight = new Dictionary<double, double>();
+
+            var LEFT_PICKS = (int)Math.Round(pathes.Count * LEFT_TAIL / 100.0);
+            var RIGHT_PICKS = (int)Math.Round(pathes.Count * RIGHT_TAIL / 100.0);
+
+            for (var months = 1; months < pathes.First().Count; months++)
+            {
+                var years = months / 12.0;
+
+                var sortedNavs = pathes
+                    .Select(path => path[months])
+                    .OrderBy(nav => nav)
+                    .ToList();
+
+                var navLeft = sortedNavs
+                    .Take(LEFT_PICKS)
+                    .Last();
+                var navRight = sortedNavs
+                    .Skip(RIGHT_PICKS)
+                    .First();
+
+                var cagrLeft = Math.Pow(navLeft, 1.0 / years) - 1.0;
+                var cagrRight = Math.Pow(navRight, 1.0 / years) - 1.0;
+
+                envelopeLeft.Add(years, cagrLeft);
+                envelopeRight.Add(years, cagrRight);
+            }
+
+            return (envelopeLeft, envelopeRight);
+        }
+
+        protected Dictionary<double, double> _tailDd(string label, int LEFT_TAIL)
+        {
+            //===== create distribution
+            var monthlyDistribution = _monthlyReturns(label)
+                .Select(kv => kv.Value)
+                .ToList();
+
+            //===== create swarm of price pathes
+            // * each path starts with a drawdown
+            // * one the drawdown is recovered, each path is pegged to zero
+
+            var TRIALS = 100 * 100 / LEFT_TAIL * 100 / LEFT_TAIL;
+            var YEARS = 25;
+
+            Random rnd = new Random();
+            var pathes = new List<List<double>>();
+
+            for (var trials = 0; trials < TRIALS; trials++)
+            {
+                var path = new List<double>();
+                var nav = 1.0;
+                path.Add(0.0);
+                var isDrawdown = true;
+
+                pathes.Add(path);
+
+                for (var months = 0; months < 12 * YEARS; months++)
+                {
+                    var monthlyRet = 1.0;
+                    do
+                    {
+                        monthlyRet = Math.Exp(monthlyDistribution[rnd.Next(monthlyDistribution.Count)]);
+                    } while (months == 0 && monthlyRet > 1.0);
+                    nav *= monthlyRet;
+                    if (nav >= 1.0) isDrawdown = false;
+
+                    path.Add(isDrawdown ? nav - 1.0 : 0.0);
+                }
+            }
+
+            //===== pick the worst drawdowns
+            var worstPathes = pathes
+                .OrderBy(path => path.Min()) // deepest drawdowns
+                //.OrderByDescending(path => path.Sum(dd => Math.Pow(dd, 2.0))) // Ulcer Index
+                .Take((int)Math.Round(pathes.Count * LEFT_TAIL / 100.0))
+                .ToList();
+
+            //===== create envelope
+            var envelope = Enumerable.Range(0, worstPathes.First().Count)
+                .ToDictionary(
+                    t => t / 12.0,
+                    t => pathes
+                        .Select(path => path[t])
+                        .OrderBy(dd => dd)
+                        .Take((int)Math.Round(worstPathes.Count * LEFT_TAIL / 100.0))
+                        .Last());
+
+            //===== create 5-th percentile envelopes
+            return envelope;
+        }
+        protected Dictionary<double, double> _leftTailReturns(string label, double LEFT_TAIL, out Dictionary<double, double> mdd)
+        {
+            //===== create distribution
+            var monthlyDistribution = _monthlyReturns(label)
+                .Select(kv => kv.Value)
+                .ToList();
+
+            //===== create swarm of pathes
+            var TRIALS = 25000;
+            var LEFT_TAIL_PICKS = (int)Math.Round(TRIALS * LEFT_TAIL);
+            var YEARS = 25;
+
+            Random rnd = new Random();
+            var pathes = new List<List<double>>();
+            var mdds = new List<List<double>>();
+
+            for (var trials = 0; trials < TRIALS; trials++)
+            {
+                pathes.Add(new List<double> { 1.0 });
+                mdds.Add(new List<double> { 0.0 });
+                var peak = pathes.Last().Last();
+
+                for (var years = 0; years < YEARS; years++)
+                {
+                    for (var months = 0; months < 12; months++)
+                    {
+                        var monthlyRet = monthlyDistribution[rnd.Next(monthlyDistribution.Count)];
+                        pathes.Last().Add(pathes.Last().Last() * Math.Exp(monthlyRet));
+
+                        peak = Math.Max(peak, pathes.Last().Last());
+                        mdds.Last().Add(Math.Min(mdds.Last().Last(), pathes.Last().Last() / peak - 1.0));
+                    }
+                }
+            }
+
+            //===== create 5-th percentile envelopes
+            var envelopeNav = new Dictionary<double, double>();
+            var envelopeMdd = new Dictionary<double, double>();
+
+            envelopeNav = Enumerable.Range(0, pathes.First().Count())
+                .ToDictionary(
+                    t => t / 12.0, // in years
+                    t =>
+                    {
+                        var nav = pathes
+                            .Select(path => path[t])
+                            .OrderBy(ret => ret)
+                            .Take(LEFT_TAIL_PICKS)
+                            .Last();
+                        return Math.Pow(nav, 12.0 / t) - 1.0;
+                    });
+
+            envelopeMdd = Enumerable.Range(0, mdds.First().Count())
+                .ToDictionary(
+                    t => t / 12.0,
+                    t => mdds
+                        .Select(dd => dd[t])
+                        .OrderBy(dd => dd) // dd is negative
+                        .Take(LEFT_TAIL_PICKS)
+                        .Last());
+
+            mdd = envelopeMdd;
+            return envelopeNav;
+        }
+        protected Dictionary<double, double> _leftTailReturns(string label, double LEFT_TAIL)
+        {
+            var mdd = new Dictionary<double, double>();
+            return _leftTailReturns(label, LEFT_TAIL, out mdd);
+        }
+        protected Dictionary<double, double> _leftTailReturns(string label, double LEFT_TAIL, out double mdd)
+        {
+            var mdds = new Dictionary<double, double>();
+            var cagrs = _leftTailReturns(label, LEFT_TAIL, out mdds);
+            mdd = mdds.Max(mdd => -100.0 * mdd.Value);
+            return cagrs;
+        }
+
+        protected double _avgMonthlyReturn(string label) => _monthlyReturns(label).Values.Average(r => r);
         protected double _stdMonthlyReturn(string label)
         {
-            double avg = _avgMonthlyReturrn(label);
-            return Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+            var avg = _avgMonthlyReturn(label);
+            var stdev = Math.Sqrt(_monthlyReturns(label).Values.Average(r => Math.Pow(r - avg, 2.0)));
+            return stdev;
         }
         protected double _sharpeRatio(string label)
         {
@@ -810,7 +1053,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -831,7 +1074,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "dd",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new LineSeries
                     {
@@ -920,7 +1163,7 @@ namespace TuringTrader
             row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}",
-                    Math.Exp(Math.Sqrt(12.0 * _monthlyReturns(label).Values.Average(r => r * r))) - 1.0);
+                    Math.Sqrt(12.0) * _stdMonthlyReturn(label));
             retvalue.Add(row);
 
 
@@ -1068,7 +1311,8 @@ namespace TuringTrader
                         IsVisible = true,
                         XAxisKey = "x",
                         YAxisKey = "y",
-                        FillColor = color,
+                        StrokeColor = color,
+                        FillColor = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new ColumnSeries
                     {
@@ -1137,7 +1381,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1167,8 +1411,8 @@ namespace TuringTrader
             return plotModel;
         }
         #endregion
-        #region protected PlotModel RenderMonteCarlo()
-        protected PlotModel RenderMonteCarlo()
+        #region protected PlotModel RenderMonteCarloV1()
+        protected PlotModel RenderMonteCarloLegacyV1()
         {
             //===== create distributions
             Dictionary<string, List<double>> distributions = new Dictionary<string, List<double>>();
@@ -1270,7 +1514,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y1",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1304,7 +1548,7 @@ namespace TuringTrader
                     XAxisKey = "x",
                     YAxisKey = "y2",
                     Color = color,
-                    Fill = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
                     ConstantY2 = 0.0,
                 }
                 : new LineSeries
@@ -1364,6 +1608,179 @@ namespace TuringTrader
                 var mddValue = _mdd(yLabel);
                 var mddProb = _probabilityOfReturn(distrMdd, mddValue);
                 mddMarker.Points.Add(new ScatterPoint(100.0 * mddProb, -100.0 * mddValue));
+            }
+
+            return plotModel;
+        }
+        #endregion
+        #region protected PlotModel RenderMonteCarlo()
+        protected PlotModel RenderMonteCarlo()
+        {
+            var LEFT_TAIL = 5;
+            var RIGHT_TAIL = 95;
+
+            //===== get CAGRs
+            var cagrsLeft = new Dictionary<string, Dictionary<double, double>>();
+            var cagrsRight = new Dictionary<string, Dictionary<double, double>>();
+            var maxCagrToChart = 0.0;
+
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = _yLabels[s];
+                (Dictionary<double, double> cagrLeft, Dictionary<double, double> cagrRight)
+                    = _tailCagr(yLabel, LEFT_TAIL, RIGHT_TAIL);
+
+                cagrsLeft[yLabel] = cagrLeft;
+                cagrsRight[yLabel] = cagrRight;
+
+                var yearsToBreakEven = cagrLeft
+                    .OrderBy(kv => kv.Key)
+                    .Where(kv => kv.Value > 0.0)
+                    .First().Key;
+
+                var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
+                maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
+            }
+
+            //===== get DDs
+            var dds = new Dictionary<string, Dictionary<double, double>>();
+
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = _yLabels[s];
+                dds[yLabel] = _tailDd(yLabel, LEFT_TAIL);
+            }
+
+            //===== plot results
+            PlotModel plotModel = new PlotModel();
+            plotModel.Title = String.Format("Monte Carlo Analysis of Expected Returns and Drawdowns", LEFT_TAIL, RIGHT_TAIL);
+            plotModel.LegendPosition = LegendPosition.RightBottom;
+            plotModel.Axes.Clear();
+
+            Axis xAxis = new LinearAxis();
+            //Axis xAxis = new LogarithmicAxis();
+            xAxis.Title = "Investment Period [years]";
+            xAxis.Position = AxisPosition.Bottom;
+            xAxis.Key = "x";
+            plotModel.Axes.Add(xAxis);
+
+            var yAxis1 = new LinearAxis();
+            yAxis1.Title = string.Format("CAGR at {0}-th/ {1}-th Percentile [%]", LEFT_TAIL, RIGHT_TAIL);
+            yAxis1.Position = AxisPosition.Right;
+            yAxis1.StartPosition = 0.51;
+            yAxis1.EndPosition = 1.0;
+            yAxis1.Key = "y1";
+            plotModel.Axes.Add(yAxis1);
+
+            var yAxis2 = new LinearAxis();
+            yAxis2.Title = string.Format("Worst Drawdowns at {0}-th Percentile [%]", LEFT_TAIL, RIGHT_TAIL);
+            yAxis2.Position = AxisPosition.Right;
+            yAxis2.StartPosition = 0.0;
+            yAxis2.EndPosition = 0.49;
+            yAxis2.Key = "y2";
+            plotModel.Axes.Add(yAxis2);
+
+            //===== add series
+            for (int s = 0; s < _numYLabels; s++)
+            {
+                string yLabel = _yLabels[s];
+
+                var cagrLeft = cagrsLeft[yLabel];
+                var cagrRight = cagrsRight[yLabel];
+                var dd = dds[yLabel];
+
+                OxyColor color = CFG_COLORS[s];
+
+                //--- CAGR
+                var cagrHighSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                };
+
+                var cagrLowSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    //Color = color,
+                    //Fill = color,
+                    Color = OxyColors.White,
+                    Fill = OxyColors.White,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y1",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(cagrHighSeries);
+                plotModel.Series.Add(cagrLowSeries); // must come *after* cagrHighSeries
+
+                foreach (var years in cagrLeft.Keys)
+                {
+                    if (CFG_IS_AREA(yLabel))
+                    {
+                        cagrLowSeries.Points.Add(new DataPoint(years, 100.0 * Math.Max(0.0, cagrLeft[years])));
+                        cagrHighSeries.Points.Add(new DataPoint(years, 100.0 * Math.Min(maxCagrToChart, cagrRight[years])));
+                    }
+                    else
+                    {
+                        if (cagrLeft[years] >= 0.0)
+                            cagrLowSeries.Points.Add(new DataPoint(years, 100.0 * cagrLeft[years]));
+
+                        if (cagrRight[years] <= maxCagrToChart)
+                            cagrHighSeries.Points.Add(new DataPoint(years, 100.0 * cagrRight[years]));
+                    }
+                }
+
+                //--- drawdown
+                var ddSeries = CFG_IS_AREA(yLabel)
+                ? new AreaSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                    Fill = s == 0 ? CFG_COLOR0_FILL : color,
+                    ConstantY2 = 0.0,
+                }
+                : new LineSeries
+                {
+                    //Title = yLabel,
+                    IsVisible = true,
+                    XAxisKey = "x",
+                    YAxisKey = "y2",
+                    Color = color,
+                };
+
+                plotModel.Series.Add(ddSeries);
+
+                foreach (var years in dd.Keys)
+                {
+                    ddSeries.Points.Add(new DataPoint(years, 100.0 * dd[years]));
+                }
             }
 
             return plotModel;
@@ -1577,21 +1994,45 @@ namespace TuringTrader
             }
 
             //--- other metrics
-            var metrics = new List<Tuple<string, Func<double>>>
+            var metrics = new List<Tuple<string, Func<object>>>
             {
-                Tuple.Create<string, Func<double>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
-                Tuple.Create<string, Func<double>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("sharpe", () => _sharpeRatio(_firstYLabel)),
-                Tuple.Create<string, Func<double>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                Tuple.Create<string, Func<object>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("sharpe", () => _sharpeRatio(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
+                Tuple.Create<string, Func<object>>("cagr-5th", () => "[" + _leftTailReturns(_firstYLabel, 0.05)
+                    .Where(kv => kv.Key > 0.0 && kv.Key < 25.1 
+                        && Math.Abs(kv.Key - Math.Round(kv.Key)) < 1.0 / 24.0)
+                    .Select(kv => kv.Value)
+                    .Aggregate("", (agg, item) => agg 
+                        + (agg.Length > 0 ? "," : "") 
+                        + string.Format("{0:F2}", 100.0 * item)) + "]"),
+                Tuple.Create<string, Func<object>>("mdd-5th", () =>
+                {
+                    var mdd = 0.0;
+                    var dummy = _leftTailReturns(_firstYLabel, 0.05, out mdd);
+                    return mdd;
+                }),
+                Tuple.Create<string, Func<object>>("date-end", () => string.Format("{0:MM/dd/yyyy}", _endDate)),
+                Tuple.Create<string, Func<object>>("updated", () => DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm'Z'")),
             };
 
             foreach (var m in metrics)
             {
                 row = new Dictionary<String, object>();
                 row[METRIC_LABEL] = m.Item1;
-                row["Value"] = m.Item2();
-                retvalue.Add(row);
+                try
+                {
+                    row["Value"] = m.Item2();
+                    retvalue.Add(row);
+                }
+                catch (Exception)
+                {
+                    // ignore for now
+                    Output.WriteLine("Error: metric {0} failed", m.Item1);
+                }
             }
 
             return retvalue;
@@ -1647,7 +2088,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "ret",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -1711,7 +2152,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     :*/ new LineSeries
@@ -1811,7 +2252,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -1832,7 +2273,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "dd",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                     }
                     : new LineSeries
                     {
@@ -1932,7 +2373,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     :*/ new LineSeries
@@ -2168,6 +2609,7 @@ namespace TuringTrader
                     yield return Plotter.SheetNames.ANNUAL_BARS;
                     yield return Plotter.SheetNames.RETURN_DISTRIBUTION;
                     yield return Plotter.SheetNames.MONTE_CARLO;
+                    yield return Plotter.SheetNames.MONTE_CARLO_V2;
                     yield return Plotter.SheetNames.ROLLING_RETUNRS;
                     //yield return Plotter.SheetNames.TRACKING_TO_BENCH;
 
@@ -2208,6 +2650,9 @@ namespace TuringTrader
                     retvalue = RenderReturnDistribution();
                     break;
                 case Plotter.SheetNames.MONTE_CARLO:
+                    retvalue = RenderMonteCarloLegacyV1();
+                    break;
+                case Plotter.SheetNames.MONTE_CARLO_V2:
                     retvalue = RenderMonteCarlo();
                     break;
                 case Plotter.SheetNames.ROLLING_RETUNRS:

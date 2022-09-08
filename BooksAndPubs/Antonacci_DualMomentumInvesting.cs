@@ -56,15 +56,15 @@ namespace TuringTrader.BooksAndPubs
         /// <summary>
         /// benchmark to measure absolute momentum
         /// </summary>
-        protected virtual string ABS_MOMENTUM => Assets.BONDS_US_TREAS_3M; // BIL - 1 to 3-Months U.S. Treasury Bills
+        protected virtual string ABS_MOMENTUM => Assets.BIL; // BIL - 1 to 3-Months U.S. Treasury Bills
         /// <summary>
         /// safe instrument
         /// </summary>
-        protected virtual string SAFE_INSTR => Assets.BONDS_US_TOTAL; // AGG - Aggregate Bond Market
+        protected virtual string SAFE_INSTR => Assets.AGG; // AGG - Aggregate Bond Market
         /// <summary>
         /// charting benchmark
         /// </summary>
-        protected virtual string BENCHMARK => Assets.PORTF_60_40; // 60/40 Portfolio
+        protected virtual string BENCHMARK => Indices.PORTF_60_40; // 60/40 Portfolio
         /// <summary>
         /// momentum calculation
         /// </summary>
@@ -214,12 +214,12 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    Assets.STOCKS_US_LG_CAP,
+                    Assets.SPY,
                     ABS_MOMENTUM,
                 }
             },
         };
-        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
+        protected override string BENCHMARK => Indices.SPXTR;
     }
     #endregion
     #region Global Equities Momentum
@@ -232,13 +232,13 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    Assets.STOCKS_US_LG_CAP,
-                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    Assets.SPY,
+                    Assets.ACWX,
                     ABS_MOMENTUM,
                 },
             },
         };
-        protected override string BENCHMARK => Assets.PORTF_60_40;
+        protected override string BENCHMARK => Indices.PORTF_60_40;
     }
 
     public class Antonacci_GlobalEquitiesMomentum_p98 : Antonacci_GlobalEquitiesMomentum
@@ -253,10 +253,10 @@ namespace TuringTrader.BooksAndPubs
         {
             var m = i.Close[0] / i.Close[252] - 1.0;
 
-            var spx = FindInstrument(Assets.STOCKS_US_LG_CAP);
+            var spx = FindInstrument(Assets.SPY);
             var abs = FindInstrument(ABS_MOMENTUM);
 
-            if (i.Nickname == Assets.STOCKS_WXUS_LG_MID_CAP
+            if (i.Nickname == Assets.ACWX
             && MOMENTUM(spx) < MOMENTUM(abs))
             {
                 // if S&P 500 returns are below T-Bill,
@@ -279,8 +279,8 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 0.7,
                 assets = new HashSet<string> {
-                    Assets.STOCKS_US_LG_CAP,
-                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    Assets.SPY,
+                    Assets.ACWX,
                     ABS_MOMENTUM,
                 },
             },
@@ -289,9 +289,9 @@ namespace TuringTrader.BooksAndPubs
                 weight = 0.3,
                 setSafeInstrument = true, // use this group as safe instrument
                 assets = new HashSet<string> {
-                    Assets.BONDS_US_TREAS_30Y,
-                    Assets.BONDS_WRLD_TREAS,
-                    Assets.BONDS_US_CORP_JUNK,
+                    Assets.TLT,
+                    Assets.BWX,
+                    Assets.HYG,
                     ABS_MOMENTUM,
                 },
             }
@@ -302,7 +302,7 @@ namespace TuringTrader.BooksAndPubs
     public class Antonacci_ParityPortfolioWithAbsoluteMomentum : Antonacci_DualMomentumInvesting_Core
     {
         public override string Name => "Antonacci's Parity Portfolio w/ Absolute Momentum";
-        protected override string BENCHMARK => Assets.PORTF_60_40;
+        protected override string BENCHMARK => Indices.PORTF_60_40;
 
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
@@ -310,7 +310,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    Assets.STOCKS_US_LG_CAP,
+                    Assets.SPY,
                     ABS_MOMENTUM,
                 },
             },
@@ -318,7 +318,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    Assets.BONDS_US_TREAS_30Y,
+                    Assets.TLT,
                     ABS_MOMENTUM,
                 },
             },
@@ -326,7 +326,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    Assets.REIT_US,
+                    Assets.VNQ,
                     ABS_MOMENTUM,
                 },
             },
@@ -334,7 +334,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    Assets.BONDS_US_CORP_10Y,
+                    Assets.IGIB,
                     ABS_MOMENTUM,
                 },
             },
@@ -342,7 +342,7 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.2,
                 assets = new HashSet<string> {
-                    Assets.GOLD,
+                    Assets.GLD,
                     ABS_MOMENTUM,
                 },
             },
@@ -355,19 +355,19 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Antonacci's Dual Momentum Sector Rotation";
         protected override HashSet<AssetClass> ASSET_CLASSES => new HashSet<AssetClass>
         {
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_MATERIALS,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_COMMUNICATION,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_ENERGY,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_FINANCIAL,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_INDUSTRIAL,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_TECHNOLOGY,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_STAPLES,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_REAL_ESTATE, ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_UTILITIES,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_HEALTH_CARE,  ABS_MOMENTUM } },
-            new AssetClass { assets = new HashSet<string> { Assets.STOCKS_US_SECT_DISCRETIONARY,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLB,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLC,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLE,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLF,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLI,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLK,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLP,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLRE, ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLU,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLV,  ABS_MOMENTUM } },
+            new AssetClass { assets = new HashSet<string> { Assets.XLY,  ABS_MOMENTUM } },
         };
-        protected override string BENCHMARK => Assets.STOCKS_US_LG_CAP;
+        protected override string BENCHMARK => Indices.SPXTR;
     }
     #endregion
     #region Dual Momentum w/ 4 asset pairs - as seen on Scott's Investments
@@ -388,8 +388,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    Assets.STOCKS_US_LG_CAP,
-                    Assets.STOCKS_WXUS_LG_MID_CAP,
+                    Assets.SPY,
+                    Assets.ACWX,
                     ABS_MOMENTUM,
                 },
             },
@@ -397,8 +397,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    Assets.BONDS_US_CORP_JUNK,
-                    Assets.BONDS_US_CORP_10Y,
+                    Assets.HYG,
+                    Assets.IGIB,
                     ABS_MOMENTUM,
                 },
             },
@@ -406,8 +406,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    Assets.REIT_US,
-                    Assets.MREIT_US,
+                    Assets.VNQ,
+                    Assets.REM,
                     ABS_MOMENTUM,
                 },
             },
@@ -415,8 +415,8 @@ namespace TuringTrader.BooksAndPubs
             new AssetClass {
                 weight = 0.25,
                 assets = new HashSet<string> {
-                    Assets.GOLD,
-                    Assets.BONDS_US_TREAS_30Y,
+                    Assets.GLD,
+                    Assets.TLT,
                     ABS_MOMENTUM,
                 },
             },
@@ -438,8 +438,8 @@ namespace TuringTrader.BooksAndPubs
             {
                 weight = 1.0,
                 assets = new HashSet<string> {
-                    "splice:SPY,yahoo:VFINX",
-                    "splice:VSS,yahoo:VINEX",
+                    Assets.SPY,
+                    Assets.VSS,
                     ABS_MOMENTUM,
                 },
             },
@@ -447,8 +447,8 @@ namespace TuringTrader.BooksAndPubs
 
         // the instrument for absolute momentum is just a dummy,
         // MOMENTUM() will always return zero for this
-        protected override string ABS_MOMENTUM => "splice:BIL,yahoo:VFISX";
-        protected override string SAFE_INSTR => "splice:VGLT,yahoo:VUSTX";
+        protected override string ABS_MOMENTUM => Assets.BIL;
+        protected override string SAFE_INSTR => Assets.VGLT;
         //protected override string BENCHMARK => "yahoo:VFINX";
         //protected override string BENCHMARK => "$SPXTR";
         //protected override string BENCHMARK => "$SPX";

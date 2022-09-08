@@ -36,10 +36,11 @@ namespace TuringTrader.BooksAndPubs
     {
         #region inputs
         public abstract HashSet<Tuple<object, double>> ALLOCATION { get; }
-        public virtual string BENCH => Assets.PORTF_60_40;
+        public virtual string BENCH => Indices.PORTF_60_40;
         public virtual DateTime START_TIME => Globals.START_TIME;
         public virtual DateTime END_TIME => Globals.END_TIME;
         public virtual double COMMISSION => 0.0; // lazy portfolios typically w/o commission
+        public virtual double MGMT_FEE => 0.0; // no management fee
         public virtual bool IsTradingDay => SimTime[0].Month != NextSimTime.Month;
         #endregion
 
@@ -60,8 +61,11 @@ namespace TuringTrader.BooksAndPubs
                 .ToList();
             var bench = AddDataSource(BENCH);
 
+            var autoAlloc = allocation.Sum(a => a.Item2) == 0.0;
+
             //========== simulation loop ==========
 
+            var accruedMgmtFee = 0.0;
             foreach (var s in SimTimes)
             {
                 if (!HasInstruments(allocation.Select(a => a.Item1)))
@@ -74,12 +78,24 @@ namespace TuringTrader.BooksAndPubs
                 {
                     foreach (var a in allocation)
                     {
-                        var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
+                        //var w = a.Item2 != 0.0 ? a.Item2 : 1.0 / ALLOCATION.Count;
+                        var w = autoAlloc ? 1.0 / ALLOCATION.Count : a.Item2;
                         var i = a.Item1.Instrument;
                         Alloc.Allocation[i] = w;
 
                         int targetShares = (int)Math.Floor(NetAssetValue[0] * w / i.Close[0]);
                         i.Trade(targetShares - i.Position);
+                    }
+                }
+
+                // management fees: acrue daily, deduct monthly
+                if (MGMT_FEE > 0.0)
+                {
+                    accruedMgmtFee += NetAssetValue[0] * MGMT_FEE / 252.0;
+                    if (SimTime[0].Month != NextSimTime.Month)
+                    {
+                        Withdraw(accruedMgmtFee);
+                        accruedMgmtFee = 0.0;
                     }
                 }
 
@@ -122,9 +138,9 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "All-Cash/ Zero-Return";
         public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP, 0.00),
+            new Tuple<object, double>(Assets.BIL, 1e-10),
         };
-        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+        public override string BENCH => Assets.SPY;
     }
     #endregion
     #region 60/40 benchmark
@@ -133,10 +149,10 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Vanilla 60/40";
         public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP, 0.60),
-            new Tuple<object, double>(Assets.BONDS_US_TOTAL, 0.40),
+            new Tuple<object, double>(Assets.SPY, 0.60),
+            new Tuple<object, double>(Assets.AGG, 0.40),
         };
-        public override string BENCH => Assets.STOCKS_US_LG_CAP;
+        public override string BENCH => Indices.SPXTR;
     }
     #endregion
     #region Tony Robbins' All-Seasons Portfolio
@@ -146,13 +162,13 @@ namespace TuringTrader.BooksAndPubs
         public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
             // See Tony Robbins "Money, Master the Game", Chapter 5
-            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP,   0.30),  // 30% S&P 500
-            new Tuple<object, double>(Assets.BONDS_US_TREAS_10Y, 0.15),  // 15% 7-10yr Treasuries
-            new Tuple<object, double>(Assets.BONDS_US_TREAS_30Y, 0.40),  // 40% 20-25yr Treasuries
-            new Tuple<object, double>(Assets.GOLD,               0.075), // 7.5% Gold
-            new Tuple<object, double>(Assets.COMMODITIES,        0.075), // 7.5% Commodities
+            new Tuple<object, double>(Assets.SPY,   0.30),  // 30% S&P 500
+            new Tuple<object, double>(Assets.IEF, 0.15),  // 15% 7-10yr Treasuries
+            new Tuple<object, double>(Assets.TLT, 0.40),  // 40% 20-25yr Treasuries
+            new Tuple<object, double>(Assets.GLD,               0.075), // 7.5% Gold
+            new Tuple<object, double>(Assets.DBC,        0.075), // 7.5% Commodities
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
         //public override DateTime START_TIME => DateTime.Parse("01/01/1900", CultureInfo.InvariantCulture);
     }
 #if false
@@ -198,13 +214,13 @@ namespace TuringTrader.BooksAndPubs
         public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
             // See Harry Browne, Fail Safe Investing
-            new Tuple<object, double>(Assets.STOCKS_US_LG_CAP,   0.25),  // 25% S&P 500
-            new Tuple<object, double>(Assets.BONDS_US_TREAS_30Y, 0.25),  // 25% 20-25yr Treasuries
+            new Tuple<object, double>(Assets.SPY,   0.25),  // 25% S&P 500
+            new Tuple<object, double>(Assets.TLT, 0.25),  // 25% 20-25yr Treasuries
             //new Tuple<object, double>(Assets.BONDS_US_TREAS_3M,  0.25),  // 25% Treasury Bills
-            new Tuple<object, double>(Assets.BONDS_US_TREAS_3Y,  0.25),  // 25% Short-Term Treasuries
-            new Tuple<object, double>(Assets.GOLD,               0.25),  // 25% Gold
+            new Tuple<object, double>(Assets.SHY,  0.25),  // 25% Short-Term Treasuries
+            new Tuple<object, double>(Assets.GLD,               0.25),  // 25% Gold
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
     }
 #if false
     // NOTE: 3x Gold not available after summer 2020

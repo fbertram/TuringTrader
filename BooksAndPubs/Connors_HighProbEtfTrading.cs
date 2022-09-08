@@ -593,6 +593,9 @@ namespace TuringTrader.BooksAndPubs
 
             return 0.0;
         }
+
+        //protected override string MARKET => Assets.SPUU; // 2x leveraged
+        //protected override string MARKET => Assets.SPXL; // 3x leveraged
     }
     #endregion
 }

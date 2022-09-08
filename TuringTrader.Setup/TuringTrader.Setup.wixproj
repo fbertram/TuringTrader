@@ -51,7 +51,7 @@
 	</Target>
 	-->
   <Target Name="BeforeBuild">
-    <HeatDirectory OutputFile="$(ProjectDir)PublishedFiles.wxs" Directory="$(ProjectDir)..\TuringTrader\bin\publish" ComponentGroupName="PublishedFilesComponentGroup" DirectoryRefId="BINFOLDER" AutogenerateGuids="true" PreprocessorVariable="var.SourceDir" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" NoLogo="true" />
+    <HeatDirectory OutputFile="$(ProjectDir)PublishedFiles.wxs" Directory="$(ProjectDir)..\TuringTrader\bin\publish" ComponentGroupName="PublishedFilesComponentGroup" DirectoryRefId="BINFOLDER" AutogenerateGuids="true" PreprocessorVariable="var.SourceDir" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" NoLogo="true" RunAsSeparateProcess="$(RunWixToolsOutOfProc)"/>
     <!-- removed below AutogenerateGuids above
     -->
   </Target>

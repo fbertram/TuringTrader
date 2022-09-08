@@ -36,20 +36,20 @@ namespace TuringTrader.BooksAndPubs
 
         private static readonly string[] UNIVERSE =
         {
-            Assets.STOCKS_US_SECT_DISCRETIONARY,
-            Assets.STOCKS_US_SECT_STAPLES,
-            Assets.STOCKS_US_SECT_ENERGY,
-            Assets.STOCKS_US_SECT_FINANCIAL,
-            Assets.STOCKS_US_SECT_HEALTH_CARE,
-            Assets.STOCKS_US_SECT_INDUSTRIAL,
-            Assets.STOCKS_US_SECT_MATERIALS,
-            Assets.STOCKS_US_SECT_TECHNOLOGY,
-            Assets.STOCKS_US_SECT_UTILITIES,
+            Assets.XLY,
+            Assets.XLP,
+            Assets.XLE,
+            Assets.XLF,
+            Assets.XLV,
+            Assets.XLI,
+            Assets.XLB,
+            Assets.XLK,
+            Assets.XLU,
             //Assets.STOCKS_US_SECT_COMMUNICATION, // Communication Services
             //Assets.STOCKS_US_SECT_REAL_ESTATE, // Real Estate
         };
-        private static readonly string SAFE_INSTRUMENT = Assets.BONDS_US_TREAS_30Y;
-        private static readonly string BENCHMARK = Assets.STOCKS_US_LG_CAP;
+        private static readonly string SAFE_INSTRUMENT = Assets.TLT;
+        private static readonly string BENCHMARK = Indices.SPXTR;
         private static readonly int RANK1_DAYS = 252;
         private static readonly int RANK2_DAYS = 126;
 

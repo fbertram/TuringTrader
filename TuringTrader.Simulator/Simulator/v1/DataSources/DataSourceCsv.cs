@@ -50,7 +50,8 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private DateTime ParseDate(string value, string mapping)
             {
-                var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
+                //var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
+                var mapping2 = Regex.Replace(mapping, "{[0-9]+:", "").Replace("}", "");
                 var parsed = DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
                 return parsed;
             }
@@ -498,7 +499,7 @@ namespace TuringTrader.Simulator
 
                 List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
 
-                if (data.Count == 0)
+                if (data.Count == 0 && !Info[DataSourceParam.dataFeed].ToLower().Contains("accept_no_data"))
                     throw new Exception(string.Format("DataSourceCsv: no data for {0}", Info[DataSourceParam.nickName]));
 
                 CachedData = data;

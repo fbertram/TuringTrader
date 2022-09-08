@@ -380,7 +380,7 @@ namespace TuringTrader.BooksAndPubs
                 _allocation.Add(new Tuple<object, double>(a, 0.0));
         }
         public override HashSet<Tuple<object, double>> ALLOCATION => _allocation;
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
     }
     #endregion
 

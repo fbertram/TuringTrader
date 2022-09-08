@@ -8,11 +8,16 @@
 // Copyright:   (c) 2011-2020, Bertram Enterprises LLC
 //==============================================================================
 
+// USE_BOOK_RANGE: if defined, restrict backtest to range from book
 //#define USE_BOOK_RANGE
+
+// USE_FULL_RANGE: if defined, expand backtest to longest possible range
+//#define USE_FULL_RANGE
 
 #region libraries
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
@@ -48,7 +53,7 @@ namespace TuringTrader.BooksAndPubs
             "AGG", // US Aggregate Bonds
         };
 
-        public virtual string BENCHMARK => Assets.PORTF_60_40;
+        public virtual string BENCHMARK => Indices.PORTF_60_40;
 
         public virtual double MOMENTUM(Instrument i) =>
             ((i.Close[0] - i.Close[21]) / i.Close[21]
@@ -345,36 +350,27 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
     #region public class Connors_AlphaFormula_DynanmicTreasuries
-    public class Connors_AlphaFormula_DynamicTreasuries : Algorithm
+    public class Connors_AlphaFormula_DynamicTreasuries : AlgorithmPlusGlue
     {
         public override string Name => "Connors' Dynamic Treasuries";
 
-        #region internal data
-        private Plotter _plotter;
-        #endregion
         #region inputs
         public virtual HashSet<string> UNIVERSE => new HashSet<string>
         {
-            "IEF", // 7-10yr Treasuries (duration = 7.5 years)
-            "TLH", // 10-20yr Treasuries (duration = 11.5 years)
-            "TLT", // 20+yr Treasuries (duration = 17.4 years)
+            Assets.IEF, // 7-10yr Treasuries (duration = 7.5 years)
+            Assets.TLH, // 10-20yr Treasuries (duration = 11.5 years)
+            Assets.TLT, // 20+yr Treasuries (duration = 17.4 years)
         };
-        public virtual string FALLBACK => "IEI"; // 3-7yr Treasuries (duration = 4.5 years)
-        public virtual string BENCHMARK => "IEF";
+        public virtual string FALLBACK => Assets.IEI; // 3-7yr Treasuries (duration = 4.5 years)
+        public virtual string BENCHMARK => Assets.IEF;
         public virtual HashSet<int> LOOKBACKS => new HashSet<int>
         {
-            21,
-            42,
-            63,
-            84,
-            105
+            21,  // 1 month
+            42,  // 2 months
+            63,  // 3 months
+            84,  // 4 months
+            105, // 5 months
         };
-        #endregion
-        #region ctor
-        public Connors_AlphaFormula_DynamicTreasuries()
-        {
-            _plotter = new Plotter(this);
-        }
         #endregion
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -384,6 +380,9 @@ namespace TuringTrader.BooksAndPubs
 #if USE_BOOK_RANGE
             StartTime = SubclassedStartTime ?? DateTime.Parse("01/01/2005", CultureInfo.InvariantCulture);
             EndTime = SubclassedEndTime ?? DateTime.Parse("12/31/2018", CultureInfo.InvariantCulture);
+#elif USE_FULL_RANGE
+            StartTime = startTime ?? DateTime.Parse("01/01/1965", CultureInfo.InvariantCulture);
+            EndTime = endTime ?? DateTime.Now.Date - TimeSpan.FromDays(5);
 #else
             StartTime = startTime ?? Globals.START_TIME;
             EndTime = endTime ?? Globals.END_TIME;
@@ -399,29 +398,25 @@ namespace TuringTrader.BooksAndPubs
 
             //========== simulation loop ==========
 
+            var TRANCHE_SIZE = 1.0 / (UNIVERSE.Count() + 1);
+            var ALLOC_PER_LOOKBACK = TRANCHE_SIZE / LOOKBACKS.Count();
+
             foreach (var s in SimTimes)
             {
                 if (!HasInstruments(universe) || !HasInstrument(fallback) || !HasInstrument(benchmark))
                     continue;
 
+                var weights = universe
+                    .ToDictionary(
+                        ds => ds.Instrument,
+                        ds => LOOKBACKS
+                            .Select(lb => ds.Instrument.Close[0] > ds.Instrument.Close[lb] ? ALLOC_PER_LOOKBACK : 0.0)
+                            .Sum(w => w));
+
+                weights[fallback.Instrument] = 1.0 - weights.Sum(w => w.Value);
+
                 if (SimTime[0].DayOfWeek > NextSimTime.DayOfWeek)
                 {
-                    var weights = new Dictionary<Instrument, double>();
-
-                    foreach (var ds in universe)
-                    {
-                        weights[ds.Instrument] = 0.0;
-
-                        foreach (var l in LOOKBACKS)
-                        {
-                            weights[ds.Instrument] += ds.Instrument.Close[0] > ds.Instrument.Close[l]
-                                ? 0.05
-                                : 0.0;
-                        }
-                    }
-
-                    weights[fallback.Instrument] = 1.0 - weights.Sum(w => w.Value);
-
                     foreach (var i in weights.Keys)
                     {
                         int targetShares = (int)Math.Floor(weights[i] * NetAssetValue[0] / i.Close[0]);
@@ -433,6 +428,15 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     _plotter.AddStrategyHoldings(this, Instruments.Where(i => universe.Contains(i.DataSource) || fallback == i.DataSource));
+
+                    foreach (var ds in universe)
+                    {
+                        var weight = 100.0 * ds.Instrument.Position * ds.Instrument.Close[0] / NetAssetValue[0];
+                        _plotter.SelectChart(ds.Instrument.Symbol + " Exposure", "Date");
+                        _plotter.SetX(SimTime[0]);
+                        _plotter.Plot(ds.Instrument.Name, 10.0 * Math.Log(ds.Instrument.Close[0]) + 25.0);
+                        _plotter.Plot("Exposure", weight);
+                    }
                 }
 
                 if (IsDataSource)
@@ -460,10 +464,7 @@ namespace TuringTrader.BooksAndPubs
         }
         #endregion
         #region public override void Report()
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
+        public override void Report() => _plotter.OpenWith("SimpleReport");
         #endregion
     }
     #endregion
@@ -689,7 +690,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.20),
         };
 
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
 
 #if USE_BOOK_RANGE
         public override DateTime START_TIME => DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
@@ -708,7 +709,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("algo:Connors_AlphaFormula_DynamicTreasuries",   0.30),
             new Tuple<object, double>("algo:Connors_AlphaFormula_EtfAvalanches",       0.30),
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
 
 #if USE_BOOK_RANGE
         public override DateTime START_TIME => DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);

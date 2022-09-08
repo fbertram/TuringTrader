@@ -132,7 +132,7 @@ namespace TuringTrader.BooksAndPubs
         protected abstract double MOMENTUM(Instrument i);
         protected virtual int NUM_PICKS { get => 3; }
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
-        protected virtual string BENCHMARK => Assets.PORTF_60_40;
+        protected virtual string BENCHMARK => Indices.PORTF_60_40;
         protected virtual double REBAL_TRIGGER => 0.20;
         protected virtual bool REBAL_TODAY(double maxOff)
         {
@@ -253,7 +253,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("VT",   0.50),
             new Tuple<object, double>("splice:AGG,BND", 0.50),
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
     }
     #endregion
     #region Mama Bear

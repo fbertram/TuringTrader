@@ -87,7 +87,11 @@
         <File Id="filSpxTrInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPXTR.inf" />
       </Component>
 
-      <Component Id="cmpVixInf" Directory="DataDir" Guid="*">
+		<Component Id="cmpDjuInf" Directory="DataDir" Guid="*">
+			<File Id="filDjuInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$DJU.inf" />
+		</Component>
+
+		<Component Id="cmpVixInf" Directory="DataDir" Guid="*">
         <File Id="filVixInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$VIX.inf" />
       </Component>
 

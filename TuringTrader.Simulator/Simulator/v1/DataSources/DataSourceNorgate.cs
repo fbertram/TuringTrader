@@ -45,19 +45,23 @@ namespace TuringTrader.Simulator
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
             private static object _lockUnresolved = new object();
+            private static object _lockNDU = new object();
 
-            public static void RunNDU()
+            public static void RunNDU(bool runAlways = false)
             {
-                if (DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                lock (_lockNDU)
                 {
-                    _lastNDURun = DateTime.Now;
+                    if (runAlways || DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
+                    {
+                        _lastNDURun = DateTime.Now;
 
-                    string nduBinPath;
-                    getNDUBinPath(out nduBinPath);
-                    string nduTrigger = Path.Combine(nduBinPath, "NDU.Trigger.exe");
+                        string nduBinPath;
+                        getNDUBinPath(out nduBinPath);
+                        string nduTrigger = Path.Combine(nduBinPath, "NDU.Trigger.exe");
 
-                    Process ndu = Process.Start(nduTrigger, "UPDATE CLOSE WAIT");
-                    ndu.WaitForExit();
+                        Process ndu = Process.Start(nduTrigger, "UPDATE CLOSE WAIT");
+                        ndu.WaitForExit();
+                    }
                 }
             }
             public static void HandleUnresovledAssemblies()
@@ -190,17 +194,31 @@ namespace TuringTrader.Simulator
             }
         }
         #endregion
+        #region public static void RunNDU()
+        /// <summary>
+        /// Run Norgate Data Updater.
+        /// </summary>
+        public static void RunNDU()
+        {
+            NorgateHelpers.RunNDU(true);
+        }
+        #endregion
 
         private class DataSourceNorgate : DataSource
         {
             #region internal data
+            private static object _lockSetName = new object();
+            private static object _lockLoadData = new object();
             #endregion
             #region internal helpers
             private void SetName()
             {
-                // no proper name given, try to retrieve from Norgate
-                string ticker = Info[DataSourceParam.symbolNorgate];
-                Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
+                lock (_lockSetName)
+                {
+                    // no proper name given, try to retrieve from Norgate
+                    string ticker = Info[DataSourceParam.symbolNorgate];
+                    Info[DataSourceParam.name] = NDU.Api.GetSecurityName(ticker);
+                }
             }
             private Bar CreateBar(NDU.RecOHLC norgate, double priceMultiplier)
             {
@@ -219,19 +237,21 @@ namespace TuringTrader.Simulator
             }
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
-                if (!NorgateHelpers.isAPIAvaliable)
-                    throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
+                lock (_lockLoadData)
+                {
+                    if (!NorgateHelpers.isAPIAvaliable)
+                        throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
 
-                //--- Norgate setup
-                NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
-                    ? NDU.AdjustmentType.TotalReturn
-                    : NDU.AdjustmentType.CapitalSpecial;
-                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
+                    //--- Norgate setup
+                    NDU.Api.SetAdjustmentType = GlobalSettings.AdjustForDividends
+                        ? NDU.AdjustmentType.TotalReturn
+                        : NDU.AdjustmentType.CapitalSpecial;
+                    NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
-                //--- run NDU as required
-#if false
-                // this should work, but seems broken as of 01/09/2019
-                DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
+                    //--- run NDU as required
+#if true
+                    // this should work, but seems broken as of 01/09/2019
+                    DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
@@ -241,28 +261,29 @@ namespace TuringTrader.Simulator
                     .First();
 #endif
 
-                if (endTime > dbTimeStamp)
-                    NorgateHelpers.RunNDU();
+                    if (endTime > dbTimeStamp)
+                        NorgateHelpers.RunNDU();
 
-                //--- get data from Norgate
-                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
+                    //--- get data from Norgate
+                    List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
+                    NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
 
-                //--- copy to TuringTrader bars
-                double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
-                    ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
-                    : 1.0;
+                    //--- copy to TuringTrader bars
+                    double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
+                        ? Convert.ToDouble(Info[DataSourceParam.dataUpdaterPriceMultiplier])
+                        : 1.0;
 
-                foreach (var ohlc in norgateData)
-                {
-                    // Norgate bars only have dates, no time.
-                    // we need to make sure that we won't return bars
-                    // outside of the requested range, as otherwise
-                    // the simulator's IsLastBar will be incorrect
-                    Bar bar = CreateBar(ohlc, priceMultiplier);
+                    foreach (var ohlc in norgateData)
+                    {
+                        // Norgate bars only have dates, no time.
+                        // we need to make sure that we won't return bars
+                        // outside of the requested range, as otherwise
+                        // the simulator's IsLastBar will be incorrect
+                        Bar bar = CreateBar(ohlc, priceMultiplier);
 
-                    if (bar.Time >= startTime && bar.Time <= endTime)
-                        data.Add(bar);
+                        if (bar.Time >= startTime && bar.Time <= endTime)
+                            data.Add(bar);
+                    }
                 }
             }
             #endregion
@@ -330,11 +351,24 @@ namespace TuringTrader.Simulator
             private static object mutex = new object(); // watchlist functionality not multi-threaded?
             private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
             {
-                { "$SPX", "S&P 500 Current & Past"},
-                { "$NDX", "NASDAQ 100 Current & Past" },
                 { "$OEX", "S&P 100 Current & Past" },
-                { "$SP1500",  "S&P Composite 1500 Current & Past"},
+                { "$SPX", "S&P 500 Current & Past"},
+                { "$MID", "S&P MidCap 400 Current & Past" },
+                { "$SML", "S&P SmallCap 600 Current & Past" },
+                { "$SP1500", "S&P Composite 1500 Current & Past" },
+                { "$SPDAUDP", "S&P 500 Dividend Aristocrats Current & Past" },
+
+
+                { "$RUI", "Russell 1000 Current & Past" },
+                { "$RUT", "Russell 2000 Current & Past" },
                 { "$RUA", "Russell 3000 Current & Past" },
+                { "$RMC", "Russell Mid Cap Current & Past" },
+                { "$RUMIC", "Russell Micro Cap Current & Past" },
+
+                { "$NDX", "NASDAQ 100 Current & Past" },
+                { "$NGX", "Nasdaq Next Generation 100 Current & Past" },
+                { "$NXTQ", "Nasdaq Q-50 Current & Past" },
+                { "$DJI", "Dow Jones Industrial Average Current & Past" },
             };
             private string _nickname;
             // Norgate dll is loaded *while* first instance is created

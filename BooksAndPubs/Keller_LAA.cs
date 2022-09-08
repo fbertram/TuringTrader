@@ -50,7 +50,7 @@ namespace TuringTrader.BooksAndPubs
         // https://fred.stlouisfed.org/series/INDPRO
         public static string ECONOMY = "fred:UNRATE"; // Unemployment Rate, montly, seasonally adjusted
         public static string MARKET = "$SPX";
-        public static string BENCHMARK = Assets.PORTF_60_40;
+        public static string BENCHMARK = Indices.PORTF_60_40;
         #endregion
         #region public override void Run()
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
@@ -336,17 +336,17 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Keller's LAA";
         public override HashSet<Tuple<string, double>> RISKY_PORTFOLIO => new HashSet<Tuple<string, double>>
         {
-            Tuple.Create("IWD", 0.25),
-            Tuple.Create("GLD", 0.25),
-            Tuple.Create("IEF", 0.25),
-            Tuple.Create("QQQ", 0.25),
+            Tuple.Create(Assets.IWD, 0.25),
+            Tuple.Create(Assets.GLD, 0.25),
+            Tuple.Create(Assets.IEF, 0.25),
+            Tuple.Create(Assets.QQQ, 0.25),
         };
         public override HashSet<Tuple<string, double>> CASH_PORTFOLIO => new HashSet<Tuple<string, double>>
         {
-            Tuple.Create("IWD", 0.25),
-            Tuple.Create("GLD", 0.25),
-            Tuple.Create("IEF", 0.25),
-            Tuple.Create("SHY", 0.25),
+            Tuple.Create(Assets.IWD, 0.25),
+            Tuple.Create(Assets.GLD, 0.25),
+            Tuple.Create(Assets.IEF, 0.25),
+            Tuple.Create(Assets.SHY, 0.25),
         };
     }
     #endregion
@@ -362,7 +362,7 @@ namespace TuringTrader.BooksAndPubs
             new Tuple<object, double>("VEA", 2.0 / 6.0),
             new Tuple<object, double>("VWO", 1.0 / 6.0),
         };
-        public override string BENCH => Assets.PORTF_60_40;
+        public override string BENCH => Indices.PORTF_60_40;
     }
     #endregion
     #region LAA-G4, see Fig. 16: WRLD+IWD+GLD+IEF (25% each), switched to IWD+GLD+SHY+IEF(25% each) using GT timing

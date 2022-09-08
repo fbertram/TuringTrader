@@ -50,7 +50,7 @@ namespace TuringTrader.BooksAndPubs
         protected Dictionary<string, DataSource> ASSET_SUB = null; // for 'on steroids' versions
         #endregion
         #region internal data
-        private readonly string BENCHMARK = Assets.PORTF_60_40;
+        private readonly string BENCHMARK = Indices.PORTF_60_40;
         #endregion
         #region internal helpers
         /// <summary>
@@ -281,31 +281,31 @@ namespace TuringTrader.BooksAndPubs
         public override string Name => "Keller's DAA-G12";
         protected override List<string> RISKY_UNIVERSE => new List<string>
         {
-            "SPY", // SPDR S&P 500 ETF
-            "IWM", // iShares Russell 2000 ETF
-            "QQQ", // Invesco Nasdaq-100 ETF
-            "VGK", // Vanguard FTSE Europe ETF
-            "EWJ", // iShares MSCI Japan ETF
-            "VWO", // Vanguard MSCI Emerging Markets ETF
-            "VNQ", // Vanguard Real Estate ETF
-            "GSG", // iShares S&P GSCI Commodity-Indexed Trust
-            "GLD", // SPDR Gold Trust ETF
-            "TLT", // iShares 20+ Year Treasury Bond ETF
-            "splice:HYG,VWEAX", // iShares iBoxx High Yield Corporate Bond ETF
-            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            Assets.SPY, // SPDR S&P 500 ETF
+            Assets.IWM, // iShares Russell 2000 ETF
+            Assets.QQQ, // Invesco Nasdaq-100 ETF
+            Assets.VGK, // Vanguard FTSE Europe ETF
+            Assets.EWJ, // iShares MSCI Japan ETF
+            Assets.VWO, // Vanguard MSCI Emerging Markets ETF
+            Assets.VNQ, // Vanguard Real Estate ETF
+            Assets.GSG, // iShares S&P GSCI Commodity-Indexed Trust
+            Assets.GLD, // SPDR Gold Trust ETF
+            Assets.TLT, // iShares 20+ Year Treasury Bond ETF
+            Assets.HYG, // iShares iBoxx High Yield Corporate Bond ETF
+            Assets.LQD, // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
         protected override List<string> CASH_UNIVERSE => new List<string>
         {
-            "SHY", // iShares 1-3 Year Treasury Bond ETF
-            "IEF", // iShares 7-10 Year Treasury Bond ETF
-            "LQD"  // iShares iBoxx Investment Grade Corporate Bond ETF
+            Assets.SHY, // iShares 1-3 Year Treasury Bond ETF
+            Assets.IEF, // iShares 7-10 Year Treasury Bond ETF
+            Assets.LQD, // iShares iBoxx Investment Grade Corporate Bond ETF
         };
 
         protected override List<string> PROTECTIVE_UNIVERSE => new List<string>
         {
-            "VWO", // Vanguard FTSE Emerging Markets ETF
-            "splice:BND,AGG"  // Vanguard Total Bond Market ETF
+            Assets.VWO, // Vanguard FTSE Emerging Markets ETF
+            Assets.BND, // Vanguard Total Bond Market ETF
         };
 
         protected override int T => 6; // (risky) top parameter

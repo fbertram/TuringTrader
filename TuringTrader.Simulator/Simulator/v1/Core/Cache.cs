@@ -210,7 +210,7 @@ namespace TuringTrader.Simulator
 
 #if THREAD_LOCAL
             // separate thread-local and global caches
-            if (global)
+            if (global && GlobalSettings.CacheDataGlobally)
             {
                 lock (_globalCache)
                 {

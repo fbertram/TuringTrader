@@ -138,58 +138,6 @@ namespace TuringTrader.Algorithms.Glue
 
     }
     #endregion
-    #region commonly used assets and proxies
-    /// <summary>
-    /// assets used across all algorithms
-    /// </summary>
-    public static class Assets
-    {
-        //----- stocks
-        public static readonly string STOCKS_US_LG_CAP = "splice:SPY,VFIAX,VFINX";
-
-        public static readonly string STOCKS_US_SECT_MATERIALS = "splice:XLB,VMIAX"; // Materials
-        public static readonly string STOCKS_US_SECT_COMMUNICATION = "splice:XLC,VTCAX"; // Communication Services
-        public static readonly string STOCKS_US_SECT_ENERGY = "splice:XLE,VENAX"; // Energy
-        public static readonly string STOCKS_US_SECT_FINANCIAL = "splice:XLF,VFAIX"; // Financial
-        public static readonly string STOCKS_US_SECT_INDUSTRIAL = "splice:XLI,VINAX"; // Industrial
-        public static readonly string STOCKS_US_SECT_TECHNOLOGY = "splice:XLK,VITAX"; // Technology
-        public static readonly string STOCKS_US_SECT_STAPLES = "splice:XLP,VCSAX"; // Consumer Staples
-        public static readonly string STOCKS_US_SECT_REAL_ESTATE = "splice:XLRE,VGSLX"; // Real Estate
-        public static readonly string STOCKS_US_SECT_UTILITIES = "splice:XLU,VUIAX"; // Utilities
-        public static readonly string STOCKS_US_SECT_HEALTH_CARE = "splice:XLV,VHCIX"; // Health Care
-        public static readonly string STOCKS_US_SECT_DISCRETIONARY = "splice:XLY,VCDAX"; // Consumer Discretionary
-
-        public static readonly string STOCKS_WXUS_LG_MID_CAP = "splice:ACWX,SCINX";
-
-        //----- bonds
-        public static readonly string BONDS_US_TOTAL = "splice:AGG,FUSGX";
-        public static readonly string BONDS_US_TREAS_3M = "splice:BIL,PRTBX";
-        public static readonly string BONDS_US_TREAS_3Y = "SHY"; // 1-3yr US Treasuries
-        public static readonly string BONDS_US_TREAS_7Y = "IEI"; // 3-7yr US Treasuries
-        public static readonly string BONDS_US_TREAS_10Y = "IEF"; //7-10yr 
-        public static readonly string BONDS_US_TREAS_30Y = "TLT";  // long-term (20+yr) government bonds
-        public static readonly string BONDS_US_CORP_10Y = "IGIB"; // intermediate-term corporate bonds
-        public static readonly string BONDS_US_CORP_JUNK = "HYG";
-
-        public static readonly string BONDS_WRLD_TREAS = "BWX";
-
-        //----- real estate
-        public static readonly string REIT_US = "VNQ"; // Vanguard Real Estate Index ETF
-        public static readonly string MREIT_US = "REM"; // iShares Mortgage Real Estate ETF
-
-        //----- commodities
-        public static readonly string GOLD = "GLD"; // gold
-        public static readonly string COMMODITIES = "DBC"; // commodities
-
-        //----- portfolios
-        public static readonly string PORTF_0 = "algorithm:ZeroReturn";
-        public static readonly string PORTF_60_40 = "@60_40";
-
-        //----- leveraged
-        public static readonly string STOCKS_US_LG_CAP_3X = "SPXL";
-        public static readonly string BONDS_US_TREAS_30Y_3X = "TMF";
-    }
-    #endregion
     #region allocation tracker
     /// <summary>
     /// helper class to track strategy target allocation
