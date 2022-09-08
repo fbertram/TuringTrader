@@ -1,5 +1,8 @@
 # Version History
 
+- 0.xx - work in progress
+  - simulator core
+    - update nuget packages
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
