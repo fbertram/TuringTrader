@@ -50,7 +50,8 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private DateTime ParseDate(string value, string mapping)
             {
-                var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
+                //var mapping2 = Regex.Replace(mapping, "{.*:", "").Replace("}", "");
+                var mapping2 = Regex.Replace(mapping, "{[0-9]+:", "").Replace("}", "");
                 var parsed = DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
                 return parsed;
             }
