@@ -1,5 +1,24 @@
 # Version History
 
+- 0.15 - September 8, 2022
+  - data sources
+    - fix issue parsing dates containing colons from time
+    - add backfills for many assets
+    - support additional universes
+  - reports
+    - new Monte-Carlo charts showing performance/ drawdowns over time
+    - additional output options for TuringTrader.com
+  - algorithms
+    - add strategies from Connors/ TradingMarkets
+    - add Heine and Zweig bond models
+    - centralize definition of assets and backfills
+    - add management fee to lazy portfolios
+  - indicators
+    - add run-up
+    - add Ulcer index
+  - simulator core
+    - expand trading calendar to 2023
+    - fix issue w/ options expiring one day early
 - 0.14 - July 8, 2021
   - data sources
     - fix URL of Yahoo API
