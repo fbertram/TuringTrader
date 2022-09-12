@@ -181,6 +181,9 @@
             <Component Id="cmp47B6FB43DCDAA180C362E4BA08288CBC" Directory="BINFOLDER" Guid="*">
                 <File Id="fil77A233B080D90F52264D9B3FD8300BB4" KeyPath="yes" Source="$(var.SourceDir)\MathNet.Numerics.dll" />
             </Component>
+            <Component Id="cmp3DE574AC31BA6DAE8E8A3510F0D546F5" Directory="BINFOLDER" Guid="*">
+                <File Id="fil853D8AC863CC768C53A322CEA853E887" KeyPath="yes" Source="$(var.SourceDir)\Microsoft.Bcl.AsyncInterfaces.dll" />
+            </Component>
             <Component Id="cmp8918D6482F8C9B922782B791EB3647FB" Directory="BINFOLDER" Guid="*">
                 <File Id="fil65A47FDF5A6989392140B39AFB097481" KeyPath="yes" Source="$(var.SourceDir)\Microsoft.CodeAnalysis.CSharp.dll" />
             </Component>
@@ -192,6 +195,9 @@
             </Component>
             <Component Id="cmp2FD42946AB1904555A0059F1E59A5EDA" Directory="BINFOLDER" Guid="*">
                 <File Id="filAEEC8B84412BDC16BB32D5C2C0D72391" KeyPath="yes" Source="$(var.SourceDir)\Microsoft.DiaSymReader.Native.amd64.dll" />
+            </Component>
+            <Component Id="cmpA7B3A2AC586B627B48D1D28698A6A30E" Directory="BINFOLDER" Guid="*">
+                <File Id="fil2523E4ADFA803E5C7945903E466EC9CD" KeyPath="yes" Source="$(var.SourceDir)\Microsoft.Extensions.ObjectPool.dll" />
             </Component>
             <Component Id="cmp545DF32979AC85BE595783346525E199" Directory="BINFOLDER" Guid="*">
                 <File Id="filD1565D67D8D759DDA472216F4B0373A0" KeyPath="yes" Source="$(var.SourceDir)\Microsoft.VisualBasic.Core.dll" />
@@ -397,6 +403,9 @@
             <Component Id="cmp1CC5B3FB10EA2691DE2176D3E3049FED" Directory="BINFOLDER" Guid="*">
                 <File Id="fil3EDE3001B51C4D53504D2D28174CEACC" KeyPath="yes" Source="$(var.SourceDir)\System.Diagnostics.EventLog.dll" />
             </Component>
+            <Component Id="cmp9EB936CE804DFBF47045C2FFB169558B" Directory="BINFOLDER" Guid="*">
+                <File Id="filA96B73E49A74F1C7AD1E828B6BA0E104" KeyPath="yes" Source="$(var.SourceDir)\System.Diagnostics.EventLog.Messages.dll" />
+            </Component>
             <Component Id="cmp1F0BB8B401A9C2762617BA0929500151" Directory="BINFOLDER" Guid="*">
                 <File Id="fil0D59AC15ECF5A933FCE5A4D437242681" KeyPath="yes" Source="$(var.SourceDir)\System.Diagnostics.FileVersionInfo.dll" />
             </Component>
@@ -447,6 +456,9 @@
             </Component>
             <Component Id="cmp08FEE34CD71088AD8FAEE3DCFC1E5AB8" Directory="BINFOLDER" Guid="*">
                 <File Id="fil0253760340CD813A98055857C0813E07" KeyPath="yes" Source="$(var.SourceDir)\System.Dynamic.Runtime.dll" />
+            </Component>
+            <Component Id="cmp285FDC9DAF7FB114B9F4E661F3DC5BC2" Directory="BINFOLDER" Guid="*">
+                <File Id="fil7100A0FA97251CD413B7C10B1E4A9F42" KeyPath="yes" Source="$(var.SourceDir)\System.Formats.Asn1.dll" />
             </Component>
             <Component Id="cmp1EF65EB192A43F1B2BCF7594BAED8072" Directory="BINFOLDER" Guid="*">
                 <File Id="fil573214EE0C7B579504B40583606EB57D" KeyPath="yes" Source="$(var.SourceDir)\System.Globalization.Calendars.dll" />
@@ -787,6 +799,9 @@
             <Component Id="cmpA3EDD1DC31C95DB837117EED3B7BC532" Directory="BINFOLDER" Guid="*">
                 <File Id="fil18645740A9F3888D9DDB798D3AFC9700" KeyPath="yes" Source="$(var.SourceDir)\System.ServiceProcess.ServiceController.dll" />
             </Component>
+            <Component Id="cmp8BC57CBA732B491620419491139ADDEC" Directory="BINFOLDER" Guid="*">
+                <File Id="filD92914B0E318B309634F381CA27C1EA7" KeyPath="yes" Source="$(var.SourceDir)\System.Speech.dll" />
+            </Component>
             <Component Id="cmp54C7ADC315CCC118CAFFECBB042E0FDC" Directory="BINFOLDER" Guid="*">
                 <File Id="filBF8B7A43D86012E5CE32D2B9694A06FD" KeyPath="yes" Source="$(var.SourceDir)\System.Text.Encoding.CodePages.dll" />
             </Component>
@@ -852,6 +867,9 @@
             </Component>
             <Component Id="cmp5742ED29CE70F17F989F69D044C7FECE" Directory="BINFOLDER" Guid="*">
                 <File Id="filB3147773CB29B77C534671AD68945A63" KeyPath="yes" Source="$(var.SourceDir)\System.Web.HttpUtility.dll" />
+            </Component>
+            <Component Id="cmpE92538BC851C44ED6FC3BEBF47C0B4F9" Directory="BINFOLDER" Guid="*">
+                <File Id="fil9E654A884E7859EF6C95ECB7282CDC1B" KeyPath="yes" Source="$(var.SourceDir)\System.Web.Services.Description.dll" />
             </Component>
             <Component Id="cmpCDC0A1E9E62E3FAF50DDB020E47C7A3A" Directory="BINFOLDER" Guid="*">
                 <File Id="filA18A3EFBB974A0A7ACC63942CDD8A520" KeyPath="yes" Source="$(var.SourceDir)\System.Windows.Controls.Ribbon.dll" />
@@ -979,6 +997,12 @@
             <Component Id="cmp6BC911573EBB9CC5A09836F6A6D2337F" Directory="dirC07BA6388DFBED75DAD3D3345629CC39" Guid="*">
                 <File Id="filEDC375EFB0D2510EAEAD51CEC0B707B9" KeyPath="yes" Source="$(var.SourceDir)\cs\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmpBF01D61FFA01E96B113E4244058870BC" Directory="dirC07BA6388DFBED75DAD3D3345629CC39" Guid="*">
+                <File Id="fil74D178D64F0D80D2127380A6606B5FB4" KeyPath="yes" Source="$(var.SourceDir)\cs\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpC76817898CE3CC6F8E3E2B9720315B2A" Directory="dirC07BA6388DFBED75DAD3D3345629CC39" Guid="*">
+                <File Id="fil093D7B6D121B8F52B0A6B4C89BDF2C20" KeyPath="yes" Source="$(var.SourceDir)\cs\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmp83945C2B0DBB5D6BA595D17837E9571C" Directory="dirC07BA6388DFBED75DAD3D3345629CC39" Guid="*">
                 <File Id="filA8B713D711AF8572029F7B98BBCB259D" KeyPath="yes" Source="$(var.SourceDir)\cs\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1032,6 +1056,12 @@
             </Component>
             <Component Id="cmp1E14BCF78359CF690CEA1BFD6CCB8F9A" Directory="dir901A54A67997890DD3D82547C66A9D78" Guid="*">
                 <File Id="fil58E9CC57E5D4D99107BEF6601C5F01AB" KeyPath="yes" Source="$(var.SourceDir)\de\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp63B763A76E811824A007B14D0C9610F1" Directory="dir901A54A67997890DD3D82547C66A9D78" Guid="*">
+                <File Id="fil6AFE7A2EAB92177DACD667F8C29A96BE" KeyPath="yes" Source="$(var.SourceDir)\de\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp8E9B7B8BD4F0B84CA6431BF023A86F0E" Directory="dir901A54A67997890DD3D82547C66A9D78" Guid="*">
+                <File Id="filC90040EA36D6AF4D04065CAEDB166B77" KeyPath="yes" Source="$(var.SourceDir)\de\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmpD241C291D0E62EB3EDB32B0FB6B0C1AF" Directory="dir901A54A67997890DD3D82547C66A9D78" Guid="*">
                 <File Id="fil4DBCC1EA1C68599204D98D4AEE063D1C" KeyPath="yes" Source="$(var.SourceDir)\de\System.Windows.Controls.Ribbon.resources.dll" />
@@ -1087,6 +1117,12 @@
             <Component Id="cmpA2CF1F16255C0A89EC4BC910943FFEDB" Directory="dirDF8200539804A5167278E45BB8182F24" Guid="*">
                 <File Id="filC23D54712550C3876103A97083123404" KeyPath="yes" Source="$(var.SourceDir)\es\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmpDB9E1E7913501A0503B9ECABBF60EC4E" Directory="dirDF8200539804A5167278E45BB8182F24" Guid="*">
+                <File Id="fil35DADA4137833BE0D269E9A5B1A685FF" KeyPath="yes" Source="$(var.SourceDir)\es\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpC5192BA82DBA3050A9CA1CE783891DA4" Directory="dirDF8200539804A5167278E45BB8182F24" Guid="*">
+                <File Id="filC75A769E8EFE500D47DC45105FB90EDB" KeyPath="yes" Source="$(var.SourceDir)\es\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmpB7AB1608FA995CD315D380F3A9AEC128" Directory="dirDF8200539804A5167278E45BB8182F24" Guid="*">
                 <File Id="fil3C44CD65A26BA5A4DF8B30D04338C1B7" KeyPath="yes" Source="$(var.SourceDir)\es\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1140,6 +1176,12 @@
             </Component>
             <Component Id="cmpB2BDFC407CD3D9061C2CF64656ED954D" Directory="dir6508A7E7CE1ADB88BDBDE5EFDC506FB8" Guid="*">
                 <File Id="filFBB4D0D483F6628573153B35D4797BCA" KeyPath="yes" Source="$(var.SourceDir)\fr\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp9F85D2ECD289969F364CDA772D3FA948" Directory="dir6508A7E7CE1ADB88BDBDE5EFDC506FB8" Guid="*">
+                <File Id="fil58A94B9ADEC0C6D6EC6C314ABF94C88C" KeyPath="yes" Source="$(var.SourceDir)\fr\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpD5A88EFB9411D8590E5EABCA0854F756" Directory="dir6508A7E7CE1ADB88BDBDE5EFDC506FB8" Guid="*">
+                <File Id="filF45BB47799DE49303E80F0DF7E955CA1" KeyPath="yes" Source="$(var.SourceDir)\fr\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmp1F63B85F0618BC94396AA451C427A7F3" Directory="dir6508A7E7CE1ADB88BDBDE5EFDC506FB8" Guid="*">
                 <File Id="fil105D20225DFCDF32B07FB2E227E8E6FE" KeyPath="yes" Source="$(var.SourceDir)\fr\System.Windows.Controls.Ribbon.resources.dll" />
@@ -1195,6 +1237,12 @@
             <Component Id="cmp677BA37CA658633E7DB51CE5A12F0367" Directory="dir8E8F255F9400BF20BA82F5CC9DB42AC0" Guid="*">
                 <File Id="filD8EA4264CDB08A9A0D9D7C9D3D78082C" KeyPath="yes" Source="$(var.SourceDir)\it\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmp689E170E0DD0245BAF183B8D0F91E920" Directory="dir8E8F255F9400BF20BA82F5CC9DB42AC0" Guid="*">
+                <File Id="filC18C001A46A02E4114AB83B78077E6A2" KeyPath="yes" Source="$(var.SourceDir)\it\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp3F0D92F6772A8FCB4DD66F317332714C" Directory="dir8E8F255F9400BF20BA82F5CC9DB42AC0" Guid="*">
+                <File Id="fil442D779E649652362117AB90FEC79603" KeyPath="yes" Source="$(var.SourceDir)\it\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmpFBEEE6F019C145C666A9E1585824A05A" Directory="dir8E8F255F9400BF20BA82F5CC9DB42AC0" Guid="*">
                 <File Id="filCB6E137A3DF8037A7DBAC806CED95635" KeyPath="yes" Source="$(var.SourceDir)\it\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1248,6 +1296,12 @@
             </Component>
             <Component Id="cmpE2118A836B70B1ADC4226547BB223CED" Directory="dirE87D79BEB52F98089B26B90464322948" Guid="*">
                 <File Id="filCBEBF880763B218A015DEBA3C428D03B" KeyPath="yes" Source="$(var.SourceDir)\ja\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp2EF535C7E3E44A5B9AF45D46F50D27ED" Directory="dirE87D79BEB52F98089B26B90464322948" Guid="*">
+                <File Id="fil0B82EDB026497A6BE8716567EB0F88D3" KeyPath="yes" Source="$(var.SourceDir)\ja\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp2C5F78D70B93AF954D830935B0E0F05D" Directory="dirE87D79BEB52F98089B26B90464322948" Guid="*">
+                <File Id="filA6BF3AFA22C82BC26EFC12EF52C4B082" KeyPath="yes" Source="$(var.SourceDir)\ja\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmpC5EE4BEFA70603D57EC1BADC7745FFE3" Directory="dirE87D79BEB52F98089B26B90464322948" Guid="*">
                 <File Id="fil093FB6564DDC32D379DC8EAEC7FF3FD8" KeyPath="yes" Source="$(var.SourceDir)\ja\System.Windows.Controls.Ribbon.resources.dll" />
@@ -1303,6 +1357,12 @@
             <Component Id="cmp59189EAD5E00075BDE09645EEC7C0685" Directory="dir70B8D39219247BFDAFC95F2DA3EA1A89" Guid="*">
                 <File Id="filE7137C4DF885712B87CC1156F5D86A81" KeyPath="yes" Source="$(var.SourceDir)\ko\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmp0411CA74CDA9189018788833D93CEC19" Directory="dir70B8D39219247BFDAFC95F2DA3EA1A89" Guid="*">
+                <File Id="filCAFD75056F77F72F8B6DD637E71D76BA" KeyPath="yes" Source="$(var.SourceDir)\ko\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp2C6FA644797031EDBF200CB92A5BEB30" Directory="dir70B8D39219247BFDAFC95F2DA3EA1A89" Guid="*">
+                <File Id="fil50665FA76FCC8814C996666DDA8A8145" KeyPath="yes" Source="$(var.SourceDir)\ko\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmpA3A33A9EDFD298312EE58298BBEF49D0" Directory="dir70B8D39219247BFDAFC95F2DA3EA1A89" Guid="*">
                 <File Id="fil1776FC84C6F7D106EF9715C68B6FEBF2" KeyPath="yes" Source="$(var.SourceDir)\ko\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1356,6 +1416,12 @@
             </Component>
             <Component Id="cmpD4FCE054CB3B08AA7A66993AF52AC0C3" Directory="dir6AE71796D87C22032CF7077EF17EB6FA" Guid="*">
                 <File Id="fil98A7A97CC65223F71BDA2A9FD5674127" KeyPath="yes" Source="$(var.SourceDir)\pl\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp40ACB1110718040B704F4DB9AB17DEC7" Directory="dir6AE71796D87C22032CF7077EF17EB6FA" Guid="*">
+                <File Id="fil85D9C6DC8539E0D5E9D8218EB52CC541" KeyPath="yes" Source="$(var.SourceDir)\pl\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp66DE80BF600B4867A10DE4C834750B66" Directory="dir6AE71796D87C22032CF7077EF17EB6FA" Guid="*">
+                <File Id="fil889BFA7D88756FB7759201719A88EFE2" KeyPath="yes" Source="$(var.SourceDir)\pl\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmpD0901EEBF1B2DA7FC8401FED9201F2A3" Directory="dir6AE71796D87C22032CF7077EF17EB6FA" Guid="*">
                 <File Id="fil43AB79233393D58BB38573332B7F0039" KeyPath="yes" Source="$(var.SourceDir)\pl\System.Windows.Controls.Ribbon.resources.dll" />
@@ -1411,6 +1477,12 @@
             <Component Id="cmp30591F74A5026AF2CEC4518067D4A156" Directory="dir251DACC4333BE3FF0E6C1C8FE59E41A4" Guid="*">
                 <File Id="fil8FED3451C6754C746E87558530BCA547" KeyPath="yes" Source="$(var.SourceDir)\pt-BR\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmp15F984E64C928DC1B7858B5D359D8FC8" Directory="dir251DACC4333BE3FF0E6C1C8FE59E41A4" Guid="*">
+                <File Id="fil88323527B53DD9363AB516B7C112B7A3" KeyPath="yes" Source="$(var.SourceDir)\pt-BR\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp664E2B7839AB0374D1AAE55462A341E6" Directory="dir251DACC4333BE3FF0E6C1C8FE59E41A4" Guid="*">
+                <File Id="fil0EBDFA2CDB9F1672C9AFA69B5EF82CF2" KeyPath="yes" Source="$(var.SourceDir)\pt-BR\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmpB864DE967B8BEF78AECB5B20B5EDBE01" Directory="dir251DACC4333BE3FF0E6C1C8FE59E41A4" Guid="*">
                 <File Id="fil7071FA6248723A45A1AD6E47EA76721E" KeyPath="yes" Source="$(var.SourceDir)\pt-BR\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1464,6 +1536,12 @@
             </Component>
             <Component Id="cmp8C1218DD486DC69198EE5261DE8373D4" Directory="dir75F6D0B11D17EDC850ECAE24383FC939" Guid="*">
                 <File Id="fil9E6C418E2B277F9677EFB90FCEE83FAF" KeyPath="yes" Source="$(var.SourceDir)\ru\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp10E3A48EEE2559310E5306A97EFED2A8" Directory="dir75F6D0B11D17EDC850ECAE24383FC939" Guid="*">
+                <File Id="fil7D16E3A51892BC778B068114F3992FDD" KeyPath="yes" Source="$(var.SourceDir)\ru\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpD20E9F7818E560E0623326B4FD11360F" Directory="dir75F6D0B11D17EDC850ECAE24383FC939" Guid="*">
+                <File Id="filDF432083BB7CB5DA05853829845912C6" KeyPath="yes" Source="$(var.SourceDir)\ru\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmp13B4CE2CE92BEB199CA774B767D0B8BE" Directory="dir75F6D0B11D17EDC850ECAE24383FC939" Guid="*">
                 <File Id="filFC1FE1DEF2EC868F02C5A8FA1A7D3569" KeyPath="yes" Source="$(var.SourceDir)\ru\System.Windows.Controls.Ribbon.resources.dll" />
@@ -1519,6 +1597,12 @@
             <Component Id="cmp4814EF3ACA2B90D2079E82D0516DE69B" Directory="dirBC35C3432DF4B2E434C3E54E59956CDF" Guid="*">
                 <File Id="filC5EF0445C00FB0FFE9F992E32D357843" KeyPath="yes" Source="$(var.SourceDir)\tr\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmpE6594726D340EC699EFF6BB299868E02" Directory="dirBC35C3432DF4B2E434C3E54E59956CDF" Guid="*">
+                <File Id="fil9AF3B1C0314D645B77E153D9C7087FCC" KeyPath="yes" Source="$(var.SourceDir)\tr\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpB671D3D129BE29B4A2383DE04207E3AF" Directory="dirBC35C3432DF4B2E434C3E54E59956CDF" Guid="*">
+                <File Id="filBCE781E5977696775D895B7E3D7E2A33" KeyPath="yes" Source="$(var.SourceDir)\tr\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmp6A93CB1491B9329E9762D911749621DD" Directory="dirBC35C3432DF4B2E434C3E54E59956CDF" Guid="*">
                 <File Id="filE6EB5616F9396C8AB29FB3F89EFAEABA" KeyPath="yes" Source="$(var.SourceDir)\tr\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1573,6 +1657,12 @@
             <Component Id="cmpE174BD15A57D5E45BF25609084226CC7" Directory="dirCC446EEEB0A54B25962AF6CD3C47E65C" Guid="*">
                 <File Id="fil4D226CD013E35260133C05B50D0CD9B1" KeyPath="yes" Source="$(var.SourceDir)\zh-Hans\ReachFramework.resources.dll" />
             </Component>
+            <Component Id="cmp44F14FF518F1F23666FDB9AB735AC044" Directory="dirCC446EEEB0A54B25962AF6CD3C47E65C" Guid="*">
+                <File Id="fil412BCAA066114EA89A14758AB472399D" KeyPath="yes" Source="$(var.SourceDir)\zh-Hans\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmp62A310560DEF859CC983D0D13F972431" Directory="dirCC446EEEB0A54B25962AF6CD3C47E65C" Guid="*">
+                <File Id="fil498AF9E807C5B741B98F4E69DE6ADC16" KeyPath="yes" Source="$(var.SourceDir)\zh-Hans\System.Web.Services.Description.resources.dll" />
+            </Component>
             <Component Id="cmp788970F98328768C7347FD675904017E" Directory="dirCC446EEEB0A54B25962AF6CD3C47E65C" Guid="*">
                 <File Id="filF2BD395332D915531546108D583AF475" KeyPath="yes" Source="$(var.SourceDir)\zh-Hans\System.Windows.Controls.Ribbon.resources.dll" />
             </Component>
@@ -1626,6 +1716,12 @@
             </Component>
             <Component Id="cmpF8E2C231936A920BEFE30BE6D1E2BD88" Directory="dir931F95F9ABE7AD11C48D59AA5ABF4F0A" Guid="*">
                 <File Id="fil0B27BB0DB8EBD980FDF3B4705DD30B6E" KeyPath="yes" Source="$(var.SourceDir)\zh-Hant\ReachFramework.resources.dll" />
+            </Component>
+            <Component Id="cmp9439CC83868C6DED1CE18FE05FBD2591" Directory="dir931F95F9ABE7AD11C48D59AA5ABF4F0A" Guid="*">
+                <File Id="filB7DA2E149A7B64A5DD27AC9418CFF134" KeyPath="yes" Source="$(var.SourceDir)\zh-Hant\System.Private.ServiceModel.resources.dll" />
+            </Component>
+            <Component Id="cmpF18440A749091A75A9EB60F4D4DA828A" Directory="dir931F95F9ABE7AD11C48D59AA5ABF4F0A" Guid="*">
+                <File Id="fil683E305D280393B55B1385DF67DDAE1E" KeyPath="yes" Source="$(var.SourceDir)\zh-Hant\System.Web.Services.Description.resources.dll" />
             </Component>
             <Component Id="cmp603AD0CE5D6960419B848D214ABF12AF" Directory="dir931F95F9ABE7AD11C48D59AA5ABF4F0A" Guid="*">
                 <File Id="filCC60D52332BA96125CC9FBDB13A33502" KeyPath="yes" Source="$(var.SourceDir)\zh-Hant\System.Windows.Controls.Ribbon.resources.dll" />
