@@ -1633,13 +1633,21 @@ namespace TuringTrader
                 cagrsLeft[yLabel] = cagrLeft;
                 cagrsRight[yLabel] = cagrRight;
 
-                var yearsToBreakEven = cagrLeft
-                    .OrderBy(kv => kv.Key)
-                    .Where(kv => kv.Value > 0.0)
-                    .First().Key;
+                try
+                {
+                    var yearsToBreakEven = cagrLeft
+                        .OrderBy(kv => kv.Key)
+                        .Where(kv => kv.Value > 0.0)
+                        .First().Key;
 
-                var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
-                maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
+                    var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
+                    maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
+                }
+                catch (Exception ex)
+                {
+                    // simply ignore
+                    // we get here, when there is no break-even point
+                }
             }
 
             //===== get DDs

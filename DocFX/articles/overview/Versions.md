@@ -3,6 +3,8 @@
 - 0.xx - work in progress
   - simulator core
     - update nuget packages
+  - reports
+    - make sure Monte Carlo simulation renders when there is no break-even point
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
