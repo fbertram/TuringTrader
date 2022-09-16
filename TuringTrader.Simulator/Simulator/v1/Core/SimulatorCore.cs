@@ -52,9 +52,9 @@ namespace TuringTrader.Simulator
         {
 #if PRINT_ORDERS
             if (ticket.Type != OrderType.cash)
-                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2} {3}x {4}", 
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2} ({3}) {4}x {5}", 
                     SimTime[0], Name,
-                    ticket.Quantity > 0 ? "Buy" : "Sell", ticket.Quantity, ticket.Instrument.Symbol);
+                    ticket.Quantity > 0 ? "Buy" : "Sell", ticket.Type.ToString(), Math.Abs(ticket.Quantity), ticket.Instrument.Symbol);
 #endif
 
             if (ticket.Type == OrderType.cash)
@@ -81,6 +81,10 @@ namespace TuringTrader.Simulator
 
             // no trades during warmup phase
             if (SimTime[0] < StartTime)
+                return;
+
+            // no trades on delisted assets
+            if (!Instruments.Contains(ticket.Instrument))
                 return;
 
             // conditional orders: cancel, if condition not met

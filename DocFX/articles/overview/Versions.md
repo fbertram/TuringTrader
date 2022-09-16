@@ -1,10 +1,14 @@
 # Version History
 
 - 0.xx - work in progress
+  - general
+    - update Nuget packages
   - simulator core
     - update nuget packages
   - reports
     - make sure Monte Carlo simulation renders when there is no break-even point
+  - simulator core
+    - fix issue allowing trades on delisted instruments
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
