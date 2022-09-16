@@ -2,14 +2,14 @@
 <!--<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">-->
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Authors>Felix Bertram</Authors>
     <Company>Bertram Solutions LLC</Company>
     <Product>TuringTrader</Product>
     <Description>Open-source backtesting engine and simulator</Description>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2020, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2022, Bertram Solutions LLC</Copyright>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
