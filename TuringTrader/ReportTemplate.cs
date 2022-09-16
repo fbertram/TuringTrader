@@ -24,6 +24,7 @@
 #region libraries
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
@@ -824,7 +825,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -912,7 +913,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -987,7 +988,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = PlotData.Keys.First();
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new DateTimeAxis();
@@ -1276,7 +1277,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = Plotter.SheetNames.ANNUAL_BARS;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             var xAxis = new CategoryAxis();
@@ -1305,21 +1306,21 @@ namespace TuringTrader
                 // TODO: use CFG_IS_AREA here? 
                 // Note that logic for NUM_Y_LABELS is inverted!
                 var colSeries = (yLabel == _firstYLabel || _numYLabels > 2)
-                    ? new ColumnSeries
+                    ? new BarSeries
                     {
                         Title = yLabel,
                         IsVisible = true,
-                        XAxisKey = "x",
-                        YAxisKey = "y",
+                        XAxisKey = "y", // we transpose!
+                        YAxisKey = "x",
                         StrokeColor = color,
                         FillColor = i == 0 ? CFG_COLOR0_FILL : color,
                     }
-                    : new ColumnSeries
+                    : new BarSeries
                     {
                         Title = yLabel,
                         IsVisible = true,
-                        XAxisKey = "x",
-                        YAxisKey = "y",
+                        XAxisKey = "y", // we transpose!
+                        YAxisKey = "x",
                         StrokeColor = color,
                         StrokeThickness = 1,
                         FillColor = OxyColors.White,
@@ -1333,7 +1334,7 @@ namespace TuringTrader
                         ? yearlyBars[y][yLabel]
                         : 0.0;
 
-                    colSeries.Items.Add(new ColumnItem(pnl));
+                    colSeries.Items.Add(new BarItem(pnl));
                 }
             }
 
@@ -1351,7 +1352,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = Plotter.SheetNames.RETURN_DISTRIBUTION;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1473,7 +1474,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = "Monte-Carlo Analysis of Returns and Drawdowns";
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1662,7 +1663,7 @@ namespace TuringTrader
             //===== plot results
             PlotModel plotModel = new PlotModel();
             plotModel.Title = String.Format("Monte Carlo Analysis of Expected Returns and Drawdowns", LEFT_TAIL, RIGHT_TAIL);
-            plotModel.LegendPosition = LegendPosition.RightBottom;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.RightBottom });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1811,7 +1812,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -2055,7 +2056,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = string.Format("{0}-Year Rolling Returns & Tracking to Benchmark", ROLLING_YEARS);
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new DateTimeAxis();
@@ -2445,8 +2446,8 @@ namespace TuringTrader
 #else
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
-                width, height,
-                OxyColors.White);
+                width, height);
+                //OxyColors.White);
                 //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
 #endif
         }

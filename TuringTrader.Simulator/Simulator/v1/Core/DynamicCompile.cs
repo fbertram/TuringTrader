@@ -64,6 +64,7 @@ namespace TuringTrader.Simulator
                 //--- these can't be created any other way
                 //    https://stackoverflow.com/questions/23907305/roslyn-has-no-reference-to-system-runtime
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "mscorlib.dll")),
+                MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "netstandard.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Core.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Data.dll")),
@@ -71,7 +72,6 @@ namespace TuringTrader.Simulator
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")),
 
                 //--- these are referenced by a type we need
-                //MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(TuringTrader.Simulator.Algorithm).GetTypeInfo().Assembly.Location),
