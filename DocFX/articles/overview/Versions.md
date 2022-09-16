@@ -3,8 +3,7 @@
 - 0.xx - work in progress
   - general
     - update Nuget packages
-  - simulator core
-    - update nuget packages
+    - update to .net core 6
   - reports
     - make sure Monte Carlo simulation renders when there is no break-even point
   - simulator core
