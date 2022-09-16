@@ -2692,6 +2692,13 @@ namespace TuringTrader
             if (retvalue.GetType() == typeof(PlotModel))
             {
                 retvalue = _addLogo((PlotModel)retvalue);
+
+#if true
+                // NOTE: we need to make sure the background is white
+                // without doing so, the background is black
+                // when exported as bitmap
+                ((PlotModel)retvalue).Background = OxyColors.White;
+#endif
             }
 
             return retvalue;
