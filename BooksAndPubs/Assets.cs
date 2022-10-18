@@ -448,6 +448,11 @@ namespace TuringTrader.Algorithms.Glue
         #endregion
         #region bonds
         /// <summary>
+        /// UJB	ProShares Ultra High Yield ETF
+        /// (since April 2011)
+        /// </summary>
+        public static readonly string UJB = "UJB";
+        /// <summary>
         /// ProShares Ultra 7-10 Year Treasury ETF
         /// (since January 2010, backfilled)
         /// </summary>
