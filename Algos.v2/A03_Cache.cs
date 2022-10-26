@@ -21,6 +21,8 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#if false
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -30,7 +32,7 @@ using TuringTrader.Simulator.v2;
 #endregion
 
 // NOTE: The cache is a central feature of TuringTrader. It is used to
-// store asset quotes and indicators. Objects in the cache are reffered
+// store asset quotes and indicators. Objects in the cache are referred
 // to by an id. On a cache miss, a method is called to retrieve the result.
 
 namespace TuringTrader.Simulator.v2.Demo
@@ -59,6 +61,8 @@ namespace TuringTrader.Simulator.v2.Demo
         public override void Report() => Output.WriteLine("Here is your report");
     }
 }
+
+#endif
 
 //==============================================================================
 // end of file

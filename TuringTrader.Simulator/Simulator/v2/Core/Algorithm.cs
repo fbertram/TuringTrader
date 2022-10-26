@@ -23,6 +23,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -56,17 +58,20 @@ namespace TuringTrader.Simulator.v2
         #region cache functionality
         private Dictionary<string, object> _cache = new Dictionary<string, object>();
         /// <summary>
-        /// Retrieve object from cache.
+        /// Retrieve object from cache, or calculate in new task.
         /// </summary>
         /// <param name="cacheId">cache id</param>
         /// <param name="missFun">retrieval function for cache miss</param>
         /// <returns>cached object</returns>
-        protected object Cache(string cacheId, Func<object> missFun)
+        public Task<T> Cache<T>(string cacheId, Func<T> missFun)
         {
-            if (!_cache.ContainsKey(cacheId))
-                _cache[cacheId] = missFun();
+            lock (_cache)
+            {
+                if (!_cache.ContainsKey(cacheId))
+                    _cache[cacheId] = Task.Run(() => missFun());
 
-            return _cache[cacheId];
+                return (Task<T>)_cache[cacheId];
+            }
         }
         #endregion
         #region assets
@@ -76,7 +81,27 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         /// <param name="name">name of asset</param>
         /// <returns>asset</returns>
-        public IAsset Asset(string name) => null;
+        public TimeSeriesOHLCV Asset(string name)
+        {
+            Dictionary<DateTime, OHLCV> loadAsset()
+            {
+                Thread.Sleep(2000); // simulate slow load
+
+                var data = new Dictionary<DateTime, OHLCV>();
+
+                foreach (var tradingDay in TradingDays)
+                {
+                    data[tradingDay] = new OHLCV(100, 101, 102, 103, 1000);
+                }
+
+                return data;
+            }
+
+            return new TimeSeriesOHLCV(
+                this,
+                name,
+                Cache(name, loadAsset));
+        }
         #endregion
     }
 }

@@ -39,14 +39,16 @@ namespace TuringTrader.Simulator.v2.Demo
 {
     public class A04_Asset : Algorithm
     {
-        public override string Name => "A03_Quotes";
+        public override string Name => "A03_Asset";
 
-        public override async void Run()
+        public override void Run()
         {
             StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
             EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
 
-            var bars = await Asset("SPY").Data;
+            var test = Asset("SPY");
+            Output.WriteLine(test.CacheId);
+            Output.WriteLine(test.Data.Result.Keys.ToString());
 
         }
 

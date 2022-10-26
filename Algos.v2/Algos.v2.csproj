@@ -10,4 +10,8 @@
     <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) ..\Algorithms\$(TargetFileName)" />
+  </Target>
+
 </Project>
