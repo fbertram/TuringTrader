@@ -23,9 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using TuringTrader.Simulator.Simulator.v2;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -92,7 +90,7 @@ namespace TuringTrader.Simulator.v2
             }
         }
         #endregion
-        #region assets
+        #region assets & universes
         /// <summary>
         /// Load quotations for tradeable asset. Subsequent calls to
         /// this method with the same name will be served from a cache.
@@ -101,10 +99,19 @@ namespace TuringTrader.Simulator.v2
         /// <returns>asset</returns>
         public TimeSeriesOHLCV Asset(string name)
         {
-            return new TimeSeriesOHLCV(
-                this,
-                name,
-                Cache(name, () => V1DataInterface.LoadAsset(name, TradingCalendar)));
+            return V1DataInterface.LoadAsset(this, name, TradingCalendar);
+        }
+
+        /// <summary>
+        /// Return constituents of universe at current simulator timestamp.
+        /// Please note that not all data feeds support this feature. For those
+        /// feeds, the list of symbols returned might be inaccurate or incomplete.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<string> Universe(string name)
+        {
+            return V1DataInterface.GetConstituents(this, name, SimDate);
         }
         #endregion
     }

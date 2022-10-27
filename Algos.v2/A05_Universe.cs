@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A05_Indicators
-// Description: Develop & test indicators.
-// History:     2022x26, FUB, created
+// Name:        A05_Universes
+// Description: Develop & test universes.
+// History:     2022x27, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
@@ -23,10 +23,8 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using System.Linq;
 #endregion
 
 // NOTE: indicators work the same way as assets. They can be introduced at
@@ -36,19 +34,21 @@ using TuringTrader.Simulator.v2;
 
 namespace TuringTrader.Simulator.v2.Demo
 {
-    public class A05_Indicators : Algorithm
+    public class A05_Universe : Algorithm
     {
-        public override string Name => "A05_Indicators";
+        public override string Name => "A05_Universe";
 
         public override void Run()
         {
-            StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
+            StartDate = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
+            EndDate = DateTime.Parse("09/15/2020", CultureInfo.InvariantCulture);
 
             SimLoop(() =>
             {
-                var test = Asset("SPY").Close.EMA(21);
-                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", SimDate, test.CacheId, test[0]);
+                var test = Universe("$DJI"); // Dow-Jones
+                Output.WriteLine("{0:MM/dd/yyyy}, {1} constituents: {2}",
+                    SimDate, test.Count(),
+                    test.Aggregate("", (acc, it) => acc + ", " + it.Replace("norgate#accept_no_data:", "")));
             });
         }
 
