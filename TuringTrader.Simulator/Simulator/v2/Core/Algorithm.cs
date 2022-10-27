@@ -114,6 +114,10 @@ namespace TuringTrader.Simulator.v2
             return V1DataInterface.GetConstituents(this, name, SimDate);
         }
         #endregion
+        #region reporting
+        public Plotter Plotter = new Plotter();
+        public override void Report() => Plotter.OpenWith("SimpleChart");
+        #endregion
     }
 }
 

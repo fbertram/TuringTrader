@@ -82,7 +82,7 @@ namespace TuringTrader.Simulator.v2
         {
             if (GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
             {
-                var v1Universe = algo.Cache(name, () => Universe.New(name)).Result;
+                var v1Universe = algo.Cache(string.Format("Universe({0})", name), () => Universe.New(name)).Result;
                 var exchangeTime = TimeZoneInfo.ConvertTime(simTime, exchangeTimeZone);
                 return v1Universe.Constituents
                     .Where(c => v1Universe.IsConstituent(c, exchangeTime));
