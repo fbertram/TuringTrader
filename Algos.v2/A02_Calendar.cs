@@ -50,8 +50,10 @@ namespace TuringTrader.Simulator.v2.Demo
             StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
             EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
 
-            foreach (var date in TradingDays)
-                Output.WriteLine("{0:ddd, MM/dd/yyyy, HH:mm}", date);
+            SimLoop(() =>
+            {
+                Output.WriteLine("{0:ddd, MM/dd/yyyy, HH:mm}", SimDate);
+            });
         }
 
         public override void Report() => Output.WriteLine("Here is your report");

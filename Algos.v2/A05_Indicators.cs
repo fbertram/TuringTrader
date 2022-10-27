@@ -48,7 +48,7 @@ namespace TuringTrader.Simulator.v2.Demo
 
             var test = Asset("SPY").Close.EMA(5);
             Output.WriteLine(test.CacheId);
-            Output.WriteLine(test.Data.Result.Keys.ToString());
+            Output.WriteLine(test.Data.Result[0].ToString());
         }
 
         public override void Report() => Output.WriteLine("Here is your report");

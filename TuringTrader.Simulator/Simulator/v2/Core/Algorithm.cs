@@ -45,15 +45,32 @@ namespace TuringTrader.Simulator.v2
         public DateTime EndDate { get => TradingCalendar.EndDate; set => TradingCalendar.EndDate = value; }
 
         /// <summary>
-        /// Enumerable of valid trading days between StartDate and EndDate.
-        /// </summary>
-        public IEnumerable<DateTime> TradingDays { get => TradingCalendar.TradingDays; }
-
-        /// <summary>
         /// Trading calendar, converting simulation date range to
         /// enumerable of valid trading days.
         /// </summary>
         public ITradingCalendar TradingCalendar { get; set; } = new TradingCalendar_US();
+
+        /// <summary>
+        /// Current simulation timestamp.
+        /// </summary>
+        public DateTime SimDate { get; private set; } = default;
+
+        /// <summary>
+        /// Simulation loop.
+        /// </summary>
+        /// <param name="barFun"></param>
+        public void SimLoop(Action barFun)
+        {
+            var tradingDays = TradingCalendar.TradingDays;
+
+            foreach (var day in tradingDays)
+            {
+                SimDate = day;
+                barFun();
+            }
+
+            SimDate = default;
+        }
         #endregion
         #region cache functionality
         private Dictionary<string, object> _cache = new Dictionary<string, object>();
@@ -83,16 +100,14 @@ namespace TuringTrader.Simulator.v2
         /// <returns>asset</returns>
         public TimeSeriesOHLCV Asset(string name)
         {
-            Dictionary<DateTime, OHLCV> loadAsset()
+            List<Tuple<DateTime, OHLCV>> loadAsset()
             {
                 Thread.Sleep(2000); // simulate slow load
 
-                var data = new Dictionary<DateTime, OHLCV>();
+                var data = new List<Tuple<DateTime, OHLCV>>();
 
-                foreach (var tradingDay in TradingDays)
-                {
-                    data[tradingDay] = new OHLCV(100, 101, 102, 103, 1000);
-                }
+                foreach (var tradingDay in TradingCalendar.TradingDays)
+                    data.Add(Tuple.Create(tradingDay, new OHLCV(100, 101, 102, 103, 1000)));
 
                 return data;
             }

@@ -40,22 +40,20 @@ namespace TuringTrader.Simulator.v2
         /// <returns>EMA series</returns>
         public static TimeSeriesFloat EMA(this TimeSeriesFloat series, int n)
         {
-            Dictionary<DateTime, double> calcIndicator()
+            List<Tuple<DateTime, double>> calcIndicator()
             {
                 // NOTE: this is executed in a new task.
                 // Because the input series might not be calculated yet,
                 // we first wait until the result is available.
                 var src = series.Data.Result;
-                var timestamps = src.Keys.OrderBy(ts => ts);
-
-                var dst = new Dictionary<DateTime, double>();
-                var ema = src[timestamps.First()];
+                var dst = new List<Tuple<DateTime, double>>();
+                var ema = src.First().Item2;
                 var alpha = 2.0 / (1.0 + n);
 
-                foreach (var timestamp in src.Keys)
+                foreach (var it in src)
                 {
-                    ema += alpha * (src[timestamp] - ema);
-                    dst[timestamp] = ema;
+                    ema += alpha * (it.Item2 - ema);
+                    dst.Add(Tuple.Create(it.Item1, ema));
                 }
 
                 return dst;

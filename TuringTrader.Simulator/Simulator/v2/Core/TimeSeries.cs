@@ -23,8 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
@@ -33,13 +31,45 @@ namespace TuringTrader.Simulator.v2
     {
         public readonly Algorithm Algo;
         public readonly string CacheId;
-        public readonly Task<Dictionary<DateTime, T>> Data;
+        public readonly Task<List<Tuple<DateTime, T>>> Data;
 
-        public TimeSeries(Algorithm algo, string cacheId, Task<Dictionary<DateTime, T>> data)
+        public TimeSeries(Algorithm algo, string cacheId, Task<List<Tuple<DateTime, T>>> data)
         {
             Algo = algo;
             CacheId = cacheId;
             Data = data;
+        }
+
+        private int _CurrentIndex = 0;
+        private int CurrentIndex
+        {
+            get
+            {
+                var data = Data.Result;
+                var currentDate = Algo.SimDate;
+
+                // move forward in time
+                while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Item1 <= currentDate)
+                    _CurrentIndex++;
+
+                // move back in time
+                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Item1 > currentDate)
+                    _CurrentIndex--;
+
+                return _CurrentIndex;
+
+            }
+        }
+        public T this[int offset]
+        {
+            get
+            {
+                var data = Data.Result;
+                var baseIdx = CurrentIndex;
+                var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx + offset));
+
+                return data[idx].Item2;
+            }
         }
     }
 
@@ -85,26 +115,28 @@ namespace TuringTrader.Simulator.v2
             Close = c;
             Volume = v;
         }
+
+        public override string ToString()
+        {
+            return string.Format("o={0:C2}, h={1:C2}, l={2:C2}, c={3:C2}, v={4:F0}", Open, High, Low, Close, Volume);
+        }
     }
 
     public class TimeSeriesOHLCV : TimeSeries<OHLCV>
     {
-        public TimeSeriesOHLCV(Algorithm algo, string myId, Task<Dictionary<DateTime, OHLCV>> myData) : base(algo, myId, myData)
+        public TimeSeriesOHLCV(Algorithm algo, string myId, Task<List<Tuple<DateTime, OHLCV>>> myData) : base(algo, myId, myData)
         {
         }
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
-            Dictionary<DateTime, double> extractAsset()
+            List<Tuple<DateTime, double>> extractAsset()
             {
                 var ohlcv = Data.Result; // wait until async result is available
+                var data = new List<Tuple<DateTime, double>>();
 
-                var data = new Dictionary<DateTime, double>();
-
-                foreach (var timestamp in ohlcv.Keys)
-                {
-                    data[timestamp] = extractFun(ohlcv[timestamp]);
-                }
+                foreach (var it in ohlcv)
+                    data.Add(Tuple.Create(it.Item1, extractFun(it.Item2)));
 
                 return data;
             }
@@ -124,7 +156,7 @@ namespace TuringTrader.Simulator.v2
 
     public class TimeSeriesFloat : TimeSeries<double>
     {
-        public TimeSeriesFloat(Algorithm algo, string myId, Task<Dictionary<DateTime, double>> myData) : base(algo, myId, myData)
+        public TimeSeriesFloat(Algorithm algo, string myId, Task<List<Tuple<DateTime, double>>> myData) : base(algo, myId, myData)
         {
         }
     }
