@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TuringTrader.Simulator.Simulator.v2;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -100,22 +101,10 @@ namespace TuringTrader.Simulator.v2
         /// <returns>asset</returns>
         public TimeSeriesOHLCV Asset(string name)
         {
-            List<Tuple<DateTime, OHLCV>> loadAsset()
-            {
-                Thread.Sleep(2000); // simulate slow load
-
-                var data = new List<Tuple<DateTime, OHLCV>>();
-
-                foreach (var tradingDay in TradingCalendar.TradingDays)
-                    data.Add(Tuple.Create(tradingDay, new OHLCV(100, 101, 102, 103, 1000)));
-
-                return data;
-            }
-
             return new TimeSeriesOHLCV(
                 this,
                 name,
-                Cache(name, loadAsset));
+                Cache(name, () => V1DataInterface.LoadAsset(name, TradingCalendar)));
         }
         #endregion
     }

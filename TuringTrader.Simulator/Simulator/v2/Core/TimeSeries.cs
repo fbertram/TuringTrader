@@ -27,13 +27,32 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
 {
+    #region class BarType
+    public class BarType<T>
+    {
+        public readonly DateTime Date;
+        public readonly T Value;
+
+        public BarType(DateTime date, T value)
+        {
+            Date = date;
+            Value = value;
+        }
+    }
+    #endregion
+    #region class TimeSeries<T>
+    /// <summary>
+    /// Class to encapsulate time-series data. The class is designed
+    /// to receive its data from an asynchronous task.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class TimeSeries<T>
     {
         public readonly Algorithm Algo;
         public readonly string CacheId;
-        public readonly Task<List<Tuple<DateTime, T>>> Data;
+        public readonly Task<List<BarType<T>>> Data;
 
-        public TimeSeries(Algorithm algo, string cacheId, Task<List<Tuple<DateTime, T>>> data)
+        public TimeSeries(Algorithm algo, string cacheId, Task<List<BarType<T>>> data)
         {
             Algo = algo;
             CacheId = cacheId;
@@ -49,11 +68,11 @@ namespace TuringTrader.Simulator.v2
                 var currentDate = Algo.SimDate;
 
                 // move forward in time
-                while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Item1 <= currentDate)
+                while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= currentDate)
                     _CurrentIndex++;
 
                 // move back in time
-                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Item1 > currentDate)
+                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date > currentDate)
                     _CurrentIndex--;
 
                 return _CurrentIndex;
@@ -68,11 +87,16 @@ namespace TuringTrader.Simulator.v2
                 var baseIdx = CurrentIndex;
                 var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx + offset));
 
-                return data[idx].Item2;
+                return data[idx].Value;
             }
         }
-    }
 
+        // TODO: it might be nice to add a Time property to the class,
+        // featuring an indexer to retrieve the bar's time:
+        //    DateTime timestamp = Asset("SPY").Close.Time[5];
+    }
+    #endregion
+    #region class OHLCV
     /// <summary>
     /// Simple container for open/ high/ low/ close prices and volume.
     /// </summary>
@@ -121,22 +145,23 @@ namespace TuringTrader.Simulator.v2
             return string.Format("o={0:C2}, h={1:C2}, l={2:C2}, c={3:C2}, v={4:F0}", Open, High, Low, Close, Volume);
         }
     }
-
+    #endregion
+    #region class TimeSeriesOHLCV
     public class TimeSeriesOHLCV : TimeSeries<OHLCV>
     {
-        public TimeSeriesOHLCV(Algorithm algo, string myId, Task<List<Tuple<DateTime, OHLCV>>> myData) : base(algo, myId, myData)
+        public TimeSeriesOHLCV(Algorithm algo, string myId, Task<List<BarType<OHLCV>>> myData) : base(algo, myId, myData)
         {
         }
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
-            List<Tuple<DateTime, double>> extractAsset()
+            List<BarType<double>> extractAsset()
             {
                 var ohlcv = Data.Result; // wait until async result is available
-                var data = new List<Tuple<DateTime, double>>();
+                var data = new List<BarType<double>>();
 
                 foreach (var it in ohlcv)
-                    data.Add(Tuple.Create(it.Item1, extractFun(it.Item2)));
+                    data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
 
                 return data;
             }
@@ -153,13 +178,15 @@ namespace TuringTrader.Simulator.v2
         public TimeSeriesFloat Close { get => ExtractFieldSeries("Close", bar => bar.Close); }
         public TimeSeriesFloat Volume { get => ExtractFieldSeries("Volume", bar => bar.Volume); }
     }
-
+    #endregion
+    #region class TimeSeriesFloat
     public class TimeSeriesFloat : TimeSeries<double>
     {
-        public TimeSeriesFloat(Algorithm algo, string myId, Task<List<Tuple<DateTime, double>>> myData) : base(algo, myId, myData)
+        public TimeSeriesFloat(Algorithm algo, string myId, Task<List<BarType<double>>> myData) : base(algo, myId, myData)
         {
         }
     }
+    #endregion
 }
 
 //==============================================================================

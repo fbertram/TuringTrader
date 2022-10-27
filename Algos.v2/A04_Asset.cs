@@ -23,17 +23,14 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using TuringTrader.Simulator.v2;
 #endregion
 
-// NOTE: with v2, the behavior of data sources changes. It is now possible
-// to add a new data source at any point in the simulation. This will ease
-// the implementation of universes later on. The example below shows how
-// the asset is brought in on every bar - but it will be served from the
-// cache in all but the very first call.
+// NOTE: with v2, it is now possible to add a new data source at any point in
+// the simulation. This will ease the implementation of universes later on.
+// The example below shows how the asset is brought in on every bar - but it
+// will be served from the cache in all but the very first call.
 
 namespace TuringTrader.Simulator.v2.Demo
 {
@@ -49,7 +46,7 @@ namespace TuringTrader.Simulator.v2.Demo
             SimLoop(() =>
             {
                 var test = Asset("SPY");
-                Output.WriteLine("{0:MM/dd/yyyy}, {1} {2}", SimDate, test.CacheId, test[0]);
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", SimDate, test.CacheId, test[0]);
             });
         }
 

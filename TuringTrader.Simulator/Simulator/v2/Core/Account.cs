@@ -27,7 +27,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TuringTrader.Simulator.Simulator.v2.Core
+namespace TuringTrader.Simulator.v2
 {
     /// <summary>
     /// OrderType is an enumeration of orders supported by the

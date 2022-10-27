@@ -26,7 +26,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -401,7 +400,7 @@ namespace TuringTrader.Simulator.v2
         /// <returns>true, if weekend or holiday</returns>
         private bool IsHoliday(DateTime exchangeDateTime)
         {
-            if (exchangeDateTime.DayOfWeek == DayOfWeek.Saturday 
+            if (exchangeDateTime.DayOfWeek == DayOfWeek.Saturday
             || exchangeDateTime.DayOfWeek == DayOfWeek.Sunday)
                 return true;
 

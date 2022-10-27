@@ -29,11 +29,10 @@ using System.Text;
 using TuringTrader.Simulator.v2;
 #endregion
 
-// NOTE: with v2, the behavior of data sources changes. It is now possible
-// to add a new data source at any point in the simulation. This will ease
-// the implementation of universes later on. The example below shows how
-// the asset is brought in on every bar - but it will be served from the
-// cache in all but the very first call.
+// NOTE: indicators work the same way as assets. They can be introduced at
+// any point of the simulation, and their results are cached. Because
+// indicators are processed in their separate tasks, they can run in
+// parallel, making good use of your CPU's cores.
 
 namespace TuringTrader.Simulator.v2.Demo
 {
@@ -46,9 +45,11 @@ namespace TuringTrader.Simulator.v2.Demo
             StartDate = DateTime.Parse("01/01/2021", CultureInfo.InvariantCulture);
             EndDate = DateTime.Parse("05/01/2021", CultureInfo.InvariantCulture);
 
-            var test = Asset("SPY").Close.EMA(5);
-            Output.WriteLine(test.CacheId);
-            Output.WriteLine(test.Data.Result[0].ToString());
+            SimLoop(() =>
+            {
+                var test = Asset("SPY").Close.EMA(21);
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", SimDate, test.CacheId, test[0]);
+            });
         }
 
         public override void Report() => Output.WriteLine("Here is your report");

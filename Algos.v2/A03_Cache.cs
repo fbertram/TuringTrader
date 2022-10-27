@@ -21,13 +21,12 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#if false
-
 #region libraries
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using TuringTrader.Simulator.v2;
 #endregion
 
@@ -45,24 +44,22 @@ namespace TuringTrader.Simulator.v2.Demo
         {
             string toDo()
             {
-                Output.WriteLine("working on my todos");
-                return "here is the result";
+                Thread.Sleep(2000);
+                return string.Format("completed my todos at {0}", DateTime.Now);
             }
 
             string cacheId = "unique id";
 
-            var result1 = (string)Cache(cacheId, toDo);
-            Output.WriteLine(result1);
+            var cache1 = Cache(cacheId, toDo);
+            Output.WriteLine(cache1.Result);
 
-            var result2 = (string)Cache(cacheId, toDo);
-            Output.WriteLine(result2);
+            var cache2 = Cache(cacheId, toDo);
+            Output.WriteLine(cache2.Result);
         }
 
         public override void Report() => Output.WriteLine("Here is your report");
     }
 }
-
-#endif
 
 //==============================================================================
 // end of file

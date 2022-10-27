@@ -21,9 +21,7 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -40,20 +38,20 @@ namespace TuringTrader.Simulator.v2
         /// <returns>EMA series</returns>
         public static TimeSeriesFloat EMA(this TimeSeriesFloat series, int n)
         {
-            List<Tuple<DateTime, double>> calcIndicator()
+            List<BarType<double>> calcIndicator()
             {
                 // NOTE: this is executed in a new task.
                 // Because the input series might not be calculated yet,
                 // we first wait until the result is available.
                 var src = series.Data.Result;
-                var dst = new List<Tuple<DateTime, double>>();
-                var ema = src.First().Item2;
+                var dst = new List<BarType<double>>();
+                var ema = src[0].Value;
                 var alpha = 2.0 / (1.0 + n);
 
                 foreach (var it in src)
                 {
-                    ema += alpha * (it.Item2 - ema);
-                    dst.Add(Tuple.Create(it.Item1, ema));
+                    ema += alpha * (it.Value - ema);
+                    dst.Add(new BarType<double>(it.Date, ema));
                 }
 
                 return dst;
