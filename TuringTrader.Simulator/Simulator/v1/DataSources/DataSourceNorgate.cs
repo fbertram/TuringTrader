@@ -492,6 +492,9 @@ namespace TuringTrader.Simulator
                 && timeSeries[Math.Min(index + 1, timeSeries.Count - 1)].Date.Date < timestamp.Date)
                     index++;
 
+                // cache this index to speed up next iteration
+                _consituentsTimeSeriesIndex[security.AssetID] = index;
+
                 // reached end of indices
                 // this shouldn't matter, as the simulator core removes stale instruments
                 if (timeSeries[index].Date.Date < timestamp.Date && index == timeSeries.Count - 1)
