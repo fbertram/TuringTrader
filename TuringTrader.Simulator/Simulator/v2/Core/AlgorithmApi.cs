@@ -21,6 +21,8 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#if false
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 #region libraries
@@ -115,6 +117,8 @@ namespace TuringTrader.Simulator.v2
 }
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+
+#endif
 
 //==============================================================================
 // end of file

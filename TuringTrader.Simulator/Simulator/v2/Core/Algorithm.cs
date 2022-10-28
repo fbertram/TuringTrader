@@ -31,8 +31,75 @@ namespace TuringTrader.Simulator.v2
     /// <summary>
     /// Base class for trading algorithms.
     /// </summary>
-    public abstract class Algorithm : AlgorithmApi
+    public abstract class Algorithm : IAlgorithm
     {
+        public virtual string Name => this.GetType().Name;
+
+        #region instantiation
+        /// <summary>
+        /// Initialize trading algorithm. Most trading algorithms will
+        /// only do very little here; the majority of the initialization
+        /// should be performed in Run(), to allow multiple runs of
+        /// the same instance.
+        /// </summary>
+        protected Algorithm()
+        {
+            // create a dictionary of optimizer parameters
+            OptimizerParams = new Dictionary<string, OptimizerParam>();
+            foreach (OptimizerParam param in OptimizerParam.GetParams(this))
+                OptimizerParams[param.Name] = param;
+
+            Account = new Account(this);
+        }
+        /// <summary>
+        /// Clone algorithm, including all optimizer parameters. The application uses
+        /// this method to clone the 'master' instance, and create new algorithm 
+        /// instances before running them.
+        /// </summary>
+        /// <returns>new algorithm instance</returns>
+        public IAlgorithm Clone()
+        {
+            Type algoType = GetType();
+            Algorithm clonedInstance = (Algorithm)Activator.CreateInstance(algoType);
+
+            // apply optimizer values to new instance
+            foreach (OptimizerParam parameter in OptimizerParams.Values)
+            {
+                clonedInstance.OptimizerParams[parameter.Name].IsEnabled = parameter.IsEnabled;
+                clonedInstance.OptimizerParams[parameter.Name].Start = parameter.Start;
+                clonedInstance.OptimizerParams[parameter.Name].End = parameter.End;
+                clonedInstance.OptimizerParams[parameter.Name].Step = parameter.Step;
+                clonedInstance.OptimizerParams[parameter.Name].Value = parameter.Value;
+            }
+
+            return clonedInstance;
+        }
+        #endregion
+        #region optimization
+        public Dictionary<string, OptimizerParam> OptimizerParams { get; private set; }
+        /// <summary>
+        /// String representation of the current settings of all
+        /// optimizable parameters.
+        /// </summary>
+        public string OptimizerParamsAsString
+        {
+            get
+            {
+                string retval = "";
+                foreach (var parameter in OptimizerParams.Values.OrderBy(p => p.Name))
+                {
+                    retval += retval.Length > 0 ? ", " : "";
+                    retval += string.Format("{0}={1}", parameter.Name, parameter.Value);
+                }
+                return retval;
+            }
+        }
+        public virtual bool IsOptimizerParamsValid => true;
+        public bool IsOptimizing { get; set; }
+        public virtual double FitnessReturn { get; set; } = 0.0;
+        public virtual double FitnessRisk { get; set; } = 0.0;
+        public virtual double FitnessValue { get; set; } = 0.0;
+        #endregion
         #region simulation range & loop
         /// <summary>
         /// Simulation start date.
@@ -77,7 +144,14 @@ namespace TuringTrader.Simulator.v2
             }
 
             SimDate = default;
+
+            FitnessReturn = Account.NetAssetValue;
+            FitnessRisk = 0.0;
+            FitnessValue = 0.0;
         }
+
+        public virtual double Progress => 100.0 * Math.Max(0.0, (SimDate - StartDate).TotalDays) / Math.Max(1.0, (EndDate - StartDate).TotalDays);
+
         #endregion
         #region cache functionality
         private Dictionary<string, object> _cache = new Dictionary<string, object>();
@@ -124,19 +198,15 @@ namespace TuringTrader.Simulator.v2
         #endregion
         #region reporting
         public Plotter Plotter = new Plotter();
-        public override void Report() => Plotter.OpenWith("SimpleChart");
+        public virtual void Report() => Plotter.OpenWith("SimpleChart");
         #endregion
         #region orders & accounting
         public Account Account { get; set; } = null; // instantiated in constructor
+        public IEnumerable<KeyValuePair<string, double>> Positions { get => Account.Positions; }
         public double NetAssetValue { get => Account.NetAssetValue; }
         #endregion
 
-        #region constructor
-        public Algorithm()
-        {
-            Account = new Account(this);
-        }
-        #endregion
+        public virtual void Run() { }
     }
 }
 

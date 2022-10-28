@@ -68,13 +68,24 @@ namespace TuringTrader.Simulator.v2
                 var data = Data.Result;
                 var currentDate = Algorithm.SimDate;
 
-                // move forward in time
+#if true
+                // move forward in time (coarse)
+                var totalDays = (int)Math.Floor((currentDate - data[_CurrentIndex].Date).TotalDays);
+                if (totalDays > 10)
+                    _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
+                        _CurrentIndex + (totalDays * 3) / 4 - 1));
+#endif
+
+                // move forward in time (incrementally)
                 while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= currentDate)
                     _CurrentIndex++;
 
+#if true
                 // move back in time
+                // this can happen because of the coarse forward jump
                 while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date > currentDate)
                     _CurrentIndex--;
+#endif
 
                 return _CurrentIndex;
 

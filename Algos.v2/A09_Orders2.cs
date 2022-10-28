@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A08_Orders
+// Name:        A09_Orders2
 // Description: Develop & test order placement.
 // History:     2022x27, FUB, created
 //------------------------------------------------------------------------------
@@ -23,46 +23,61 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using System.Linq;
 #endregion
 
 // NOTE: creating reports works the same as with the v1 engine
 
 namespace TuringTrader.Simulator.v2.Demo
 {
-    public class A08_Orders : Algorithm
+    public class A09_Orders2 : Algorithm
     {
-        public override string Name => "A08_Orders";
+        public override string Name => "A09_Orders2";
+
+        [OptimizerParam(5, 50, 5)]
+        public int FAST_PERIOD { get; set; } = 50;
+
+        [OptimizerParam(63, 252, 21)]
+        public int SLOW_PERIOD { get; set; } = 200;
 
         public override void Run()
         {
             StartDate = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
             EndDate = DateTime.Now;
 
+            var universe = "$DJI";
+
             SimLoop(() =>
             {
-                var ticker = "$SPXTR";
-                var asset = Asset(ticker);
-                var price = asset.Close;
-                var ema50 = price.EMA(50);
-                var ema200 = price.EMA(200);
+                if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
+                {
+                    var constituents = Universe(universe);
 
-                var weight = ema50[0] > ema200[0] ? 1.0 : 0.0;
-                asset.Allocate(weight, OrderType.BuySellThisClose);
+                    foreach (var position in Positions)
+                    {
+                        if (constituents.Where(t => t == position.Key).Count() == 0)
+                            Asset(position.Key).Allocate(0.0, OrderType.BuySellThisClose);
+                    }
 
-                Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", ticker), "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot("Trading", NetAssetValue);
-                Plotter.Plot("Buy & Hold", price[0]);
+                    foreach (var ticker in constituents)
+                    {
+                        var asset = Asset(ticker);
+                        var price = asset.Close;
+                        var maFast = price.EMA(FAST_PERIOD);
+                        var maSlow = price.EMA(SLOW_PERIOD);
+                        var weight = maFast[0] > maSlow[0] ? 1.0 / constituents.Count() : 0.0;
+                        asset.Allocate(weight, OrderType.BuySellThisClose);
+                    }
+                }
 
-                Plotter.SelectChart(string.Format("{0} Moving Averages", ticker), "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot(price.Name, price[0]);
-                Plotter.Plot(ema50.Name, ema50[0]);
-                Plotter.Plot(ema200.Name, ema200[0]);
+                if (!IsOptimizing)
+                {
+                    Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", universe), "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot(Name, NetAssetValue);
+                    Plotter.Plot("$SPXTR", Asset("$SPXTR").Close[0]);
+                }
             });
         }
 
