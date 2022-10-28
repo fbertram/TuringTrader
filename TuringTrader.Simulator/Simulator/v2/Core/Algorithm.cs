@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
@@ -32,7 +33,7 @@ namespace TuringTrader.Simulator.v2
     /// </summary>
     public abstract class Algorithm : AlgorithmApi
     {
-        #region simulation range
+        #region simulation range & loop
         /// <summary>
         /// Simulation start date.
         /// </summary>
@@ -53,6 +54,8 @@ namespace TuringTrader.Simulator.v2
         /// Current simulation timestamp.
         /// </summary>
         public DateTime SimDate { get; private set; } = default;
+        public DateTime NextSimDate { get; private set; } = default;
+        public bool IsLastBar { get => NextSimDate == SimDate; }
 
         /// <summary>
         /// Simulation loop.
@@ -60,12 +63,17 @@ namespace TuringTrader.Simulator.v2
         /// <param name="barFun"></param>
         public void SimLoop(Action barFun)
         {
-            var tradingDays = TradingCalendar.TradingDays;
+            var tradingDays = TradingCalendar.TradingDays
+                .ToList();
 
-            foreach (var day in tradingDays)
+            for (int idx = 0; idx < tradingDays.Count; idx++)
             {
-                SimDate = day;
+                SimDate = tradingDays[idx];
+                NextSimDate = idx < tradingDays.Count - 1 ? tradingDays[idx + 1] : SimDate;
+
                 barFun();
+
+                Account.ProcessOrders();
             }
 
             SimDate = default;
@@ -117,6 +125,17 @@ namespace TuringTrader.Simulator.v2
         #region reporting
         public Plotter Plotter = new Plotter();
         public override void Report() => Plotter.OpenWith("SimpleChart");
+        #endregion
+        #region orders & accounting
+        public Account Account { get; set; } = null; // instantiated in constructor
+        public double NetAssetValue { get => Account.NetAssetValue; }
+        #endregion
+
+        #region constructor
+        public Algorithm()
+        {
+            Account = new Account(this);
+        }
         #endregion
     }
 }

@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A07_Report
-// Description: Develop & test report generation.
+// Name:        A08_Orders
+// Description: Develop & test order placement.
 // History:     2022x27, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -23,16 +23,19 @@
 
 #region libraries
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
+using TuringTrader.Simulator.v2;
 #endregion
 
 // NOTE: creating reports works the same as with the v1 engine
 
 namespace TuringTrader.Simulator.v2.Demo
 {
-    public class A07_Report : Algorithm
+    public class A08_Orders : Algorithm
     {
-        public override string Name => "A07_Report";
+        public override string Name => "A08_Orders";
 
         public override void Run()
         {
@@ -41,10 +44,19 @@ namespace TuringTrader.Simulator.v2.Demo
 
             SimLoop(() =>
             {
-                var ticker = "$SPX";
-                var price = Asset(ticker).Close;
+                var ticker = "$SPXTR";
+                var asset = Asset(ticker);
+                var price = asset.Close;
                 var ema50 = price.EMA(50);
                 var ema200 = price.EMA(200);
+
+                var weight = ema50[0] > ema200[0] ? 1.0 : 0.0;
+                asset.Allocate(weight, OrderType.BuySellThisClose);
+
+                Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", ticker), "Date");
+                Plotter.SetX(SimDate);
+                Plotter.Plot("Trading", NetAssetValue);
+                Plotter.Plot("Buy & Hold", price[0]);
 
                 Plotter.SelectChart(string.Format("{0} Moving Averages", ticker), "Date");
                 Plotter.SetX(SimDate);

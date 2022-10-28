@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
@@ -177,6 +178,24 @@ namespace TuringTrader.Simulator.v2
         public TimeSeriesFloat Low { get => ExtractFieldSeries("Low", bar => bar.Low); }
         public TimeSeriesFloat Close { get => ExtractFieldSeries("Close", bar => bar.Close); }
         public TimeSeriesFloat Volume { get => ExtractFieldSeries("Volume", bar => bar.Volume); }
+
+        public void Allocate(double weight, OrderType orderType)
+        {
+            Algorithm.Account.SubmitOrder(
+                new OrderTicket(
+                    Name, weight, orderType));
+        }
+
+        public double Position
+        {
+            get
+            {
+                var positions = Algorithm.Account.Positions
+                    .Where(kv => kv.Key == Name);
+
+                return positions.Count() == 0 ? positions.First().Value : 0.0;
+            }
+        }
     }
     #endregion
     #region class TimeSeriesFloat

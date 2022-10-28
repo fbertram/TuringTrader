@@ -443,10 +443,10 @@ namespace TuringTrader.Simulator.v2
                 var startDate = StartDate > _earliestTime ? StartDate : _earliestTime;
                 var endDate = EndDate < DateTime.Now ? EndDate : DateTime.Now;
 
-                var date = StartDate;
+                var date = startDate;
                 var previousClose = default(DateTime);
 
-                while (date <= EndDate)
+                while (date <= endDate)
                 {
                     var close = PreviousExchangeClose(date);
                     if (close != previousClose)
