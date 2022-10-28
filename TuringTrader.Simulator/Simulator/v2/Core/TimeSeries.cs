@@ -48,14 +48,14 @@ namespace TuringTrader.Simulator.v2
     /// <typeparam name="T"></typeparam>
     public class TimeSeries<T>
     {
-        public readonly Algorithm Algo;
-        public readonly string CacheId;
+        public readonly Algorithm Algorithm;
+        public readonly string Name;
         public readonly Task<List<BarType<T>>> Data;
 
         public TimeSeries(Algorithm algo, string cacheId, Task<List<BarType<T>>> data)
         {
-            Algo = algo;
-            CacheId = cacheId;
+            Algorithm = algo;
+            Name = cacheId;
             Data = data;
         }
 
@@ -65,7 +65,7 @@ namespace TuringTrader.Simulator.v2
             get
             {
                 var data = Data.Result;
-                var currentDate = Algo.SimDate;
+                var currentDate = Algorithm.SimDate;
 
                 // move forward in time
                 while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= currentDate)
@@ -166,11 +166,11 @@ namespace TuringTrader.Simulator.v2
                 return data;
             }
 
-            var cacheId = CacheId + "." + fieldName;
+            var cacheId = Name + "." + fieldName;
             return new TimeSeriesFloat(
-                Algo,
+                Algorithm,
                 cacheId,
-                Algo.Cache(cacheId, extractAsset));
+                Algorithm.Cache(cacheId, extractAsset));
         }
         public TimeSeriesFloat Open { get => ExtractFieldSeries("Open", bar => bar.Open); }
         public TimeSeriesFloat High { get => ExtractFieldSeries("High", bar => bar.High); }

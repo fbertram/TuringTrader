@@ -57,11 +57,11 @@ namespace TuringTrader.Simulator.v2
                 return dst;
             }
 
-            var cacheId = string.Format("{0}.EMA({1})", series.CacheId, n);
+            var cacheId = string.Format("{0}.EMA({1})", series.Name, n);
             return new TimeSeriesFloat(
-                series.Algo,
+                series.Algorithm,
                 cacheId,
-                series.Algo.Cache(cacheId, calcIndicator));
+                series.Algorithm.Cache(cacheId, calcIndicator));
         }
     }
 }

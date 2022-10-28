@@ -48,7 +48,7 @@ namespace TuringTrader.Simulator.v2.Demo
             SimLoop(() =>
             {
                 var test = Asset("SPY").Close.EMA(21);
-                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", SimDate, test.CacheId, test[0]);
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2}", SimDate, test.Name, test[0]);
             });
         }
 

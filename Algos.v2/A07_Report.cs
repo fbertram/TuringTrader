@@ -52,8 +52,8 @@ namespace TuringTrader.Simulator.v2.Demo
                 Plotter.SelectChart(string.Format("{0} Moving Averages", ticker), "Date");
                 Plotter.SetX(SimDate);
                 Plotter.Plot(ticker, price[0]);
-                Plotter.Plot(ema50.CacheId, ema50[0]);
-                Plotter.Plot(ema200.CacheId, ema200[0]);
+                Plotter.Plot(ema50.Name, ema50[0]);
+                Plotter.Plot(ema200.Name, ema200[0]);
             });
         }
 
