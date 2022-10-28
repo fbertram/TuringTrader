@@ -38,11 +38,11 @@ namespace TuringTrader.Simulator.v2
         /// <summary>
         /// buy or sell assets on this bar's close
         /// </summary>
-        BuySellThisClose,
+        MarketThisClose,
         /// <summary>
         /// buy or sell assets on the next bar's open
         /// </summary>
-        BuySellNextOpen,
+        MarketNextOpen,
         // SellStopNextBar,
         // BuyLimitNextBar,
     }
@@ -104,13 +104,13 @@ namespace TuringTrader.Simulator.v2
 
         public void ProcessOrders()
         {
-            var orderTypes = new List<OrderType> { OrderType.BuySellThisClose, OrderType.BuySellNextOpen };
+            var orderTypes = new List<OrderType> { OrderType.MarketThisClose, OrderType.MarketNextOpen };
             foreach (var orderType in orderTypes)
             {
                 foreach (var order in OrderQueue.Where(o => o.OrderType == orderType))
                 {
                     // FIXME: right now, this code is long-only
-                    var atNextOpen = orderType != OrderType.BuySellThisClose;
+                    var atNextOpen = orderType != OrderType.MarketThisClose;
                     var price = atNextOpen
                         ? Algorithm.Asset(order.Symbol).Open[-1]
                         : Algorithm.Asset(order.Symbol).Close[0];

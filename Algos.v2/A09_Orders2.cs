@@ -57,7 +57,7 @@ namespace TuringTrader.Simulator.v2.Demo
                     foreach (var position in Positions)
                     {
                         if (constituents.Where(t => t == position.Key).Count() == 0)
-                            Asset(position.Key).Allocate(0.0, OrderType.BuySellThisClose);
+                            Asset(position.Key).Allocate(0.0, OrderType.MarketThisClose);
                     }
 
                     foreach (var ticker in constituents)
@@ -67,7 +67,7 @@ namespace TuringTrader.Simulator.v2.Demo
                         var maFast = price.EMA(FAST_PERIOD);
                         var maSlow = price.EMA(SLOW_PERIOD);
                         var weight = maFast[0] > maSlow[0] ? 1.0 / constituents.Count() : 0.0;
-                        asset.Allocate(weight, OrderType.BuySellThisClose);
+                        asset.Allocate(weight, OrderType.MarketThisClose);
                     }
                 }
 
