@@ -52,6 +52,7 @@ namespace TuringTrader.Simulator.v2
         public readonly Algorithm Algorithm;
         public readonly string Name;
         public readonly Task<List<BarType<T>>> Data;
+        public readonly Task<object> Meta;
 
         /// <summary>
         /// Create new time series.
@@ -59,11 +60,12 @@ namespace TuringTrader.Simulator.v2
         /// <param name="algo">parent algorithm</param>
         /// <param name="name">time series name</param>
         /// <param name="data">time series data</param>
-        public TimeSeries(Algorithm algo, string name, Task<List<BarType<T>>> data)
+        public TimeSeries(Algorithm algo, string name, Task<List<BarType<T>>> data, Task<object> meta = null)
         {
             Algorithm = algo;
             Name = name;
             Data = data;
+            Meta = meta;
         }
 
         private int _CurrentIndex = 0;
@@ -170,12 +172,21 @@ namespace TuringTrader.Simulator.v2
         }
     }
     #endregion
-    #region class TimeSeriesOHLCV
-    public class TimeSeriesOHLCV : TimeSeries<OHLCV>
+    #region class TimeSeriesAsset
+    public class TimeSeriesAsset : TimeSeries<OHLCV>
     {
-        public TimeSeriesOHLCV(Algorithm algo, string myId, Task<List<BarType<OHLCV>>> myData) : base(algo, myId, myData)
+        public class MetaType
+        {
+            public string Description;
+        }
+        public TimeSeriesAsset(Algorithm algo, string myId, Task<List<BarType<OHLCV>>> myData, Task<object> meta) : base(algo, myId, myData, meta)
         {
         }
+
+        /// <summary>
+        /// Return assets full descriptive name
+        /// </summary>
+        public string Description { get => ((MetaType)(Meta.Result)).Description; }
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
@@ -196,10 +207,26 @@ namespace TuringTrader.Simulator.v2
                 cacheId,
                 Algorithm.Cache(cacheId, extractAsset));
         }
+
+        /// <summary>
+        /// Return time series of opening prices.
+        /// </summary>
         public TimeSeriesFloat Open { get => ExtractFieldSeries("Open", bar => bar.Open); }
+        /// <summary>
+        /// Return time series of highest prices.
+        /// </summary>
         public TimeSeriesFloat High { get => ExtractFieldSeries("High", bar => bar.High); }
+        /// <summary>
+        /// Return time series of lowest prices.
+        /// </summary>
         public TimeSeriesFloat Low { get => ExtractFieldSeries("Low", bar => bar.Low); }
+        /// <summary>
+        /// Return time series of closing prices.
+        /// </summary>
         public TimeSeriesFloat Close { get => ExtractFieldSeries("Close", bar => bar.Close); }
+        /// <summary>
+        /// Return time series of trading volumes.
+        /// </summary>
         public TimeSeriesFloat Volume { get => ExtractFieldSeries("Volume", bar => bar.Volume); }
 
         /// <summary>

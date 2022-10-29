@@ -99,7 +99,7 @@ namespace TuringTrader.Simulator.v2.Demo
                         Plotter.SelectChart("Asset Allocation", "Date");
                         Plotter.SetX(SimDate);
                         foreach (var ticker in Positions.Keys)
-                            Plotter.Plot(ticker, Asset(ticker).Position);
+                            Plotter.Plot(Asset(ticker).Description, Asset(ticker).Position);
                         Plotter.Plot("Cash", Cash);
                     }
                 }

@@ -35,13 +35,21 @@ namespace TuringTrader.Simulator.v2
     {
         private static TimeZoneInfo exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); // New York, USA
 
-        public static TimeSeriesOHLCV LoadAsset(Algorithm algo, string name, ITradingCalendar calendar)
+        public static TimeSeriesAsset LoadAsset(Algorithm algo, string name)
         {
-            List<BarType<OHLCV>> loadAsset(string name, ITradingCalendar calendar)
+            object loadMeta(Algorithm algo, string name)
             {
-
                 var ds = TuringTrader.Simulator.DataSource.New(name);
-                var tradingDays = calendar.TradingDays;
+                return new TimeSeriesAsset.MetaType
+                {
+                    Description = ds.Info[DataSourceParam.name],
+                };
+            }
+
+            List<BarType<OHLCV>> loadData(Algorithm algo, string name)
+            {
+                var ds = TuringTrader.Simulator.DataSource.New(name);
+                var tradingDays = algo.TradingCalendar.TradingDays;
                 var firstDate = tradingDays.First();
                 var lastDate = tradingDays.Last();
 
@@ -72,18 +80,19 @@ namespace TuringTrader.Simulator.v2
                 return data;
             }
 
-            return new TimeSeriesOHLCV(
+            return new TimeSeriesAsset(
                 algo,
                 name,
-                algo.Cache(name, () => loadAsset(name, calendar)));
+                algo.Cache(name, () => loadData(algo, name)),
+                algo.Cache(name + ".Meta", () => loadMeta(algo, name)));
         }
 
-        public static List<string> GetConstituents(Algorithm algo, string name, DateTime simTime)
+        public static List<string> GetConstituents(Algorithm algo, string name)
         {
             if (GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
             {
                 var v1Universe = algo.Cache(string.Format("Universe({0})", name), () => Universe.New(name)).Result;
-                var exchangeTime = TimeZoneInfo.ConvertTime(simTime, exchangeTimeZone);
+                var exchangeTime = TimeZoneInfo.ConvertTime(algo.SimDate, exchangeTimeZone);
                 return v1Universe.Constituents
                     .Where(c => v1Universe.IsConstituent(c, exchangeTime))
                     .ToList();

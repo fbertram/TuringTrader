@@ -179,9 +179,9 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         /// <param name="name">name of asset</param>
         /// <returns>asset</returns>
-        public TimeSeriesOHLCV Asset(string name)
+        public TimeSeriesAsset Asset(string name)
         {
-            return V1DataInterface.LoadAsset(this, name, TradingCalendar);
+            return V1DataInterface.LoadAsset(this, name);
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace TuringTrader.Simulator.v2
         /// <returns></returns>
         public List<string> Universe(string name)
         {
-            return V1DataInterface.GetConstituents(this, name, SimDate);
+            return V1DataInterface.GetConstituents(this, name);
         }
         #endregion
         #region reporting
