@@ -41,42 +41,67 @@ namespace TuringTrader.Simulator.v2.Demo
         [OptimizerParam(63, 252, 21)]
         public int SLOW_PERIOD { get; set; } = 200;
 
+#if true
+        private const string UNIVERSE = "$DJI";
+        private const string BENCH = "$DJITR";
+#else
+        private const string UNIVERSE = "$SPX";
+        private const string BENCH = "$SPXTR";
+#endif
+        private const string SAFE = "BIL";
         public override void Run()
         {
             StartDate = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
             EndDate = DateTime.Now;
 
-            var universe = "$DJI";
-
             SimLoop(() =>
             {
-                if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
-                {
-                    var constituents = Universe(universe);
-
-                    foreach (var position in Positions)
-                    {
-                        if (constituents.Where(t => t == position.Key).Count() == 0)
-                            Asset(position.Key).Allocate(0.0, OrderType.MarketThisClose);
-                    }
-
-                    foreach (var ticker in constituents)
-                    {
-                        var asset = Asset(ticker);
-                        var price = asset.Close;
-                        var maFast = price.EMA(FAST_PERIOD);
-                        var maSlow = price.EMA(SLOW_PERIOD);
-                        var weight = maFast[0] > maSlow[0] ? 1.0 / constituents.Count() : 0.0;
-                        asset.Allocate(weight, OrderType.MarketThisClose);
-                    }
-                }
-
                 if (!IsOptimizing)
                 {
-                    Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", universe), "Date");
+                    // main strategy chart
+                    Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", UNIVERSE), "Date");
                     Plotter.SetX(SimDate);
                     Plotter.Plot(Name, NetAssetValue);
-                    Plotter.Plot("$SPXTR", Asset("$SPXTR").Close[0]);
+                    Plotter.Plot(BENCH, Asset(BENCH).Close[0]);
+                }
+
+                // rebalance once per week
+                if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
+                {
+                    // initially assume we close all current positions
+                    var weights = Positions
+                        .ToDictionary(kv => kv.Key, kv => 0.0);
+
+                    // adjust positions for all constituents
+                    var constituents = Universe(UNIVERSE);
+                    foreach (var ticker in constituents)
+                    {
+                        var price = Asset(ticker).Close;
+                        var maFast = price.EMA(FAST_PERIOD);
+                        var maSlow = price.EMA(SLOW_PERIOD);
+
+                        if (maFast[0] > maSlow[0])
+                            weights[ticker] = 1.0 / constituents.Count;
+                    }
+
+                    // set position for safe asset
+                    var totalWeight = weights.Sum(kv => kv.Value);
+                    if (SAFE != null)
+                        weights[SAFE] = 1.0 - totalWeight;
+
+                    // submit orders
+                    foreach (var kv in weights)
+                        Asset(kv.Key).Allocate(kv.Value, OrderType.MarketNextOpen);
+
+                    if (!IsOptimizing)
+                    {
+                        // asset allocation
+                        Plotter.SelectChart("Asset Allocation", "Date");
+                        Plotter.SetX(SimDate);
+                        foreach (var ticker in Positions.Keys)
+                            Plotter.Plot(ticker, Asset(ticker).Position);
+                        Plotter.Plot("Cash", Cash);
+                    }
                 }
             });
         }

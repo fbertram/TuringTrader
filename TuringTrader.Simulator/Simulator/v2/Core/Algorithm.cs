@@ -191,7 +191,7 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IEnumerable<string> Universe(string name)
+        public List<string> Universe(string name)
         {
             return V1DataInterface.GetConstituents(this, name, SimDate);
         }
@@ -202,8 +202,9 @@ namespace TuringTrader.Simulator.v2
         #endregion
         #region orders & accounting
         public Account Account { get; set; } = null; // instantiated in constructor
-        public IEnumerable<KeyValuePair<string, double>> Positions { get => Account.Positions; }
+        public Dictionary<string, double> Positions { get => Account.Positions; }
         public double NetAssetValue { get => Account.NetAssetValue; }
+        public double Cash { get => Account.Cash; }
         #endregion
 
         public virtual void Run() { }

@@ -78,14 +78,15 @@ namespace TuringTrader.Simulator.v2
                 algo.Cache(name, () => loadAsset(name, calendar)));
         }
 
-        public static IEnumerable<string> GetConstituents(Algorithm algo, string name, DateTime simTime)
+        public static List<string> GetConstituents(Algorithm algo, string name, DateTime simTime)
         {
             if (GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
             {
                 var v1Universe = algo.Cache(string.Format("Universe({0})", name), () => Universe.New(name)).Result;
                 var exchangeTime = TimeZoneInfo.ConvertTime(simTime, exchangeTimeZone);
                 return v1Universe.Constituents
-                    .Where(c => v1Universe.IsConstituent(c, exchangeTime));
+                    .Where(c => v1Universe.IsConstituent(c, exchangeTime))
+                    .ToList();
             }
             else
             {

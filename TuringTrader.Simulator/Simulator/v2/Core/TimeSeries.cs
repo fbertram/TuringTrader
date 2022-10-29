@@ -53,10 +53,16 @@ namespace TuringTrader.Simulator.v2
         public readonly string Name;
         public readonly Task<List<BarType<T>>> Data;
 
-        public TimeSeries(Algorithm algo, string cacheId, Task<List<BarType<T>>> data)
+        /// <summary>
+        /// Create new time series.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="name">time series name</param>
+        /// <param name="data">time series data</param>
+        public TimeSeries(Algorithm algo, string name, Task<List<BarType<T>>> data)
         {
             Algorithm = algo;
-            Name = cacheId;
+            Name = name;
             Data = data;
         }
 
@@ -91,13 +97,19 @@ namespace TuringTrader.Simulator.v2
 
             }
         }
+
+        /// <summary>
+        /// Time series indexer
+        /// </summary>
+        /// <param name="offset">number of bars to offset, positive indices are in the past</param>
+        /// <returns>value at offset</returns>
         public T this[int offset]
         {
             get
             {
                 var data = Data.Result;
                 var baseIdx = CurrentIndex;
-                var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx + offset));
+                var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
 
                 return data[idx].Value;
             }
@@ -190,6 +202,11 @@ namespace TuringTrader.Simulator.v2
         public TimeSeriesFloat Close { get => ExtractFieldSeries("Close", bar => bar.Close); }
         public TimeSeriesFloat Volume { get => ExtractFieldSeries("Volume", bar => bar.Volume); }
 
+        /// <summary>
+        /// Set target allocation as fraction of account's NAV.
+        /// </summary>
+        /// <param name="weight"></param>
+        /// <param name="orderType"></param>
         public void Allocate(double weight, OrderType orderType)
         {
             Algorithm.Account.SubmitOrder(
@@ -197,14 +214,18 @@ namespace TuringTrader.Simulator.v2
                     Name, weight, orderType));
         }
 
+        /// <summary>
+        /// Return position as fraction of account's NAV.
+        /// </summary>
         public double Position
         {
             get
             {
                 var positions = Algorithm.Account.Positions
-                    .Where(kv => kv.Key == Name);
+                    .Where(kv => kv.Key == Name)
+                    .Select(kv => kv.Value);
 
-                return positions.Count() == 0 ? positions.First().Value : 0.0;
+                return positions.Count() != 0 ? positions.First() : 0.0;
             }
         }
     }

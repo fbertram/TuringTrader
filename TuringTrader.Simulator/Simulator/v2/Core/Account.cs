@@ -24,8 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -90,76 +88,122 @@ namespace TuringTrader.Simulator.v2
         private readonly Algorithm Algorithm;
         private List<OrderTicket> OrderQueue = new List<OrderTicket>();
         private Dictionary<string, double> _Positions = new Dictionary<string, double>();
-        private double _Cash = 1000;
+        private const double INITIAL_CAPITAL = 1000.00;
+        private double _Cash = INITIAL_CAPITAL;
 
+        /// <summary>
+        /// Create new account.
+        /// </summary>
+        /// <param name="algorithm">parent algorithm, to get access to assets and pricing</param>
         public Account(Algorithm algorithm)
         {
             Algorithm = algorithm;
         }
 
+        /// <summary>
+        /// Submit order to account.
+        /// </summary>
+        /// <param name="orderTicket">order ticket</param>
         public void SubmitOrder(OrderTicket orderTicket)
         {
             OrderQueue.Add(orderTicket);
         }
 
+        /// <summary>
+        /// Process orders in order queue. This should be called at the end of each bar.
+        /// </summary>
         public void ProcessOrders()
         {
-            var orderTypes = new List<OrderType> { OrderType.MarketThisClose, OrderType.MarketNextOpen };
-            foreach (var orderType in orderTypes)
+            foreach (var orderType in new List<OrderType> {
+                OrderType.MarketThisClose,
+                OrderType.MarketNextOpen })
             {
                 foreach (var order in OrderQueue.Where(o => o.OrderType == orderType))
                 {
-                    // FIXME: right now, this code is long-only
+                    // FIXME: this code has not been tested with short positions
+                    // it is likely that the logic around isBuy and price2 needs to change
                     var atNextOpen = orderType != OrderType.MarketThisClose;
                     var price = atNextOpen
                         ? Algorithm.Asset(order.Symbol).Open[-1]
                         : Algorithm.Asset(order.Symbol).Close[0];
                     var nav = CalcNetAssetValue(atNextOpen);
+
                     var currentShares = _Positions.ContainsKey(order.Symbol) ? _Positions[order.Symbol] : 0;
                     var currentAlloc = currentShares * price / nav;
-                    var isBuy = currentAlloc < order.TargetAllocation;
-                    var targetShares = isBuy
-                        ? currentShares + nav * (order.TargetAllocation - currentAlloc) / (price * (1.0 + Commission))
-                        : (order.TargetAllocation > MinPosition ? nav * order.TargetAllocation / price : 0.0);
+                    var targetAlloc = Math.Abs(order.TargetAllocation) >= MinPosition ? order.TargetAllocation : 0.0;
+                    var isBuy = currentAlloc < targetAlloc;
 
-                    if (targetShares > 0)
+                    var price2 = isBuy
+                        ? price * (1.0 + Commission) // when buying, we reduce the # of shares to cover for commissions
+                        : price;
+                    var deltaShares = nav * (targetAlloc - currentAlloc) / price2;
+
+                    if (targetAlloc != 0.0)
+                    {
+                        var targetShares = currentShares + deltaShares;
                         _Positions[order.Symbol] = targetShares;
+                    }
                     else
+                    {
                         _Positions.Remove(order.Symbol);
+                    }
 
-                    _Cash -= (targetShares - currentShares) * price;
-                    _Cash -= Math.Abs(targetShares - currentShares) * price * Commission;
+                    _Cash -= deltaShares * price;
+                    _Cash -= Math.Abs(deltaShares) * price * Commission;
                 }
             }
 
             OrderQueue.Clear();
         }
 
-        public IEnumerable<KeyValuePair<string, double>> Positions
+        private double CalcNetAssetValue(bool atNextOpen = false)
         {
-            get
-            {
-                foreach (var kv in _Positions)
-                    yield return kv;
-            }
-        }
-
-        public double NetAssetValue
-        {
-            get => CalcNetAssetValue();
-        }
-
-        public double CalcNetAssetValue(bool atNextOpen = false)
-        {
-            return Positions
-                .Sum(kv => kv.Value 
-                    * (atNextOpen == false 
-                        ? Algorithm.Asset(kv.Key).Close[0] 
+            return _Positions
+                .Sum(kv => kv.Value
+                    * (atNextOpen == false
+                        ? Algorithm.Asset(kv.Key).Close[0]
                         : Algorithm.Asset(kv.Key).Open[-1]))
                 + _Cash;
         }
 
+        /// <summary>
+        /// Return net asset value, relative to initial value
+        /// </summary>
+        public double NetAssetValue
+        {
+            get => CalcNetAssetValue() / INITIAL_CAPITAL;
+        }
+
+        /// <summary>
+        /// Return positions, as fraction of net asset value.
+        /// </summary>
+        public Dictionary<string, double> Positions
+        {
+            get
+            {
+                var nav = CalcNetAssetValue();
+                var result = new Dictionary<string, double>();
+                foreach (var kv in _Positions)
+                {
+                    result[kv.Key] = kv.Value * Algorithm.Asset(kv.Key).Close[0] / nav;
+                }
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Return of cash available, as fraction of net asset value.
+        /// </summary>
+        public double Cash { get => _Cash / CalcNetAssetValue(); }
+
+        /// <summary>
+        /// Commission, as percentage of traded value.
+        /// </summary>
         public double Commission { get; set; } = 0.005; // 0.5% per transaction
+
+        /// <summary>
+        /// Minimum position size, as percentage of total.
+        /// </summary>
         public double MinPosition { get; set; } = 0.001; // 0.1%  minimum position
     }
 }
