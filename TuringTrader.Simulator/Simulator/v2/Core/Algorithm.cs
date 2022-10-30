@@ -191,14 +191,14 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public List<string> Universe(string name)
+        public HashSet<string> Universe(string name)
         {
             return V1DataInterface.GetConstituents(this, name);
         }
         #endregion
         #region reporting
         public Plotter Plotter = new Plotter();
-        public virtual void Report() => Plotter.OpenWith("SimpleChart");
+        public virtual void Report() => Plotter.OpenWith("SimpleReport");
         #endregion
         #region orders & accounting
         public Account Account { get; set; } = null; // instantiated in constructor

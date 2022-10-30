@@ -51,7 +51,7 @@ namespace TuringTrader.Simulator.v2.Demo
                 var ema200 = price.EMA(200);
 
                 var weight = ema50[0] > ema200[0] ? 1.0 : 0.0;
-                asset.Allocate(weight, OrderType.MarketThisClose);
+                asset.Allocate(weight, OrderType.closeThisBar);
 
                 Plotter.SelectChart(string.Format("Moving Average Crossover on {0}", ticker), "Date");
                 Plotter.SetX(SimDate);

@@ -177,6 +177,7 @@ namespace TuringTrader.Simulator.v2
     {
         public class MetaType
         {
+            public string Ticker;
             public string Description;
         }
         public TimeSeriesAsset(Algorithm algo, string myId, Task<List<BarType<OHLCV>>> myData, Task<object> meta) : base(algo, myId, myData, meta)
@@ -186,7 +187,8 @@ namespace TuringTrader.Simulator.v2
         /// <summary>
         /// Return assets full descriptive name
         /// </summary>
-        public string Description { get => ((MetaType)(Meta.Result)).Description; }
+        public string Description { get => ((MetaType)Meta.Result).Description; }
+        public string Ticker { get => ((MetaType)Meta.Result).Ticker; }
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
@@ -236,9 +238,7 @@ namespace TuringTrader.Simulator.v2
         /// <param name="orderType"></param>
         public void Allocate(double weight, OrderType orderType)
         {
-            Algorithm.Account.SubmitOrder(
-                new OrderTicket(
-                    Name, weight, orderType));
+            Algorithm.Account.SubmitOrder(Name, weight, orderType);
         }
 
         /// <summary>

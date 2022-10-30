@@ -42,6 +42,7 @@ namespace TuringTrader.Simulator.v2
                 var ds = TuringTrader.Simulator.DataSource.New(name);
                 return new TimeSeriesAsset.MetaType
                 {
+                    Ticker = ds.Info[DataSourceParam.ticker],
                     Description = ds.Info[DataSourceParam.name],
                 };
             }
@@ -87,7 +88,7 @@ namespace TuringTrader.Simulator.v2
                 algo.Cache(name + ".Meta", () => loadMeta(algo, name)));
         }
 
-        public static List<string> GetConstituents(Algorithm algo, string name)
+        public static HashSet<string> GetConstituents(Algorithm algo, string name)
         {
             if (GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
             {
@@ -95,7 +96,7 @@ namespace TuringTrader.Simulator.v2
                 var exchangeTime = TimeZoneInfo.ConvertTime(algo.SimDate, exchangeTimeZone);
                 return v1Universe.Constituents
                     .Where(c => v1Universe.IsConstituent(c, exchangeTime))
-                    .ToList();
+                    .ToHashSet();
             }
             else
             {

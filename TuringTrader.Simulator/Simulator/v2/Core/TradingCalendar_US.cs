@@ -449,7 +449,7 @@ namespace TuringTrader.Simulator.v2
                 while (date <= endDate)
                 {
                     var close = PreviousExchangeClose(date);
-                    if (close != previousClose)
+                    if (close != previousClose && close >= startDate)
                     {
                         yield return close;
                         date = close; // make sure date is well-aligned w/ exchange's closing time

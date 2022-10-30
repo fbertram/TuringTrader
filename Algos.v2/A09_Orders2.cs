@@ -35,6 +35,7 @@ namespace TuringTrader.Simulator.v2.Demo
     {
         public override string Name => "A09_Orders2";
 
+        #region inputs
         [OptimizerParam(5, 50, 5)]
         public int FAST_PERIOD { get; set; } = 50;
 
@@ -49,6 +50,8 @@ namespace TuringTrader.Simulator.v2.Demo
         private const string BENCH = "$SPXTR";
 #endif
         private const string SAFE = "BIL";
+        #endregion
+        #region strategy logic
         public override void Run()
         {
             StartDate = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
@@ -91,7 +94,7 @@ namespace TuringTrader.Simulator.v2.Demo
 
                     // submit orders
                     foreach (var kv in weights)
-                        Asset(kv.Key).Allocate(kv.Value, OrderType.MarketNextOpen);
+                        Asset(kv.Key).Allocate(kv.Value, OrderType.openNextBar);
 
                     if (!IsOptimizing)
                     {
@@ -105,8 +108,8 @@ namespace TuringTrader.Simulator.v2.Demo
                 }
             });
         }
-
         public override void Report() => Plotter.OpenWith("SimpleReport");
+        #endregion
     }
 }
 

@@ -9,6 +9,7 @@
   - simulator core
     - fix issue allowing trades on delisted instruments
     - optimize universe constituents lookup
+    - initial implementation of v2 simulator engine
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time

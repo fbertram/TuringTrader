@@ -36,48 +36,13 @@ namespace TuringTrader.Simulator.v2
         /// <summary>
         /// buy or sell assets on this bar's close
         /// </summary>
-        MarketThisClose,
+        closeThisBar,
         /// <summary>
         /// buy or sell assets on the next bar's open
         /// </summary>
-        MarketNextOpen,
+        openNextBar,
         // SellStopNextBar,
         // BuyLimitNextBar,
-    }
-
-    /// <summary>
-    /// The OrderTicket class bundles the information for an order.
-    /// This class uses an abstract order concept, where the direction of
-    /// the trade is typically determined by the difference between the
-    /// current and the target allocation.
-    /// </summary>
-    public class OrderTicket
-    {
-        /// <summary>
-        /// Ticker symbol for this order.
-        /// </summary>
-        public readonly string Symbol;
-        /// <summary>
-        /// Target allocation to achieve with this order
-        /// </summary>
-        public readonly double TargetAllocation;
-        /// <summary>
-        /// Order type to use for this order.
-        /// </summary>
-        public readonly OrderType OrderType;
-
-        /// <summary>
-        /// Create new order ticket.
-        /// </summary>
-        /// <param name="symbol"></param>
-        /// <param name="orderType"></param>
-        /// <param name="targetAllocation"></param>
-        public OrderTicket(string symbol, double targetAllocation, OrderType orderType)
-        {
-            Symbol = symbol;
-            TargetAllocation = targetAllocation;
-            OrderType = orderType;
-        }
     }
 
     /// <summary>
@@ -85,11 +50,51 @@ namespace TuringTrader.Simulator.v2
     /// </summary>
     public class Account
     {
+        #region internal stuff
         private readonly Algorithm Algorithm;
         private List<OrderTicket> OrderQueue = new List<OrderTicket>();
         private Dictionary<string, double> _Positions = new Dictionary<string, double>();
         private const double INITIAL_CAPITAL = 1000.00;
         private double _Cash = INITIAL_CAPITAL;
+
+        private class OrderTicket
+        {
+            public readonly string Symbol;
+            public readonly double TargetAllocation;
+            public readonly OrderType OrderType;
+
+            public OrderTicket(string symbol, double targetAllocation, OrderType orderType)
+            {
+                Symbol = symbol;
+                TargetAllocation = targetAllocation;
+                OrderType = orderType;
+            }
+
+        }
+        private enum NavType
+        {
+            openThisBar,
+            closeThisBar,
+            openNextBar,
+        }
+
+        private double CalcNetAssetValue(NavType navType = NavType.closeThisBar)
+        {
+            // FIXME: need to verify that the assets trade on current date.
+            // Otherwise, we should probably remove them and issue a warning.
+
+            return _Positions
+                .Sum(kv => kv.Value
+                    * navType switch
+                    {
+                        NavType.openThisBar => Algorithm.Asset(kv.Key).Open[0],
+                        NavType.closeThisBar => Algorithm.Asset(kv.Key).Close[0],
+                        NavType.openNextBar => Algorithm.Asset(kv.Key).Open[-1],
+                        _ => throw new ArgumentOutOfRangeException(nameof(navType), $"Unexpected NAV type value: {navType}")
+                    })
+                + _Cash;
+        }
+        #endregion
 
         /// <summary>
         /// Create new account.
@@ -101,12 +106,16 @@ namespace TuringTrader.Simulator.v2
         }
 
         /// <summary>
-        /// Submit order to account.
+        /// Submit order to account
         /// </summary>
-        /// <param name="orderTicket">order ticket</param>
-        public void SubmitOrder(OrderTicket orderTicket)
+        /// <param name="Name">asset name</param>
+        /// <param name="weight">asset target allocation</param>
+        /// <param name="orderType">order type</param>
+        public void SubmitOrder(string Name, double weight, OrderType orderType)
         {
-            OrderQueue.Add(orderTicket);
+            OrderQueue.Add(
+                new OrderTicket(
+                    Name, weight, orderType));
         }
 
         /// <summary>
@@ -115,18 +124,25 @@ namespace TuringTrader.Simulator.v2
         public void ProcessOrders()
         {
             foreach (var orderType in new List<OrderType> {
-                OrderType.MarketThisClose,
-                OrderType.MarketNextOpen })
+                OrderType.closeThisBar,
+                OrderType.openNextBar })
             {
                 foreach (var order in OrderQueue.Where(o => o.OrderType == orderType))
                 {
                     // FIXME: this code has not been tested with short positions
                     // it is likely that the logic around isBuy and price2 needs to change
-                    var atNextOpen = orderType != OrderType.MarketThisClose;
-                    var price = atNextOpen
-                        ? Algorithm.Asset(order.Symbol).Open[-1]
-                        : Algorithm.Asset(order.Symbol).Close[0];
-                    var nav = CalcNetAssetValue(atNextOpen);
+                    var price = orderType switch
+                    {
+                        OrderType.closeThisBar => Algorithm.Asset(order.Symbol).Close[0],
+                        OrderType.openNextBar => Algorithm.Asset(order.Symbol).Open[-1],
+                        _ => 0.0, // this should never happen
+                    };
+                    var nav = CalcNetAssetValue(orderType switch
+                    {
+                        OrderType.closeThisBar => NavType.closeThisBar,
+                        OrderType.openNextBar => NavType.openNextBar,
+                        _ => 0.0, // this should never happen
+                    });
 
                     var currentShares = _Positions.ContainsKey(order.Symbol) ? _Positions[order.Symbol] : 0;
                     var currentAlloc = currentShares * price / nav;
@@ -134,7 +150,7 @@ namespace TuringTrader.Simulator.v2
                     var isBuy = currentAlloc < targetAlloc;
 
                     var price2 = isBuy
-                        ? price * (1.0 + Commission) // when buying, we reduce the # of shares to cover for commissions
+                        ? price * (1.0 + Friction) // when buying, we reduce the # of shares to cover for commissions
                         : price;
                     var deltaShares = nav * (targetAlloc - currentAlloc) / price2;
 
@@ -149,25 +165,15 @@ namespace TuringTrader.Simulator.v2
                     }
 
                     _Cash -= deltaShares * price;
-                    _Cash -= Math.Abs(deltaShares) * price * Commission;
+                    _Cash -= Math.Abs(deltaShares) * price * Friction;
                 }
             }
 
             OrderQueue.Clear();
         }
 
-        private double CalcNetAssetValue(bool atNextOpen = false)
-        {
-            return _Positions
-                .Sum(kv => kv.Value
-                    * (atNextOpen == false
-                        ? Algorithm.Asset(kv.Key).Close[0]
-                        : Algorithm.Asset(kv.Key).Open[-1]))
-                + _Cash;
-        }
-
         /// <summary>
-        /// Return net asset value, relative to initial value
+        /// Return net asset value, relative to initial value.
         /// </summary>
         public double NetAssetValue
         {
@@ -197,9 +203,10 @@ namespace TuringTrader.Simulator.v2
         public double Cash { get => _Cash / CalcNetAssetValue(); }
 
         /// <summary>
-        /// Commission, as percentage of traded value.
+        /// Friction to model commissions, fees, and slippage.
+        /// Expressed as percentage of traded value.
         /// </summary>
-        public double Commission { get; set; } = 0.005; // 0.5% per transaction
+        public double Friction { get; set; } = 0; // FIXME: 0.0025; // 0.25% per transaction
 
         /// <summary>
         /// Minimum position size, as percentage of total.
