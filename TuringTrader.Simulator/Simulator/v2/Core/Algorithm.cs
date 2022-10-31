@@ -50,6 +50,7 @@ namespace TuringTrader.Simulator.v2
                 OptimizerParams[param.Name] = param;
 
             Account = new Account(this);
+            Plotter = new PlotterPlus(this);
         }
         /// <summary>
         /// Clone algorithm, including all optimizer parameters. The application uses
@@ -102,27 +103,46 @@ namespace TuringTrader.Simulator.v2
         #endregion
         #region simulation range & loop
         /// <summary>
-        /// Simulation start date.
-        /// </summary>
-        public DateTime StartDate { get => TradingCalendar.StartDate; set => TradingCalendar.StartDate = value; }
-
-        /// <summary>
-        /// Simulation end date.
-        /// </summary>
-        public DateTime EndDate { get => TradingCalendar.EndDate; set => TradingCalendar.EndDate = value; }
-
-        /// <summary>
         /// Trading calendar, converting simulation date range to
         /// enumerable of valid trading days.
         /// </summary>
         public ITradingCalendar TradingCalendar { get; set; } = new TradingCalendar_US();
 
+        private DateTime _startDate = default(DateTime);
+        /// <summary>
+        /// Simulation start date.
+        /// </summary>
+        public DateTime StartDate { get => _startDate; set { _startDate = value; TradingCalendar.StartDate = StartDate - WarmupPeriod; } }
+
+        private DateTime _endDate = default(DateTime);
+        /// <summary>
+        /// Simulation end date.
+        /// </summary>
+        public DateTime EndDate { get => _endDate; set => TradingCalendar.EndDate = value; }
+
+        private TimeSpan _warmupPeriod = default(TimeSpan);
+
+        /// <summary>
+        /// Warmup period.
+        /// </summary>
+        public TimeSpan WarmupPeriod { get => _warmupPeriod; set { _warmupPeriod = value; TradingCalendar.StartDate = StartDate - WarmupPeriod; } }
+
         /// <summary>
         /// Current simulation timestamp.
         /// </summary>
         public DateTime SimDate { get; private set; } = default;
+
+        /// <summary>
+        /// Next simulation timestamp. This is useful for determining 
+        /// the end of the week/ month/ year.
+        /// </summary>
         public DateTime NextSimDate { get; private set; } = default;
-        public bool IsLastBar { get => NextSimDate == SimDate; }
+
+        public bool IsFirstBar { get; private set; } = false;
+        /// <summary>
+        /// Determine if this is the last bar.
+        /// </summary>
+        public bool IsLastBar { get; private set; } = false;
 
         /// <summary>
         /// Simulation loop.
@@ -133,13 +153,20 @@ namespace TuringTrader.Simulator.v2
             var tradingDays = TradingCalendar.TradingDays
                 .ToList();
 
+            IsFirstBar = true;
+            IsLastBar = false;
+
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
                 SimDate = tradingDays[idx];
+                if (SimDate < StartDate) continue; // warmup period
+
                 NextSimDate = idx < tradingDays.Count - 1 ? tradingDays[idx + 1] : SimDate;
+                IsLastBar = idx == tradingDays.Count - 1;
 
                 barFun();
 
+                IsFirstBar = false;
                 Account.ProcessOrders();
             }
 
@@ -197,7 +224,7 @@ namespace TuringTrader.Simulator.v2
         }
         #endregion
         #region reporting
-        public Plotter Plotter = new Plotter();
+        public PlotterPlus Plotter = null; // instantiated in constructor
         public virtual void Report() => Plotter.OpenWith("SimpleReport");
         #endregion
         #region orders & accounting
