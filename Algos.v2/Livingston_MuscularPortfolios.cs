@@ -7,7 +7,7 @@
 // History:     2018xii14, FUB, created
 //              2022x29, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2022, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -196,6 +196,8 @@ namespace TuringTrader.BooksAndPubs_v2
 
             if (!IsOptimizing)
             {
+                Plotter.AddTargetAllocation();
+                Plotter.AddHistoricalAllocations();
                 Plotter.AddTradeLog();
             }
         }

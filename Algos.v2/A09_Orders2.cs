@@ -107,6 +107,13 @@ namespace TuringTrader.Simulator.v2.Demo
                     }
                 }
             });
+
+            if (!IsOptimizing)
+            {
+                Plotter.AddTargetAllocation();
+                Plotter.AddHistoricalAllocations();
+                Plotter.AddTradeLog();
+            }
         }
         public override void Report() => Plotter.OpenWith("SimpleReport");
         #endregion

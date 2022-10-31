@@ -21,6 +21,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using System;
+using System.Linq;
+
 namespace TuringTrader.Simulator.v2
 {
     public class PlotterPlus : Plotter
@@ -31,11 +34,13 @@ namespace TuringTrader.Simulator.v2
             Algorithm = algorithm;
         }
 
-
+        /// <summary>
+        /// Add trade log. This log includes one entry for every trade executed.
+        /// Each entry summarizes the instrument traded, along with order size,
+        /// fill prices, order amount, and trade friction.
+        /// </summary>
         public void AddTradeLog()
         {
-            var log = Algorithm.Account.TradeLog;
-
             SelectChart("Trade Log", "Date");
             foreach (var trade in Algorithm.Account.TradeLog)
             {
@@ -50,6 +55,90 @@ namespace TuringTrader.Simulator.v2
                 Plot("net", string.Format("{0:C2}", trade.OrderAmount));
                 //plotter.Plot("comment", entry.OrderTicket.Comment ?? "");
             }
+        }
+
+        /// <summary>
+        /// Add target allocation. The target allocation includes one row
+        /// for each asset held. Each row has the asset's symbol, full name,
+        /// target allocation, and last price.
+        /// </summary>
+        public void AddTargetAllocation()
+        {
+            SelectChart(Plotter.SheetNames.HOLDINGS, "Symbol");
+
+            foreach (var kv in Algorithm.Account.Positions.OrderByDescending(p => p.Value))
+            {
+                var asset = Algorithm.Asset(kv.Key);
+                var symbol = asset.Ticker;
+                var name = asset.Description;
+                var pcnt = string.Format("{0:P2}", kv.Value);
+                var lastClose = string.Format("{0:C2}", asset.Close[0]);
+
+                SetX(symbol);
+                Plot("Name", name);
+                Plot("Allocation", pcnt);
+                Plot("Price", lastClose);
+            }
+
+            SelectChart(Plotter.SheetNames.LAST_REBALANCE, "Key");
+            SetX("LastRebalance");
+            Plot("Value", Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate);
+        }
+
+        /// <summary>
+        /// Add historical asset allocations. This log contains one row
+        /// for each rebalancing day. Each row summarizes the symbol held,
+        /// along with the target allocation for that symbol.
+        /// </summary>
+        public void AddHistoricalAllocations()
+        {
+            SelectChart(Plotter.SheetNames.HOLDINGS_HISTORY, "Date");
+
+            var lastDate = default(DateTime);
+            var lastAlloc = "";
+
+            foreach (var trade in Algorithm.Account.TradeLog)
+            {
+                if (trade.OrderTicket.SubmitDate != lastDate)
+                {
+                    if (lastAlloc != "")
+                    {
+                        SetX(lastDate);
+                        Plot("Allocation", lastAlloc);
+                    }
+
+                    lastDate = trade.OrderTicket.SubmitDate;
+                    lastAlloc = "";
+                }
+
+                lastAlloc = lastAlloc
+                    + ((lastAlloc == "") ? "" : ", ")
+                    + string.Format("{0}={1:P2}", Algorithm.Asset(trade.OrderTicket.Name).Ticker, trade.OrderTicket.TargetAllocation);
+            }
+
+            if (lastAlloc != "")
+            {
+                SetX(lastDate);
+                Plot("Allocation", lastAlloc);
+            }
+        }
+
+        /// <summary>
+        /// Add parameters. This page summarizes strategy parameters and 
+        /// current values. This is especially helpful while optimizing
+        /// strategy parameters.
+        /// </summary>
+        public void AddParameters()
+        {
+#if false
+            plotter.SelectChart("Parameters", "Name");
+            foreach (var param in algo.OptimizerParams.Keys)
+            {
+                plotter.SetX(algo.OptimizerParams[param].Name);
+                plotter.Plot("Value", algo.OptimizerParams[param].Value);
+
+            }
+#endif
         }
     }
 }
