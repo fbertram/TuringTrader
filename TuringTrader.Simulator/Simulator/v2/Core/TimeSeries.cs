@@ -66,6 +66,8 @@ namespace TuringTrader.Simulator.v2
             Name = name;
             Data = data;
             Meta = meta;
+
+            Time = new TimeIndexer<T>(this);
         }
 
         private int _CurrentIndex = 0;
@@ -91,7 +93,7 @@ namespace TuringTrader.Simulator.v2
 #if true
                 // move back in time
                 // this can happen because of the coarse forward jump
-                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date > currentDate)
+                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date >= currentDate)
                     _CurrentIndex--;
 #endif
 
@@ -101,7 +103,7 @@ namespace TuringTrader.Simulator.v2
         }
 
         /// <summary>
-        /// Time series indexer
+        /// Indexer to return time series value at offset.
         /// </summary>
         /// <param name="offset">number of bars to offset, positive indices are in the past</param>
         /// <returns>value at offset</returns>
@@ -117,9 +119,29 @@ namespace TuringTrader.Simulator.v2
             }
         }
 
-        // TODO: it might be nice to add a Time property to the class,
-        // featuring an indexer to retrieve the bar's time:
-        //    DateTime timestamp = Asset("SPY").Close.Time[5];
+        private DateTime GetDate(int offset)
+        {
+            var data = Data.Result;
+            var baseIdx = CurrentIndex;
+            var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
+
+            return data[idx].Date;
+        }
+
+        public class TimeIndexer<T>
+        {
+            private readonly TimeSeries<T> TimeSeries;
+            public TimeIndexer(TimeSeries<T> timeSeries)
+            {
+                TimeSeries = timeSeries;
+            }
+            public DateTime this[int offset] { get => TimeSeries.GetDate(offset); }
+        }
+
+        /// <summary>
+        /// Time series indexer to return timestamp at offset.
+        /// </summary>
+        public TimeIndexer<T> Time = null; // instantiated in constructor
     }
     #endregion
     #region class OHLCV
