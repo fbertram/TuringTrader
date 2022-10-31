@@ -21,7 +21,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TuringTrader.Simulator.v2
 {
@@ -40,9 +42,6 @@ namespace TuringTrader.Simulator.v2
         {
             List<BarType<double>> calcIndicator()
             {
-                // NOTE: this is executed in a new task.
-                // Because the input series might not be calculated yet,
-                // we first wait until the result is available.
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
                 var ema = src[0].Value;
@@ -62,6 +61,66 @@ namespace TuringTrader.Simulator.v2
                 series.Algorithm,
                 name,
                 series.Algorithm.Cache(name, calcIndicator));
+        }
+
+        /// <summary>
+        /// Simple Moving Average.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">filter length</param>
+        /// <returns>SMA series</returns>
+        public static TimeSeriesFloat SMA(this TimeSeriesFloat series, int n)
+        {
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    var sma = Enumerable.Range(0, n)
+                        .Average(idx2 => src[Math.Max(0, idx - idx2)].Value);
+                    dst.Add(new BarType<double>(src[idx].Date, sma));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.SMA({1})", series.Name, n);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
+        }
+
+        public class LogRegressionT
+        {
+            public readonly TimeSeriesFloat Slope;
+            public readonly TimeSeriesFloat R2;
+        }
+        public static LogRegressionT LogRegression(this TimeSeriesFloat series, int n)
+        {
+            return null;
+        }
+
+        public static TimeSeriesFloat LinReturn(this TimeSeriesFloat series)
+        {
+            return null;
+        }
+
+        public static TimeSeriesFloat AbsValue(this TimeSeriesFloat series)
+        {
+            return null;
+        }
+
+        public static TimeSeriesFloat Highest(this TimeSeriesFloat series, int n)
+        {
+            return null;
+        }
+
+        public static TimeSeriesFloat AverageTrueRange(this TimeSeriesFloat series, int n)
+        {
+            return null;
         }
     }
 }
