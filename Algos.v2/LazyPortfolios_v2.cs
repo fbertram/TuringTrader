@@ -25,8 +25,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TuringTrader.Simulator.v2.Assets;
 using TuringTrader.Simulator.v2;
+using TuringTrader.Simulator.v2.Assets;
 #endregion
 
 namespace TuringTrader.BooksAndPubs_v2
@@ -88,13 +88,14 @@ namespace TuringTrader.BooksAndPubs_v2
     }
     #endregion
 
+#if false
     #region all-cash/ zero-return portfolio
     public class Benchmark_Zero : LazyPortfolio
     {
         public override string Name => "All-Cash/ Zero-Return";
         public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
         {
-            new Tuple<string, double>(ETFs.BIL, 1e-10),
+            new Tuple<string, double>(ETFs.BIL, 0.0),
         };
         public override string BENCH => ETFs.SPY;
     }
@@ -208,6 +209,7 @@ namespace TuringTrader.BooksAndPubs_v2
     }
 #endif
     #endregion
+#endif
 }
 
 //==============================================================================

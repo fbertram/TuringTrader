@@ -133,7 +133,7 @@ namespace TuringTrader.BooksAndPubs_v2
         protected abstract double MOMENTUM(string ticker);
         protected virtual int NUM_PICKS { get => 3; }
         protected virtual string BENCH => Indices.PORTFOLIO_60_40;
-        protected virtual bool IS_REBAL_DAY => SimDate.Month != NextSimDate.Month;
+        protected virtual bool IS_REBAL_DAY => SimDate.Month != NextSimDate.Month || IsFirstBar;
         protected virtual double MAX_ALLOC_DEVIATION => 0.20; // FIXME: Livingston uses 20%
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
         #endregion
@@ -141,10 +141,13 @@ namespace TuringTrader.BooksAndPubs_v2
         public override void Run()
         {
             //========== initialization ==========
+
             StartDate = DateTime.Parse("01/01/2007");
             EndDate = DateTime.Now;
+            WarmupPeriod = TimeSpan.FromDays(365);
 
             //========== simulation loop ==========
+
             SimLoop(() =>
             {
                 if (IS_REBAL_DAY)
@@ -160,7 +163,7 @@ namespace TuringTrader.BooksAndPubs_v2
                             ticker => ticker,
                             ticker => top3.Contains(ticker) ? 1.0 / NUM_PICKS : 0.0);
 
-                    // calculate max deviation from target percentage
+                    // calculate max deviation from target allocation
                     var allocDeviation = ETF_MENU
                         .Select(ticker => Math.Abs(weights[ticker] - Asset(ticker).Position))
                         .Max();
@@ -190,9 +193,10 @@ namespace TuringTrader.BooksAndPubs_v2
             });
 
             //========== post processing ==========
+
             if (!IsOptimizing)
             {
-                // more chart stuff here?
+                Plotter.AddTradeLog();
             }
         }
         #endregion
