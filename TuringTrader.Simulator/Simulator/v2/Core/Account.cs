@@ -53,23 +53,48 @@ namespace TuringTrader.Simulator.v2
         #region internal stuff
         private readonly Algorithm Algorithm;
         private List<OrderTicket> OrderQueue = new List<OrderTicket>();
+        private List<OrderReceipt> _TradeLog = new List<OrderReceipt>();
         private Dictionary<string, double> _Positions = new Dictionary<string, double>();
         private const double INITIAL_CAPITAL = 1000.00;
         private double _Cash = INITIAL_CAPITAL;
 
-        private class OrderTicket
+        public class OrderTicket
         {
-            public readonly string Symbol;
+            public readonly string Name;
             public readonly double TargetAllocation;
             public readonly OrderType OrderType;
+            public readonly DateTime SubmitDate;
 
-            public OrderTicket(string symbol, double targetAllocation, OrderType orderType)
+            public OrderTicket(string symbol, double targetAllocation, OrderType orderType, DateTime submitDate)
             {
-                Symbol = symbol;
+                Name = symbol;
                 TargetAllocation = targetAllocation;
                 OrderType = orderType;
+                SubmitDate = submitDate;
             }
 
+        }
+
+        public class OrderReceipt
+        {
+            public readonly OrderTicket OrderTicket;
+            public readonly double OrderSize;
+            public readonly double FillPrice;
+            public readonly double OrderAmount;
+            public readonly double FrictionAmount;
+
+            public OrderReceipt(OrderTicket orderTicket,
+                double orderSize,
+                double fillPrice,
+                double orderAmount,
+                double frictionAmount)
+            {
+                OrderTicket = orderTicket;
+                OrderSize = orderSize;
+                FillPrice = fillPrice;
+                OrderAmount = orderAmount;
+                FrictionAmount = frictionAmount;
+            }
         }
         private enum NavType
         {
@@ -115,7 +140,7 @@ namespace TuringTrader.Simulator.v2
         {
             OrderQueue.Add(
                 new OrderTicket(
-                    Name, weight, orderType));
+                    Name, weight, orderType, Algorithm.SimDate));
         }
 
         /// <summary>
@@ -133,20 +158,26 @@ namespace TuringTrader.Simulator.v2
                     // it is likely that the logic around isBuy and price2 needs to change
                     var price = orderType switch
                     {
-                        OrderType.closeThisBar => Algorithm.Asset(order.Symbol).Close[0],
-                        OrderType.openNextBar => Algorithm.Asset(order.Symbol).Open[-1],
-                        _ => 0.0, // this should never happen
+                        OrderType.closeThisBar => Algorithm.Asset(order.Name).Close[0],
+                        // for all other order types, we assume they are executed
+                        // at the opening price. this will not be true for limit
+                        // and stop orders, but we see no better alternative, as
+                        // the asset's high and low prices are not aligned in time.
+                        _ => Algorithm.Asset(order.Name).Open[-1],
                     };
                     var nav = CalcNetAssetValue(orderType switch
                     {
                         OrderType.closeThisBar => NavType.closeThisBar,
-                        OrderType.openNextBar => NavType.openNextBar,
-                        _ => 0.0, // this should never happen
+                        _ => NavType.openNextBar,
                     });
 
-                    var currentShares = _Positions.ContainsKey(order.Symbol) ? _Positions[order.Symbol] : 0;
+                    var currentShares = _Positions.ContainsKey(order.Name) ? _Positions[order.Name] : 0;
                     var currentAlloc = currentShares * price / nav;
                     var targetAlloc = Math.Abs(order.TargetAllocation) >= MinPosition ? order.TargetAllocation : 0.0;
+
+                    if (currentAlloc == 0.0 && targetAlloc == 0.0)
+                        continue;
+
                     var isBuy = currentAlloc < targetAlloc;
 
                     var price2 = isBuy
@@ -157,15 +188,24 @@ namespace TuringTrader.Simulator.v2
                     if (targetAlloc != 0.0)
                     {
                         var targetShares = currentShares + deltaShares;
-                        _Positions[order.Symbol] = targetShares;
+                        _Positions[order.Name] = targetShares;
                     }
                     else
                     {
-                        _Positions.Remove(order.Symbol);
+                        _Positions.Remove(order.Name);
                     }
 
-                    _Cash -= deltaShares * price;
-                    _Cash -= Math.Abs(deltaShares) * price * Friction;
+                    var orderAmount = deltaShares * price;
+                    var frictionAmount = Math.Abs(deltaShares) * price * Friction;
+                    _Cash -= orderAmount;
+                    _Cash -= frictionAmount;
+
+                    _TradeLog.Add(new OrderReceipt(
+                        order,
+                        targetAlloc - currentAlloc,
+                        price,
+                        orderAmount,
+                        frictionAmount));
                 }
             }
 
@@ -173,11 +213,11 @@ namespace TuringTrader.Simulator.v2
         }
 
         /// <summary>
-        /// Return net asset value, relative to initial value.
+        /// Return net asset value, starting with $1,000 at the start of the simulation.
         /// </summary>
         public double NetAssetValue
         {
-            get => CalcNetAssetValue() / INITIAL_CAPITAL;
+            get => CalcNetAssetValue() /* / INITIAL_CAPITAL*/;
         }
 
         /// <summary>
@@ -202,11 +242,13 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         public double Cash { get => _Cash / CalcNetAssetValue(); }
 
+        public List<OrderReceipt> TradeLog { get { return new List<OrderReceipt>(_TradeLog); } }
+
         /// <summary>
         /// Friction to model commissions, fees, and slippage.
         /// Expressed as percentage of traded value.
         /// </summary>
-        public double Friction { get; set; } = 0; // FIXME: 0.0025; // 0.25% per transaction
+        public double Friction { get; set; } = 0.0015; // 0.15% per transaction
 
         /// <summary>
         /// Minimum position size, as percentage of total.
