@@ -71,35 +71,32 @@ namespace TuringTrader.Simulator.v2
         }
 
         private int _CurrentIndex = 0;
-        private int CurrentIndex
+        private int GetIndex(DateTime date = default)
         {
-            get
-            {
-                var data = Data.Result;
-                var currentDate = Algorithm.SimDate;
+            var data = Data.Result;
+            var lookupDate = date != default ? date : Algorithm.SimDate;
 
 #if true
-                // move forward in time (coarse)
-                var totalDays = (int)Math.Floor((currentDate - data[_CurrentIndex].Date).TotalDays);
-                if (totalDays > 10)
-                    _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
-                        _CurrentIndex + (totalDays * 3) / 4 - 1));
+            // move forward in time (coarse)
+            var totalDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
+            if (totalDays > 10)
+                _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
+                    _CurrentIndex + (totalDays * 3) / 4 - 1));
 #endif
 
-                // move forward in time (incrementally)
-                while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= currentDate)
-                    _CurrentIndex++;
+            // move forward in time (incrementally)
+            while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= lookupDate)
+                _CurrentIndex++;
 
 #if true
-                // move back in time
-                // this can happen because of the coarse forward jump
-                while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date >= currentDate)
-                    _CurrentIndex--;
+            // move back in time
+            // this can happen because of the coarse forward jump
+            while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date >= lookupDate)
+                _CurrentIndex--;
 #endif
 
-                return _CurrentIndex;
+            return _CurrentIndex;
 
-            }
         }
 
         /// <summary>
@@ -112,9 +109,19 @@ namespace TuringTrader.Simulator.v2
             get
             {
                 var data = Data.Result;
-                var baseIdx = CurrentIndex;
+                var baseIdx = GetIndex();
                 var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
 
+                return data[idx].Value;
+            }
+        }
+
+        public T this[DateTime date]
+        {
+            get
+            {
+                var data = Data.Result;
+                var idx = GetIndex(date);
                 return data[idx].Value;
             }
         }
@@ -122,7 +129,7 @@ namespace TuringTrader.Simulator.v2
         private DateTime GetDate(int offset)
         {
             var data = Data.Result;
-            var baseIdx = CurrentIndex;
+            var baseIdx = GetIndex();
             var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
 
             return data[idx].Date;
