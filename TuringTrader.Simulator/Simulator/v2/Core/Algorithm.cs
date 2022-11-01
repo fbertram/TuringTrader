@@ -118,7 +118,7 @@ namespace TuringTrader.Simulator.v2
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime EndDate { get => _endDate; set => TradingCalendar.EndDate = value; }
+        public DateTime EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = value; } }
 
         private TimeSpan _warmupPeriod = default(TimeSpan);
 
@@ -159,18 +159,18 @@ namespace TuringTrader.Simulator.v2
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
                 SimDate = tradingDays[idx];
-                if (SimDate < StartDate) continue; // warmup period
-
-                NextSimDate = idx < tradingDays.Count - 1 ? tradingDays[idx + 1] : SimDate;
+                NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
                 IsLastBar = idx == tradingDays.Count - 1;
 
-                barFun();
+                if (SimDate < StartDate) continue; // warmup period
 
+                barFun();
                 IsFirstBar = false;
                 Account.ProcessOrders();
             }
 
-            SimDate = default;
+            //SimDate = default; // we need SimDate to calculate the last asset allocation
+            //_cache.Clear(); // we need quote data to calculate the last asset allocation
 
             FitnessReturn = Account.NetAssetValue;
             FitnessRisk = 0.0;
