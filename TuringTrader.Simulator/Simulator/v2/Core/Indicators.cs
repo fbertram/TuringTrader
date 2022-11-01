@@ -33,6 +33,34 @@ namespace TuringTrader.Simulator.v2
     public static class Indicators
     {
         /// <summary>
+        /// Divide one time series by another.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="dividend">series by which to divide</param>
+        /// <returns>Div series</returns>
+        public static TimeSeriesFloat Div(this TimeSeriesFloat series, TimeSeriesFloat dividend)
+        {
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(it.Date, it.Value / dividend[it.Date]));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.Div({1})", series.Name, dividend.Name);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
+        }
+
+        /// <summary>
         /// Exponential Moving Average.
         /// </summary>
         /// <param name="series">input series</param>
@@ -76,10 +104,16 @@ namespace TuringTrader.Simulator.v2
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
 
+                var window = new Queue<double>();
+                for (var i = 0; i < n; i++)
+                    window.Enqueue(src[0].Value);
+
                 for (int idx = 0; idx < src.Count; idx++)
                 {
-                    var sma = Enumerable.Range(0, n)
-                        .Average(idx2 => src[Math.Max(0, idx - idx2)].Value);
+                    window.Enqueue(src[idx].Value);
+                    window.Dequeue();
+
+                    var sma = window.Average(w => w);
                     dst.Add(new BarType<double>(src[idx].Date, sma));
                 }
 
@@ -93,34 +127,233 @@ namespace TuringTrader.Simulator.v2
                 series.Algorithm.Cache(name, calcIndicator));
         }
 
-        public class LogRegressionT
+        public class RegressionT
         {
             public readonly TimeSeriesFloat Slope;
+            public readonly TimeSeriesFloat Intercept;
             public readonly TimeSeriesFloat R2;
+
+            public RegressionT(TimeSeriesFloat slope, TimeSeriesFloat intercept, TimeSeriesFloat r2)
+            {
+                Slope = slope;
+                Intercept = intercept;
+                R2 = r2;
+            }
         }
-        public static LogRegressionT LogRegression(this TimeSeriesFloat series, int n)
+        public static RegressionT LinRegression(this TimeSeriesFloat series, int n)
         {
-            return null;
+            Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var slope = new List<BarType<double>>();
+                var intercept = new List<BarType<double>>();
+                var r2 = new List<BarType<double>>();
+
+                var window = new Queue<double>();
+                for (var i = 0; i < n; i++)
+                    window.Enqueue(src[0].Value);
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    window.Enqueue(src[idx].Value);
+                    window.Dequeue();
+
+                    // simple linear regression
+                    // https://en.wikipedia.org/wiki/Simple_linear_regression
+                    // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
+                    // a = avg(y) - b * avg(x)
+
+                    double avgX = Enumerable.Range(-n + 1, n)
+                        .Average(x => x);
+                    double avgY = Enumerable.Range(-n + 1, n)
+                        .Average(x => src[Math.Max(0, idx + x)].Value);
+                    double sumXx = Enumerable.Range(-n + 1, n)
+                        .Sum(x => Math.Pow(x - avgX, 2));
+                    double sumXy = Enumerable.Range(-n + 1, n)
+                        .Sum(x => (x - avgX) * (src[Math.Max(0, idx + x)].Value - avgY));
+                    double b = sumXy / sumXx;
+                    double a = avgY - b * avgX;
+
+                    // coefficient of determination
+                    // https://en.wikipedia.org/wiki/Coefficient_of_determination
+                    // f = a + b * x
+                    // SStot = sum((y - avg(y))^2)
+                    // SSreg = sum((f - avg(y))^2)
+                    // SSres = sum((y - f)^2)
+                    // R2 = 1 - SSres / SStot
+                    //    = SSreg / SStot
+
+                    double totalSumOfSquares = Enumerable.Range(-n + 1, n)
+                        .Sum(x => Math.Pow(src[Math.Max(0, idx + x)].Value - avgY, 2));
+                    double regressionSumOfSquares = Enumerable.Range(-n + 1, n)
+                        .Sum(x => Math.Pow(a + b * x - avgY, 2));
+                    //double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                    //    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
+
+                    // NOTE: this is debatable. we are returning r2 = 0.0, 
+                    //       when it is actually NaN
+                    double rr = totalSumOfSquares != 0.0
+                        //? 1.0 - residualSumOfSquares / totalSumOfSquares
+                        ? regressionSumOfSquares / totalSumOfSquares
+                        : 0.0;
+
+                    slope.Add(new BarType<double>(src[idx].Date, b));
+                    intercept.Add(new BarType<double>(src[idx].Date, a));
+                    r2.Add(new BarType<double>(src[idx].Date, rr));
+                }
+
+                return Tuple.Create(slope, intercept, r2);
+            }
+
+            var name = string.Format("{0}.LogRegression({1})", series.Name, n);
+            var regr = series.Algorithm.Cache(name, calcIndicator);
+
+            return new RegressionT(
+                new TimeSeriesFloat(
+                    series.Algorithm,
+                    name,
+                    series.Algorithm.Cache(name + ".Slope", () => { var r = regr.Result; return r.Item1; })),
+                new TimeSeriesFloat(
+                    series.Algorithm,
+                    name,
+                    series.Algorithm.Cache(name + ".Intercept", () => { var r = regr.Result; return r.Item2; })),
+                new TimeSeriesFloat(
+                    series.Algorithm,
+                    name,
+                    series.Algorithm.Cache(name + ".R2", () => { var r = regr.Result; return r.Item3; })));
+        }
+
+        public static RegressionT LogRegression(this TimeSeriesFloat series, int n)
+        {
+            return series.Log().LinRegression(n);
         }
 
         public static TimeSeriesFloat LinReturn(this TimeSeriesFloat series)
         {
-            return null;
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+                var prev = src[0].Value;
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(it.Date, it.Value / prev - 1.0));
+                    prev = it.Value;
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.LinReturn", series.Name);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
         }
 
         public static TimeSeriesFloat AbsValue(this TimeSeriesFloat series)
         {
-            return null;
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(it.Date, Math.Abs(it.Value)));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.AbsValue", series.Name);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
+        }
+
+        public static TimeSeriesFloat Log(this TimeSeriesFloat series)
+        {
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(it.Date, Math.Log(it.Value)));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.Log", series.Name);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
         }
 
         public static TimeSeriesFloat Highest(this TimeSeriesFloat series, int n)
         {
-            return null;
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                var window = new Queue<double>();
+                for (var i = 0; i < n; i++)
+                    window.Enqueue(src[0].Value);
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    window.Enqueue(src[idx].Value);
+                    window.Dequeue();
+
+                    var sma = window.Max(w => w);
+                    dst.Add(new BarType<double>(src[idx].Date, sma));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.Highest({1})", series.Name, n);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
         }
 
-        public static TimeSeriesFloat AverageTrueRange(this TimeSeriesFloat series, int n)
+        public static TimeSeriesFloat TrueRange(this TimeSeriesAsset series)
         {
-            return null;
+            List<BarType<double>> calcIndicator()
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    var idxPrev = Math.Max(0, idx - 1);
+                    var high = Math.Max(src[idxPrev].Value.Close, src[idx].Value.High);
+                    var low = Math.Min(src[idxPrev].Value.Close, src[idx].Value.Low);
+                    dst.Add(new BarType<double>(src[idx].Date, high - low));
+                }
+
+                return dst;
+            }
+
+            var name = string.Format("{0}.TrueRange", series.Name);
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                series.Algorithm.Cache(name, calcIndicator));
+
+        }
+        public static TimeSeriesFloat AverageTrueRange(this TimeSeriesAsset series, int n)
+        {
+            return series.TrueRange().SMA(n);
         }
     }
 }
