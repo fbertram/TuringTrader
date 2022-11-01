@@ -248,7 +248,7 @@ namespace TuringTrader.Simulator.v2
         /// Friction to model commissions, fees, and slippage.
         /// Expressed as percentage of traded value.
         /// </summary>
-        public double Friction { get; set; } = 0.0015; // 0.15% per transaction
+        public double Friction { get; set; } = 0.0005; // $100.00 x 0.05% = $0.05
 
         /// <summary>
         /// Minimum position size, as percentage of total.
