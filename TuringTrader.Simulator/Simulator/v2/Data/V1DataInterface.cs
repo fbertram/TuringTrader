@@ -70,12 +70,19 @@ namespace TuringTrader.Simulator.v2
                 var data = new List<BarType<OHLCV>>();
                 foreach (var tradingDay in tradingDays)
                 {
-                    while (v1Idx < v1Data.Count - 1 && v1Data[v1Idx + 1].Date <= tradingDay)
-                        v1Idx++;
-                    var v1Bar = v1Data[v1Idx];
+                    if (v1Data.Count > 0)
+                    {
+                        while (v1Idx < v1Data.Count - 1 && v1Data[v1Idx + 1].Date <= tradingDay)
+                            v1Idx++;
+                        var v1Bar = v1Data[v1Idx];
 
-                    data.Add(new BarType<OHLCV>(tradingDay,
-                        new OHLCV(v1Bar.Open, v1Bar.High, v1Bar.Low, v1Bar.Close, v1Bar.Volume)));
+                        data.Add(new BarType<OHLCV>(tradingDay,
+                            new OHLCV(v1Bar.Open, v1Bar.High, v1Bar.Low, v1Bar.Close, v1Bar.Volume)));
+                    } else
+                    {
+                        // FIXME: not sure if we really need this
+                        data.Add(new BarType<OHLCV>(tradingDay, new OHLCV(0, 0, 0, 0, 0)));
+                    }
                 }
 
                 return data;
