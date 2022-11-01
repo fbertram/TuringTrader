@@ -129,7 +129,7 @@ namespace TuringTrader.BooksAndPubs_v2
         }
         #endregion
         #region strategy logic
-        public void Run()
+        public override void Run()
         {
             //========== initialization ==========
 
@@ -153,10 +153,9 @@ namespace TuringTrader.BooksAndPubs_v2
                     // we start with the current S&P 500 universe
                     var constituents = Universe(UNIVERSE);
 
-                    //----- asset ranking
+                    //----- rank assets
                     //    - by volatility-adjusted momentum
-                    //    - pick top 20% (top-100)
-                    var topRankedStocks = constituents
+                    var rankedStocks = constituents
                         .OrderByDescending(name =>
                         {
                             // NOTE: the book is not clear on the type of regression
@@ -167,20 +166,20 @@ namespace TuringTrader.BooksAndPubs_v2
                             var regr = Asset(name).Close.LogRegression(MOM_PERIOD);
                             return (Math.Exp(252.0 * regr.Slope[0]) - 1.0) * regr.R2[0];
                         })
-                        .Take((int)Math.Round(TOP_PCNT / 100.0 * constituents.Count))
                         .ToList();
 
-                    //----- disqualify
+                    //----- disqualify assets
+                    //    - not ranked within top 20% (top 100)
                     //    - trading below 100-day moving average
                     //    - maximum move > 15%
-                    var availableStocks = topRankedStocks
-                        .Where(name =>
-                            Asset(name).Close[0] > Asset(name).Close.SMA(100)[0]
-                            && Asset(name).Close.LinReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0)
+                    var investibleStocks = rankedStocks
+                        .Take((int)Math.Round(TOP_PCNT / 100.0 * constituents.Count))
+                        .Where(name => Asset(name).Close[0] > Asset(name).Close.SMA(100)[0])
+                        .Where(name => Asset(name).Close.LinReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0) // 10.52%
                         .ToList();
 
                     //----- money management
-                    // start with the assumption that we close all open positions
+                    // begin with the assumption to close all open positions
                     var weights = Positions
                         .ToDictionary(
                             kv => kv.Key,
@@ -189,7 +188,7 @@ namespace TuringTrader.BooksAndPubs_v2
                     // allocate capital to the ranked assets until we run out of cash
                     double availableCapital = 1.0;
                     int portfolioRisk = 0;
-                    foreach (var name in availableStocks)
+                    foreach (var name in investibleStocks)
                     {
                         // NOTE: Clenow does not limit the total portfolio risk
                         //       we add this condition here to support proprietary
@@ -199,8 +198,9 @@ namespace TuringTrader.BooksAndPubs_v2
 
                         // we size the positions as a fixed-fraction risk allocation,
                         // based on the average true range
-                        var rawWeight = Math.Min(Math.Min(availableCapital, MAX_PER_STOCK / 100.0),
-                            RISK_PER_STOCK * 0.0001 * Asset(name).Close[0] / Asset(name).Close.AverageTrueRange(20)[0]);
+                        var rawWeight = Math.Min(
+                            Math.Min(availableCapital, MAX_PER_STOCK / 100.0),
+                            RISK_PER_STOCK * 0.0001 * Asset(name).Close[0] / Asset(name).AverageTrueRange(20)[0]);
 
                         // only buy any shares, while S&P-500 is trading above its 200-day moving average
                         // NOTE: the 10-day SMA on the benchmark is _not_ mentioned in
@@ -234,12 +234,14 @@ namespace TuringTrader.BooksAndPubs_v2
                     Plotter.Plot(Asset("$SPXTR").Description, Asset("$SPXTR").Close[0]);
 
 #if false
-                    _plotter.SelectChart("Clenow-style Chart", "Date");
-                    _plotter.SetX(SimTime[0]);
-                    _plotter.Plot(Name, NetAssetValue[0] / Globals.INITIAL_CAPITAL);
-                    _plotter.Plot(sp500.Instrument.Name, sp500.Instrument.Close[0] / sp500Initial);
-                    _plotter.Plot(sp500.Instrument.Name + " 200-day moving average", sp500.Instrument.Close.SMA(200)[0] / sp500Initial);
-                    _plotter.Plot("Cash", Cash / NetAssetValue[0]);
+                    Plotter.SelectChart("Clenow-style Chart", "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot(Name, NetAssetValue / 1000.00);
+                    var spx = Asset("$SPXTR").Close;
+                    Plotter.Plot(spx.Name, spx[0] / spx[StartDate]);
+                    var ema = Asset("$SPXTR").Close.SMA(200);
+                    Plotter.Plot(ema.Name, ema[0] / ema[StartDate]);
+                    Plotter.Plot("Cash", Cash);
 #endif
                 }
             });
