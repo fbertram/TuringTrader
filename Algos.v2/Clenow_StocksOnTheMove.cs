@@ -175,7 +175,10 @@ namespace TuringTrader.BooksAndPubs_v2
                     var investibleStocks = rankedStocks
                         .Take((int)Math.Round(TOP_PCNT / 100.0 * constituents.Count))
                         .Where(name => Asset(name).Close[0] > Asset(name).Close.SMA(100)[0])
-                        .Where(name => Asset(name).Close.LinReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0) // 10.52%
+                        // NOTE: it is not fully clear how to determine the maximum move.
+                        //       Other plausible options include:
+                        //     - Asset(name).TrueRange().Div(Asset(name).Close).Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0
+                        .Where(name => Asset(name).Close.LinReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0)
                         .ToList();
 
                     //----- money management
