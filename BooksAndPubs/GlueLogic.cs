@@ -102,7 +102,7 @@ namespace TuringTrader.Algorithms.Glue
                 "MSFT",  // Microsoft Corporation
                 "AAPL",  // Apple Inc.
                 "AMZN",  // Amazon.com Inc.
-                "FB",    // Facebook Inc. Class A
+                "META",  // Meta Platforms Inc Class A Common
                 "JNJ",   // Johnson & Johnson
                 "GOOG",  // Alphabet Inc. Class C
                 "GOOGL", // Alphabet Inc. Class A
