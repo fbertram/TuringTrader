@@ -205,7 +205,7 @@ namespace TuringTrader.Simulator.v2
                 return Tuple.Create(slope, intercept, r2);
             }
 
-            var name = string.Format("{0}.LogRegression({1})", series.Name, n);
+            var name = string.Format("{0}.LinRegression({1})", series.Name, n);
             var regr = series.Algorithm.Cache(name, calcIndicator);
 
             return new RegressionT(
