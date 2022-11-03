@@ -26,10 +26,13 @@ using System.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
-    public class PlotterPlus : Simulator.Plotter
+    /// <summary>
+    /// Plotter class with additional helper functions for v2 engine.
+    /// </summary>
+    public class Plotter : Simulator.Plotter
     {
         private Algorithm Algorithm;
-        public PlotterPlus(Algorithm algorithm)
+        public Plotter(Algorithm algorithm)
         {
             Algorithm = algorithm;
         }

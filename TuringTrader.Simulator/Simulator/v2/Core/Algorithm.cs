@@ -51,7 +51,7 @@ namespace TuringTrader.SimulatorV2
                 OptimizerParams[param.Name] = param;
 
             Account = new Account(this);
-            Plotter = new PlotterPlus(this);
+            Plotter = new Plotter(this);
         }
         /// <summary>
         /// Clone algorithm, including all optimizer parameters. The application uses
@@ -225,7 +225,7 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
         #region reporting
-        public PlotterPlus Plotter = null; // instantiated in constructor
+        public Plotter Plotter = null; // instantiated in constructor
         public virtual void Report() => Plotter.OpenWith("SimpleReport");
         #endregion
         #region orders & accounting
