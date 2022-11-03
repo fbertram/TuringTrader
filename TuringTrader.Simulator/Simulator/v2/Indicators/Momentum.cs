@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TuringTrader.SimulatorV2;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -49,12 +48,30 @@ namespace TuringTrader.SimulatorV2.Indicators
         #region StochasticOscillator
         #endregion
         #region LinRegression
+        /// <summary>
+        /// Container for regression results.
+        /// </summary>
         public class RegressionT
         {
+            /// <summary>
+            /// Regression slope.
+            /// </summary>
             public readonly TimeSeriesFloat Slope;
+            /// <summary>
+            /// Regression intercept at time offset zero.
+            /// </summary>
             public readonly TimeSeriesFloat Intercept;
+            /// <summary>
+            /// Regression coefficient of determination.
+            /// </summary>
             public readonly TimeSeriesFloat R2;
 
+            /// <summary>
+            /// Create new regression result object.
+            /// </summary>
+            /// <param name="slope"></param>
+            /// <param name="intercept"></param>
+            /// <param name="r2"></param>
             public RegressionT(TimeSeriesFloat slope, TimeSeriesFloat intercept, TimeSeriesFloat r2)
             {
                 Slope = slope;
@@ -62,9 +79,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                 R2 = r2;
             }
         }
+
+        /// <summary>
+        /// Calculate linear regression.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">observation window</param>
+        /// <returns>lin regression time series</returns>
         public static RegressionT LinRegression(this TimeSeriesFloat series, int n)
         {
-            Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>> calcIndicator()
+            var name = string.Format("{0}.LinRegression({1})", series.Name, n);
+
+            var regr = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var slope = new List<BarType<double>>();
@@ -125,10 +151,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                 }
 
                 return Tuple.Create(slope, intercept, r2);
-            }
-
-            var name = string.Format("{0}.LinRegression({1})", series.Name, n);
-            var regr = series.Algorithm.Cache(name, calcIndicator);
+            });
 
             return new RegressionT(
                 new TimeSeriesFloat(
@@ -146,6 +169,12 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region LogRegression
+        /// <summary>
+        /// Calculate logarithmic regression.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">observation period</param>
+        /// <returns>log regression time series</returns>
         public static RegressionT LogRegression(this TimeSeriesFloat series, int n)
         {
             return series.Log().LinRegression(n);

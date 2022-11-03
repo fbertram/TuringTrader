@@ -22,7 +22,6 @@
 //==============================================================================
 
 using System.Collections.Generic;
-using TuringTrader.SimulatorV2;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -46,24 +45,27 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <returns>Div series</returns>
         public static TimeSeriesFloat Div(this TimeSeriesFloat dividend, TimeSeriesFloat divisor)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.Div({1})", dividend.Name, divisor.Name);
+
+            var data = dividend.Algorithm.Cache(name, () =>
             {
                 var src = dividend.Data.Result;
                 var dst = new List<BarType<double>>();
 
                 foreach (var it in src)
                 {
-                    dst.Add(new BarType<double>(it.Date, it.Value / divisor[it.Date]));
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        it.Value / divisor[it.Date]));
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.Div({1})", dividend.Name, divisor.Name);
             return new TimeSeriesFloat(
                 dividend.Algorithm,
                 name,
-                dividend.Algorithm.Cache(name, calcIndicator));
+                data);
         }
         /// <summary>
         /// Divide time series by constant value.
