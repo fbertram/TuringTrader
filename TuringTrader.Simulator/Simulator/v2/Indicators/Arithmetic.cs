@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
 // Name:        Indicators/Arithmetic
-// Description: Dummy indicators for API development.
+// Description: Arithmetic on time series.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC

@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
 // Name:        Indicators/Trend
-// Description: Dummy indicators for API development.
+// Description: Trend indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
