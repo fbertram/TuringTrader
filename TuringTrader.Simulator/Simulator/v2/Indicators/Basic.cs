@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TuringTrader.SimulatorV2;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -33,17 +32,54 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// </summary>
     public static class Basic
     {
-        #region Lambda
-        #endregion
         #region Const
         #endregion
         #region Delay
+        /// <summary>
+        /// Delay time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">delay</param>
+        /// <returns>delayed time series</returns>
+        public static TimeSeriesFloat Delay(this TimeSeriesFloat series, int n)
+        {
+            var name = string.Format("{0}.Delay({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    var srcIdx = Math.Max(0, idx - n);
+                    dst.Add(new BarType<double>(
+                        src[idx].Date,
+                        src[srcIdx].Value));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
         #endregion
 
         #region Highest
+        /// <summary>
+        /// Return highest value in given period.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">observation period</param>
+        /// <returns>time series of highest values</returns>
         public static TimeSeriesFloat Highest(this TimeSeriesFloat series, int n)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.Highest({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
@@ -57,31 +93,110 @@ namespace TuringTrader.SimulatorV2.Indicators
                     window.Enqueue(src[idx].Value);
                     window.Dequeue();
 
-                    var sma = window.Max(w => w);
-                    dst.Add(new BarType<double>(src[idx].Date, sma));
+                    dst.Add(new BarType<double>(
+                        src[idx].Date,
+                        window.Max(w => w)));
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.Highest({1})", series.Name, n);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
         }
         #endregion
         #region Lowest
+        /// <summary>
+        /// Return lowest value in given period.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">observation period</param>
+        /// <returns>time series of highest values</returns>
+        public static TimeSeriesFloat Lowest(this TimeSeriesFloat series, int n)
+        {
+            var name = string.Format("{0}.Lowest({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                var window = new Queue<double>();
+                for (var i = 0; i < n; i++)
+                    window.Enqueue(src[0].Value);
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    window.Enqueue(src[idx].Value);
+                    window.Dequeue();
+
+                    dst.Add(new BarType<double>(
+                        src[idx].Date,
+                        window.Min(w => w)));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
         #endregion
         #region Range
+        /// <summary>
+        /// Return value range in given period.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">observation period</param>
+        /// <returns>time series of range values</returns>
+        public static TimeSeriesFloat Range(this TimeSeriesFloat series, int n)
+        {
+            var name = string.Format("{0}.Range({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                var window = new Queue<double>();
+                for (var i = 0; i < n; i++)
+                    window.Enqueue(src[0].Value);
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    window.Enqueue(src[idx].Value);
+                    window.Dequeue();
+
+                    dst.Add(new BarType<double>(
+                        src[idx].Date,
+                        window.Max(w => w) - window.Min(w => w)));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
         #endregion
 
         #region AbsReturn
-        #endregion
-        #region LinReturn
-        public static TimeSeriesFloat LinReturn(this TimeSeriesFloat series)
+        /// <summary>
+        /// Calculate absolute return as r = v[0] - v[1].
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>time series of absolute returns</returns>
+        public static TimeSeriesFloat AbsReturn(this TimeSeriesFloat series)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.AbsReturn", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
@@ -89,74 +204,245 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                 foreach (var it in src)
                 {
-                    dst.Add(new BarType<double>(it.Date, it.Value / prev - 1.0));
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        it.Value - prev));
+
                     prev = it.Value;
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.LinReturn", series.Name);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
+        }
+        #endregion
+        #region LinReturn
+        /// <summary>
+        /// Return linear return, calculated as r = v[0] / v[1] - 1.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>time series of linear returns</returns>
+        public static TimeSeriesFloat LinReturn(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.LinReturn", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+                var prev = src[0].Value;
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        it.Value / prev - 1.0));
+
+                    prev = it.Value;
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
         }
         #endregion
         #region LogReturn
+        /// <summary>
+        /// Calculate logarithmic return as r = log(v[0] / v[1]).
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>time series of log returns</returns>
+        public static TimeSeriesFloat LogReturn(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.LogReturn", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+                var prev = src[0].Value;
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        Math.Log(it.Value / prev)));
+
+                    prev = it.Value;
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
         #endregion
 
         #region AbsValue
+        /// <summary>
+        /// Calculate absolute value of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>time series of absolute values</returns>
         public static TimeSeriesFloat AbsValue(this TimeSeriesFloat series)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.AbsValue", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
 
                 foreach (var it in src)
                 {
-                    dst.Add(new BarType<double>(it.Date, Math.Abs(it.Value)));
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        Math.Abs(it.Value)));
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.AbsValue", series.Name);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
         }
         #endregion
         #region Square
-        #endregion
-        #region Sqrt
-        #endregion
-        #region Log
-        public static TimeSeriesFloat Log(this TimeSeriesFloat series)
+        /// <summary>
+        /// Calculate square of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>squared time series</returns>
+        public static TimeSeriesFloat Square(this TimeSeriesFloat series)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.Square", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
 
                 foreach (var it in src)
                 {
-                    dst.Add(new BarType<double>(it.Date, Math.Log(it.Value)));
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        it.Value * it.Value));
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.Log", series.Name);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
+        }
+        #endregion
+        #region Sqrt
+        /// <summary>
+        /// Calculate square root of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>square root time series</returns>
+        public static TimeSeriesFloat Sqrt(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.Sqrt", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        Math.Sqrt(it.Value)));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
+        #endregion
+        #region Log
+        /// <summary>
+        /// Calculate natural logarithm of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>log time series</returns>
+        public static TimeSeriesFloat Log(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.Log", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        Math.Log(it.Value)));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
         }
         #endregion
         #region Exp
+        /// <summary>
+        /// Calculate exp of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>exp time series</returns>
+        public static TimeSeriesFloat Exp(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.Sqrt", series.Name);
+
+            var data = series.Algorithm.Cache(name, () =>
+            {
+                var src = series.Data.Result;
+                var dst = new List<BarType<double>>();
+
+                foreach (var it in src)
+                {
+                    dst.Add(new BarType<double>(
+                        it.Date,
+                        Math.Exp(it.Value)));
+                }
+
+                return dst;
+            });
+
+            return new TimeSeriesFloat(
+                series.Algorithm,
+                name,
+                data);
+        }
         #endregion
     }
 }

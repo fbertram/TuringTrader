@@ -33,11 +33,11 @@ namespace TuringTrader.SimulatorV2.Indicators
     {
         #region Add
         #endregion
-        #region Subtract
+        #region Sub
         #endregion
-        #region Multiply
+        #region Mul
         #endregion
-        #region Divide
+        #region Div
         /// <summary>
         /// Divide one time series by another.
         /// </summary>

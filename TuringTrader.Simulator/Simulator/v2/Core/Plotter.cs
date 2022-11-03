@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Plotter Plus
-// Description: Trading calendar interface.
+// Name:        Plotter
+// Description: Plotter class w/ additional helpers for v2 engine.
 // History:     2022x31, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
