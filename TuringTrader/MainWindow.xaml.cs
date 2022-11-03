@@ -34,6 +34,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 #endregion
 

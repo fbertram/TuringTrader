@@ -25,6 +25,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using TuringTrader.SimulatorV2;
 #endregion
 
 // NOTE: indicators work the same way as assets. They can be introduced at
@@ -32,7 +33,7 @@ using System.Linq;
 // indicators are processed in their separate tasks, they can run in
 // parallel, making good use of your CPU's cores.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A05_Universe : Algorithm
     {

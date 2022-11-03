@@ -29,7 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TuringTrader.Simulator.v2
+namespace TuringTrader.SimulatorV2
 {
     internal class V1DataInterface
     {
@@ -42,8 +42,8 @@ namespace TuringTrader.Simulator.v2
                 var ds = TuringTrader.Simulator.DataSource.New(name);
                 return new TimeSeriesAsset.MetaType
                 {
-                    Ticker = ds.Info[DataSourceParam.ticker],
-                    Description = ds.Info[DataSourceParam.name],
+                    Ticker = ds.Info[Simulator.DataSourceParam.ticker],
+                    Description = ds.Info[Simulator.DataSourceParam.name],
                 };
             }
 
@@ -97,9 +97,9 @@ namespace TuringTrader.Simulator.v2
 
         public static HashSet<string> GetConstituents(Algorithm algo, string name)
         {
-            if (GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
+            if (Simulator.GlobalSettings.DefaultDataFeed.ToLower().Contains("norgate"))
             {
-                var v1Universe = algo.Cache(string.Format("Universe({0})", name), () => Universe.New(name)).Result;
+                var v1Universe = algo.Cache(string.Format("Universe({0})", name), () => Simulator.Universe.New(name)).Result;
                 var exchangeTime = TimeZoneInfo.ConvertTime(algo.SimDate, exchangeTimeZone);
                 return v1Universe.Constituents
                     .Where(c => v1Universe.IsConstituent(c, exchangeTime))
@@ -108,7 +108,7 @@ namespace TuringTrader.Simulator.v2
             else
             {
                 throw new Exception(string.Format("data source {0} does not support universes",
-                    GlobalSettings.DefaultDataFeed));
+                    Simulator.GlobalSettings.DefaultDataFeed));
             }
         }
     }

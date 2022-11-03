@@ -34,10 +34,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using TuringTrader.Simulator.v2;
+using TuringTrader.Optimizer;
+using TuringTrader.SimulatorV2;
+using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
-namespace TuringTrader.BooksAndPubs_v2
+namespace TuringTrader.BooksAndPubsV2
 {
     public class Clenow_StocksOnTheMove : Algorithm
     {
@@ -47,49 +49,49 @@ namespace TuringTrader.BooksAndPubs_v2
         /// <summary>
         /// length of momentum calculation (in days)
         /// </summary>
-        //[OptimizerParam(63, 252, 21)]
+        [OptimizerParam(63, 252, 21)]
         public virtual int MOM_PERIOD { get; set; } = 90;
 
         /// <summary>
         /// maximum daily move (in percent)
         /// </summary>
-        //[OptimizerParam(10, 25, 5)]
+        [OptimizerParam(10, 25, 5)]
         public virtual int MAX_MOVE { get; set; } = 15;
 
         /// <summary>
         /// length of SMA for instrument trend filter (in days)
         /// </summary>
-        //[OptimizerParam(63, 252, 21)]
+        [OptimizerParam(63, 252, 21)]
         public virtual int INSTR_TREND { get; set; } = 100;
 
         /// <summary>
         /// length of ATR calculation (in days)
         /// </summary>
-        //[OptimizerParam(5, 25, 5)]
+        [OptimizerParam(5, 25, 5)]
         public virtual int ATR_PERIOD { get; set; } = 20;
 
         /// <summary>
         /// length of SMA for index trend filter (in days)
         /// </summary>
-        //[OptimizerParam(63, 252, 21)]
+        [OptimizerParam(63, 252, 21)]
         public virtual int INDEX_TREND { get; set; } = 200;
 
         /// <summary>
         /// length of SMA for index trend filter (in days)
         /// </summary>
-        //[OptimizerParam(5, 20, 5)]
+        [OptimizerParam(5, 20, 5)]
         public virtual int INDEX_FLT { get; set; } = 10;
 
         /// <summary>
         /// percentage of instruments from the top (in %)
         /// </summary>
-        //[OptimizerParam(5, 50, 5)]
+        [OptimizerParam(5, 50, 5)]
         public virtual int TOP_PCNT { get; set; } = 20;
 
         /// <summary>
         /// target risk per stock (in basis points)
         /// </summary>
-        //[OptimizerParam(5, 50, 5)]
+        [OptimizerParam(5, 50, 5)]
         public virtual int RISK_PER_STOCK { get; set; } = 10;
 
         /// <summary>

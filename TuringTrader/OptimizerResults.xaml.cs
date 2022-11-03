@@ -25,6 +25,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 #endregion
 

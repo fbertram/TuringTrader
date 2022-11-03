@@ -22,9 +22,8 @@
 //==============================================================================
 
 #region libraries
-using System;
 using System.Collections.Generic;
-using System.Text;
+using TuringTrader.Optimizer;
 #endregion
 
 namespace TuringTrader.Simulator

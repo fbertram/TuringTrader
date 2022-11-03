@@ -23,10 +23,9 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using TuringTrader.SimulatorV2;
+using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 // NOTE: indicators work the same way as assets. They can be introduced at
@@ -34,7 +33,7 @@ using TuringTrader.Simulator.v2;
 // indicators are processed in their separate tasks, they can run in
 // parallel, making good use of your CPU's cores.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A06_Indicators : Algorithm
     {

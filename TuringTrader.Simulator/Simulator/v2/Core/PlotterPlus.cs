@@ -24,9 +24,9 @@
 using System;
 using System.Linq;
 
-namespace TuringTrader.Simulator.v2
+namespace TuringTrader.SimulatorV2
 {
-    public class PlotterPlus : Plotter
+    public class PlotterPlus : Simulator.Plotter
     {
         private Algorithm Algorithm;
         public PlotterPlus(Algorithm algorithm)
@@ -64,7 +64,7 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         public void AddTargetAllocation()
         {
-            SelectChart(Plotter.SheetNames.HOLDINGS, "Symbol");
+            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS, "Symbol");
 
             foreach (var kv in Algorithm.Account.Positions.OrderByDescending(p => p.Value))
             {
@@ -80,7 +80,7 @@ namespace TuringTrader.Simulator.v2
                 Plot("Price", lastClose);
             }
 
-            SelectChart(Plotter.SheetNames.LAST_REBALANCE, "Key");
+            SelectChart(Simulator.Plotter.SheetNames.LAST_REBALANCE, "Key");
             SetX("LastRebalance");
             Plot("Value", Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate);
         }
@@ -92,7 +92,7 @@ namespace TuringTrader.Simulator.v2
         /// </summary>
         public void AddHistoricalAllocations()
         {
-            SelectChart(Plotter.SheetNames.HOLDINGS_HISTORY, "Date");
+            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS_HISTORY, "Date");
 
             var lastDate = default(DateTime);
             var lastAlloc = "";

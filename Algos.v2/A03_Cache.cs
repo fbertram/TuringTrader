@@ -23,18 +23,15 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Threading;
-using TuringTrader.Simulator.v2;
+using TuringTrader.SimulatorV2;
 #endregion
 
 // NOTE: The cache is a central feature of TuringTrader. It is used to
 // store asset quotes and indicators. Objects in the cache are referred
 // to by an id. On a cache miss, a method is called to retrieve the result.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A03_Cache : Algorithm
     {

@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.Optimizer;
 #endregion
 
 namespace TuringTrader.Simulator

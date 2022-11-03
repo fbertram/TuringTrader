@@ -23,10 +23,8 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using TuringTrader.SimulatorV2;
 #endregion
 
 // NOTE: The v2 engine introduces the concept of a trading calendar. This
@@ -39,7 +37,7 @@ using TuringTrader.Simulator.v2;
 // work with the trading calendar. However, as the example below shows,
 // there will be proper time stamps, even when no data source is loaded.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A02_Calendar : Algorithm
     {

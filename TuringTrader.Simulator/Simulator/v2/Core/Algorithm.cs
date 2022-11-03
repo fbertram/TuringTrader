@@ -25,13 +25,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TuringTrader.Optimizer;
 
-namespace TuringTrader.Simulator.v2
+namespace TuringTrader.SimulatorV2
 {
     /// <summary>
     /// Base class for trading algorithms.
     /// </summary>
-    public abstract class Algorithm : IAlgorithm
+    public abstract class Algorithm : Simulator.IAlgorithm
     {
         public virtual string Name => this.GetType().Name;
 
@@ -58,7 +59,7 @@ namespace TuringTrader.Simulator.v2
         /// instances before running them.
         /// </summary>
         /// <returns>new algorithm instance</returns>
-        public IAlgorithm Clone()
+        public Simulator.IAlgorithm Clone()
         {
             Type algoType = GetType();
             Algorithm clonedInstance = (Algorithm)Activator.CreateInstance(algoType);

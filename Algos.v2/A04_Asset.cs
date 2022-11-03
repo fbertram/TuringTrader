@@ -24,7 +24,7 @@
 #region libraries
 using System;
 using System.Globalization;
-using TuringTrader.Simulator.v2;
+using TuringTrader.SimulatorV2;
 #endregion
 
 // NOTE: with v2, it is now possible to add a new data source at any point in
@@ -32,7 +32,7 @@ using TuringTrader.Simulator.v2;
 // The example below shows how the asset is brought in on every bar - but it
 // will be served from the cache in all but the very first call.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A04_Asset : Algorithm
     {

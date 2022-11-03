@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Optimizer
 {
     /// <summary>
     /// Container to store parameters and fitness of a single optimiation

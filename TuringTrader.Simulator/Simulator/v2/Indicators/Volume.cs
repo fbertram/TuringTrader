@@ -1,10 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader
-// Name:        OptimizerSettings
-// Description: optimizer settings window code-behind
-// History:     2018ix10, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        Indicators/Volume
+// Description: Dummy indicators for API development.
+// History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -21,41 +21,27 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region Libraries
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using TuringTrader.Optimizer;
-using TuringTrader.Simulator;
-#endregion
+using System.Text;
+using System.Threading.Tasks;
 
-namespace TuringTrader
+namespace TuringTrader.SimulatorV2.Indicators
 {
     /// <summary>
-    /// Interaction logic for OptimizerSettings.xaml
+    /// Collection of volume indicators.
     /// </summary>
-    public partial class OptimizerSettings : Window
+    public static class Volume
     {
-        private IAlgorithm _algorithm;
-
-        public OptimizerSettings(IAlgorithm algorithm)
-        {
-            InitializeComponent();
-
-            _algorithm = algorithm;
-            ParamGrid.ItemsSource = _algorithm.OptimizerParams.Values.ToList();
-        }
-
-        private void RunButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void ParamGrid_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            NumIterations.Text = string.Format("Total # of Iterations: {0}", OptimizerGrid.NumIterations(_algorithm));
-        }
+        #region AccumulationDistributionIndex
+        #endregion
+        #region ChaikinOscillator
+        #endregion
+        #region OnBalanceVolume
+        #endregion
+        #region MoneyFlowIndex
+        #endregion
     }
 }
 

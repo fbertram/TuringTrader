@@ -21,7 +21,7 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-namespace TuringTrader.Simulator.v2.Assets
+namespace TuringTrader.SimulatorV2.Assets
 {
     public class ETFs
     {

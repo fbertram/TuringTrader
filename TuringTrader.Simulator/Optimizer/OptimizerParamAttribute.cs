@@ -25,7 +25,7 @@
 using System;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Optimizer
 {
     /// <summary>
     /// attribute class to set optimzation range of field or property

@@ -23,15 +23,14 @@
 
 #region libraries
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using TuringTrader.SimulatorV2;
+using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 // NOTE: creating reports works the same as with the v1 engine
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A08_Orders : Algorithm
     {

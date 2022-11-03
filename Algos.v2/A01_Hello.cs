@@ -22,10 +22,8 @@
 //==============================================================================
 
 #region libraries
-using System;
-using System.Collections.Generic;
-using System.Text;
-using TuringTrader.Simulator.v2;
+using TuringTrader.Optimizer;
+using TuringTrader.SimulatorV2;
 #endregion
 
 // NOTE: the public interface between an application and the various
@@ -33,7 +31,7 @@ using TuringTrader.Simulator.v2;
 // existing v1 algorithms won't need to be updated and can co-exist
 // with v2 algorithms for a while.
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A01_Hello : Algorithm
     {

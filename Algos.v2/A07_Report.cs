@@ -24,11 +24,13 @@
 #region libraries
 using System;
 using System.Globalization;
+using TuringTrader.SimulatorV2;
+using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 // NOTE: creating reports works the same as with the v1 engine
 
-namespace TuringTrader.Simulator.v2.Demo
+namespace TuringTrader.DemoV2
 {
     public class A07_Report : Algorithm
     {
