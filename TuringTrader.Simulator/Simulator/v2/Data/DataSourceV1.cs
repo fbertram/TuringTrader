@@ -1,10 +1,10 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        V1DataInterface
+// Name:        Data/DataSourceV1
 // Description: Bridge between v2 engine and v1 data sources.
 // History:     2022x27, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -31,23 +31,13 @@ using System.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
-    internal class V1DataInterface
+    internal class DataSourceV1
     {
         private static TimeZoneInfo exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); // New York, USA
 
         public static TimeSeriesAsset LoadAsset(Algorithm algo, string name)
         {
-            object loadMeta(Algorithm algo, string name)
-            {
-                var ds = TuringTrader.Simulator.DataSource.New(name);
-                return new TimeSeriesAsset.MetaType
-                {
-                    Ticker = ds.Info[Simulator.DataSourceParam.ticker],
-                    Description = ds.Info[Simulator.DataSourceParam.name],
-                };
-            }
-
-            List<BarType<OHLCV>> loadData(Algorithm algo, string name)
+            var data = algo.Cache(name, () =>
             {
                 var ds = TuringTrader.Simulator.DataSource.New(name);
                 var tradingDays = algo.TradingCalendar.TradingDays;
@@ -78,7 +68,8 @@ namespace TuringTrader.SimulatorV2
 
                         data.Add(new BarType<OHLCV>(tradingDay,
                             new OHLCV(v1Bar.Open, v1Bar.High, v1Bar.Low, v1Bar.Close, v1Bar.Volume)));
-                    } else
+                    }
+                    else
                     {
                         // FIXME: not sure if we really need this
                         data.Add(new BarType<OHLCV>(tradingDay, new OHLCV(0, 0, 0, 0, 0)));
@@ -86,13 +77,23 @@ namespace TuringTrader.SimulatorV2
                 }
 
                 return data;
-            }
+            });
+
+            var meta = algo.Cache(name + ".Meta", () =>
+            {
+                var ds = TuringTrader.Simulator.DataSource.New(name);
+                return (object)new TimeSeriesAsset.MetaType
+                {
+                    Ticker = ds.Info[Simulator.DataSourceParam.ticker],
+                    Description = ds.Info[Simulator.DataSourceParam.name],
+                };
+            });
 
             return new TimeSeriesAsset(
                 algo,
                 name,
-                algo.Cache(name, () => loadData(algo, name)),
-                algo.Cache(name + ".Meta", () => loadMeta(algo, name)));
+                data,
+                meta);
         }
 
         public static HashSet<string> GetConstituents(Algorithm algo, string name)

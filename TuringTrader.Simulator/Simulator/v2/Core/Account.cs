@@ -23,7 +23,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -51,51 +53,14 @@ namespace TuringTrader.SimulatorV2
     public class Account
     {
         #region internal stuff
-        private readonly Algorithm Algorithm;
-        private List<OrderTicket> OrderQueue = new List<OrderTicket>();
-        private List<OrderReceipt> _TradeLog = new List<OrderReceipt>();
-        private Dictionary<string, double> _Positions = new Dictionary<string, double>();
+        private readonly Algorithm _algorithm;
+        private List<OrderTicket> _orderQueue = new List<OrderTicket>();
+        private List<OrderReceipt> _tradeLog = new List<OrderReceipt>();
+        private Dictionary<string, double> _positions = new Dictionary<string, double>();
         private const double INITIAL_CAPITAL = 1000.00;
-        private double _Cash = INITIAL_CAPITAL;
+        private double _cash = INITIAL_CAPITAL;
+        private double _navNextOpen = 0.0;
 
-        public class OrderTicket
-        {
-            public readonly string Name;
-            public readonly double TargetAllocation;
-            public readonly OrderType OrderType;
-            public readonly DateTime SubmitDate;
-
-            public OrderTicket(string symbol, double targetAllocation, OrderType orderType, DateTime submitDate)
-            {
-                Name = symbol;
-                TargetAllocation = targetAllocation;
-                OrderType = orderType;
-                SubmitDate = submitDate;
-            }
-
-        }
-
-        public class OrderReceipt
-        {
-            public readonly OrderTicket OrderTicket;
-            public readonly double OrderSize;
-            public readonly double FillPrice;
-            public readonly double OrderAmount;
-            public readonly double FrictionAmount;
-
-            public OrderReceipt(OrderTicket orderTicket,
-                double orderSize,
-                double fillPrice,
-                double orderAmount,
-                double frictionAmount)
-            {
-                OrderTicket = orderTicket;
-                OrderSize = orderSize;
-                FillPrice = fillPrice;
-                OrderAmount = orderAmount;
-                FrictionAmount = frictionAmount;
-            }
-        }
         private enum NavType
         {
             openThisBar,
@@ -108,16 +73,16 @@ namespace TuringTrader.SimulatorV2
             // FIXME: need to verify that the assets trade on current date.
             // Otherwise, we should probably remove them and issue a warning.
 
-            return _Positions
+            return _positions
                 .Sum(kv => kv.Value
                     * navType switch
                     {
-                        NavType.openThisBar => Algorithm.Asset(kv.Key).Open[0],
-                        NavType.closeThisBar => Algorithm.Asset(kv.Key).Close[0],
-                        NavType.openNextBar => Algorithm.Asset(kv.Key).Open[-1],
+                        NavType.openThisBar => _algorithm.Asset(kv.Key).Open[0],
+                        NavType.closeThisBar => _algorithm.Asset(kv.Key).Close[0],
+                        NavType.openNextBar => _algorithm.Asset(kv.Key).Open[-1],
                         _ => throw new ArgumentOutOfRangeException(nameof(navType), $"Unexpected NAV type value: {navType}")
                     })
-                + _Cash;
+                + _cash;
         }
         #endregion
 
@@ -127,101 +92,165 @@ namespace TuringTrader.SimulatorV2
         /// <param name="algorithm">parent algorithm, to get access to assets and pricing</param>
         public Account(Algorithm algorithm)
         {
-            Algorithm = algorithm;
+            _algorithm = algorithm;
         }
 
         /// <summary>
-        /// Submit order to account
+        /// Submit and queue order.
         /// </summary>
         /// <param name="Name">asset name</param>
         /// <param name="weight">asset target allocation</param>
         /// <param name="orderType">order type</param>
         public void SubmitOrder(string Name, double weight, OrderType orderType)
         {
-            OrderQueue.Add(
+            _orderQueue.Add(
                 new OrderTicket(
-                    Name, weight, orderType, Algorithm.SimDate));
+                    Name, weight, orderType, _algorithm.SimDate));
         }
 
         /// <summary>
-        /// Process orders in order queue. This should be called at the end of each bar.
+        /// Process bar. This method will loop through the queued
+        /// orders, execute them as required, and return a bar
+        /// representing the strategy's NAV.
         /// </summary>
-        public void ProcessOrders()
+        /// <returns></returns>
+        public BarType<OHLCV> ProcessBar()
         {
+            var navOpen = 0.0; ;
+            var navClose = 0.0;
+
             foreach (var orderType in new List<OrderType> {
                 OrderType.closeThisBar,
                 OrderType.openNextBar })
             {
-                foreach (var order in OrderQueue.Where(o => o.OrderType == orderType))
+                var navType = orderType switch
+                {
+                    OrderType.closeThisBar => NavType.closeThisBar,
+                    _ => _algorithm.IsLastBar
+                        ? NavType.closeThisBar
+                        : NavType.openNextBar,
+                };
+
+                var execDate = orderType switch
+                {
+                    OrderType.closeThisBar => _algorithm.SimDate,
+                    _ => _algorithm.NextSimDate,
+                };
+
+                //----- process orders
+                foreach (var order in _orderQueue.Where(o => o.OrderType == orderType))
                 {
                     // FIXME: this code has not been tested with short positions
                     // it is likely that the logic around isBuy and price2 needs to change
                     var price = orderType switch
                     {
-                        OrderType.closeThisBar => Algorithm.Asset(order.Name).Close[0],
+                        OrderType.closeThisBar => _algorithm.Asset(order.Name).Close[0],
                         // for all other order types, we assume they are executed
                         // at the opening price. this will not be true for limit
                         // and stop orders, but we see no better alternative, as
                         // the asset's high and low prices are not aligned in time.
-                        _ => Algorithm.Asset(order.Name).Open[-1],
+                        _ => _algorithm.IsLastBar
+                            ? _algorithm.Asset(order.Name).Close[0]
+                            : _algorithm.Asset(order.Name).Open[-1],
                     };
-                    var nav = CalcNetAssetValue(orderType switch
-                    {
-                        OrderType.closeThisBar => NavType.closeThisBar,
-                        _ => NavType.openNextBar,
-                    });
 
-                    var currentShares = _Positions.ContainsKey(order.Name) ? _Positions[order.Name] : 0;
+                    // we need to calculate the nav every time we get
+                    // here due to trading friction.
+                    var nav = CalcNetAssetValue(navType);
+
+                    var currentShares = _positions.ContainsKey(order.Name) ? _positions[order.Name] : 0;
                     var currentAlloc = currentShares * price / nav;
                     var targetAlloc = Math.Abs(order.TargetAllocation) >= MinPosition ? order.TargetAllocation : 0.0;
 
                     if (currentAlloc == 0.0 && targetAlloc == 0.0)
                         continue;
 
-                    var isBuy = currentAlloc < targetAlloc;
-
-                    var price2 = isBuy
-                        ? price * (1.0 + Friction) // when buying, we reduce the # of shares to cover for commissions
-                        : price;
-                    var deltaShares = nav * (targetAlloc - currentAlloc) / price2;
-
-                    if (targetAlloc != 0.0)
                     {
-                        var targetShares = currentShares + deltaShares;
-                        _Positions[order.Name] = targetShares;
-                    }
-                    else
-                    {
-                        _Positions.Remove(order.Name);
-                    }
+                        // TODO: move this block to a virtual function
+                        //       which we can overload to implement
+                        //       alternative fill models.
+                        // parameters
+                        //   - order ticket
+                        //   - nominal fill price
+                        //   - current shares
+                        //   - current allocation
+                        //   - target allocation
+                        // required operation
+                        //   - adjust _Positions
+                        //   - adjust _Cash
+                        //   - add to _TradeLog
 
-                    var orderAmount = deltaShares * price;
-                    var frictionAmount = Math.Abs(deltaShares) * price * Friction;
-                    _Cash -= orderAmount;
-                    _Cash -= frictionAmount;
+                        var isBuy = currentAlloc < targetAlloc;
 
-                    _TradeLog.Add(new OrderReceipt(
-                        order,
-                        targetAlloc - currentAlloc,
-                        price,
-                        orderAmount,
-                        frictionAmount));
+                        var price2 = isBuy
+                            ? price * (1.0 + Friction) // when buying, we reduce the # of shares to cover for commissions
+                            : price;
+                        var deltaShares = nav * (targetAlloc - currentAlloc) / price2;
+
+                        if (targetAlloc != 0.0)
+                        {
+                            var targetShares = currentShares + deltaShares;
+                            _positions[order.Name] = targetShares;
+                        }
+                        else
+                        {
+                            _positions.Remove(order.Name);
+                        }
+
+                        var orderAmount = deltaShares * price;
+                        var frictionAmount = Math.Abs(deltaShares) * price * Friction;
+                        _cash -= orderAmount;
+                        _cash -= frictionAmount;
+
+                        _tradeLog.Add(new OrderReceipt(
+                            order,
+                            execDate,
+                            targetAlloc - currentAlloc,
+                            price,
+                            orderAmount,
+                            frictionAmount));
+                    }
+                }
+
+                //----- save NAV
+                switch (orderType)
+                {
+                    case OrderType.closeThisBar:
+                        navClose = CalcNetAssetValue(NavType.closeThisBar);
+                        break;
+                    case OrderType.openNextBar:
+                        navOpen = _algorithm.IsFirstBar ? INITIAL_CAPITAL : _navNextOpen;
+                        _navNextOpen  = CalcNetAssetValue(NavType.openNextBar);
+                        break;
                 }
             }
 
-            OrderQueue.Clear();
+            _orderQueue.Clear();
+
+            //----- calculate NAV at open and close
+            // FIXME: as we calculate this after trades on the next
+            // day have been executed, the asset allocation used
+            // is that after tomorrow's open. This is obviously
+            // incorrect.
+            var navHigh = Math.Max(navOpen, navClose);
+            var navLow = Math.Min(navOpen, navClose);
+
+            return new BarType<OHLCV>(
+                _algorithm.SimDate,
+                new OHLCV(navOpen, navHigh, navLow, navClose, 0));
         }
 
         /// <summary>
-        /// Return net asset value, starting with $1,000 at the start of the simulation.
+        /// Return net asset value in currency, starting with $1,000
+        /// at the beginning of the simulation. Note that currency
+        /// has no relevance throughout the v2 engine. We use this
+        /// value to make the NAV more tangible during analysis and
+        /// debugging.
         /// </summary>
-        public double NetAssetValue
-        {
-            get => CalcNetAssetValue() /* / INITIAL_CAPITAL*/;
-        }
+        public double NetAssetValue { get => CalcNetAssetValue(); }
 
         /// <summary>
-        /// Return positions, as fraction of net asset value.
+        /// Return positions, as fraction of NAV.
         /// </summary>
         public Dictionary<string, double> Positions
         {
@@ -229,20 +258,128 @@ namespace TuringTrader.SimulatorV2
             {
                 var nav = CalcNetAssetValue();
                 var result = new Dictionary<string, double>();
-                foreach (var kv in _Positions)
+                foreach (var kv in _positions)
                 {
-                    result[kv.Key] = kv.Value * Algorithm.Asset(kv.Key).Close[0] / nav;
+                    result[kv.Key] = kv.Value * _algorithm.Asset(kv.Key).Close[0] / nav;
                 }
                 return result;
             }
         }
 
         /// <summary>
-        /// Return of cash available, as fraction of net asset value.
+        /// Return of cash available, as fraction of NAV.
         /// </summary>
-        public double Cash { get => _Cash / CalcNetAssetValue(); }
+        public double Cash { get => _cash / CalcNetAssetValue(); }
 
-        public List<OrderReceipt> TradeLog { get { return new List<OrderReceipt>(_TradeLog); } }
+        /// <summary>
+        /// Container collecting all order information at time of order submittal.
+        /// </summary>
+        public class OrderTicket
+        {
+            /// <summary>
+            /// Asset name.
+            /// </summary>
+            public readonly string Name;
+
+            /// <summary>
+            /// Asset target allocation, as fraction of NAV.
+            /// </summary>
+            public readonly double TargetAllocation;
+
+            /// <summary>
+            /// Order type.
+            /// </summary>
+            public readonly OrderType OrderType;
+
+            /// <summary>
+            /// Order submit date.
+            /// </summary>
+            public readonly DateTime SubmitDate;
+
+            /// <summary>
+            /// Create new order ticket.
+            /// </summary>
+            /// <param name="symbol"></param>
+            /// <param name="targetAllocation"></param>
+            /// <param name="orderType"></param>
+            /// <param name="submitDate"></param>
+            public OrderTicket(string symbol, double targetAllocation, OrderType orderType, DateTime submitDate)
+            {
+                Name = symbol;
+                TargetAllocation = targetAllocation;
+                OrderType = orderType;
+                SubmitDate = submitDate;
+            }
+        }
+
+        /// <summary>
+        /// Container collecting all order information at time of order execution.
+        /// </summary>
+        public class OrderReceipt
+        {
+            /// <summary>
+            /// Order ticket.
+            /// </summary>
+            public readonly OrderTicket OrderTicket;
+
+            /// <summary>
+            /// Order execution date.
+            /// </summary>
+            public readonly DateTime ExecDate;
+
+            /// <summary>
+            /// Order size, as a fraction of NAV.
+            /// </summary>
+            public readonly double OrderSize;
+
+            /// <summary>
+            /// Order fill price.
+            /// </summary>
+            public readonly double FillPrice;
+
+            /// <summary>
+            /// Currency spent/received for assets traded. Note that throughout
+            /// the v2 engine, currency has no significance. This is only to
+            /// make trades more tangible while analyzing and debugging.
+            /// </summary>
+            public readonly double OrderAmount;
+
+            /// <summary>
+            /// Currency lost for trade friction. Note that throughout the v2
+            /// engine, currency has no significance. This is only to make trades
+            /// more tangible while analyzing and debugging.
+            /// </summary>
+            public readonly double FrictionAmount;
+
+            /// <summary>
+            /// Create order receipt.
+            /// </summary>
+            /// <param name="orderTicket"></param>
+            /// <param name="orderSize"></param>
+            /// <param name="fillPrice"></param>
+            /// <param name="orderAmount"></param>
+            /// <param name="frictionAmount"></param>
+            public OrderReceipt(OrderTicket orderTicket,
+                DateTime execDate,
+                double orderSize,
+                double fillPrice,
+                double orderAmount,
+                double frictionAmount)
+            {
+                OrderTicket = orderTicket;
+                ExecDate = execDate;
+                OrderSize = orderSize;
+                FillPrice = fillPrice;
+                OrderAmount = orderAmount;
+                FrictionAmount = frictionAmount;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve trade log. Note that this log only contains trades executed
+        /// and not orders that were not executed.
+        /// </summary>
+        public List<OrderReceipt> TradeLog { get { return new List<OrderReceipt>(_tradeLog); } }
 
         /// <summary>
         /// Friction to model commissions, fees, and slippage.

@@ -140,8 +140,8 @@ namespace TuringTrader.BooksAndPubsV2
             StartDate = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
             EndDate = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
 #else
-            StartDate = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Now;
+            StartDate = StartDate ?? DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            EndDate = EndDate ?? DateTime.Now;
 #endif
             WarmupPeriod = TimeSpan.FromDays(365);
 
@@ -184,7 +184,7 @@ namespace TuringTrader.BooksAndPubsV2
                         .ToList();
 
                     //----- money management
-                    // begin with the assumption to close all open positions
+                    // initially, assume to close all open positions
                     var weights = Positions
                         .ToDictionary(
                             kv => kv.Key,
@@ -220,7 +220,7 @@ namespace TuringTrader.BooksAndPubsV2
 
                     // NOTE: Clenow does not perform any additional management.
                     //       We add this hook here to support proprietary
-                    //       improvements upon Clenow's original strategy
+                    //       improvements upon Clenow's original strategy.
                     MANAGE_WEIGHTS(weights);
 
                     //----- order management

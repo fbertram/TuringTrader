@@ -436,22 +436,48 @@ namespace TuringTrader.SimulatorV2
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public IEnumerable<DateTime> TradingDays
+        public List<DateTime> TradingDays
         {
             get
             {
                 var startDate = StartDate > _earliestTime ? StartDate : _earliestTime;
                 var endDate = EndDate < DateTime.Now ? EndDate : DateTime.Now;
 
+#if true
+                // new 11/04/2022
+                var previousClose = default(DateTime);
+
+                var tradingDays = new List<DateTime>();
+                // NOTE: We cannot stop the loop when date > endDate, because we might
+                //       still find close < endDate. To fix this, we loop one day further.
+                for (var date = startDate; date <= endDate + TimeSpan.FromDays(1); date += TimeSpan.FromDays(1))
+                {
+                    var close = PreviousExchangeClose(date);
+
+                    if (close >= startDate && close <= endDate && close != previousClose)
+                    {
+                        tradingDays.Add(close);
+                        previousClose = close;
+                    }
+                }
+
+                return tradingDays;
+#else
+                // retired 11/04/2022
                 var date = startDate;
                 var previousClose = default(DateTime);
 
+                var tradingDays = new List<DateTime>();
                 while (date <= endDate)
                 {
                     var close = PreviousExchangeClose(date);
+
+                    if (close > endDate)
+                        break;
+
                     if (close != previousClose && close >= startDate)
                     {
-                        yield return close;
+                        tradingDays.Add(close);
                         date = close; // make sure date is well-aligned w/ exchange's closing time
                         previousClose = close;
                     }
@@ -460,7 +486,9 @@ namespace TuringTrader.SimulatorV2
                     // saving time in either the local or the exchange's time zone
                     date += TimeSpan.FromHours(26);
                 }
-                yield break;
+
+                return tradingDays;
+#endif
             }
         }
     }

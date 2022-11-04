@@ -109,24 +109,24 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public ITradingCalendar TradingCalendar { get; set; } = new TradingCalendar_US();
 
-        private DateTime _startDate = default(DateTime);
+        private DateTime? _startDate = null;
         /// <summary>
         /// Simulation start date.
         /// </summary>
-        public DateTime StartDate { get => _startDate; set { _startDate = value; TradingCalendar.StartDate = StartDate - WarmupPeriod; } }
+        public DateTime? StartDate { get => _startDate; set { _startDate = value; TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
 
-        private DateTime _endDate = default(DateTime);
+        private DateTime? _endDate = null;
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = value; } }
+        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value; } }
 
-        private TimeSpan _warmupPeriod = default(TimeSpan);
+        private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 
         /// <summary>
         /// Warmup period.
         /// </summary>
-        public TimeSpan WarmupPeriod { get => _warmupPeriod; set { _warmupPeriod = value; TradingCalendar.StartDate = StartDate - WarmupPeriod; } }
+        public TimeSpan WarmupPeriod { get => _warmupPeriod; set { _warmupPeriod = value; TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
 
         /// <summary>
         /// Current simulation timestamp.
@@ -139,11 +139,27 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public DateTime NextSimDate { get; private set; } = default;
 
+        /// <summary>
+        /// Determine if this is the first bar.
+        /// </summary>
         public bool IsFirstBar { get; private set; } = false;
+
         /// <summary>
         /// Determine if this is the last bar.
         /// </summary>
         public bool IsLastBar { get; private set; } = false;
+
+        /// <summary>
+        /// Delegate for BarEvent.
+        /// </summary>
+        public delegate void BarEventHandler();
+
+        /// <summary>
+        /// Bar event, called after processing the bar.
+        /// </summary>
+        public event BarEventHandler BarEvent;
+
+        private List<BarType<OHLCV>> _navBars = new List<BarType<OHLCV>>();
 
         /// <summary>
         /// Simulation loop.
@@ -151,9 +167,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="barFun"></param>
         public void SimLoop(Action barFun)
         {
-            var tradingDays = TradingCalendar.TradingDays
-                .ToList();
-
+            var tradingDays = TradingCalendar.TradingDays;
             IsFirstBar = true;
             IsLastBar = false;
 
@@ -166,8 +180,9 @@ namespace TuringTrader.SimulatorV2
                 if (SimDate < StartDate) continue; // warmup period
 
                 barFun();
+                _navBars.Add(Account.ProcessBar());
+
                 IsFirstBar = false;
-                Account.ProcessOrders();
             }
 
             //SimDate = default; // we need SimDate to calculate the last asset allocation
@@ -178,7 +193,14 @@ namespace TuringTrader.SimulatorV2
             FitnessValue = 0.0;
         }
 
-        public virtual double Progress => 100.0 * Math.Max(0.0, (SimDate - StartDate).TotalDays) / Math.Max(1.0, (EndDate - StartDate).TotalDays);
+        /// <summary>
+        /// Return simulation progress as a number between 0 and 100.
+        /// This is used to display a progress bar during simulation.
+        /// Note that this method of calculation shows the percentage
+        /// of simulation range completed, which is not identical to
+        /// the percentage of simulation time completed.
+        /// </summary>
+        public virtual double Progress => 100.0 * Math.Max(0.0, (SimDate - (DateTime)StartDate).TotalDays) / Math.Max(1.0, ((DateTime)EndDate - (DateTime)StartDate).TotalDays);
 
         #endregion
         #region cache functionality
@@ -209,7 +231,60 @@ namespace TuringTrader.SimulatorV2
         /// <returns>asset</returns>
         public TimeSeriesAsset Asset(string name)
         {
-            return V1DataInterface.LoadAsset(this, name);
+            return DataSourceV1.LoadAsset(this, name);
+        }
+
+        /// <summary>
+        /// Run algorithm for use as an asset. Subsequent calls to this
+        /// method with the same object will be served from a cache.
+        /// </summary>
+        /// <param name="algo"></param>
+        /// <returns></returns>
+        public TimeSeriesAsset Asset(Algorithm algo)
+        {
+            var name = string.Format("{0}-{1:X}", algo.Name, algo.GetHashCode());
+
+            // Wt is important that we put the child algorithm's result
+            // in *this* algorithm's cache.
+            var data = Cache(name, () =>
+            {
+                //----- run child algorithm
+                var tradingDays = TradingCalendar.TradingDays;
+                algo.StartDate = tradingDays.First();
+                algo.EndDate = tradingDays.Last();
+
+                algo.Run();
+                // result in algo._navBars
+
+                //----- resample result to this algo's trading calendar
+                var childBars = new List<BarType<OHLCV>>();
+                var childIdx = 0;
+
+                foreach (var tradingDay in tradingDays)
+                {
+                    while (childIdx < algo._navBars.Count - 1 && algo._navBars[childIdx + 1].Date <= tradingDay)
+                        childIdx++;
+                    var childBar = algo._navBars[childIdx].Value;
+
+                    childBars.Add(new BarType<OHLCV>(tradingDay,
+                            new OHLCV(childBar.Open, childBar.High, childBar.Low, childBar.Close,
+                                childBar.Volume)));
+                }
+
+                return childBars;
+            });
+
+            var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType
+            {
+                Ticker = algo.Name,
+                Description = algo.Name,
+            });
+
+            return new TimeSeriesAsset(
+                this,
+                name,
+                data,
+                meta);
         }
 
         /// <summary>
@@ -221,7 +296,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         public HashSet<string> Universe(string name)
         {
-            return V1DataInterface.GetConstituents(this, name);
+            return DataSourceV1.GetConstituents(this, name);
         }
         #endregion
         #region reporting

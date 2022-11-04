@@ -45,7 +45,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Enumerable of trading days between start and end dates.
         /// </summary>
-        public IEnumerable<DateTime> TradingDays { get; }
+        public List<DateTime> TradingDays { get; }
     }
 }
 
