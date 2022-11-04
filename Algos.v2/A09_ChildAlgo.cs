@@ -25,7 +25,6 @@
 using System;
 using System.Globalization;
 using TuringTrader.SimulatorV2;
-using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 namespace TuringTrader.DemoV2

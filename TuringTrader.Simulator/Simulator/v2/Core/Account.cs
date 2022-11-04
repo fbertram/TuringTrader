@@ -23,9 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -220,7 +218,7 @@ namespace TuringTrader.SimulatorV2
                         break;
                     case OrderType.openNextBar:
                         navOpen = _algorithm.IsFirstBar ? INITIAL_CAPITAL : _navNextOpen;
-                        _navNextOpen  = CalcNetAssetValue(NavType.openNextBar);
+                        _navNextOpen = CalcNetAssetValue(NavType.openNextBar);
                         break;
                 }
             }

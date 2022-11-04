@@ -253,8 +253,7 @@ namespace TuringTrader.SimulatorV2
                 algo.StartDate = tradingDays.First();
                 algo.EndDate = tradingDays.Last();
 
-                algo.Run();
-                // result in algo._navBars
+                algo.Run(); // => algo's equity curve in algo._navBars
 
                 //----- resample result to this algo's trading calendar
                 var childBars = new List<BarType<OHLCV>>();
