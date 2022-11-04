@@ -191,8 +191,8 @@ namespace TuringTrader.BooksAndPubsV2
                             kv => 0.0);
 
                     // allocate capital to the ranked assets until we run out of cash
-                    double availableCapital = 1.0;
-                    int portfolioRisk = 0;
+                    var availableCapital = 1.0;
+                    var portfolioRisk = 0;
                     foreach (var name in investibleStocks)
                     {
                         // NOTE: Clenow does not limit the total portfolio risk
@@ -239,6 +239,8 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.Plot(Asset("$SPXTR").Description, Asset("$SPXTR").Close[0]);
 
 #if false
+                    // this code matches the chart seen
+                    // on page 118 of the book
                     Plotter.SelectChart("Clenow-style Chart", "Date");
                     Plotter.SetX(SimDate);
                     Plotter.Plot(Name, NetAssetValue / 1000.00);
