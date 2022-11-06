@@ -30,10 +30,13 @@ using TuringTrader.Optimizer;
 namespace TuringTrader.SimulatorV2
 {
     /// <summary>
-    /// Base class for trading algorithms.
+    /// Base class for v2 trading algorithms.
     /// </summary>
     public abstract class Algorithm : Simulator.IAlgorithm
     {
+        /// <summary>
+        /// Return algorithm's friendly name.
+        /// </summary>
         public virtual string Name => this.GetType().Name;
 
         #region instantiation
@@ -78,6 +81,9 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
         #region optimization
+        /// <summary>
+        /// Return full set of optimizer parameters.
+        /// </summary>
         public Dictionary<string, OptimizerParam> OptimizerParams { get; private set; }
         /// <summary>
         /// String representation of the current settings of all
@@ -96,11 +102,27 @@ namespace TuringTrader.SimulatorV2
                 return retval;
             }
         }
+        /// <summary>
+        /// Determine if optimizer parameter set is valid.
+        /// </summary>
         public virtual bool IsOptimizerParamsValid => true;
+        /// <summary>
+        /// Return true, if algorithm is currently being optimized. Use this feature
+        /// to disable optional operations that are time or memory consuming.
+        /// </summary>
         public bool IsOptimizing { get; set; }
-        public virtual double FitnessReturn { get; set; } = 0.0;
-        public virtual double FitnessRisk { get; set; } = 0.0;
-        public virtual double FitnessValue { get; set; } = 0.0;
+        /// <summary>
+        /// Return algorithm's fitness value (return component).
+        /// </summary>
+        public virtual double FitnessReturn { get => Account.AnnualizedReturn; set { } }
+        /// <summary>
+        /// Return algorithm's fitness value (risk component).
+        /// </summary>
+        public virtual double FitnessRisk { get => Account.MaxDrawdown; set { } }
+        /// <summary>
+        /// Return algorithm's fitness value (composite value).
+        /// </summary>
+        public virtual double FitnessValue { get => FitnessReturn / FitnessRisk; set { } }
         #endregion
         #region simulation range & loop
         /// <summary>
@@ -235,8 +257,7 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
-        /// Run algorithm for use as an asset. Subsequent calls to this
-        /// method with the same object will be served from a cache.
+        /// Run v2 algorithm and bring its results in as an asset.
         /// </summary>
         /// <param name="algo"></param>
         /// <returns></returns>
@@ -244,8 +265,8 @@ namespace TuringTrader.SimulatorV2
         {
             var name = string.Format("{0}-{1:X}", algo.Name, algo.GetHashCode());
 
-            // Wt is important that we put the child algorithm's result
-            // in *this* algorithm's cache.
+            // NOTE: we must put the child algorithm's result in
+            //       *this* algorithm's cache.
             var data = Cache(name, () =>
             {
                 //----- run child algorithm
@@ -256,6 +277,10 @@ namespace TuringTrader.SimulatorV2
                 algo.Run(); // => algo's equity curve in algo._navBars
 
                 //----- resample result to this algo's trading calendar
+                // NOTE: our child algorithm might run on its own calendar,
+                //       which may make this resampling necessary. Otherwise,
+                //       the resampling helps to drop samples outside this
+                //       algo's simulation range.
                 var childBars = new List<BarType<OHLCV>>();
                 var childIdx = 0;
 
@@ -284,6 +309,16 @@ namespace TuringTrader.SimulatorV2
                 name,
                 data,
                 meta);
+        }
+
+        /// <summary>
+        /// Run v1 algorithm and bring its result in as an asset.
+        /// </summary>
+        /// <param name="algo"></param>
+        /// <returns></returns>
+        public TimeSeriesAsset Asset(TuringTrader.Simulator.Algorithm algo)
+        {
+            throw new Exception("Not implemented, yet!");
         }
 
         /// <summary>

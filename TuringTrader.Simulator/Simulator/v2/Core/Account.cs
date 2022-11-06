@@ -58,6 +58,10 @@ namespace TuringTrader.SimulatorV2
         private const double INITIAL_CAPITAL = 1000.00;
         private double _cash = INITIAL_CAPITAL;
         private double _navNextOpen = 0.0;
+        private DateTime _firstDate = default(DateTime);
+        private DateTime _lastDate = default(DateTime);
+        private double _navMax = 0.0;
+        private double _mdd = 0.0;
 
         private enum NavType
         {
@@ -114,6 +118,11 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         public BarType<OHLCV> ProcessBar()
         {
+            if (_firstDate == default)
+                _firstDate = _algorithm.SimDate;
+            if (_lastDate < _algorithm.SimDate)
+                _lastDate = _algorithm.SimDate;
+
             var navOpen = 0.0; ;
             var navClose = 0.0;
 
@@ -232,6 +241,8 @@ namespace TuringTrader.SimulatorV2
             // incorrect.
             var navHigh = Math.Max(navOpen, navClose);
             var navLow = Math.Min(navOpen, navClose);
+            _navMax = Math.Max(_navMax, navClose);
+            _mdd = Math.Max(_mdd, 1.0 - navClose / _navMax);
 
             return new BarType<OHLCV>(
                 _algorithm.SimDate,
@@ -246,6 +257,16 @@ namespace TuringTrader.SimulatorV2
         /// debugging.
         /// </summary>
         public double NetAssetValue { get => CalcNetAssetValue(); }
+
+        /// <summary>
+        /// Calculate annualized return over the full simulation range.
+        /// </summary>
+        public double AnnualizedReturn { get => Math.Pow(CalcNetAssetValue() / INITIAL_CAPITAL, 365.25 / (_lastDate - _firstDate).TotalDays) - 1.0; }
+
+        /// <summary>
+        /// Return maximum drawdown over the full simulation range.
+        /// </summary>
+        public double MaxDrawdown { get => _mdd; }
 
         /// <summary>
         /// Return positions, as fraction of NAV.
