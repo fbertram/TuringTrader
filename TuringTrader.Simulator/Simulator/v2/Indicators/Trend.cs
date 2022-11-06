@@ -23,7 +23,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using TuringTrader.SimulatorV2;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -33,10 +32,14 @@ namespace TuringTrader.SimulatorV2.Indicators
     public static class Trend
     {
         #region Sum
+        /// <summary>
+        /// Calculate rolling sum.
+        /// </summary>
         #endregion
         #region SMA
         /// <summary>
-        /// Simple Moving Average.
+        /// Calculate Simple Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Simple_moving_average"/>
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="n">filter length</param>
@@ -72,10 +75,15 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region WMA
+        /// <summary>
+        /// Calculate Weighted Moving Average as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Weighted_moving_average"/>
+        /// </summary>
         #endregion
         #region EMA
         /// <summary>
-        /// Exponential Moving Average.
+        /// Calculate Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average"/>
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="n">filter length</param>
@@ -107,17 +115,41 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
 
         #region DEMA
+        /// <summary>
+        /// Calculate Double Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Double_exponential_moving_average"/>
+        /// </summary>
         #endregion
         #region HMA
+        /// <summary>
+        /// Calculate Hull Moving Average, as described here:
+        /// <see href="https://alanhull.com/hull-moving-average"/>
+        /// </summary>
         #endregion
         #region TEMA
+        /// <summary>
+        /// Calculate Triple Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Triple_exponential_moving_average"/>
+        /// </summary>
         #endregion
 
         #region ZLEMA
+        /// <summary>
+        /// Calculate Ehlers' Zero Lag Exponential Moving Average, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Zero_lag_exponential_moving_average"/>
+        /// </summary>
         #endregion
         #region KAMA
+        /// <summary>
+        /// Calculate Kaufman's Adaptive Moving Average, as described here:
+        /// <see href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:kaufman_s_adaptive_moving_average"/>
+        /// </summary>
         #endregion
         #region MACD
+        /// <summary>
+        /// Calculate MACD, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/MACD"/>
+        /// </summary>
         #endregion
     }
 }
