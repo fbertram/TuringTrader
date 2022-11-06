@@ -97,11 +97,13 @@ namespace TuringTrader.BooksAndPubsV2
         /// <summary>
         /// target risk for portfolio (in basis points)
         /// </summary>
+        //[OptimizerParam(100, 1000, 100)]
         public virtual int RISK_TOTAL { get; set; } = 10000;
 
         /// <summary>
         /// maximum weight per stock (in percent)
         /// </summary>
+        //[OptimizerParam(10, 100, 10)]
         public virtual int MAX_PER_STOCK { get; set; } = 100;
 
         /// <summary>
@@ -119,7 +121,15 @@ namespace TuringTrader.BooksAndPubsV2
         /// supplemental money-management code
         /// </summary>
         /// <param name="w"></param>
-        protected virtual void MANAGE_WEIGHTS(Dictionary<string, double> w) { }
+        protected virtual void MANAGE_WEIGHTS(Dictionary<string, double> w)
+        {
+#if false
+            // NOTE: Clenow does not mention the use of a safe instrument.
+            //       This code is just an example of what we could do here:
+            var idleCapital = 1.0 - w.Sum(kv => kv.Value);
+            w["BIL"] = Math.Min(1.0, Math.Max(0.0, idleCapital));
+#endif
+        }
 
         /// <summary>
         /// allow new entries: this covers both new positions, and increasing of existing positions.
@@ -203,13 +213,17 @@ namespace TuringTrader.BooksAndPubsV2
 
                         // we size the positions as a fixed-fraction risk allocation,
                         // based on the average true range
+                        // NOTE: Clenow does not limit the maximum position size of 
+                        //       an asset, as long as there is capital available.
+                        //       We add a limit here to support proprietary improvements
+                        //       upon Clenow's original strategy.
                         var rawWeight = Math.Min(
                             Math.Min(availableCapital, MAX_PER_STOCK / 100.0),
                             RISK_PER_STOCK * 0.0001 * Asset(name).Close[0] / Asset(name).AverageTrueRange(20)[0]);
 
                         // only buy any shares, while S&P-500 is trading above its 200-day moving average
-                        // NOTE: the 10-day SMA on the benchmark is _not_ mentioned in
-                        //       the book. We added it here, to compensate for the
+                        // NOTE: the 10-day SMA on the benchmark is NOT mentioned in
+                        //       Clenow's book. We added it here, to compensate for the
                         //       simplified re-balancing schedule.
                         var w = ALLOW_NEW_ENTRIES ? rawWeight : Math.Min(Asset(name).Position, rawWeight);
 
@@ -238,16 +252,16 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.Plot(Name, NetAssetValue);
                     Plotter.Plot(Asset("$SPXTR").Description, Asset("$SPXTR").Close[0]);
 
-#if false
+#if true
                     // this code matches the chart seen
                     // on page 118 of the book
                     Plotter.SelectChart("Clenow-style Chart", "Date");
                     Plotter.SetX(SimDate);
                     Plotter.Plot(Name, NetAssetValue / 1000.00);
                     var spx = Asset("$SPXTR").Close;
-                    Plotter.Plot(spx.Name, spx[0] / spx[StartDate]);
+                    Plotter.Plot(spx.Name, spx[0] / spx[(DateTime)StartDate]);
                     var ema = Asset("$SPXTR").Close.SMA(200);
-                    Plotter.Plot(ema.Name, ema[0] / ema[StartDate]);
+                    Plotter.Plot(ema.Name, ema[0] / ema[(DateTime)StartDate]);
                     Plotter.Plot("Cash", Cash);
 #endif
                 }
