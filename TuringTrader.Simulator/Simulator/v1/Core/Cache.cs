@@ -4,7 +4,7 @@
 // Description: data cache, to reduce memory footprint and cpu use
 // History:     2018ix21, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2020, Bertram Solutions LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.

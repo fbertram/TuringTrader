@@ -5,7 +5,7 @@
 //              Tested w/ Norgate Data API 4.1.5.27.
 // History:     2019i06, FUB, created.
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
