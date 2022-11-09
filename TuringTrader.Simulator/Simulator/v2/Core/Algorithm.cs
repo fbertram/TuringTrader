@@ -183,11 +183,7 @@ namespace TuringTrader.SimulatorV2
 
         private List<BarType<OHLCV>> _navBars = new List<BarType<OHLCV>>();
 
-        /// <summary>
-        /// Simulation loop.
-        /// </summary>
-        /// <param name="barFun"></param>
-        public void SimLoop(Action barFun)
+        private void _simLoop(Action barFun)
         {
             var tradingDays = TradingCalendar.TradingDays;
             IsFirstBar = true;
@@ -201,8 +197,7 @@ namespace TuringTrader.SimulatorV2
 
                 if (SimDate < StartDate) continue; // warmup period
 
-                barFun();
-                _navBars.Add(Account.ProcessBar());
+                barFun(); // this will update _navBars
 
                 IsFirstBar = false;
             }
@@ -213,6 +208,38 @@ namespace TuringTrader.SimulatorV2
             FitnessReturn = Account.NetAssetValue;
             FitnessRisk = 0.0;
             FitnessValue = 0.0;
+        }
+
+        /// <summary>
+        /// Simulation loop. This override's bar function returns void.
+        /// Therefore, the algorithm's output series is generated from
+        /// the trading activity in the algorithm's Account object.
+        /// </summary>
+        /// <param name="barFun"></param>
+        public void SimLoop(Action barFun)
+        {
+            _simLoop(() =>
+            {
+                barFun();
+                var bar = Account.ProcessBar();
+                _navBars.Add(new BarType<OHLCV>(SimDate, bar));
+            });
+        }
+
+        /// <summary>
+        /// Simulation loop. This override's bar function returns a
+        /// bar object. This object is used to create teh algorithm's
+        /// output series.
+        /// </summary>
+        /// <param name="barFun"></param>
+        public void SimLoop(Func<OHLCV> barFun)
+        {
+            _simLoop(() =>
+            {
+                var bar = barFun();
+                Account.ProcessBar();
+                _navBars.Add(new BarType<OHLCV>(SimDate, bar));
+            });
         }
 
         /// <summary>

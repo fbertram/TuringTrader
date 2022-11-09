@@ -116,7 +116,7 @@ namespace TuringTrader.SimulatorV2
         /// representing the strategy's NAV.
         /// </summary>
         /// <returns></returns>
-        public BarType<OHLCV> ProcessBar()
+        public OHLCV ProcessBar()
         {
             if (_firstDate == default)
                 _firstDate = _algorithm.SimDate;
@@ -244,9 +244,7 @@ namespace TuringTrader.SimulatorV2
             _navMax = Math.Max(_navMax, navClose);
             _mdd = Math.Max(_mdd, 1.0 - navClose / _navMax);
 
-            return new BarType<OHLCV>(
-                _algorithm.SimDate,
-                new OHLCV(navOpen, navHigh, navLow, navClose, 0));
+            return new OHLCV(navOpen, navHigh, navLow, navClose, 0);
         }
 
         /// <summary>
