@@ -39,7 +39,10 @@ namespace TuringTrader.SimulatorV2.Assets
 
         public const string AGG = "splice:AGG,AGG++";
         public const string BIL = "splice:BIL,BIL++";
+        public const string TIP = "TIP";
         public const string IEF = "splice:IEF,IEF++";
+        public const string IEI = "IEI";
+        public const string TLH = "TLH";
         public const string TLT = "splice:TLT,TLT++";
         public const string SHY = "splice:SHY,SHY++";
         public const string VGLT = "splice:VGLT,TLT"; // Vanguard Long-Term Govt. Bond ETF (US Treasury bonds, long-term)
@@ -48,6 +51,8 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string VGIT = "splice:VGIT,IEF";     // Vanguard Intermediate-Term Treasury Index ETF
         public const string VCLT = "splice:VCLT,LQD";     // Vanguard Long-Term Corporate Bond Index ETF
         public const string BNDX = "splice:BNDX,BWX,SHY"; // Vanguard Total International Bond Index ETF
+        public const string JNK = "JNK";
+        public const string LQD = "LQD";
 
         public const string GLD = "splice:GLD,GLD++";
         public const string DBC = "splice:DBC,DBC++";

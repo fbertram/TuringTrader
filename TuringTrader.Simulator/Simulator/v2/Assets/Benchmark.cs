@@ -31,7 +31,10 @@ namespace TuringTrader.SimulatorV2.Assets
 {
     public class Benchmark
     {
-        public const string PORTFOLIO_60_40 = Index.SPXTR; // FIXME = "algo:Benchmark_60_40";
+        /// <summary>
+        /// Vanilla 60/40 benchmark, created from 60% SPY and 40% AGG.
+        /// </summary>
+        public const string PORTFOLIO_60_40 = "algo:Benchmark_60_40";
     }
 }
 
