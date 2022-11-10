@@ -23,7 +23,7 @@
 
 namespace TuringTrader.SimulatorV2.Assets
 {
-    public class ETFs
+    public class ETF
     {
         public const string SPY = "splice:SPY,SPY++";
         public const string VONE = "splice:VONE,IWB";// Vanguard Russell 1000 ETF (US large-cap stocks)

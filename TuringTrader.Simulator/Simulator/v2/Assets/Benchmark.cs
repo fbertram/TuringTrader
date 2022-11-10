@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Assets/Indices
+// Name:        Assets/Benchmarks
 // Description: Definitions for common Indices.
-// History:     2022x29, FUB, created
+// History:     2022xi09, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 //              https://www.bertram.solutions
@@ -21,13 +21,16 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace TuringTrader.SimulatorV2.Assets
 {
-    public class Indices
+    public class Benchmark
     {
-        public const string SPXTR = "splice:$SPXTR,$SPXTR++";
-
-
         public const string PORTFOLIO_60_40 = "$SPXTR"; // FIXME = "algo:Benchmark_60_40";
     }
 }
