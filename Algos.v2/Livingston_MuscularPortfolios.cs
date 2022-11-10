@@ -132,7 +132,7 @@ namespace TuringTrader.BooksAndPubsV2
         protected abstract HashSet<string> ETF_MENU { get; }
         protected abstract double MOMENTUM(string ticker);
         protected virtual int NUM_PICKS { get => 3; }
-        protected virtual string BENCH => Indices.PORTFOLIO_60_40;
+        protected virtual string BENCH => Benchmark.PORTFOLIO_60_40;
         protected virtual bool IS_REBAL_DAY => SimDate.Month != NextSimDate.Month || IsFirstBar;
         protected virtual double MAX_ALLOC_DEVIATION => 0.20; // FIXME: Livingston uses 20%
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
@@ -210,10 +210,10 @@ namespace TuringTrader.BooksAndPubsV2
         public override string Name => "Livingston's Baby Bear";
         public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
         {
-            new Tuple<string, double>(ETFs.VT,  0.50),
-            new Tuple<string, double>(ETFs.AGG, 0.50),
+            new Tuple<string, double>(ETF.VT,  0.50),
+            new Tuple<string, double>(ETF.AGG, 0.50),
         };
-        public override string BENCH => Indices.PORTFOLIO_60_40;
+        public override string BENCH => Benchmark.PORTFOLIO_60_40;
     }
     #endregion
     #region Mama Bear
@@ -225,17 +225,17 @@ namespace TuringTrader.BooksAndPubsV2
         {
 #if true
             //--- equities
-            ETFs.VONE, // Vanguard Russell 1000 ETF (US large-cap stocks)
-            ETFs.VIOO, // Vanguard Small-Cap 600 ETF (US small-cap stocks)
-            ETFs.VEA,  // Vanguard FTSE Developed Markets ETF (developed-market large-cap stocks)
-            ETFs.VWO,  // Vanguard FTSE Emerging Markets ETF (emerging-market stocks)
+            ETF.VONE, // Vanguard Russell 1000 ETF (US large-cap stocks)
+            ETF.VIOO, // Vanguard Small-Cap 600 ETF (US small-cap stocks)
+            ETF.VEA,  // Vanguard FTSE Developed Markets ETF (developed-market large-cap stocks)
+            ETF.VWO,  // Vanguard FTSE Emerging Markets ETF (emerging-market stocks)
             //--- hard assets
-            ETFs.VNQ,  // Vanguard Real Estate ETF (REITs)
-            ETFs.PDBC, // Invesco Optimum Yield Diversified Commodity Strategy ETF (Commodities)
-            ETFs.IAU,  // iShares Gold Trust (Gold)
+            ETF.VNQ,  // Vanguard Real Estate ETF (REITs)
+            ETF.PDBC, // Invesco Optimum Yield Diversified Commodity Strategy ETF (Commodities)
+            ETF.IAU,  // iShares Gold Trust (Gold)
             //--- fixed-income
-            ETFs.VGLT, // Vanguard Long-Term Govt. Bond ETF (US Treasury bonds, long-term)
-            ETFs.SHV,  // Shares Short-Term Treasury ETF (US Treasury bills, 1 to 12 months)
+            ETF.VGLT, // Vanguard Long-Term Govt. Bond ETF (US Treasury bonds, long-term)
+            ETF.SHV,  // Shares Short-Term Treasury ETF (US Treasury bills, 1 to 12 months)
 #else
             // the book mentions that CXO is using different ETFs
             // see page 104
@@ -274,21 +274,21 @@ namespace TuringTrader.BooksAndPubsV2
         protected override HashSet<string> ETF_MENU => new HashSet<string>()
         {
             //--- equities
-            ETFs.VTV,  // Vanguard Value Index ETF
-            ETFs.VUG,  // Vanguard Growth Index ETF
-            ETFs.VIOV, // Vanguard S&P Small-Cap 600 Value Index ETF
-            ETFs.VIOG, // Vanguard S&P Small-Cap 600 Growth Index ETF
-            ETFs.VEA,  // Vanguard Developed Markets Index ETF
-            ETFs.VWO,  // Vanguard Emerging Market Stock Index ETF
+            ETF.VTV,  // Vanguard Value Index ETF
+            ETF.VUG,  // Vanguard Growth Index ETF
+            ETF.VIOV, // Vanguard S&P Small-Cap 600 Value Index ETF
+            ETF.VIOG, // Vanguard S&P Small-Cap 600 Growth Index ETF
+            ETF.VEA,  // Vanguard Developed Markets Index ETF
+            ETF.VWO,  // Vanguard Emerging Market Stock Index ETF
             //--- hard assets
-            ETFs.VNQ,  // Vanguard Real Estate Index ETF
-            ETFs.PDBC, // Invesco Optimum Yield Diversified Commodity Strategy ETF
-            ETFs.IAU,  // iShares Gold ETF
+            ETF.VNQ,  // Vanguard Real Estate Index ETF
+            ETF.PDBC, // Invesco Optimum Yield Diversified Commodity Strategy ETF
+            ETF.IAU,  // iShares Gold ETF
             //--- fixed-income
-            ETFs.EDV,  // Vanguard Extended Duration ETF
-            ETFs.VGIT, // Vanguard Intermediate-Term Treasury Index ETF
-            ETFs.VCLT, // Vanguard Long-Term Corporate Bond Index ETF
-            ETFs.BNDX, // Vanguard Total International Bond Index ETF
+            ETF.EDV,  // Vanguard Extended Duration ETF
+            ETF.VGIT, // Vanguard Intermediate-Term Treasury Index ETF
+            ETF.VCLT, // Vanguard Long-Term Corporate Bond Index ETF
+            ETF.BNDX, // Vanguard Total International Bond Index ETF
         };
 
         protected override double MOMENTUM(string ticker)

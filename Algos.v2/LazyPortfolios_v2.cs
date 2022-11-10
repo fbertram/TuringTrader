@@ -36,7 +36,7 @@ namespace TuringTrader.BooksAndPubsV2
     {
         #region inputs
         public abstract HashSet<Tuple<string, double>> ALLOCATION { get; }
-        public virtual string BENCH => Indices.PORTFOLIO_60_40;
+        public virtual string BENCH => Benchmark.PORTFOLIO_60_40;
         public virtual bool IS_REBAL_DAY => SimDate.Month != NextSimDate.Month;
         public virtual double MAX_ALLOC_DEVIATION => 0.00; //0.20;
         public virtual OrderType ORDER_TYPE => OrderType.openNextBar;
