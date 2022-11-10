@@ -249,7 +249,9 @@ namespace TuringTrader.SimulatorV2
         /// of simulation range completed, which is not identical to
         /// the percentage of simulation time completed.
         /// </summary>
-        public virtual double Progress => 100.0 * Math.Max(0.0, (SimDate - (DateTime)StartDate).TotalDays) / Math.Max(1.0, ((DateTime)EndDate - (DateTime)StartDate).TotalDays);
+        public virtual double Progress => StartDate != null && EndDate != null
+            ? 100.0 * Math.Max(0.0, (SimDate - (DateTime)StartDate).TotalDays) / Math.Max(1.0, ((DateTime)EndDate - (DateTime)StartDate).TotalDays)
+            : 0.0;
 
         #endregion
         #region cache functionality
@@ -336,6 +338,18 @@ namespace TuringTrader.SimulatorV2
                 name,
                 data,
                 meta);
+        }
+
+        /// <summary>
+        /// Load quotations or run algorithm.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public TimeSeriesAsset Asset(object obj)
+        {
+            return obj as string != null
+                ? Asset(obj as string)
+                : Asset(obj as Algorithm);
         }
 
         /// <summary>
