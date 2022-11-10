@@ -29,25 +29,25 @@ namespace TuringTrader.SimulatorV2.Assets
         /// Dow Jones Industrial Average Index. Available since
         /// 05/26/1896, backfill truncated at 01/02/1970.
         /// </summary>
-        public const string DJI = "splice:$DJI,$DJI++";
+        public const string DJI = "splice:$DJI,$DJI#";
 
         /// <summary>
         /// Dow Jones Industrial Average TR Index. Available since
         /// 09/30/1987, backfilled to 01/02/1970.
         /// </summary>
-        public const string DJITR = "splice:$DJITR,$DJITR++";
+        public const string DJITR = "splice:$DJITR,$DJITR#";
 
         /// <summary>
         /// S&amp;P 500 Index. Available since 01/03/1928, backfill
         /// truncated at 01/02/1970.
         /// </summary>
-        public const string SPX = "splice:$SPX,$SPX++";
+        public const string SPX = "splice:$SPX,$SPX#";
 
         /// <summary>
         /// S&amp;P 500 Total Return Index. Available since 01/04/1988,
         /// backfilled to 01/30/1970.
         /// </summary>
-        public const string SPXTR = "splice:$SPXTR,$SPXTR++";
+        public const string SPXTR = "splice:$SPXTR,$SPXTR#";
 
         // OEX
         // OEXTR
