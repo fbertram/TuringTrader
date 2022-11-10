@@ -50,7 +50,8 @@ namespace TuringTrader.DemoV2
 
         public override void Run()
         {
-            StartDate = DateTime.Parse("10/31/2022", CultureInfo.InvariantCulture);
+            //StartDate = DateTime.Parse("10/31/2022", CultureInfo.InvariantCulture);
+            StartDate = DateTime.Now - TimeSpan.FromDays(30);
             EndDate = DateTime.Now;
 
             var childAlgo = new ChildAlgo();
