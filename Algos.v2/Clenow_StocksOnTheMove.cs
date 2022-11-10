@@ -190,7 +190,7 @@ namespace TuringTrader.BooksAndPubsV2
                         // NOTE: it is not fully clear how to determine the maximum move.
                         //       Other plausible options include:
                         //     - Asset(name).TrueRange().Div(Asset(name).Close).Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0
-                        .Where(name => Asset(name).Close.LinReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0)
+                        .Where(name => Asset(name).Close.RelReturn().AbsValue().Highest(MOM_PERIOD)[0] < MAX_MOVE / 100.0)
                         .ToList();
 
                     //----- money management
