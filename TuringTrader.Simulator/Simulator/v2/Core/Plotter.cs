@@ -143,6 +143,23 @@ namespace TuringTrader.SimulatorV2
             }
 #endif
         }
+
+        /// <summary>
+        /// Add OHLCV bars for algorithm's NAV. This is useful for creating
+        /// backfills.
+        /// </summary>
+        public void AddNavOHLCV()
+        {
+#if false
+            SelectChart("OHLCV", "Date");
+            foreach (var param in par
+            {
+                plotter.SetX(algo.OptimizerParams[param].Name);
+                plotter.Plot("Value", algo.OptimizerParams[param].Value);
+
+            }
+#endif
+        }
     }
 }
 

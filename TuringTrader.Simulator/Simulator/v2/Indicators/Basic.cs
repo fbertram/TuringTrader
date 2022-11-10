@@ -32,6 +32,26 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// </summary>
     public static class Basic
     {
+        #region Lambda
+        /// <summary>
+        /// Calculate indicator time series from a lambda expression.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="name">time series name. This name must be unique and not conflict
+        /// with the names of any asset or indicator time series</param>
+        /// <param name="lambda">lambda expression</param>
+        /// <returns>indicator time series</returns>
+        public static TimeSeriesFloat Lambda(this Algorithm algo, string name, Func<List<BarType<double>>> lambda)
+        {
+            var data = algo.Cache(name, lambda);
+
+            return new TimeSeriesFloat(
+                algo,
+                name,
+                data);
+        }
+        #endregion
+
         #region Const
         #endregion
         #region Delay
@@ -220,15 +240,15 @@ namespace TuringTrader.SimulatorV2.Indicators
                 data);
         }
         #endregion
-        #region LinReturn
+        #region RelReturn
         /// <summary>
-        /// Return linear return, calculated as r = v[0] / v[1] - 1.
+        /// Return relative return, calculated as r = v[0] / v[1] - 1.
         /// </summary>
         /// <param name="series">input series</param>
         /// <returns>time series of linear returns</returns>
-        public static TimeSeriesFloat LinReturn(this TimeSeriesFloat series)
+        public static TimeSeriesFloat RelReturn(this TimeSeriesFloat series)
         {
-            var name = string.Format("{0}.LinReturn", series.Name);
+            var name = string.Format("{0}.RelReturn", series.Name);
 
             var data = series.Algorithm.Cache(name, () =>
             {
