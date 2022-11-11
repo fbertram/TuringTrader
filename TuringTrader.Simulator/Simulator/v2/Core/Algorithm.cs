@@ -172,22 +172,16 @@ namespace TuringTrader.SimulatorV2
         public bool IsLastBar { get; private set; } = false;
 
         /// <summary>
-        /// Delegate for BarEvent.
+        /// Algorithm's result as a list of bars.
         /// </summary>
-        public delegate void BarEventHandler();
+        public List<BarType<OHLCV>> Result = null;
 
-        /// <summary>
-        /// Bar event, called after processing the bar.
-        /// </summary>
-        public event BarEventHandler BarEvent;
-
-        private List<BarType<OHLCV>> _navBars = new List<BarType<OHLCV>>();
-
-        private void _simLoop(Action barFun)
+        private void _simLoop(Func<OHLCV> innerBarFun)
         {
             var tradingDays = TradingCalendar.TradingDays;
             IsFirstBar = true;
             IsLastBar = false;
+            var bars = new List<BarType<OHLCV>>();
 
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
@@ -197,7 +191,8 @@ namespace TuringTrader.SimulatorV2
 
                 if (SimDate < StartDate) continue; // warmup period
 
-                barFun(); // this will update _navBars
+                var ohlcv = innerBarFun();
+                bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
 
                 IsFirstBar = false;
             }
@@ -208,6 +203,7 @@ namespace TuringTrader.SimulatorV2
             FitnessReturn = Account.NetAssetValue;
             FitnessRisk = 0.0;
             FitnessValue = 0.0;
+            Result = bars;
         }
 
         /// <summary>
@@ -221,8 +217,7 @@ namespace TuringTrader.SimulatorV2
             _simLoop(() =>
             {
                 barFun();
-                var bar = Account.ProcessBar();
-                _navBars.Add(new BarType<OHLCV>(SimDate, bar));
+                return Account.ProcessBar();
             });
         }
 
@@ -238,7 +233,7 @@ namespace TuringTrader.SimulatorV2
             {
                 var bar = barFun();
                 Account.ProcessBar();
-                _navBars.Add(new BarType<OHLCV>(SimDate, bar));
+                return bar;
             });
         }
 
@@ -303,7 +298,7 @@ namespace TuringTrader.SimulatorV2
                 algo.StartDate = tradingDays.First();
                 algo.EndDate = tradingDays.Last();
 
-                algo.Run(); // => algo's equity curve in algo._navBars
+                algo.Run(); // => algo's equity curve in algo.Result
 
                 //----- resample result to this algo's trading calendar
                 // NOTE: our child algorithm might run on its own calendar,
@@ -315,9 +310,9 @@ namespace TuringTrader.SimulatorV2
 
                 foreach (var tradingDay in tradingDays)
                 {
-                    while (childIdx < algo._navBars.Count - 1 && algo._navBars[childIdx + 1].Date <= tradingDay)
+                    while (childIdx < algo.Result.Count - 1 && algo.Result[childIdx + 1].Date <= tradingDay)
                         childIdx++;
-                    var childBar = algo._navBars[childIdx].Value;
+                    var childBar = algo.Result[childIdx].Value;
 
                     childBars.Add(new BarType<OHLCV>(tradingDay,
                             new OHLCV(childBar.Open, childBar.High, childBar.Low, childBar.Close,
