@@ -100,6 +100,12 @@ namespace TuringTrader.SimulatorV2.Indicators
                 data);
         }
 
+        /// <summary>
+        /// Resample time series to monthly bars.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="offset">offset in trading days</param>
+        /// <returns>output series of monthly bars</returns>
         public static TimeSeriesAsset Monthly(this TimeSeriesAsset series, int offset = 0)
         {
             var name = string.Format("{0}.Monthly({1})", series.Name, offset);
@@ -115,6 +121,8 @@ namespace TuringTrader.SimulatorV2.Indicators
                 {
                     if (clock[idx])
                     {
+                        // BUGBUG: this returns the last OHLCV bar
+                        // FIXME: calculate open, high, low and volume here
                         dst.Add(src[idx]);
                     }
                 }
@@ -165,6 +173,12 @@ namespace TuringTrader.SimulatorV2.Indicators
                 data);
         }
 
+        /// <summary>
+        /// Resample time series to weekly bars.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="offset">offset in trading days</param>
+        /// <returns>output series of weekly bars</returns>
         public static TimeSeriesAsset Weekly(this TimeSeriesAsset series, int offset = 0)
         {
             var name = string.Format("{0}.Weekly({1})", series.Name, offset);
@@ -180,6 +194,8 @@ namespace TuringTrader.SimulatorV2.Indicators
                 {
                     if (clock[idx])
                     {
+                        // BUGBUG: this returns the last OHLCV bar
+                        // FIXME: calculate open, high, low and volume here
                         dst.Add(src[idx]);
                     }
                 }
