@@ -78,22 +78,22 @@ namespace TuringTrader.SimulatorV2
 
 #if true
             // move forward in time (coarse)
-            var totalDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
-            if (totalDays > 10)
+            var daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
+            var deltaDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
+            var deltaBars = deltaDays / daysPerBar;
+            if (deltaBars > 10)
                 _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
-                    _CurrentIndex + (totalDays * 3) / 4 - 1));
+                    _CurrentIndex + (int)Math.Floor(deltaBars) - 1));
 #endif
 
             // move forward in time (incrementally)
             while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= lookupDate)
                 _CurrentIndex++;
 
-#if true
-            // move back in time
-            // this can happen because of the coarse forward jump
-            while (_CurrentIndex > 0 && data[_CurrentIndex - 1].Date >= lookupDate)
+            // move back in time (incrementally)
+            // this may be required due to the coarse forward jump
+            while (_CurrentIndex > 0 && data[_CurrentIndex].Date > lookupDate)
                 _CurrentIndex--;
-#endif
 
             return _CurrentIndex;
 
@@ -290,6 +290,14 @@ namespace TuringTrader.SimulatorV2
     public class TimeSeriesFloat : TimeSeries<double>
     {
         public TimeSeriesFloat(Algorithm algo, string myId, Task<List<BarType<double>>> myData) : base(algo, myId, myData)
+        {
+        }
+    }
+    #endregion
+    #region class TimeSeriesBool
+    public class TimeSeriesBool : TimeSeries<bool>
+    {
+        public TimeSeriesBool(Algorithm algo, string myId, Task<List<BarType<bool>>> myData) : base(algo, myId, myData)
         {
         }
     }

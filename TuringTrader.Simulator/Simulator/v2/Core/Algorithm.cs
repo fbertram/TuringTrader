@@ -141,7 +141,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value; } }
+        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + TimeSpan.FromDays(7); } }
 
         private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 
@@ -186,15 +186,16 @@ namespace TuringTrader.SimulatorV2
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
                 SimDate = tradingDays[idx];
-                NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
-                IsLastBar = idx == tradingDays.Count - 1;
 
-                if (SimDate < StartDate) continue; // warmup period
+                if (SimDate >= StartDate && SimDate <= EndDate)
+                {
+                    NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
+                    IsLastBar = NextSimDate > EndDate;
 
-                var ohlcv = innerBarFun();
-                bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
-
-                IsFirstBar = false;
+                    var ohlcv = innerBarFun();
+                    bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
+                    IsFirstBar = false;
+                }
             }
 
             //SimDate = default; // we need SimDate to calculate the last asset allocation
