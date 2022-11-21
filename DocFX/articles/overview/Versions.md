@@ -10,6 +10,10 @@
     - fix issue allowing trades on delisted instruments
     - optimize universe constituents lookup
     - initial implementation of v2 simulator engine
+  - showcase algorithms
+    - port Livingston's Muscular Portfolios to v2
+    - port Clenow's Stocks on the Loose to v2
+    - implement Keller's Bold Asset Allocation for v2
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
