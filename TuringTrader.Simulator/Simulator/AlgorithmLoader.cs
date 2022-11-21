@@ -24,7 +24,7 @@
 // LOAD_ALGOS_V2_DLL: with this switch turned on, the algorithm loader
 // looks for Algos.v2.dll in the same folder as the TuringTrader binary.
 // This is used for convenient testing of the v2 sim core.
-#define LOAD_ALGOS_V2_DLL
+//#define LOAD_ALGOS_V2_DLL
 
 #region Libraries
 using System;

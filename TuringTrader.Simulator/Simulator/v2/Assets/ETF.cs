@@ -30,7 +30,7 @@ namespace TuringTrader.SimulatorV2.Assets
     {
         #region stock market
         /// <summary>
-        /// SPDR S&P 500 Trust ETF. Available since February 1993.
+        /// SPDR S&amp;P 500 Trust ETF. Available since February 1993.
         /// </summary>
         public const string SPY = "splice:SPY,SPY++";
         /// <summary>
@@ -74,11 +74,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// </summary>
         public const string VUG = "VUG";
         /// <summary>
-        /// Vanguard S&P Small-Cap 600 Index ETF. Available since September 2010.
+        /// Vanguard S&amp;P Small-Cap 600 Index ETF. Available since September 2010.
         /// </summary>
         public const string VIOV = "splice:VIOV,IJS";
         /// <summary>
-        /// Vanguard S&P Small-Cap 600 Growth Index ETF. Available September 2010.
+        /// Vanguard S&amp;P Small-Cap 600 Growth Index ETF. Available September 2010.
         /// </summary>
         public const string VIOG = "splice:VIOG,IJT";
         /// <summary>
