@@ -106,7 +106,8 @@ namespace TuringTrader.SimulatorV2
                 {
                     if (lastAlloc != "")
                     {
-                        SetX(lastDate);
+                        //SetX(lastDate);
+                        SetX(string.Format("{0:MM/dd/yyyy}", lastDate));
                         Plot("Allocation", lastAlloc);
                     }
 
@@ -121,7 +122,8 @@ namespace TuringTrader.SimulatorV2
 
             if (lastAlloc != "")
             {
-                SetX(lastDate);
+                //SetX(lastDate);
+                SetX(string.Format("{0:MM/dd/yyyy}", lastDate));
                 Plot("Allocation", lastAlloc);
             }
         }

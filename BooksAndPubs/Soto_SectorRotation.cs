@@ -33,6 +33,7 @@ using System.Globalization;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 #endregion
 

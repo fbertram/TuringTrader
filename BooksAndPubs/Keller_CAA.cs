@@ -7,7 +7,7 @@
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2606884
 // History:     2019iii07, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
+// Copyright:   (c) 2011-2022, Bertram Solutions LLC
 //              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.

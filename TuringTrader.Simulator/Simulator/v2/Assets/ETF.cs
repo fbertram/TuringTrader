@@ -23,48 +23,173 @@
 
 namespace TuringTrader.SimulatorV2.Assets
 {
+    /// <summary>
+    /// Collection of ETFs.
+    /// </summary>
     public class ETF
     {
-        public const string SPY = "splice:SPY,SPY++"; // SPDR S&P 500 Trust ETF
-        public const string QQQ = "QQQ"; // Invesco QQQ Trust Series 1 ETF
-        public const string IWM = "IWM"; // iShares Russell 2000 ETF
-        public const string VGK = "VGK"; // Vanguard European Stock Index ETF
-        public const string EWJ = "EWJ"; // iShares MSCI Japan ETF
-        public const string VONE = "splice:VONE,IWB";// Vanguard Russell 1000 ETF (US large-cap stocks)
-        public const string VIOO = "splice:VIOO,IJR"; // Vanguard Small-Cap 600 ETF (US small-cap stocks)
-        public const string VEA = "splice:VEA,EFA";  // Vanguard FTSE Developed Markets ETF (developed-market large-cap stocks)
-        public const string VWO = "VWO";             // Vanguard FTSE Emerging Markets ETF (emerging-market stocks)
-        public const string VTV = "VTV";                 // Vanguard Value Index ETF
-        public const string VUG = "VUG";                 // Vanguard Growth Index ETF
-        public const string VIOV = "splice:VIOV,IJS";     // Vanguard S&P Small-Cap 600 Value Index ETF
-        public const string VIOG = "splice:VIOG,IJT";     // Vanguard S&P Small-Cap 600 Growth Index ETF
-        public const string VT = "VT"; // Vanguard Total World Stock Index ETF
-
-
+        #region stock market
+        /// <summary>
+        /// SPDR S&P 500 Trust ETF. Available since February 1993.
+        /// </summary>
+        public const string SPY = "splice:SPY,SPY++";
+        /// <summary>
+        /// Invesco QQQ Trust Series 1 ETF. Available since March 1999.
+        /// </summary>
+        public const string QQQ = "QQQ";
+        /// <summary>
+        /// iShares Russell 2000 ETF. Available since June 2000.
+        /// </summary>
+        public const string IWM = "IWM";
+        /// <summary>
+        /// Vanguard European Stock Index ETF. Available since March 2005.
+        /// </summary>
+        public const string VGK = "VGK";
+        /// <summary>
+        /// iShares MSCI Japan ETF. Available since March 1996.
+        /// </summary>
+        public const string EWJ = "EWJ";
+        /// <summary>
+        /// // Vanguard Russell 1000 ETF. Available since October 2010.
+        /// </summary>
+        public const string VONE = "splice:VONE,IWB";
+        /// <summary>
+        /// Vanguard Small-Cap 600 ETF. Available since September 2010.
+        /// </summary>
+        public const string VIOO = "splice:VIOO,IJR";
+        /// <summary>
+        /// Vanguard FTSE Developed Markets ETF. Availale since August 2007.
+        /// </summary>
+        public const string VEA = "splice:VEA,EFA";
+        /// <summary>
+        /// Vanguard FTSE Emerging Markets ETF. Available since March 2005.
+        /// </summary>
+        public const string VWO = "VWO";
+        /// <summary>
+        /// Vanguard Value Index ETF. Available since February 2004.
+        /// </summary>
+        public const string VTV = "VTV";
+        /// <summary>
+        /// Vanguard Growth Index ETF. Available since February 2004.
+        /// </summary>
+        public const string VUG = "VUG";
+        /// <summary>
+        /// Vanguard S&P Small-Cap 600 Index ETF. Available since September 2010.
+        /// </summary>
+        public const string VIOV = "splice:VIOV,IJS";
+        /// <summary>
+        /// Vanguard S&P Small-Cap 600 Growth Index ETF. Available September 2010.
+        /// </summary>
+        public const string VIOG = "splice:VIOG,IJT";
+        /// <summary>
+        /// Vanguard Total World Stock Index ETF. Available since July 2008.
+        /// </summary>
+        public const string VT = "VT";
+        #endregion
+        #region bonds
+        #region broad markets
+        /// <summary>
+        /// iShares Core US Aggregate Bond ETF. Available since October 2003.
+        /// </summary>
         public const string AGG = "splice:AGG,AGG++";
-        public const string BND = "BND"; // Vanguard Total Bond Market Index ETF
+        /// <summary>
+        /// Vanguard Total Bond Market Index ETF. Available since April 2007.
+        /// </summary>
+        public const string BND = "BND";
+        /// <summary>
+        /// Vanguard Total International Bond Index ETF. Available since June 2013.
+        /// </summary>
+        public const string BNDX = "splice:BNDX,BWX,SHY";
+        #endregion
+        #region short-term (0-3yr) treasuries
+        /// <summary>
+        /// SPDR Bloomberg 1-3 Month T-Bill ETF. Available since June 2007.
+        /// </summary>
         public const string BIL = "splice:BIL,BIL++";
-        public const string TIP = "TIP";
-        public const string IEF = "splice:IEF,IEF++";
-        public const string IEI = "IEI";
-        public const string TLH = "TLH";
-        public const string TLT = "splice:TLT,TLT++";
+        /// <summary>
+        /// iShares 1-3 Year Treasury Bond ETF. Available since August 2002.
+        /// </summary>
         public const string SHY = "splice:SHY,SHY++";
-        public const string VGLT = "splice:VGLT,TLT"; // Vanguard Long-Term Govt. Bond ETF (US Treasury bonds, long-term)
-        public const string SHV = "splice:SHV,SHY";  // iShares Short-Term Treasury ETF (US Treasury bills, 1 to 12 months)
-        public const string EDV = "splice:EDV,TLT";      // Vanguard Extended Duration ETF
-        public const string VGIT = "splice:VGIT,IEF";     // Vanguard Intermediate-Term Treasury Index ETF
-        public const string VCLT = "splice:VCLT,LQD";     // Vanguard Long-Term Corporate Bond Index ETF
-        public const string BNDX = "splice:BNDX,BWX,SHY"; // Vanguard Total International Bond Index ETF
-        public const string JNK = "JNK";
-        public const string HYG = "HYG"; // iShares iBoxx $ High Yield Corporate Bond ETF
+        #endregion
+        #region intermediate-term (3-10yr) treasuries
+        /// <summary>
+        /// iShares 3-7 Year Treasury Bond ETF. Available since January 2007.
+        /// </summary>
+        public const string IEI = "IEI";
+        /// <summary>
+        /// iShares 7-10 Year Treasury Bond ETF. Available since August 2002.
+        /// </summary>
+        public const string IEF = "splice:IEF,IEF++";
+        /// <summary>
+        /// Vanguard Intermediate-Term Treasury Index ETF. Available since December 2009.
+        /// </summary>
+        public const string VGIT = "splice:VGIT,IEF";
+        #endregion
+        #region long-term (10+yr) treasuries
+        /// <summary>
+        /// iShares 10-20 Year Treasury Bond ETF. Available since January 2007.
+        /// </summary>
+        public const string TLH = "TLH";
+        /// <summary>
+        /// iShares 20 Plus Year Treasury Bond ETF. Available since August 2002.
+        /// </summary>
+        public const string TLT = "splice:TLT,TLT++";
+        /// <summary>
+        /// Vanguard Long-Term Treasury Index ETF. Available since December 2009.
+        /// </summary>
+        public const string VGLT = "splice:VGLT,TLT";
+        /// <summary>
+        /// Vanguard Extended Duration ETF. Available since December 2007.
+        /// </summary>
+        public const string EDV = "splice:EDV,TLT";
+        #endregion
+        #region other government bonds
+        /// <summary>
+        /// iShares TIPS Bond ETF. Available since December 2003.
+        /// </summary>
+        public const string TIP = "TIP";
+        #endregion
+        #region corporate bonds
+        /// <summary>
+        /// iShares iBoxx $ Investment Grade Corporate Bond ETF. Available since August 2002.
+        /// </summary>
         public const string LQD = "LQD";
-
+        /// <summary>
+        /// iShares iBoxx $ High Yield Corporate Bond ETF. Available since April 2007.
+        /// </summary>
+        public const string HYG = "HYG";
+        /// <summary>
+        /// Vanguard Long-Term Corporate Bond Index ETF. Available since December 2009.
+        /// </summary>
+        public const string VCLT = "splice:VCLT,LQD";
+        /// <summary>
+        /// SPDR Bloomberg High Yield Bond ETF. Available since December 2007.
+        /// </summary>
+        public const string JNK = "JNK";
+        #endregion
+        #endregion
+        #region commodities & hard assets
+        /// <summary>
+        /// SPDR Gold Shares ETF. Available since November 2004.
+        /// </summary>
         public const string GLD = "splice:GLD,GLD++";
+        /// <summary>
+        /// Invesco DB Commodity Index Tracking ETF. Available since February 2006.
+        /// </summary>
         public const string DBC = "splice:DBC,DBC++";
-        public const string VNQ = "VNQ";             // Vanguard Real Estate ETF (REITs)
-        public const string PDBC = "splice:PDBC,DBC"; // Invesco Optimum Yield Diversified Commodity Strategy ETF (Commodities)
-        public const string IAU = "IAU";             // iShares Gold Trust (Gold)
+        /// <summary>
+        /// VNQ	Vanguard Real Estate Index ETF. Available since September 2004.
+        /// </summary>
+        public const string VNQ = "VNQ";
+        /// <summary>
+        /// Invesco Optimum Yield Diversified Commodity Strategy ETF. Available since Novemer 2014.
+        /// </summary>
+        public const string PDBC = "splice:PDBC,DBC";
+        /// <summary>
+        /// iShares Gold Trust. Available since January 2005.
+        /// </summary>
+        public const string IAU = "IAU";
+        #endregion
     }
 }
 

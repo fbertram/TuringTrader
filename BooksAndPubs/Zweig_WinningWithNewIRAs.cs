@@ -38,6 +38,7 @@ using System.Linq;
 using TuringTrader.Algorithms.Glue;
 using TuringTrader.BooksAndPubs;
 using TuringTrader.Indicators;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion

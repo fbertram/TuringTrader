@@ -127,6 +127,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion

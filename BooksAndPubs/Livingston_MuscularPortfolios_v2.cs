@@ -7,8 +7,7 @@
 // History:     2018xii14, FUB, created
 //              2022x29, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -134,7 +133,7 @@ namespace TuringTrader.BooksAndPubsV2
         protected virtual int NUM_PICKS { get => 3; }
         protected virtual string BENCH => Benchmark.PORTFOLIO_60_40;
         protected virtual bool IS_REBAL_DAY => SimDate.Month != NextSimDate.Month || IsFirstBar;
-        protected virtual double MAX_ALLOC_DEVIATION => 0.20; // FIXME: Livingston uses 20%
+        protected virtual double MAX_ALLOC_DEVIATION => 0.20;
         protected virtual OrderType ORDER_TYPE => OrderType.closeThisBar;
         #endregion
         #region strategy logic
@@ -205,6 +204,7 @@ namespace TuringTrader.BooksAndPubsV2
     }
 
     #region Baby Bear
+#if false
     public class Livingston_MuscularPortfolios_BabyBear : LazyPortfolio
     {
         public override string Name => "Livingston's Baby Bear";
@@ -215,6 +215,7 @@ namespace TuringTrader.BooksAndPubsV2
         };
         public override string BENCH => Benchmark.PORTFOLIO_60_40;
     }
+#endif
     #endregion
     #region Mama Bear
     // https://muscularportfolios.com/mama-bear/

@@ -29,6 +29,11 @@
   </Target>
 
   <ItemGroup>
+    <Compile Remove="Clenow_StocksOnTheMove.cs" />
+    <Compile Remove="Livingston_MuscularPortfolios.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="TuringTrader.Simulator">
       <HintPath>C:\Program Files\TuringTrader\Bin\TuringTrader.Simulator.dll</HintPath>
     </Reference>
