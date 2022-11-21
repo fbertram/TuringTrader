@@ -51,7 +51,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Parent algorithm of plotter object, may be null.
         /// </summary>
-        public Algorithm ParentAlgorithm { get; private set; }
+        public IAlgorithm ParentAlgorithm { get; private set; }
         #endregion
         #region internal helpers
         private string AddQuotesAsRequired(string value)
@@ -95,7 +95,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Create and initialize logger object.
         /// </summary>
-        public Plotter(Algorithm parentAlgorithm = null)
+        public Plotter(IAlgorithm parentAlgorithm = null)
         {
             ParentAlgorithm = parentAlgorithm;
         }

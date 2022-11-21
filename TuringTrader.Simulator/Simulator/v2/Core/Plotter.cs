@@ -31,11 +31,9 @@ namespace TuringTrader.SimulatorV2
     /// </summary>
     public class Plotter : Simulator.Plotter
     {
-        private Algorithm Algorithm;
-        public Plotter(Algorithm algorithm)
-        {
-            Algorithm = algorithm;
-        }
+        private Algorithm Algorithm => (Algorithm)ParentAlgorithm;
+        public Plotter(Algorithm algorithm) : base(algorithm)
+        { }
 
         /// <summary>
         /// Add trade log. This log includes one entry for every trade executed.
