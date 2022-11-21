@@ -110,6 +110,10 @@ namespace TuringTrader.SimulatorV2.Assets
         /// iShares 1-3 Year Treasury Bond ETF. Available since August 2002.
         /// </summary>
         public const string SHY = "splice:SHY,SHY++";
+        /// <summary>
+        /// iShares Short Treasury Bond ETF. Available since January 2007.
+        /// </summary>
+        public const string SHV = "SHV";
         #endregion
         #region intermediate-term (3-10yr) treasuries
         /// <summary>
