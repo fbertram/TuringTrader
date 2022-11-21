@@ -25,7 +25,11 @@ namespace TuringTrader.SimulatorV2.Assets
 {
     public class ETF
     {
-        public const string SPY = "splice:SPY,SPY++";
+        public const string SPY = "splice:SPY,SPY++"; // SPDR S&P 500 Trust ETF
+        public const string QQQ = "QQQ"; // Invesco QQQ Trust Series 1 ETF
+        public const string IWM = "IWM"; // iShares Russell 2000 ETF
+        public const string VGK = "VGK"; // Vanguard European Stock Index ETF
+        public const string EWJ = "EWJ"; // iShares MSCI Japan ETF
         public const string VONE = "splice:VONE,IWB";// Vanguard Russell 1000 ETF (US large-cap stocks)
         public const string VIOO = "splice:VIOO,IJR"; // Vanguard Small-Cap 600 ETF (US small-cap stocks)
         public const string VEA = "splice:VEA,EFA";  // Vanguard FTSE Developed Markets ETF (developed-market large-cap stocks)
@@ -38,6 +42,7 @@ namespace TuringTrader.SimulatorV2.Assets
 
 
         public const string AGG = "splice:AGG,AGG++";
+        public const string BND = "BND"; // Vanguard Total Bond Market Index ETF
         public const string BIL = "splice:BIL,BIL++";
         public const string TIP = "TIP";
         public const string IEF = "splice:IEF,IEF++";
@@ -52,6 +57,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string VCLT = "splice:VCLT,LQD";     // Vanguard Long-Term Corporate Bond Index ETF
         public const string BNDX = "splice:BNDX,BWX,SHY"; // Vanguard Total International Bond Index ETF
         public const string JNK = "JNK";
+        public const string HYG = "HYG"; // iShares iBoxx $ High Yield Corporate Bond ETF
         public const string LQD = "LQD";
 
         public const string GLD = "splice:GLD,GLD++";
