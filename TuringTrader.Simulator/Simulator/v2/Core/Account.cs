@@ -62,6 +62,8 @@ namespace TuringTrader.SimulatorV2
         private DateTime _lastDate = default(DateTime);
         private double _navMax = 0.0;
         private double _mdd = 0.0;
+        private const double DEFAULT_FRICTION = 0.0005; // $100.00 x 0.05% = $0.05
+        private double _friction = DEFAULT_FRICTION;
 
         private enum NavType
         {
@@ -402,7 +404,7 @@ namespace TuringTrader.SimulatorV2
         /// Friction to model commissions, fees, and slippage.
         /// Expressed as percentage of traded value.
         /// </summary>
-        public double Friction { get; set; } = 0.0005; // $100.00 x 0.05% = $0.05
+        public double Friction { get => _friction; set { _friction = value >= 0.0 ? value : DEFAULT_FRICTION; } }
 
         /// <summary>
         /// Minimum position size, as percentage of total.
