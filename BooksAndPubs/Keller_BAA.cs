@@ -24,6 +24,10 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// OPTIONAL_CHARTS - if defined, render optional charts showing momentum
+// in the offensive, defensive, and canary universes.
+//#define OPTIONAL_CHARTS
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -104,6 +108,8 @@ namespace TuringTrader.BooksAndPubsV2
 
         public virtual OrderType ORDER_TYPE { get; set; } = OrderType.closeThisBar;
 
+        public virtual string BENCH { get; set; } = Benchmark.PORTFOLIO_60_40;
+
         public override void Run()
         {
             //========== initialization ==========
@@ -130,9 +136,10 @@ namespace TuringTrader.BooksAndPubsV2
                             a => a,
                             a => Asset(a).Close[0] / Asset(a).Monthly().Close.SMA(13)[0] - 1.0);
 
-                    var offensiveAssets = SEL_O
-                        .OrderByDescending(a => offensiveMom[a])
+                    var offensiveAssets = offensiveMom
+                        .OrderByDescending(kv => kv.Value)
                         .Take(TO)
+                        .Select(kv => kv.Key)
                         .ToList();
 
                     // rank defensive assets based on SMA(12). In addition,
@@ -144,10 +151,11 @@ namespace TuringTrader.BooksAndPubsV2
                             a => a,
                             a => Asset(a).Close[0] / Asset(a).Monthly().Close.SMA(13)[0] - 1.0);
 
-                    var defensiveAsssets = SEL_D
-                        .OrderByDescending(a => defensiveMom[a])
-                        .Where(a => defensiveMom[a] >= defensiveMom[CASH])
+                    var defensiveAsssets = defensiveMom
+                        .OrderByDescending(kv => kv.Value)
+                        .Where(kv => kv.Value >= defensiveMom[CASH])
                         .Take(TD)
+                        .Select(kv => kv.Key)
                         .ToList();
 
                     // evaluate canary universe based on 13612W momentum
@@ -159,8 +167,8 @@ namespace TuringTrader.BooksAndPubsV2
                                 .Sum(m => (12.0 / m)
                                     * (Asset(a).Close[0] / Asset(a).Monthly().Close[m] - 1.0)));
 
-                    var numBadCanaryAssets = SEL_P
-                        .Where(a => canaryMom[a] < 0.0)
+                    var numBadCanaryAssets = canaryMom
+                        .Where(kv => kv.Value < 0.0)
                         .Count();
 
                     //----- money management
@@ -195,7 +203,7 @@ namespace TuringTrader.BooksAndPubsV2
                     foreach (var kv in weights)
                         Asset(kv.Key).Allocate(kv.Value, ORDER_TYPE);
 
-#if false
+#if OPTIONAL_CHARTS
                     //----- optional charts (for debugging and analysis)
                     if (!IsOptimizing)
                     {
@@ -224,7 +232,7 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.SelectChart(Name, "Date");
                     Plotter.SetX(SimDate);
                     Plotter.Plot(Name, NetAssetValue);
-                    Plotter.Plot(Asset(Benchmark.PORTFOLIO_60_40).Description, Asset(Benchmark.PORTFOLIO_60_40).Close[0]);
+                    Plotter.Plot(Asset(BENCH).Description, Asset(BENCH).Close[0]);
                 }
             });
 

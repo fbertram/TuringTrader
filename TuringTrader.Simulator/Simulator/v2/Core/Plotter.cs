@@ -23,6 +23,7 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -70,7 +71,7 @@ namespace TuringTrader.SimulatorV2
             foreach (var kv in Algorithm.Account.Positions.OrderByDescending(p => p.Value))
             {
                 var asset = Algorithm.Asset(kv.Key);
-                var symbol = asset.Ticker;
+                var symbol = Regex.Replace(asset.Ticker, @"\.$", ""); // remove trailing dot from quote splicing
                 var name = asset.Description;
                 var pcnt = string.Format("{0:P2}", kv.Value);
                 var lastClose = string.Format("{0:C2}", asset.Close[0]);
