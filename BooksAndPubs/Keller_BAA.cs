@@ -174,7 +174,7 @@ namespace TuringTrader.BooksAndPubsV2
                     //----- money management
                     // calculate offensive and defensive holdings based
                     // on the breadth of the canary universe
-                    var pcntDefensive = Math.Min(1.0, numBadCanaryAssets / B);
+                    var pcntDefensive = Math.Min(1.0, (double)numBadCanaryAssets / B);
                     var pcntOffensive = 1.0 - pcntDefensive;
 
                     // initially, assume to close all open positions
