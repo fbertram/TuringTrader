@@ -151,6 +151,7 @@ namespace TuringTrader.BooksAndPubsV2
                         .ToList();
 
                     // evaluate canary universe based on 13612W momentum
+                    // see paper, page 4, footnote 7 for calculation
                     var canaryMom = SEL_P
                         .ToDictionary(
                             a => a,
@@ -174,7 +175,9 @@ namespace TuringTrader.BooksAndPubsV2
                             kv => kv.Key,
                             kv => 0.0);
 
-                    // assign weights for offensive and defensive assets
+                    // assign weights for offensive and defensive assets.
+                    // note how we add to already existing allocations, as
+                    // the offensive and defensive assets may overlap.
                     foreach (var a in offensiveAssets)
                         weights[a] = (weights.ContainsKey(a) ? weights[a] : 0.0) + pcntOffensive / TO;
 
@@ -182,10 +185,13 @@ namespace TuringTrader.BooksAndPubsV2
                         weights[a] = (weights.ContainsKey(a) ? weights[a] : 0.0) + pcntDefensive / TD;
 
                     // substitute shortage of defensive assets with cash
+                    // when this happens, there is already a CASH position, which
+                    // we need to increase
                     if (defensiveAsssets.Count < TD)
                         weights[CASH] += pcntDefensive * (TD - defensiveAsssets.Count) / TD;
 
                     //----- order management
+                    // we assume that Keller's simulation trades on the close of the month
                     foreach (var kv in weights)
                         Asset(kv.Key).Allocate(kv.Value, ORDER_TYPE);
 
@@ -235,7 +241,7 @@ namespace TuringTrader.BooksAndPubsV2
     #endregion
 
     //--- main strategies
-    #region BAA-G12 (Balanced)
+    #region BAA-G12 (balanced)
     public class Keller_BAA_G12 : Keller_BAA_Core
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA-G12)";
@@ -257,7 +263,7 @@ namespace TuringTrader.BooksAndPubsV2
         public override int TO => 6;
     }
     #endregion
-    #region BAA-G4 (Aggressive)
+    #region BAA-G4 (aggressive)
     public class Keller_BAA_G4 : Keller_BAA_Core
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA-G4)";
@@ -280,7 +286,7 @@ namespace TuringTrader.BooksAndPubsV2
         public override int TO => 3;
     }
     #endregion
-    #region BAA-G4/T2 (less concentraded)
+    #region BAA-G4/T2 (less concentrated aggressive)
     public class Keller_BAA_G4T2 : Keller_BAA_G4
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA-G4/T2)";
@@ -288,7 +294,7 @@ namespace TuringTrader.BooksAndPubsV2
         public override int TO => 2;
     }
     #endregion
-    #region BAA-SPY
+    #region BAA-SPY (max simplicity)
     public class Keller_BAA_SPY : Keller_BAA_Core
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA-SPY)";
