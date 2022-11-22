@@ -114,8 +114,9 @@ namespace TuringTrader.BooksAndPubsV2
         {
             //========== initialization ==========
 
-            StartDate = DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Now;
+            StartDate = StartDate ?? DateTime.Parse("2007-01-01T16:00-05:00"); // 4pm in New York
+            EndDate = EndDate ?? DateTime.Now;
+            WarmupPeriod = TimeSpan.FromDays(365);
 
             // Keller assumes 0.1% transaction cost
             Account.Friction = TC / 100.0;
