@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="TuringTrader" Language="1033" Version="$(env.TT_V0)" Manufacturer="Bertram Solutions LLC" UpgradeCode="42939162-3f5e-48fd-ae22-df7fbabbb998">
+	<Product Id="*" Name="TuringTrader" Language="1033" Version="$(env.TT_V0)" Manufacturer="Bertram Enterprises LLC" UpgradeCode="42939162-3f5e-48fd-ae22-df7fbabbb998">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

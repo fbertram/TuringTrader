@@ -7,8 +7,7 @@
 // History:     2018xii14, FUB, created
 //              2022x31, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -25,14 +24,16 @@
 //==============================================================================
 
 // USE_CLENOWS_RANGE
-// defined: match simulation range to Clenow's book
-// undefined: simulate from 2007 to last week
+// if defined, set simulation range to match charts in Clenow's book
 //#define USE_CLENOWS_RANGE
+
+// OPTIONAL_CHARTS
+// if defined, render optional chart showing NAV, 200-day SMA, and exposure
+//#define OPTIONAL_CHARTS
 
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using TuringTrader.Optimizer;
 using TuringTrader.SimulatorV2;
@@ -147,10 +148,10 @@ namespace TuringTrader.BooksAndPubsV2
 
 #if USE_CLENOWS_RANGE
             // matching Clenow's charts
-            StartDate = DateTime.Parse("01/01/1999", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Parse("12/31/2014", CultureInfo.InvariantCulture);
+            StartDate = StartDate ?? DateTime.Parse("1999-01-01T16:00-05:00"); // 4pm in New York
+            EndDate = EndDate ?? DateTime.Parse("2014-12-31T16:00-05:00");
 #else
-            StartDate = StartDate ?? DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            StartDate = StartDate ?? DateTime.Parse("2007-01-01T16:00-05:00"); // 4pm in New York
             EndDate = EndDate ?? DateTime.Now;
 #endif
             WarmupPeriod = TimeSpan.FromDays(365);
@@ -252,7 +253,7 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.Plot(Name, NetAssetValue);
                     Plotter.Plot(Asset("$SPXTR").Description, Asset("$SPXTR").Close[0]);
 
-#if true
+#if OPTIONAL_CHARTS
                     // this code matches the chart seen
                     // on page 118 of the book
                     Plotter.SelectChart("Clenow-style Chart", "Date");

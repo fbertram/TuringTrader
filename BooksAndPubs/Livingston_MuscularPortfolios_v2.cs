@@ -3,7 +3,7 @@
 // Name:        Livingston_MuscularPortfolios
 // Description: 'Mama Bear' and 'Papa Bear' strategies, as published in
 //              Brian Livingston's book 'Muscular Portfolios'.
-//               https://muscularportfolios.com/
+//              https://muscularportfolios.com/
 // History:     2018xii14, FUB, created
 //              2022x29, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
@@ -22,6 +22,10 @@
 //              License along with TuringTrader. If not, see 
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
+
+// OPTIONAL_CHARTS
+// if defined, render optional chart showing asset momentum
+//#define OPTIONAL_CHARTS
 
 /*
 Comments from Brian Livingston, 04/18/2020
@@ -141,8 +145,8 @@ namespace TuringTrader.BooksAndPubsV2
         {
             //========== initialization ==========
 
-            StartDate = DateTime.Parse("01/01/2007");
-            EndDate = DateTime.Now;
+            StartDate = StartDate ?? DateTime.Parse("2007-01-01T16:00-05:00"); // 4pm in New York
+            EndDate = EndDate ?? DateTime.Now;
             WarmupPeriod = TimeSpan.FromDays(365);
 
             //========== simulation loop ==========
@@ -183,11 +187,13 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.Plot(Name, NetAssetValue);
                     Plotter.Plot(Asset(BENCH).Description, Asset(BENCH).Close[0]);
 
+#if OPTIONAL_CHARTS
                     // asset momentum
                     Plotter.SelectChart("Asset Momentum", "Date");
                     Plotter.SetX(SimDate);
                     foreach (var ticker in ETF_MENU)
                         Plotter.Plot(Asset(ticker).Description, MOMENTUM(ticker));
+#endif
                 }
             });
 

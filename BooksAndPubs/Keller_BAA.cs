@@ -24,7 +24,8 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-// OPTIONAL_CHARTS - if defined, render optional charts showing momentum
+// OPTIONAL_CHARTS
+// if defined, render optional charts showing momentum
 // in the offensive, defensive, and canary universes.
 //#define OPTIONAL_CHARTS
 
@@ -111,6 +112,12 @@ namespace TuringTrader.BooksAndPubsV2
         public virtual OrderType ORDER_TYPE { get; set; } = OrderType.closeThisBar;
 
         public virtual string BENCH { get; set; } = Benchmark.PORTFOLIO_60_40;
+
+        public virtual double RANK_MOM(string asset) =>
+            Asset(asset).Close[0] / Asset(asset).Monthly().Close.SMA(13)[0] - 1.0;
+        public virtual double PROT_MOM(string asset) =>
+            new List<int> { 1, 3, 6, 12 }.Sum(m =>
+                (12.0 / m) * (Asset(asset).Close[0] / Asset(asset).Monthly().Close[m] - 1.0));
         #endregion
         #region strategy logic
         public override void Run()
@@ -129,7 +136,7 @@ namespace TuringTrader.BooksAndPubsV2
             SimLoop(() =>
             {
                 // Keller's strategy only trades once per month
-                if (SimDate.Month != NextSimDate.Month)
+                if (SimDate.Month != NextSimDate.Month || IsFirstBar)
                 {
                     //----- qualify and rank assets
                     // rank offensive universe based on SMA(12) = SMA13
@@ -138,7 +145,7 @@ namespace TuringTrader.BooksAndPubsV2
                     var offensiveMom = SEL_O
                         .ToDictionary(
                             a => a,
-                            a => Asset(a).Close[0] / Asset(a).Monthly().Close.SMA(13)[0] - 1.0);
+                            a => RANK_MOM(a));
 
                     var offensiveAssets = offensiveMom
                         .OrderByDescending(kv => kv.Value)
@@ -153,7 +160,7 @@ namespace TuringTrader.BooksAndPubsV2
                     var defensiveMom = SEL_D
                         .ToDictionary(
                             a => a,
-                            a => Asset(a).Close[0] / Asset(a).Monthly().Close.SMA(13)[0] - 1.0);
+                            a => RANK_MOM(a));
 
                     var defensiveAsssets = defensiveMom
                         .OrderByDescending(kv => kv.Value)
@@ -167,9 +174,7 @@ namespace TuringTrader.BooksAndPubsV2
                     var canaryMom = SEL_P
                         .ToDictionary(
                             a => a,
-                            a => new List<int> { 1, 3, 6, 12 }
-                                .Sum(m => (12.0 / m)
-                                    * (Asset(a).Close[0] / Asset(a).Monthly().Close[m] - 1.0)));
+                            a => PROT_MOM(a));
 
                     var numBadCanaryAssets = canaryMom
                         .Where(kv => kv.Value < 0.0)
@@ -203,7 +208,7 @@ namespace TuringTrader.BooksAndPubsV2
 
 #if OPTIONAL_CHARTS
                     //----- optional charts (for debugging and analysis)
-                    if (!IsOptimizing)
+                    if (!IsOptimizing && Plotter.AllData.Count > 0)
                     {
                         Plotter.SelectChart("Offensive Universe", "Date");
                         Plotter.SetX(SimDate);
