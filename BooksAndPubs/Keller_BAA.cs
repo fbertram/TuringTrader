@@ -139,8 +139,8 @@ namespace TuringTrader.BooksAndPubsV2
 
                     var offensiveAssets = offensiveMom
                         .OrderByDescending(kv => kv.Value)
-                        .Take(TO)
                         .Select(kv => kv.Key)
+                        .Take(TO)
                         .ToList();
 
                     // rank defensive assets based on SMA(12). In addition,
@@ -154,9 +154,8 @@ namespace TuringTrader.BooksAndPubsV2
 
                     var defensiveAsssets = defensiveMom
                         .OrderByDescending(kv => kv.Value)
-                        .Where(kv => kv.Value >= defensiveMom[CASH])
+                        .Select(kv => kv.Value >= defensiveMom[CASH] ? kv.Key : CASH)
                         .Take(TD)
-                        .Select(kv => kv.Key)
                         .ToList();
 
                     // evaluate canary universe based on 13612W momentum
@@ -193,14 +192,9 @@ namespace TuringTrader.BooksAndPubsV2
                     foreach (var a in defensiveAsssets)
                         weights[a] = (weights.ContainsKey(a) ? weights[a] : 0.0) + pcntDefensive / TD;
 
-                    // substitute shortage of defensive assets with cash
-                    // when this happens, there is already a CASH position, which
-                    // we need to increase
-                    if (defensiveAsssets.Count < TD)
-                        weights[CASH] += pcntDefensive * (TD - defensiveAsssets.Count) / TD;
-
                     //----- order management
-                    // we assume that Keller's simulation trades on the close of the month
+                    // we assume that Keller's simulation trades on the close of the month,
+                    // but the order type can be configured to trade on the first open of the month
                     foreach (var kv in weights)
                         Asset(kv.Key).Allocate(kv.Value, ORDER_TYPE);
 
