@@ -114,15 +114,15 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Return algorithm's fitness value (return component).
         /// </summary>
-        public virtual double FitnessReturn { get => Account.AnnualizedReturn; set { } }
+        public virtual double FitnessReturn { get; set; }
         /// <summary>
         /// Return algorithm's fitness value (risk component).
         /// </summary>
-        public virtual double FitnessRisk { get => Account.MaxDrawdown; set { } }
+        public virtual double FitnessRisk { get; set; }
         /// <summary>
         /// Return algorithm's fitness value (composite value).
         /// </summary>
-        public virtual double FitnessValue { get => FitnessReturn / FitnessRisk; set { } }
+        public virtual double FitnessValue { get; set; }
         #endregion
         #region simulation range & loop
         /// <summary>
@@ -202,8 +202,9 @@ namespace TuringTrader.SimulatorV2
             //_cache.Clear(); // we need quote data to calculate the last asset allocation
 
             FitnessReturn = Account.NetAssetValue;
-            FitnessRisk = 0.0;
-            FitnessValue = 0.0;
+            FitnessRisk = Account.MaxDrawdown;
+            FitnessValue = Account.AnnualizedReturn / Account.MaxDrawdown;
+
             Result = bars;
         }
 
