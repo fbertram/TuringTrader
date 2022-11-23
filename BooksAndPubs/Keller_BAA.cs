@@ -44,12 +44,13 @@ namespace TuringTrader.BooksAndPubsV2
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA)";
 
+        #region configuration
         //--- offensive configuration
 
         /// <summary>
         /// Offensive universe.
         /// </summary>
-        public virtual List<string> SEL_O { get; set; }
+        public abstract List<string> SEL_O { get; set; }
 
         /// <summary>
         /// Number of offensive assets to hold.
@@ -100,6 +101,8 @@ namespace TuringTrader.BooksAndPubsV2
         /// </summary>
         public virtual int B { get; set; } = 1;
 
+        //--- misc configuration
+
         /// <summary>
         /// Transaction cost (default = 0.1%).
         /// </summary>
@@ -108,7 +111,8 @@ namespace TuringTrader.BooksAndPubsV2
         public virtual OrderType ORDER_TYPE { get; set; } = OrderType.closeThisBar;
 
         public virtual string BENCH { get; set; } = Benchmark.PORTFOLIO_60_40;
-
+        #endregion
+        #region strategy logic
         public override void Run()
         {
             //========== initialization ==========
@@ -157,6 +161,7 @@ namespace TuringTrader.BooksAndPubsV2
                         .Take(TD)
                         .ToList();
 
+                    //----- money management
                     // evaluate canary universe based on 13612W momentum
                     // see paper, page 4, footnote 7 for calculation
                     var canaryMom = SEL_P
@@ -170,7 +175,6 @@ namespace TuringTrader.BooksAndPubsV2
                         .Where(kv => kv.Value < 0.0)
                         .Count();
 
-                    //----- money management
                     // calculate offensive and defensive holdings based
                     // on the breadth of the canary universe
                     var pcntDefensive = Math.Min(1.0, (double)numBadCanaryAssets / B);
@@ -183,7 +187,7 @@ namespace TuringTrader.BooksAndPubsV2
                             kv => 0.0);
 
                     // assign weights for offensive and defensive assets.
-                    // note how we add to already existing allocations, as
+                    // note how we add to previously existing allocations, as
                     // the offensive and defensive assets may overlap.
                     foreach (var a in offensiveAssets)
                         weights[a] = (weights.ContainsKey(a) ? weights[a] : 0.0) + pcntOffensive / TO;
@@ -220,7 +224,7 @@ namespace TuringTrader.BooksAndPubsV2
 #endif
                 }
 
-                //----- create charts
+                //----- main chart
                 if (!IsOptimizing)
                 {
                     Plotter.SelectChart(Name, "Date");
@@ -239,6 +243,7 @@ namespace TuringTrader.BooksAndPubsV2
                 Plotter.AddTradeLog();
             }
         }
+        #endregion
     }
     #endregion
 
