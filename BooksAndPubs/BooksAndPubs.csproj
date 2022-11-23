@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <Authors>Felix Bertram et al</Authors>
-    <Company>Bertram Solutions LLC</Company>
+    <Company>Bertram Enterprises LLC</Company>
     <Product>TuringTrader</Product>
     <Description>Showcase Algorithms</Description>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2022, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2022, Bertram Enterprises LLC</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>TuringTrader.BooksAndPubs</PackageId>
     <Platforms>x64</Platforms>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,9 +6,9 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Authors>Felix Bertram</Authors>
-    <Company>Bertram Solutions LLC</Company>
+    <Company>Bertram Enterprises LLC</Company>
     <Description>Open-source backtesting engine and market simulator</Description>
-    <Copyright>Copyright (c) 2011-2022, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2022, Bertram Enterprises LLC</Copyright>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
