@@ -31,7 +31,6 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Assets;
@@ -293,7 +292,6 @@ namespace TuringTrader.BooksAndPubsV2
     public class Keller_BAA_G4T2 : Keller_BAA_G4
     {
         public override string Name => "Keller's Bold Asset Allocation (BAA-G4/T2)";
-
         public override int TO => 2;
     }
     #endregion
