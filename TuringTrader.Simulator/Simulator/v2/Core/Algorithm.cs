@@ -303,6 +303,9 @@ namespace TuringTrader.SimulatorV2
 
                 algo.Run(); // => algo's equity curve in algo.Result
 
+#if true
+                return DataSource.ResampleToTradingCalendar(this, algo.Result);
+#else
                 //----- resample result to this algo's trading calendar
                 // NOTE: our child algorithm might run on its own calendar,
                 //       which may make this resampling necessary. Otherwise,
@@ -323,6 +326,7 @@ namespace TuringTrader.SimulatorV2
                 }
 
                 return childBars;
+#endif
             });
 
             var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType

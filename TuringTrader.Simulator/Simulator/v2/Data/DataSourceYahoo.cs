@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
-// Name:        DataSourceSplice
-// Description: Virtual data source to splice results from multiple other sources.
+// Name:        DataSourceAlgo
+// Description: Virtual data source to use data from algorithms.
 // History:     2022xi25, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -20,34 +20,20 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using System;
 using System.Collections.Generic;
 
 namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> LoadSpliceData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> LoadYahooData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
-
-#if true
-            var mostRecentSymbol = symbols[0];
-            return LoadData(algo, mostRecentSymbol);
-#else
-            var data = new Dictionary<string, List<BarType<OHLCV>>>();
-
-            foreach (var symbol in symbols)
-                data[symbol] = LoadData(algo, symbol);
-
-            // FIXME: implement splicing magic here
-#endif
+            throw new NotImplementedException();
         }
-        private static TimeSeriesAsset.MetaType LoadSpliceMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType LoadYahooMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
-            var mostRecentSymbol = symbols[0];
-
-            return LoadMeta(algo, mostRecentSymbol);
+            throw new NotImplementedException();
         }
     }
 }

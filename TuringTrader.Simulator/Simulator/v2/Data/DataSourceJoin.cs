@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
-// Name:        DataSourceSplice
+// Name:        DataSourceJoin
 // Description: Virtual data source to splice results from multiple other sources.
 // History:     2022xi25, FUB, created
 //------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> LoadSpliceData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> LoadJoinData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
 
@@ -39,10 +39,10 @@ namespace TuringTrader.SimulatorV2
             foreach (var symbol in symbols)
                 data[symbol] = LoadData(algo, symbol);
 
-            // FIXME: implement splicing magic here
+            // FIXME: implement joining magic here
 #endif
         }
-        private static TimeSeriesAsset.MetaType LoadSpliceMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType LoadJoinMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
             var mostRecentSymbol = symbols[0];

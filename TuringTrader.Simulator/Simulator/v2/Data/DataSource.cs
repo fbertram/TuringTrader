@@ -21,21 +21,18 @@
 //==============================================================================
 
 #define ENABLE_NORGATE
-//#define ENABLE_TIINGO
-//#define ENABLE_FRED
-//#define ENABLE_FAKEOPTIONS
-//#define ENABLE_CONSTYIELD
-//#define ENABLE_ALGO
-//#define ENABLE_CSV
-//#define ENABLE_YAHOO
+#define ENABLE_TIINGO
+#define ENABLE_FRED
+#define ENABLE_CSV
+#define ENABLE_YAHOO
+#define ENABLE_STOOQ
+#define ENABLE_ALGO
 #define ENABLE_SPLICE
-//#define ENABLE_STOOQ
 
 #region libraries
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 #endregion
 
 namespace TuringTrader.SimulatorV2
@@ -341,7 +338,106 @@ namespace TuringTrader.SimulatorV2
             return info;
         }
 
-        private static List<BarType<OHLCV>> ResampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src)
+        private static HashSet<Tuple<
+                string,
+                Action,
+                Func<Algorithm, Dictionary<DataSourceParam, string>, List<BarType<OHLCV>>>,
+                Func<Algorithm, Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
+            _feeds
+                = new HashSet<Tuple<
+                    string,
+                    Action,
+                    Func<Algorithm, Dictionary<DataSourceParam, string>, List<BarType<OHLCV>>>,
+                    Func<Algorithm, Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
+                {
+#if ENABLE_NORGATE
+                Tuple.Create("norgate", InitNorgateFeed, LoadNorgateData, LoadNorgateMeta),
+#endif
+#if ENABLE_TIINGO
+                Tuple.Create("tiingo", (Action)null, LoadTiingoData, LoadTiingoMeta),
+#endif
+#if ENABLE_FRED
+                Tuple.Create("fred", (Action)null, LoadFredData, LoadFredMeta),
+#endif
+#if ENABLE_CSV
+                Tuple.Create("csv", (Action)null, LoadCsvData, LoadCsvMeta),
+#endif
+#if ENABLE_YAHOO
+                Tuple.Create("yahoo", (Action)null, LoadYahooData, LoadYahooMeta),
+#endif
+#if ENABLE_STOOQ
+                Tuple.Create("stooq", (Action)null, LoadStooqData, LoadStooqMeta),
+#endif
+#if ENABLE_SPLICE
+                Tuple.Create("splice", (Action)null, LoadSpliceData, LoadSpliceMeta),
+                Tuple.Create("join", (Action)null, LoadJoinData, LoadJoinMeta),
+#endif
+#if ENABLE_ALGO
+                Tuple.Create("algo", (Action)null, LoadAlgoData, LoadAlgoMeta),
+#endif
+                };
+
+        private static List<BarType<OHLCV>> LoadData(Algorithm algo, string nickname)
+        {
+            var info = GetInfo(algo, nickname);
+            string dataSource = info[DataSourceParam.dataFeed].ToLower();
+
+            foreach (var i in _feeds)
+                if (dataSource.Contains(i.Item1))
+                {
+                    if (i.Item2 != null) i.Item2();
+
+                    var barsRaw = i.Item3(algo, info);
+                    var barsResampled = ResampleToTradingCalendar(algo, barsRaw);
+                    return barsResampled;
+                }
+
+            throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
+        }
+        private static TimeSeriesAsset.MetaType LoadMeta(Algorithm algo, string nickname)
+        {
+            var info = GetInfo(algo, nickname);
+            string dataSource = info[DataSourceParam.dataFeed].ToLower();
+
+            foreach (var i in _feeds)
+                if (dataSource.Contains(i.Item1))
+                {
+                    if (i.Item2 != null) i.Item2();
+
+                    var meta = i.Item4(algo, info);
+                    return meta;
+                }
+
+            throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
+        }
+        #endregion
+
+        /// <summary>
+        /// Load asset data from various data feeds.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="nickname">asset nickname</param>
+        /// <returns>time series for asset</returns>
+        /// <exception cref="Exception"></exception>
+        public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
+        {
+            var data = algo.Cache(nickname, () => LoadData(algo, nickname));
+            var meta = algo.Cache(nickname + ".Meta", () => (object)LoadMeta(algo, nickname));
+
+            return new TimeSeriesAsset(
+                algo,
+                nickname,
+                data,
+                meta);
+        }
+
+        /// <summary>
+        /// Resample OHLCV data to algorithm's trading calendar.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="src">source data</param>
+        /// <returns>resampled data</returns>
+        public static List<BarType<OHLCV>> ResampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src)
         {
             if (src.Count == 0) return src;
 
@@ -359,79 +455,6 @@ namespace TuringTrader.SimulatorV2
             }
 
             return dst;
-        }
-
-        private static HashSet<Tuple<
-                string,
-                Action,
-                Func<Dictionary<DataSourceParam, string>, DateTime, DateTime, List<BarType<OHLCV>>>,
-                Func<Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
-            _feeds
-                = new HashSet<Tuple<
-                    string,
-                    Action,
-                    Func<Dictionary<DataSourceParam, string>, DateTime, DateTime, List<BarType<OHLCV>>>,
-                    Func<Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
-                {
-#if ENABLE_NORGATE
-                Tuple.Create("norgate", InitNorgateFeed, LoadNorgateData, LoadNorgateMeta),
-#endif
-#if ENABLE_SPLICE
-                Tuple.Create("splice", (Action)null, LoadSpliceData, LoadSpliceMeta),
-#endif
-                };
-        #endregion
-
-        /// <summary>
-        /// Load asset data from various data feeds.
-        /// </summary>
-        /// <param name="algo">parent algorithm</param>
-        /// <param name="nickname">asset nickname</param>
-        /// <returns>time series for asset</returns>
-        /// <exception cref="Exception"></exception>
-        public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
-        {
-            var data = algo.Cache(nickname, () =>
-            {
-                var info = GetInfo(algo, nickname);
-                var days = algo.TradingCalendar.TradingDays;
-                string dataSource = info[DataSourceParam.dataFeed].ToLower();
-
-                foreach (var i in _feeds)
-                    if (dataSource.Contains(i.Item1))
-                    {
-                        if (i.Item2 != null) i.Item2();
-
-                        var barsRaw = i.Item3(info, days.First(), days.Last());
-                        var barsResampled = ResampleToTradingCalendar(algo, barsRaw);
-                        return barsResampled;
-                    }
-
-                throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
-            });
-
-            var meta = algo.Cache(nickname + ".Meta", () =>
-            {
-                var info = GetInfo(algo, nickname);
-                string dataSource = info[DataSourceParam.dataFeed].ToLower();
-
-                foreach (var i in _feeds)
-                    if (dataSource.Contains(i.Item1))
-                    {
-                        if (i.Item2 != null) i.Item2();
-
-                        var meta = i.Item4(info);
-                        return (object)meta;
-                    }
-
-                throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
-            });
-
-            return new TimeSeriesAsset(
-                algo,
-                nickname,
-                data,
-                meta);
         }
     }
 }

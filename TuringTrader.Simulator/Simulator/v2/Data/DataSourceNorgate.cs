@@ -201,9 +201,12 @@ namespace TuringTrader.SimulatorV2
             NorgateHelpers.HandleUnresovledAssemblies();
         }
 
-#if true
-        private static List<BarType<OHLCV>> LoadNorgateData(Dictionary<DataSourceParam, string> info, DateTime startDate, DateTime endDate)
+        private static List<BarType<OHLCV>> LoadNorgateData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
+            var tradingDays = algo.TradingCalendar.TradingDays;
+            var startDate = tradingDays.First();
+            var endDate = tradingDays.Last();
+
 #if NO_REENTRY
             lock (_lockReentrance)
 #endif
@@ -221,12 +224,18 @@ namespace TuringTrader.SimulatorV2
                 // confirmed broken 12/25/2022
                 DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
+                var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
+                var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
+
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
-                DateTime dbTimeStamp = q
+                DateTime dbLastQuote = q
                     .Select(ohlc => ohlc.Date)
                     .OrderByDescending(d => d)
-                    .First();
+                    .First()
+                    .Date + timeOfDay;
+
+                var dbTimeStamp = TimeZoneInfo.ConvertTimeToUtc(dbLastQuote, exchangeTimeZone).ToLocalTime();
 #endif
 
                 if (endDate > dbTimeStamp)
@@ -238,8 +247,8 @@ namespace TuringTrader.SimulatorV2
 
                 //--- copy to TuringTrader bars
                 var bars = new List<BarType<OHLCV>>();
-                var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
-                var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
+                //var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
+                //var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
 
                 foreach (var ohlcv in norgateData)
                 {
@@ -262,16 +271,8 @@ namespace TuringTrader.SimulatorV2
                 return bars;
             }
         }
-#else
-        private static List<BarType<OHLCV>> LoadNorgateData(Dictionary<DataSourceParam, string> info, DateTime startDate, DateTime endDate)
-        {
-            //throw new NotImplementedException();
-            return new List<BarType<OHLCV>>();
-        }
-#endif
 
-#if true
-        private static TimeSeriesAsset.MetaType LoadNorgateMeta(Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType LoadNorgateMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             //var makeSureWeLoadNorgateDll = new NorgateLoaderObject();
 
@@ -290,12 +291,6 @@ namespace TuringTrader.SimulatorV2
                 return meta;
             }
         }
-#else
-        private static TimeSeriesAsset.MetaType LoadNorgateMeta(Dictionary<DataSourceParam, string> info)
-        {
-            throw new NotImplementedException();
-        }
-#endif
     }
 }
 
