@@ -279,7 +279,8 @@ namespace TuringTrader.SimulatorV2
         /// <returns>asset</returns>
         public TimeSeriesAsset Asset(string name)
         {
-            return DataSourceV1.LoadAsset(this, name);
+            //return DataSourceV1.LoadAsset(this, name);
+            return DataSource.LoadAsset(this, name);
         }
 
         /// <summary>

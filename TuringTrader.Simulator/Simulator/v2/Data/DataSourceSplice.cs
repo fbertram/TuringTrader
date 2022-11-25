@@ -1,11 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader, simulator core v2
-// Name:        ITradingCalendar
-// Description: Trading calendar interface.
-// History:     2021iv23, FUB, created
+// Project:     TuringTrader, simulator core
+// Name:        DataSourceNorgate
+// Description: Virtual data source to splice results from multiple other sources.
+// History:     2022xi25, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -23,40 +22,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2
 {
-    /// <summary>
-    /// Trading calendar class to convert a date range to
-    /// an enumerable of valid trading days.
-    /// </summary>
-    public interface ITradingCalendar
+    public static partial class DataSource
     {
-        /// <summary>
-        /// Start of date range.
-        /// </summary>
-        public DateTime StartDate { get; set; }
-
-        /// <summary>
-        /// End of date range.
-        /// </summary>
-        public DateTime EndDate { get; set; }
-
-        /// <summary>
-        /// List of trading days between start and end dates,
-        /// in the local time zone.
-        /// </summary>
-        public List<DateTime> TradingDays { get; }
-
-        /// <summary>
-        /// Time zone info for exchange.
-        /// </summary>
-        public TimeZoneInfo ExchangeTimeZone { get; }
-
-        /// <summary>
-        /// Time of close, in exchange's time zone.
-        /// </summary>
-        public TimeOnly TimeOfClose { get; }
+        private static List<BarType<OHLCV>> LoadSpliceData(Dictionary<DataSourceParam, string> info, DateTime startDate, DateTime endDate)
+        {
+            throw new NotImplementedException();
+        }
+        private static TimeSeriesAsset.MetaType LoadSpliceMeta(Dictionary<DataSourceParam, string> info)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

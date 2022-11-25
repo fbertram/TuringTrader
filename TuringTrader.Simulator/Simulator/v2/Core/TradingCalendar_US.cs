@@ -936,7 +936,6 @@ namespace TuringTrader.SimulatorV2
         #region internal helpers
         //private readonly DateTime _earliestTime = new DateTime(1990, 1, 1, 0, 1, 0, DateTimeKind.Utc);
         private readonly DateTime _earliestTime = new DateTime(1950, 1, 1, 0, 1, 0, DateTimeKind.Utc);
-        private readonly TimeZoneInfo _exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); // New York, USA
 
         /// <summary>
         /// Check for weekends and holidays at exchange.
@@ -963,21 +962,23 @@ namespace TuringTrader.SimulatorV2
         private DateTime _previousExchangeClose(DateTime localDateTime)
         {
             // convert to exchange time zone and set time to 4pm
-            var exchangeTime = TimeZoneInfo.ConvertTime(localDateTime, _exchangeTimeZone);
-            var exchangeAtClose = exchangeTime.Date + TimeSpan.FromHours(16);
+            var exchangeTime = TimeZoneInfo.ConvertTime(localDateTime, ExchangeTimeZone);
+            var exchangeAtClose = exchangeTime.Date + TimeOfClose.ToTimeSpan();
 
             // make sure time is in the past, skip weekends and holidays
             while (exchangeAtClose > exchangeTime || _isHoliday(exchangeAtClose))
                 exchangeAtClose -= TimeSpan.FromDays(1);
 
             // convert back to local time zone
-            var utcAtClose = TimeZoneInfo.ConvertTimeToUtc(exchangeAtClose, _exchangeTimeZone);
-            var localAtClose = utcAtClose.ToLocalTime();
+            var localAtClose = TimeZoneInfo.ConvertTimeToUtc(exchangeAtClose, ExchangeTimeZone)
+                .ToLocalTime();
 
             return localAtClose;
         }
         #endregion
 
+        public TimeZoneInfo ExchangeTimeZone => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); // New York, USA
+        public TimeOnly TimeOfClose => TimeOnly.Parse("16:00"); // NYSE closes at 4pm
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

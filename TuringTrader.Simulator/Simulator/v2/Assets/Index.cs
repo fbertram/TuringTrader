@@ -23,6 +23,9 @@
 
 namespace TuringTrader.SimulatorV2.Assets
 {
+    /// <summary>
+    /// Collection of common market indices.
+    /// </summary>
     public class Index
     {
         /// <summary>
@@ -54,6 +57,10 @@ namespace TuringTrader.SimulatorV2.Assets
 
         // NDX
         // NDXTR
+
+        // corporate bonds
+        // US treasuries
+        // aggregate bond market
     }
 }
 
