@@ -1,10 +1,11 @@
 ﻿//==============================================================================
-// Project:     TuringTrader, simulator core
-// Name:        DataSourceJoin
-// Description: Virtual data source to splice results from multiple other sources.
-// History:     2022xi25, FUB, created
+// Project:     TuringTrader, simulator core v2
+// Name:        A011_Splicing
+// Description: Develop & test data splicing.
+// History:     2022xi28, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
+//              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -20,35 +21,40 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using System.Collections.Generic;
+#region libraries
+using System;
+using System.Globalization;
+using TuringTrader.SimulatorV2;
+using TuringTrader.SimulatorV2.Indicators;
+#endregion
 
-namespace TuringTrader.SimulatorV2
+// NOTE: creating reports works the same as with the v1 engine
+
+namespace TuringTrader.DemoV2
 {
-    public static partial class DataSource
+    public class A11_Splicing : Algorithm
     {
-        private static List<BarType<OHLCV>> LoadJoinData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        public override string Name => "A11_Splicing";
+
+        public override void Run()
         {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
+            StartDate = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
+            EndDate = DateTime.Now - TimeSpan.FromDays(5);
 
-#if true
-            var mostRecentSymbol = symbols[0];
-            return _loadData(algo, mostRecentSymbol);
-#else
-            var data = new Dictionary<string, List<BarType<OHLCV>>>();
+            SimLoop(() =>
+            {
+                var ticker = "splice:VOO,$SPXTR";
+                var price = Asset(ticker).Close;
+                var ema50 = price.EMA(50);
+                var ema200 = price.EMA(200);
 
-            foreach (var symbol in symbols)
-                data[symbol] = LoadData(algo, symbol);
-
-            // FIXME: implement joining magic here
-#endif
+                Plotter.SelectChart("Backfill/ Splicing", "Date");
+                Plotter.SetX(SimDate);
+                Plotter.Plot(price.Name, price[0]);
+            });
         }
-        private static TimeSeriesAsset.MetaType LoadJoinMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
-        {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
-            var mostRecentSymbol = symbols[0];
 
-            return _loadMeta(algo, mostRecentSymbol);
-        }
+        public override void Report() => Plotter.OpenWith("SimpleChart");
     }
 }
 

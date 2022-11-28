@@ -20,7 +20,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -30,16 +32,56 @@ namespace TuringTrader.SimulatorV2
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
 
-#if true
+#if false
             var mostRecentSymbol = symbols[0];
-            return LoadData(algo, mostRecentSymbol);
+            return _loadData(algo, mostRecentSymbol);
 #else
-            var data = new Dictionary<string, List<BarType<OHLCV>>>();
+            var tradingDays = algo.TradingCalendar.TradingDays;
 
-            foreach (var symbol in symbols)
-                data[symbol] = LoadData(algo, symbol);
+            var splice = (List<BarType<OHLCV>>)null;
+            for (int symIdx = 0; symIdx < symbols.Length; symIdx++)
+            {
+                var src = _loadData(algo, symbols[symIdx], false);
 
-            // FIXME: implement splicing magic here
+                if (splice == null)
+                {
+                    splice = src;
+                }
+                else
+                {
+                    var srcFiltered = src
+                        .Where(b => b.Date < splice.First().Date)
+                        .ToList();
+
+                    var dataExisting = splice.First();
+                    var dataSplicing = src
+                        .Where(b => b.Date == splice.First().Date)
+                        .FirstOrDefault();
+
+                    if (dataSplicing == null)
+                        throw new Exception(string.Format("No overlap while splicing {0}", info[DataSourceParam.nickName2]));
+
+                    var scaleSplicing = new List<double>
+                        {
+                            dataExisting.Value.Open / dataSplicing.Value.Open,
+                            dataExisting.Value.High / dataSplicing.Value.High,
+                            dataExisting.Value.Low / dataSplicing.Value.Low,
+                            dataExisting.Value.Close / dataSplicing.Value.Close,
+                        }
+                        .Average();
+
+                    splice = srcFiltered
+                        .Select(bar => new BarType<OHLCV>(bar.Date,
+                            new OHLCV(scaleSplicing * bar.Value.Open, scaleSplicing * bar.Value.High, scaleSplicing * bar.Value.Low, scaleSplicing * bar.Value.Close, 0.0)))
+                        .Concat(splice)
+                        .ToList();
+                }
+
+                if (splice.First().Date <= tradingDays.First())
+                    break;
+            }
+
+            return splice;
 #endif
         }
         private static TimeSeriesAsset.MetaType LoadSpliceMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
@@ -47,7 +89,7 @@ namespace TuringTrader.SimulatorV2
             var symbols = info[DataSourceParam.nickName2].Split(",");
             var mostRecentSymbol = symbols[0];
 
-            return LoadMeta(algo, mostRecentSymbol);
+            return _loadMeta(algo, mostRecentSymbol);
         }
     }
 }

@@ -245,6 +245,9 @@ namespace TuringTrader.SimulatorV2
                 List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
                 NDU.OperationResult result = NDU.Api.GetData(info[DataSourceParam.symbolNorgate], out norgateData, startDate, endDate);
 
+                if (!result.IsSuccess())
+                    throw new Exception(string.Format("Failed to load data for {0} from Norgate: {1}", info[DataSourceParam.symbolNorgate], result.ErrorMessage));
+
                 //--- copy to TuringTrader bars
                 var bars = new List<BarType<OHLCV>>();
                 //var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);

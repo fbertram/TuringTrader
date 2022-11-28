@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 #endregion
 
 namespace TuringTrader.SimulatorV2
@@ -223,7 +224,7 @@ namespace TuringTrader.SimulatorV2
             symbolAlgo,
         };
 
-        private static Dictionary<DataSourceParam, string> LoadIniFile(Dictionary<DataSourceParam, string> src, string nickname)
+        private static Dictionary<DataSourceParam, string> _loadIniFile(Dictionary<DataSourceParam, string> src, string nickname)
         {
             Dictionary<DataSourceParam, string> info = new Dictionary<DataSourceParam, string>(src);
 
@@ -258,7 +259,7 @@ namespace TuringTrader.SimulatorV2
             return info;
         }
 
-        private static Dictionary<DataSourceParam, string> FillInIfMissing(Dictionary<DataSourceParam, string> info, DataSourceParam field, string value)
+        private static Dictionary<DataSourceParam, string> _fillInIfMissing(Dictionary<DataSourceParam, string> info, DataSourceParam field, string value)
         {
             if (info.ContainsKey(field)) return info;
 
@@ -268,7 +269,7 @@ namespace TuringTrader.SimulatorV2
             };
         }
 
-        private static Dictionary<DataSourceParam, string> GetInfo(Algorithm algo, string nickname)
+        private static Dictionary<DataSourceParam, string> _getInfo(Algorithm algo, string nickname)
         {
             //----- load initial settings
             var info = new Dictionary<DataSourceParam, string>
@@ -282,24 +283,24 @@ namespace TuringTrader.SimulatorV2
             info[DataSourceParam.dataFeed] = idx >= 0 ? nickname.Substring(0, idx) : Simulator.GlobalSettings.DefaultDataFeed;
 
             // load ini file
-            if (idx < 0) info = LoadIniFile(info, nickname);
+            if (idx < 0) info = _loadIniFile(info, nickname);
 
             //----- fill in default values for any missing settings
 
             // default name is nickname
-            info = FillInIfMissing(info, DataSourceParam.name, info[DataSourceParam.nickName]);
+            info = _fillInIfMissing(info, DataSourceParam.name, info[DataSourceParam.nickName]);
 
             // default ticker is nickname w/o data feed
-            info = FillInIfMissing(info, DataSourceParam.ticker, info[DataSourceParam.nickName2]);
+            info = _fillInIfMissing(info, DataSourceParam.ticker, info[DataSourceParam.nickName2]);
 
             // default data feed symbols are ticker
-            info = FillInIfMissing(info, DataSourceParam.symbolIqfeed, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolStooq, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolYahoo, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolInteractiveBrokers, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolNorgate, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolFred, info[DataSourceParam.ticker]);
-            info = FillInIfMissing(info, DataSourceParam.symbolTiingo, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolIqfeed, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolStooq, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolYahoo, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolInteractiveBrokers, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolNorgate, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolFred, info[DataSourceParam.ticker]);
+            info = _fillInIfMissing(info, DataSourceParam.symbolTiingo, info[DataSourceParam.ticker]);
 
             // imply datafeed=csv, if parsing info is found
             if (info.ContainsKey(DataSourceParam.date)
@@ -308,32 +309,24 @@ namespace TuringTrader.SimulatorV2
                 || info.ContainsKey(DataSourceParam.low)
                 || info.ContainsKey(DataSourceParam.close)
                 || info.ContainsKey(DataSourceParam.volume)
-            ) info = FillInIfMissing(info, DataSourceParam.dataFeed, "csv");
+            ) info = _fillInIfMissing(info, DataSourceParam.dataFeed, "csv");
 
-            // use default csv mapping, if no mapping given
-            if (info[DataSourceParam.dataFeed].ToLower().Contains("csv")
-                && !info.ContainsKey(DataSourceParam.date)
-                && !info.ContainsKey(DataSourceParam.open)
-                && !info.ContainsKey(DataSourceParam.high)
-                && !info.ContainsKey(DataSourceParam.low)
-                && !info.ContainsKey(DataSourceParam.close)
-                && !info.ContainsKey(DataSourceParam.volume)
-            )
+            // fill in default mappings, if source is csv
+            if (info[DataSourceParam.dataFeed].ToLower().Contains("csv"))
             {
-                info = FillInIfMissing(info, DataSourceParam.date, "{1:MM/dd/yyyy}");
-                info = FillInIfMissing(info, DataSourceParam.time, "16:00");
-                // TODO: add timezone here
-                info = FillInIfMissing(info, DataSourceParam.open, "{2:F2}");
-                info = FillInIfMissing(info, DataSourceParam.high, "{3:F2}");
-                info = FillInIfMissing(info, DataSourceParam.low, "{4:F2}");
-                info = FillInIfMissing(info, DataSourceParam.close, "{5:F2}");
-                info = FillInIfMissing(info, DataSourceParam.volume, "{6}");
-                info = FillInIfMissing(info, DataSourceParam.delim, ",");
+                info = _fillInIfMissing(info, DataSourceParam.dataPath, info[DataSourceParam.nickName2].Replace('/', Path.PathSeparator));
+                info = _fillInIfMissing(info, DataSourceParam.date, "{1:MM/dd/yyyy}");
+                info = _fillInIfMissing(info, DataSourceParam.open, "{2:F2}");
+                info = _fillInIfMissing(info, DataSourceParam.high, "{3:F2}");
+                info = _fillInIfMissing(info, DataSourceParam.low, "{4:F2}");
+                info = _fillInIfMissing(info, DataSourceParam.close, "{5:F2}");
+                info = _fillInIfMissing(info, DataSourceParam.volume, "{6}");
+                info = _fillInIfMissing(info, DataSourceParam.delim, ",");
             }
 
             // default to timezone and time of day set by algorithm's trading calendar
-            info = FillInIfMissing(info, DataSourceParam.time, algo.TradingCalendar.TimeOfClose.ToString());
-            info = FillInIfMissing(info, DataSourceParam.timezone, algo.TradingCalendar.ExchangeTimeZone.Id);
+            info = _fillInIfMissing(info, DataSourceParam.time, algo.TradingCalendar.TimeOfClose.ToString());
+            info = _fillInIfMissing(info, DataSourceParam.timezone, algo.TradingCalendar.ExchangeTimeZone.Id);
 
             return info;
         }
@@ -377,9 +370,9 @@ namespace TuringTrader.SimulatorV2
 #endif
                 };
 
-        private static List<BarType<OHLCV>> LoadData(Algorithm algo, string nickname)
+        private static List<BarType<OHLCV>> _loadData(Algorithm algo, string nickname, bool fillPrior = true)
         {
-            var info = GetInfo(algo, nickname);
+            var info = _getInfo(algo, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
 
             foreach (var i in _feeds)
@@ -388,15 +381,15 @@ namespace TuringTrader.SimulatorV2
                     if (i.Item2 != null) i.Item2();
 
                     var barsRaw = i.Item3(algo, info);
-                    var barsResampled = ResampleToTradingCalendar(algo, barsRaw);
+                    var barsResampled = ResampleToTradingCalendar(algo, barsRaw, fillPrior);
                     return barsResampled;
                 }
 
             throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
         }
-        private static TimeSeriesAsset.MetaType LoadMeta(Algorithm algo, string nickname)
+        private static TimeSeriesAsset.MetaType _loadMeta(Algorithm algo, string nickname)
         {
-            var info = GetInfo(algo, nickname);
+            var info = _getInfo(algo, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
 
             foreach (var i in _feeds)
@@ -421,8 +414,8 @@ namespace TuringTrader.SimulatorV2
         /// <exception cref="Exception"></exception>
         public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
         {
-            var data = algo.Cache(nickname, () => LoadData(algo, nickname));
-            var meta = algo.Cache(nickname + ".Meta", () => (object)LoadMeta(algo, nickname));
+            var data = algo.Cache(nickname, () => _loadData(algo, nickname));
+            var meta = algo.Cache(nickname + ".Meta", () => (object)_loadMeta(algo, nickname));
 
             return new TimeSeriesAsset(
                 algo,
@@ -437,21 +430,48 @@ namespace TuringTrader.SimulatorV2
         /// <param name="algo">parent algorithm</param>
         /// <param name="src">source data</param>
         /// <returns>resampled data</returns>
-        public static List<BarType<OHLCV>> ResampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src)
+        public static List<BarType<OHLCV>> ResampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src, bool fillPrior = true)
         {
             if (src.Count == 0) return src;
 
             var dst = new List<BarType<OHLCV>>();
-            var srcIdx = 0;
+            var srcIdx = -1;
+
             foreach (var tradingDay in algo.TradingCalendar.TradingDays)
             {
+                var freshBar = false;
+
                 while (srcIdx < src.Count - 1 && src[srcIdx + 1].Date <= tradingDay)
+                {
                     srcIdx++;
+                    freshBar = true;
+                }
 
-                var ohlcv = src[srcIdx].Value;
+                if (srcIdx < 0)
+                {
+                    // prior to source data: repeat opening price
+                    var value = src.First().Value.Open;
 
-                dst.Add(new BarType<OHLCV>(tradingDay,
-                    new OHLCV(ohlcv.Open, ohlcv.High, ohlcv.Low, ohlcv.Close, ohlcv.Volume)));
+                    if (fillPrior)
+                        dst.Add(new BarType<OHLCV>(tradingDay,
+                            new OHLCV(value, value, value, value, 0)));
+                }
+                else if (srcIdx < src.Count - 1 || freshBar)
+                {
+                    // within source data range: use bars as-is
+                    var ohlcv = src[srcIdx].Value;
+
+                    dst.Add(new BarType<OHLCV>(tradingDay,
+                        new OHLCV(ohlcv.Open, ohlcv.High, ohlcv.Low, ohlcv.Close, ohlcv.Volume)));
+                }
+                else
+                {
+                    // after source data: repeat closing price
+                    var value = src.First().Value.Close;
+
+                    dst.Add(new BarType<OHLCV>(tradingDay,
+                        new OHLCV(value, value, value, value, 0)));
+                }
             }
 
             return dst;

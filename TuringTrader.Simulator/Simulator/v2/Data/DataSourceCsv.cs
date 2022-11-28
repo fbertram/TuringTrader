@@ -33,7 +33,11 @@ namespace TuringTrader.SimulatorV2
         }
         private static TimeSeriesAsset.MetaType LoadCsvMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
-            throw new NotImplementedException();
+            return new TimeSeriesAsset.MetaType
+            {
+                Ticker = info[DataSourceParam.nickName2],
+                Description = info[DataSourceParam.nickName2],
+            };
         }
     }
 }
