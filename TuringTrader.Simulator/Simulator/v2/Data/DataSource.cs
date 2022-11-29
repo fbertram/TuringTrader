@@ -457,6 +457,187 @@ namespace TuringTrader.SimulatorV2
 
             return dst;
         }
+
+        private static object _lockGetMeta = new object();
+        private static object _lockGetData = new object();
+
+        /// <summary>
+        /// Helper function to load, parse, and extract data through a disk cache. 
+        /// This helper is used for the web-based data sources, namely FRED, Yahoo, and Tiingo.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="algo"></param>
+        /// <param name="info"></param>
+        /// <param name="getData"></param>
+        /// <param name="parseData"></param>
+        /// <param name="extractData"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private static List<BarType<OHLCV>> _loadDataHelper<T>(
+            Algorithm algo,
+            Dictionary<DataSourceParam, string> info,
+            Func<string> getData,
+            Func<string, T> parseData,
+            Func<T, List<BarType<OHLCV>>> extractData
+        ) where T : class
+        {
+            try
+            {
+                lock (_lockGetData)
+                {
+                    var tradingDays = algo.TradingCalendar.TradingDays;
+                    var startDate = tradingDays.First();
+                    var endDate = tradingDays.Last();
+
+                    string cachePath = Path.Combine(Simulator.GlobalSettings.HomePath, "Cache", info[DataSourceParam.nickName2]);
+                    string timeStamps = Path.Combine(cachePath, info[DataSourceParam.dataFeed] + "_timestamps");
+                    string dataCache = Path.Combine(cachePath, info[DataSourceParam.dataFeed] + "_data");
+
+                    bool writeToDisk = false;
+                    string rawData = null;
+                    T parsedData = null;
+
+                    //--- 1) try to read raw json from disk
+                    if (File.Exists(timeStamps) && File.Exists(dataCache))
+                    {
+                        using (BinaryReader pc = new BinaryReader(File.Open(dataCache, FileMode.Open)))
+                            rawData = pc.ReadString();
+
+                        using (BinaryReader ts = new BinaryReader(File.Open(timeStamps, FileMode.Open)))
+                        {
+                            DateTime cacheStartTime = new DateTime(ts.ReadInt64());
+                            DateTime cacheEndTime = new DateTime(ts.ReadInt64());
+
+                            if (cacheStartTime <= startDate && cacheEndTime >= endDate)
+                                parsedData = parseData(rawData);
+                        }
+                    }
+
+                    //--- 2) if failed, try to retrieve from web
+                    if (parsedData == null)
+                    {
+                        var tmpData = getData();
+                        parsedData = parseData(tmpData);
+
+                        if (parsedData != null)
+                        {
+                            rawData = tmpData;
+                            writeToDisk = true;
+                        }
+                        else
+                        {
+                            // we might have discarded the data from disk before,
+                            // because the time frame wasn't what we were looking for. 
+                            // however, in case we can't load from web, e.g. because 
+                            // we don't have internet connectivity, it's still better 
+                            // to go with what we have in the cache
+                            parsedData = parseData(rawData);
+                        }
+                    }
+
+                    //--- 3) if failed, return
+                    if (parsedData == null)
+                        return null;
+
+                    //--- 4) if newly retrieved, write to disk
+                    if (writeToDisk)
+                    {
+                        Directory.CreateDirectory(cachePath);
+                        using (BinaryWriter pc = new BinaryWriter(File.Open(dataCache, FileMode.Create)))
+                            pc.Write(rawData);
+
+                        using (BinaryWriter ts = new BinaryWriter(File.Open(timeStamps, FileMode.Create)))
+                        {
+                            // we write the dates we requested. these are not
+                            // necessarily identical with the dates we received.
+                            // however, this makes sure that subsequent requests
+                            // are treated properly.
+                            ts.Write(startDate.Ticks);
+                            ts.Write(endDate.Ticks);
+                        }
+                    }
+
+                    //--- 5) extract data for TuringTrader
+                    return extractData(parsedData);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("Failed to load data for {0}: {1}", info[DataSourceParam.nickName], ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Helper function to load, parse, and extract meta data through a disk cache.
+        /// This helper is used for the web-based data sources, namely FRED, Yahoo, and Tiingo.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="algo"></param>
+        /// <param name="info"></param>
+        /// <param name="getMeta"></param>
+        /// <param name="parseMeta"></param>
+        /// <param name="extractMeta"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private static TimeSeriesAsset.MetaType _loadMetaHelper<T>(
+            Algorithm algo,
+            Dictionary<DataSourceParam, string> info,
+            Func<string> getMeta,
+            Func<string, T> parseMeta,
+            Func<T, TimeSeriesAsset.MetaType> extractMeta
+        ) where T : class
+        {
+            try
+            {
+                lock (_lockGetMeta)
+                {
+                    string cachePath = Path.Combine(Simulator.GlobalSettings.HomePath, "Cache", info[DataSourceParam.nickName2]);
+                    string metaCache = Path.Combine(cachePath, info[DataSourceParam.dataFeed] + "_meta");
+
+                    bool writeToDisk = false;
+                    string rawMeta = null;
+                    T parsedMeta = null;
+
+                    //--- 1) try to read raw json from disk
+                    if (File.Exists(metaCache))
+                    {
+                        using (BinaryReader mc = new BinaryReader(File.Open(metaCache, FileMode.Open)))
+                            rawMeta = mc.ReadString();
+
+                        // we always use the cached meta, if it exists.
+                        // this assumes that meta data never change.
+                        parsedMeta = parseMeta(rawMeta);
+                    }
+
+                    //--- 2) if failed, try to retrieve from web
+                    if (parsedMeta == null)
+                    {
+                        rawMeta = getMeta();
+                        parsedMeta = parseMeta(rawMeta);
+                        writeToDisk = true;
+                    }
+
+                    //--- 3) if failed, return
+                    if (parsedMeta == null)
+                        return null;
+
+                    //--- 4) if newly retrieved, write to disk
+                    if (writeToDisk)
+                    {
+                        Directory.CreateDirectory(cachePath);
+                        using (BinaryWriter mc = new BinaryWriter(File.Open(metaCache, FileMode.Create)))
+                            mc.Write(rawMeta);
+                    }
+
+                    //--- 5) extract meta data
+                    return extractMeta(parsedMeta);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("Failed to load meta for {0}: {1}", info[DataSourceParam.nickName], ex.Message));
+            }
+        }
         #endregion
 
         /// <summary>
