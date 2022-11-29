@@ -314,12 +314,12 @@ namespace TuringTrader.SimulatorV2
             // fill in default mappings, if source is csv
             if (info[DataSourceParam.dataFeed].ToLower().Contains("csv"))
             {
-                info = _fillInIfMissing(info, DataSourceParam.dataPath, info[DataSourceParam.nickName2].Replace('/', Path.PathSeparator));
+                info = _fillInIfMissing(info, DataSourceParam.dataPath, info[DataSourceParam.nickName2]);
                 info = _fillInIfMissing(info, DataSourceParam.date, "{1:MM/dd/yyyy}");
-                info = _fillInIfMissing(info, DataSourceParam.open, "{2:F2}");
-                info = _fillInIfMissing(info, DataSourceParam.high, "{3:F2}");
-                info = _fillInIfMissing(info, DataSourceParam.low, "{4:F2}");
-                info = _fillInIfMissing(info, DataSourceParam.close, "{5:F2}");
+                info = _fillInIfMissing(info, DataSourceParam.open, "{2:F}");
+                info = _fillInIfMissing(info, DataSourceParam.high, "{3:F}");
+                info = _fillInIfMissing(info, DataSourceParam.low, "{4:F}");
+                info = _fillInIfMissing(info, DataSourceParam.close, "{5:F}");
                 info = _fillInIfMissing(info, DataSourceParam.volume, "{6}");
                 info = _fillInIfMissing(info, DataSourceParam.delim, ",");
             }
@@ -467,7 +467,7 @@ namespace TuringTrader.SimulatorV2
                 else
                 {
                     // after source data: repeat closing price
-                    var value = src.First().Value.Close;
+                    var value = src.Last().Value.Close;
 
                     dst.Add(new BarType<OHLCV>(tradingDay,
                         new OHLCV(value, value, value, value, 0)));
