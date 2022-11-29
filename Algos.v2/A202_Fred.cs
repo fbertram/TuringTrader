@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A12_CsvImport
-// Description: Develop & test CSV import.
+// Name:        A202_Fred
+// Description: Develop & test FRED import.
 // History:     2022xi29, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -25,30 +25,28 @@
 using System;
 using System.Globalization;
 using TuringTrader.SimulatorV2;
-using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 // NOTE: creating reports works the same as with the v1 engine
 
 namespace TuringTrader.DemoV2
 {
-    public class A12_CsvImport : Algorithm
+    public class A202_Fred : Algorithm
     {
-        public override string Name => "A12_CsvImport";
+        public override string Name => "A202_Fred";
 
         public override void Run()
         {
-            StartDate = DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture);
+            StartDate = DateTime.Parse("01/01/1955", CultureInfo.InvariantCulture);
             EndDate = DateTime.Now - TimeSpan.FromDays(5);
+
+            var ticker = "fred:DFF"; // Federal Funds Effective Rate
 
             SimLoop(() =>
             {
-                var ticker = "csv:backfills/$SPXTR.csv";
-                var price = Asset(ticker).Close;
-
-                Plotter.SelectChart("Backfill", "Date");
+                Plotter.SelectChart("FRED Data", "Date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot(price.Name, price[0]);
+                Plotter.Plot(Asset(ticker).Description, Asset(ticker).Close[0]);
             });
         }
 

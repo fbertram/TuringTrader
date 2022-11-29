@@ -33,21 +33,21 @@ namespace TuringTrader.SimulatorV2
     public static partial class DataSource
     {
         #region internal helpers
-        private static DateTime _parseDate(string value, string mapping)
+        private static DateTime _csvParseDate(string value, string mapping)
         {
             var mapping2 = Regex.Replace(mapping, "{[0-9]+:", "").Replace("}", "");
             var parsed = DateTime.ParseExact(value, mapping2, CultureInfo.InvariantCulture);
             return parsed;
         }
-        private static double _parseDouble(string value, string mapping)
+        private static double _csvParseDouble(string value, string mapping)
         {
             return double.Parse(value, CultureInfo.InvariantCulture);
         }
-        private static double _parseLong(string value, string mapping)
+        private static double _csvParseLong(string value, string mapping)
         {
             return double.Parse(value, CultureInfo.InvariantCulture);
         }
-        private static List<BarType<OHLCV>> _loadCsv(Algorithm algo, Dictionary<DataSourceParam, string> info, StreamReader reader)
+        private static List<BarType<OHLCV>> _csvLoadStream(Algorithm algo, Dictionary<DataSourceParam, string> info, StreamReader reader)
         {
             var bars = new List<BarType<OHLCV>>();
 
@@ -96,12 +96,12 @@ namespace TuringTrader.SimulatorV2
                         // assign sub-string to field
                         switch (field)
                         {
-                            case DataSourceParam.date: date = _parseDate(mappedString, info[field]); break;
-                            case DataSourceParam.open: open = _parseDouble(mappedString, info[field]); break;
-                            case DataSourceParam.high: high = _parseDouble(mappedString, info[field]); break;
-                            case DataSourceParam.low: low = _parseDouble(mappedString, info[field]); break;
-                            case DataSourceParam.close: close = _parseDouble(mappedString, info[field]); break;
-                            case DataSourceParam.volume: volume = _parseLong(mappedString, info[field]); break;
+                            case DataSourceParam.date: date = _csvParseDate(mappedString, info[field]); break;
+                            case DataSourceParam.open: open = _csvParseDouble(mappedString, info[field]); break;
+                            case DataSourceParam.high: high = _csvParseDouble(mappedString, info[field]); break;
+                            case DataSourceParam.low: low = _csvParseDouble(mappedString, info[field]); break;
+                            case DataSourceParam.close: close = _csvParseDouble(mappedString, info[field]); break;
+                            case DataSourceParam.volume: volume = _csvParseLong(mappedString, info[field]); break;
                         }
                     }
                     catch
@@ -123,7 +123,7 @@ namespace TuringTrader.SimulatorV2
             }
             return bars;
         }
-        private static List<BarType<OHLCV>> _loadCsvFile(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> _csvLoadFile(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var filePath = info[DataSourceParam.dataPath];
 
@@ -139,7 +139,7 @@ namespace TuringTrader.SimulatorV2
                             using (Stream unzippedFile = zippedFile.Open())
                             using (StreamReader reader = new StreamReader(unzippedFile))
                             {
-                                return _loadCsv(algo, info, reader);
+                                return _csvLoadStream(algo, info, reader);
                             }
                         }
                     }
@@ -154,12 +154,12 @@ namespace TuringTrader.SimulatorV2
             {
                 using (StreamReader sr = new StreamReader(filePath))
                 {
-                    return _loadCsv(algo, info, sr);
+                    return _csvLoadStream(algo, info, sr);
                 }
             }
         }
 
-        private static List<BarType<OHLCV>> _loadCsvDir(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> _csvLoadDir(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             DirectoryInfo d = new DirectoryInfo(info[DataSourceParam.dataPath]);
             FileInfo[] Files = d.GetFiles("*.*");
@@ -172,7 +172,7 @@ namespace TuringTrader.SimulatorV2
                     { DataSourceParam.dataPath, file.FullName }
                 };
 
-                data = data.Concat(_loadCsvFile(algo, info2))
+                data = data.Concat(_csvLoadFile(algo, info2))
                     .ToList();
             }
 
@@ -191,9 +191,9 @@ namespace TuringTrader.SimulatorV2
                 info2[DataSourceParam.dataPath] = Path.Combine(Simulator.GlobalSettings.DataPath, dataPath);
 
             if (File.Exists(info2[DataSourceParam.dataPath]))
-                return _loadCsvFile(algo, info2);
+                return _csvLoadFile(algo, info2);
             else if (Directory.Exists(info2[DataSourceParam.dataPath]))
-                return _loadCsvDir(algo, info2);
+                return _csvLoadDir(algo, info2);
 
             throw new Exception(string.Format("Failed to locate csv data for {0} at {1}", info2[DataSourceParam.nickName2], info2[DataSourceParam.dataPath]));
 

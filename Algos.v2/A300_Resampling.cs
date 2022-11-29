@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A10_Resampling
+// Name:        A300_Resampling
 // Description: Develop & test time series resampling.
 // History:     2022xi20, FUB, created
 //------------------------------------------------------------------------------
@@ -30,9 +30,9 @@ using TuringTrader.SimulatorV2.Indicators;
 
 namespace TuringTrader.DemoV2
 {
-    public class A10_Resampling : Algorithm
+    public class A300_Resampling : Algorithm
     {
-        public override string Name => "A10_Resampling";
+        public override string Name => "A300_Resampling";
 
         public override void Run()
         {

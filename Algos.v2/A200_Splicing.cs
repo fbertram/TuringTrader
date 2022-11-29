@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        A011_Splicing
+// Name:        A200_Splicing
 // Description: Develop & test data splicing.
 // History:     2022xi28, FUB, created
 //------------------------------------------------------------------------------
@@ -32,9 +32,9 @@ using TuringTrader.SimulatorV2.Indicators;
 
 namespace TuringTrader.DemoV2
 {
-    public class A11_Splicing : Algorithm
+    public class A200_Splicing : Algorithm
     {
-        public override string Name => "A11_Splicing";
+        public override string Name => "A200_Splicing";
 
         public override void Run()
         {
