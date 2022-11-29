@@ -277,92 +277,23 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="name">name of asset</param>
         /// <returns>asset</returns>
-        public TimeSeriesAsset Asset(string name)
-        {
-            //return DataSourceV1.LoadAsset(this, name);
-            return DataSource.LoadAsset(this, name);
-        }
+        public TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
 
         /// <summary>
         /// Run v2 algorithm and bring its results in as an asset.
         /// </summary>
         /// <param name="algo"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(Algorithm algo)
-        {
-            var name = string.Format("{0}-{1:X}", algo.Name, algo.GetHashCode());
-
-            // NOTE: we must put the child algorithm's result in
-            //       *this* algorithm's cache.
-            var data = Cache(name, () =>
-            {
-                //----- run child algorithm
-                var tradingDays = TradingCalendar.TradingDays;
-                algo.StartDate = tradingDays.First();
-                algo.EndDate = tradingDays.Last();
-
-                algo.Run(); // => algo's equity curve in algo.Result
-
-#if true
-                return DataSource.ResampleToTradingCalendar(this, algo.Result);
-#else
-                //----- resample result to this algo's trading calendar
-                // NOTE: our child algorithm might run on its own calendar,
-                //       which may make this resampling necessary. Otherwise,
-                //       the resampling helps to drop samples outside this
-                //       algo's simulation range.
-                var childBars = new List<BarType<OHLCV>>();
-                var childIdx = 0;
-
-                foreach (var tradingDay in tradingDays)
-                {
-                    while (childIdx < algo.Result.Count - 1 && algo.Result[childIdx + 1].Date <= tradingDay)
-                        childIdx++;
-                    var childBar = algo.Result[childIdx].Value;
-
-                    childBars.Add(new BarType<OHLCV>(tradingDay,
-                            new OHLCV(childBar.Open, childBar.High, childBar.Low, childBar.Close,
-                                childBar.Volume)));
-                }
-
-                return childBars;
-#endif
-            });
-
-            var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType
-            {
-                Ticker = algo.Name,
-                Description = algo.Name,
-            });
-
-            return new TimeSeriesAsset(
-                this,
-                name,
-                data,
-                meta);
-        }
+        public TimeSeriesAsset Asset(Algorithm algo) => DataSource.LoadAsset(this, algo);
 
         /// <summary>
         /// Load quotations or run algorithm.
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(object obj)
-        {
-            return obj as string != null
+        public TimeSeriesAsset Asset(object obj) => obj as string != null
                 ? Asset(obj as string)
                 : Asset(obj as Algorithm);
-        }
-
-        /// <summary>
-        /// Run v1 algorithm and bring its result in as an asset.
-        /// </summary>
-        /// <param name="algo"></param>
-        /// <returns></returns>
-        public TimeSeriesAsset Asset(TuringTrader.Simulator.Algorithm algo)
-        {
-            throw new Exception("Not implemented, yet!");
-        }
 
         /// <summary>
         /// Return constituents of universe at current simulator timestamp.

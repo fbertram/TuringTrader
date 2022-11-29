@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 #endregion
 
 namespace TuringTrader.SimulatorV2
@@ -381,7 +382,7 @@ namespace TuringTrader.SimulatorV2
                     if (i.Item2 != null) i.Item2();
 
                     var barsRaw = i.Item3(algo, info);
-                    var barsResampled = ResampleToTradingCalendar(algo, barsRaw, fillPrior);
+                    var barsResampled = _resampleToTradingCalendar(algo, barsRaw, fillPrior);
                     return barsResampled;
                 }
 
@@ -403,26 +404,6 @@ namespace TuringTrader.SimulatorV2
 
             throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
         }
-        #endregion
-
-        /// <summary>
-        /// Load asset data from various data feeds.
-        /// </summary>
-        /// <param name="algo">parent algorithm</param>
-        /// <param name="nickname">asset nickname</param>
-        /// <returns>time series for asset</returns>
-        /// <exception cref="Exception"></exception>
-        public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
-        {
-            var data = algo.Cache(nickname, () => _loadData(algo, nickname));
-            var meta = algo.Cache(nickname + ".Meta", () => (object)_loadMeta(algo, nickname));
-
-            return new TimeSeriesAsset(
-                algo,
-                nickname,
-                data,
-                meta);
-        }
 
         /// <summary>
         /// Resample OHLCV data to algorithm's trading calendar.
@@ -430,7 +411,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="algo">parent algorithm</param>
         /// <param name="src">source data</param>
         /// <returns>resampled data</returns>
-        public static List<BarType<OHLCV>> ResampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src, bool fillPrior = true)
+        private static List<BarType<OHLCV>> _resampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src, bool fillPrior = true)
         {
             if (src.Count == 0) return src;
 
@@ -475,6 +456,63 @@ namespace TuringTrader.SimulatorV2
             }
 
             return dst;
+        }
+        #endregion
+
+        /// <summary>
+        /// Load asset data from various data feeds.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="nickname">asset nickname</param>
+        /// <returns>time series for asset</returns>
+        /// <exception cref="Exception"></exception>
+        public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
+        {
+            var data = algo.Cache(nickname, () => _loadData(algo, nickname));
+            var meta = algo.Cache(nickname + ".Meta", () => (object)_loadMeta(algo, nickname));
+
+            return new TimeSeriesAsset(
+                algo,
+                nickname,
+                data,
+                meta);
+        }
+
+        /// <summary>
+        /// Load result from child algorithm as an asset.
+        /// </summary>
+        /// <param name="algo">parent/ host algorithm</param>
+        /// <param name="child">child algorithm</param>
+        /// <returns></returns>
+        public static TimeSeriesAsset LoadAsset(Algorithm algo, Algorithm child)
+        {
+            var name = string.Format("{0}-{1:X}", algo.Name, algo.GetHashCode());
+
+            // NOTE: we must put the child algorithm's result in
+            //       the parent's algorithm's cache.
+            var data = algo.Cache(name, () =>
+            {
+                //----- run child algorithm
+                var tradingDays = algo.TradingCalendar.TradingDays;
+                child.StartDate = tradingDays.First();
+                child.EndDate = tradingDays.Last();
+
+                child.Run(); // => child's equity curve in child.Result
+
+                return _resampleToTradingCalendar(algo, child.Result);
+            });
+
+            var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType
+            {
+                Ticker = algo.Name,
+                Description = algo.Name,
+            });
+
+            return new TimeSeriesAsset(
+                algo,
+                name,
+                data,
+                meta);
         }
     }
 }
