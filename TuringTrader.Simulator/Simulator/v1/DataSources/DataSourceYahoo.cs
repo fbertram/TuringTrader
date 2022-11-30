@@ -265,7 +265,7 @@ namespace TuringTrader.Simulator
 
                 return rawMeta;
             }
-#endregion
+            #endregion
 
             //---------- API
             #region public DataSourceYahoo(Dictionary<DataSourceValue, string> info)
