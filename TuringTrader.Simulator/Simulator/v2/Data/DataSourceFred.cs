@@ -33,12 +33,7 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static string _fredApiKey
-        {
-            // this API key is registered with FRED 
-            // by Bertram Solutions for use with TuringTrader
-            get => "967bc3160a70e6f8a501f4e3a3516fdc";
-        }
+        private static string _fredApiKey => "967bc3160a70e6f8a501f4e3a3516fdc";
 
         private static List<BarType<OHLCV>> LoadFredData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<JObject>(

@@ -39,7 +39,7 @@ namespace TuringTrader.SimulatorV2
             _loadDataHelper<JObject>(
                 algo, info,
                 () =>
-                {   // retrieve data from FRED
+                {   // retrieve data from Yahoo
                     string url = string.Format(
                         @"http://query1.finance.yahoo.com/v8/finance/chart/"
                         + "{0}"
@@ -47,7 +47,7 @@ namespace TuringTrader.SimulatorV2
                         + "&period1={1}"
                         + "&period2={2}",
                         info[DataSourceParam.symbolYahoo],
-                        0, // epoch origin _yahooToUnixTime(DateTime.Parse("01/01/1970", CultureInfo.InvariantCulture)),
+                        0, // epoch origin 01/01/1970
                         _yahooToUnixTime(DateTime.Now + TimeSpan.FromDays(5)));
 
                     using (var client = new HttpClient())
@@ -140,7 +140,7 @@ namespace TuringTrader.SimulatorV2
             _loadMetaHelper<string>(
                 algo, info,
                 () =>
-                {   // retrieve meta from FRED
+                {   // retrieve meta from Yahoo
                     string url = string.Format(
                         @"http://finance.yahoo.com/quote/"
                         + "{0}",

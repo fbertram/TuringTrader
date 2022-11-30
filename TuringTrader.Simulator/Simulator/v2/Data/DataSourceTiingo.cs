@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core
-// Name:        DataSourceAlgo
-// Description: Virtual data source to use data from algorithms.
-// History:     2022xi25, FUB, created
+// Name:        DataSourceTiingo
+// Description: Data source for Tiingo.
+// History:     2022xi29, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 // License:     This file is part of TuringTrader, an open-source backtesting
@@ -20,21 +20,125 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Net.Http;
 
 namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> LoadTiingoData(Algorithm algo, Dictionary<DataSourceParam, string> info)
-        {
-            throw new NotImplementedException();
-        }
-        private static TimeSeriesAsset.MetaType LoadTiingoMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
-        {
-            throw new NotImplementedException();
-        }
+        #region internal helpers
+        private static string _tiingoApiToken => Simulator.GlobalSettings.TiingoApiKey;
+        private static string _tiingoConvertTicker(string ticker) => ticker.Replace('.', '-');
+        #endregion
+        private static List<BarType<OHLCV>> LoadTiingoData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+            _loadDataHelper<JArray>(
+                algo, info,
+                () =>
+                {   // retrieve data from Yahoo
+                    string url = string.Format(
+                        "https://api.tiingo.com/tiingo/daily/{0}/prices"
+                        + "?startDate={1:yyyy}-{1:MM}-{1:dd}"
+                        + "&endDate={2:yyyy}-{2:MM}-{2:dd}"
+                        + "&format=json"
+                        + "&resampleFreq=daily"
+                        + "&token={3}",
+                        _tiingoConvertTicker(info[DataSourceParam.symbolTiingo]),
+                        DateTime.Parse("01/01/1950", CultureInfo.InvariantCulture),
+                        DateTime.Now + TimeSpan.FromDays(5),
+                        _tiingoApiToken);
+
+                    using (var client = new HttpClient())
+                        return client.GetStringAsync(url).Result;
+                },
+                (raw) =>
+                {   // parse data and check validity
+                    try
+                    {
+                        if (raw == null || raw.Length < 25)
+                            return null;
+
+                        var json = JArray.Parse(raw);
+
+                        if (!json.HasValues)
+                            return null;
+
+                        return json;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                },
+                (jsonData) =>
+                {   // extract data for TuringTrader
+                    var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
+                    var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
+
+                    var e = jsonData.GetEnumerator();
+
+                    var bars = new List<BarType<OHLCV>>();
+                    while (e.MoveNext())
+                    {
+                        var bar = e.Current;
+
+                        var exchangeClose = DateTime.Parse((string)bar["date"], CultureInfo.InvariantCulture);
+                        var localClose = exchangeClose;
+
+                        double open = (double)bar["adjOpen"];
+                        double high = (double)bar["adjHigh"];
+                        double low = (double)bar["adjLow"];
+                        double close = (double)bar["adjClose"];
+                        long volume = (long)bar["adjVolume"];
+
+                        bars.Add(new BarType<OHLCV>(
+                            localClose,
+                            new OHLCV(open, high, low, close, volume)));
+                    }
+
+                    return bars;
+                });
+
+        private static TimeSeriesAsset.MetaType LoadTiingoMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+            _loadMetaHelper<JObject>(
+                algo, info,
+                () =>
+                {   // retrieve meta from Tiingo
+                    string url = string.Format("https://api.tiingo.com/tiingo/daily/{0}?token={1}",
+                        _tiingoConvertTicker(info[DataSourceParam.symbolTiingo]),
+                        _tiingoApiToken);
+
+                    using (var client = new HttpClient())
+                        return client.GetStringAsync(url).Result;
+                },
+                (raw) =>
+                {   // parse data and check validity
+                    try
+                    {
+                        if (raw == null || raw.Length < 10)
+                            return null;
+
+                        var json = JObject.Parse(raw);
+
+                        if (!json.HasValues || json["name"].Type == JTokenType.Null)
+                            return null;
+
+                        // this seems to be valid meta data
+                        return json;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                },
+                (jsonData) => new TimeSeriesAsset.MetaType
+                {   // extract meta for TuringTrader
+                    Ticker = (string)jsonData["ticker"], //info[DataSourceParam.ticker],
+                    Description = (string)jsonData["name"],
+                });
     }
 }
 
