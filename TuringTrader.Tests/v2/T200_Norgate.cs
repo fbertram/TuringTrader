@@ -107,7 +107,7 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(avgTickers - 507.95126488095241) < 1e-3);
 
             var totTickers = result.Max(b => b.Value.High);
-            Assert.IsTrue(Math.Abs(totTickers - 1231) < 1e-3);
+            Assert.IsTrue(Math.Abs(totTickers - 1231.0) < 1e-3);
         }
     }
 }
