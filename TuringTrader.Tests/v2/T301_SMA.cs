@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T300_EMA
-// Description: Unit test for EMA indicator.
+// Name:        T301_SMA
+// Description: Unit test for SMA indicator.
 // History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -30,7 +30,7 @@ using TuringTrader.SimulatorV2.Indicators;
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T300_EMA
+    public class T301_SMA
     {
         private class Testbed : Algorithm
         {
@@ -45,7 +45,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 Generator.StartDate = StartDate;
                 Generator.EndDate = EndDate;
 
-                TestResult = Asset(Generator).Close.EMA(20);
+                TestResult = Asset(Generator).Close.SMA(20);
             }
         }
 
@@ -58,7 +58,7 @@ namespace TuringTrader.SimulatorV2.Tests
             var result = algo.TestResult;
 
             var description = result.Name;
-            Assert.IsTrue(description.ToLower().EndsWith("close.ema(20)"));
+            Assert.IsTrue(description.ToLower().EndsWith("close.sma(20)"));
 
             var firstDate = result.Data.Result.First().Date;
             Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
@@ -73,8 +73,8 @@ namespace TuringTrader.SimulatorV2.Tests
             var max = result.Data.Result.Max(b => b.Value);
             var sum = result.Data.Result.Sum(b => b.Value);
             Assert.IsTrue(Math.Abs(min - 0.0) < 1e-5);
-            Assert.IsTrue(Math.Abs(max - 0.85066836567421422) < 1e-5);
-            Assert.IsTrue(Math.Abs(sum - 10.918650526094964) < 1e-5);
+            Assert.IsTrue(Math.Abs(max - 0.95) < 1e-5);
+            Assert.IsTrue(Math.Abs(sum - 9.4999999999999982) < 1e-5);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace TuringTrader.SimulatorV2.Tests
             var result = algo.TestResult;
 
             var description = result.Name;
-            Assert.IsTrue(description.ToLower().EndsWith("close.ema(20)"));
+            Assert.IsTrue(description.ToLower().EndsWith("close.sma(20)"));
 
             var firstDate = result.Data.Result.First().Date;
             Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
@@ -101,8 +101,8 @@ namespace TuringTrader.SimulatorV2.Tests
             var max = result.Data.Result.Max(b => b.Value);
             var sum = result.Data.Result.Sum(b => b.Value);
             Assert.IsTrue(Math.Abs(min - 0.0) < 1e-5);
-            Assert.IsTrue(Math.Abs(max - 0.4540674736952518) < 1e-5);
-            Assert.IsTrue(Math.Abs(sum - 5.6863589998951092) < 1e-5);
+            Assert.IsTrue(Math.Abs(max - 0.5) < 1e-5);
+            Assert.IsTrue(Math.Abs(sum - 5.0) < 1e-5);
         }
     }
 }
