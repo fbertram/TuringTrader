@@ -32,7 +32,7 @@ namespace TuringTrader.SimulatorV2
     public static partial class DataSource
     {
         private static string _stooqConvertTicker(string ticker) => ticker.ToLower();
-        private static List<BarType<OHLCV>> LoadStooqData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> StooqLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<string>(
                 algo, info,
                 () =>
@@ -109,7 +109,7 @@ namespace TuringTrader.SimulatorV2
                     }
                 });
 
-        private static TimeSeriesAsset.MetaType LoadStooqMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static TimeSeriesAsset.MetaType StooqLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadMetaHelper<string>(
                 algo, info,
                 () =>

@@ -28,7 +28,7 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> LoadAlgoData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> AlgoLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var algoName = info[DataSourceParam.nickName2];
             var algoInstance = Simulator.AlgorithmLoader.InstantiateAlgorithm(algoName);
@@ -72,7 +72,7 @@ namespace TuringTrader.SimulatorV2
 
             throw new Exception(string.Format("failed to instantiate algorithm '{0}'", algoName));
         }
-        private static TimeSeriesAsset.MetaType LoadAlgoMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType AlgoLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var algoName = info[DataSourceParam.nickName2];
             var algoInstance = Simulator.AlgorithmLoader.InstantiateAlgorithm(algoName);

@@ -345,29 +345,29 @@ namespace TuringTrader.SimulatorV2
                     Func<Algorithm, Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
                 {
 #if ENABLE_NORGATE
-                Tuple.Create("norgate", InitNorgateFeed, LoadNorgateData, LoadNorgateMeta),
+                Tuple.Create("norgate", NorgateInit, NorgateLoadData, NorgateLoadMeta),
 #endif
 #if ENABLE_TIINGO
-                Tuple.Create("tiingo", (Action)null, LoadTiingoData, LoadTiingoMeta),
+                Tuple.Create("tiingo", (Action)null, TiingoLoadData, TiingoLoadMeta),
 #endif
 #if ENABLE_FRED
-                Tuple.Create("fred", (Action)null, LoadFredData, LoadFredMeta),
+                Tuple.Create("fred", (Action)null, FredLoadData, FredLoadMeta),
 #endif
 #if ENABLE_CSV
-                Tuple.Create("csv", (Action)null, LoadCsvData, LoadCsvMeta),
+                Tuple.Create("csv", (Action)null, CsvLoadData, CsvLoadMeta),
 #endif
 #if ENABLE_YAHOO
-                Tuple.Create("yahoo", (Action)null, LoadYahooData, LoadYahooMeta),
+                Tuple.Create("yahoo", (Action)null, YahooLoadData, YahooLoadMeta),
 #endif
 #if ENABLE_STOOQ
-                Tuple.Create("stooq", (Action)null, LoadStooqData, LoadStooqMeta),
+                Tuple.Create("stooq", (Action)null, StooqLoadData, StooqLoadMeta),
 #endif
 #if ENABLE_SPLICE
-                Tuple.Create("splice", (Action)null, LoadSpliceData, LoadSpliceMeta),
-                Tuple.Create("join", (Action)null, LoadJoinData, LoadJoinMeta),
+                Tuple.Create("splice", (Action)null, SpliceLoadData, SpliceLoadMeta),
+                Tuple.Create("join", (Action)null, JoinLoadData, JoinLoadMeta),
 #endif
 #if ENABLE_ALGO
-                Tuple.Create("algo", (Action)null, LoadAlgoData, LoadAlgoMeta),
+                Tuple.Create("algo", (Action)null, AlgoLoadData, AlgoLoadMeta),
 #endif
                 };
 
@@ -696,6 +696,12 @@ namespace TuringTrader.SimulatorV2
                 meta);
         }
 
+        /// <summary>
+        /// Get constituents of universe.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="name">universe name</param>
+        /// <returns>universe constituents</returns>
         public static HashSet<string> Universe(Algorithm algo, string name)
         {
             var universe = name.Contains(':') ? name.Substring(name.IndexOf(':') + 1) : name;
@@ -704,10 +710,10 @@ namespace TuringTrader.SimulatorV2
             switch (datafeed.ToLower())
             {
                 case "norgate":
-                    return DataSourceV1.GetConstituents(algo, name);
+                    return NorgateGetUniverse(algo, universe);
 
                 default:
-                    return StaticUniverse(algo, universe, datafeed);
+                    return StaticGetUniverse(algo, universe, datafeed);
             }
         }
     }

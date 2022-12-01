@@ -35,7 +35,7 @@ namespace TuringTrader.SimulatorV2
     {
         private static string _fredApiKey => "967bc3160a70e6f8a501f4e3a3516fdc";
 
-        private static List<BarType<OHLCV>> LoadFredData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> FredLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<JObject>(
                 algo, info,
                 () =>
@@ -118,7 +118,7 @@ namespace TuringTrader.SimulatorV2
                     return bars;
                 });
 
-        private static TimeSeriesAsset.MetaType LoadFredMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static TimeSeriesAsset.MetaType FredLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadMetaHelper<JObject>(
                 algo, info,
                 () =>

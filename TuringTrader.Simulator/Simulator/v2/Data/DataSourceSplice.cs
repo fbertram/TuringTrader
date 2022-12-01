@@ -89,10 +89,10 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
 
-        private static List<BarType<OHLCV>> LoadSpliceData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> SpliceLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _spliceLoadData(algo, info, true);
 
-        private static TimeSeriesAsset.MetaType LoadSpliceMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType SpliceLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
             var mostRecentSymbol = symbols[0];
@@ -101,10 +101,10 @@ namespace TuringTrader.SimulatorV2
         }
 
 
-        private static List<BarType<OHLCV>> LoadJoinData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> JoinLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _spliceLoadData(algo, info, false);
 
-        private static TimeSeriesAsset.MetaType LoadJoinMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType JoinLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
             var mostRecentSymbol = symbols[0];

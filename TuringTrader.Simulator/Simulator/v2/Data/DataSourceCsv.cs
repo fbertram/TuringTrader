@@ -180,7 +180,7 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
 
-        private static List<BarType<OHLCV>> LoadCsvData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> CsvLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var dataPath = info[DataSourceParam.dataPath].Replace('/', Path.DirectorySeparatorChar); // fix dir separator
 
@@ -198,7 +198,7 @@ namespace TuringTrader.SimulatorV2
             throw new Exception(string.Format("Failed to locate csv data for {0} at {1}", info2[DataSourceParam.nickName2], info2[DataSourceParam.dataPath]));
 
         }
-        private static TimeSeriesAsset.MetaType LoadCsvMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType CsvLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             return new TimeSeriesAsset.MetaType
             {

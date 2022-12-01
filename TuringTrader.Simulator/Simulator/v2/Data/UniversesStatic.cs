@@ -694,7 +694,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="datafeed">datafeed name</param>
         /// <returns>universe constituents</returns>
         /// <exception cref="Exception"></exception>
-        public static HashSet<string> StaticUniverse(Algorithm algo, string universe, string datafeed)
+        public static HashSet<string> StaticGetUniverse(Algorithm algo, string universe, string datafeed)
         {
             var constituents = (IEnumerable<string>)null;
 

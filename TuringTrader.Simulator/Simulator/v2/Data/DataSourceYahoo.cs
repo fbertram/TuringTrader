@@ -35,7 +35,7 @@ namespace TuringTrader.SimulatorV2
         private static long _yahooToUnixTime(DateTime timestamp) => Convert.ToInt64((timestamp - _yahooEpochOrigin).TotalSeconds);
         private static DateTime _yahooFromUnixTime(long unixTime) => _yahooEpochOrigin.AddSeconds(unixTime);
         #endregion
-        private static List<BarType<OHLCV>> LoadYahooData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> YahooLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<JObject>(
                 algo, info,
                 () =>
@@ -136,7 +136,7 @@ namespace TuringTrader.SimulatorV2
                     return bars;
                 });
 
-        private static TimeSeriesAsset.MetaType LoadYahooMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static TimeSeriesAsset.MetaType YahooLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadMetaHelper<string>(
                 algo, info,
                 () =>

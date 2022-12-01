@@ -34,7 +34,7 @@ namespace TuringTrader.SimulatorV2
         private static string _tiingoApiToken => Simulator.GlobalSettings.TiingoApiKey;
         private static string _tiingoConvertTicker(string ticker) => ticker.Replace('.', '-');
         #endregion
-        private static List<BarType<OHLCV>> LoadTiingoData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static List<BarType<OHLCV>> TiingoLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<JArray>(
                 algo, info,
                 () =>
@@ -102,7 +102,7 @@ namespace TuringTrader.SimulatorV2
                     return bars;
                 });
 
-        private static TimeSeriesAsset.MetaType LoadTiingoMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+        private static TimeSeriesAsset.MetaType TiingoLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadMetaHelper<JObject>(
                 algo, info,
                 () =>

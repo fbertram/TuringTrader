@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using NDU = NorgateData.DataAccess;
+using NDW = NorgateData.WatchListLibrary;
 #endregion
 
 namespace TuringTrader.SimulatorV2
@@ -194,14 +195,114 @@ namespace TuringTrader.SimulatorV2
         #endregion
         #region internal data & helpers
         private static object _lockReentrance = new object();
+
+        private class _norgateUniverse
+        {
+            private Algorithm _algorithm;
+            private string _universe;
+
+            private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
+            {
+                { "$OEX", "S&P 100 Current & Past" },
+                { "$SPX", "S&P 500 Current & Past"},
+                { "$MID", "S&P MidCap 400 Current & Past" },
+                { "$SML", "S&P SmallCap 600 Current & Past" },
+                { "$SP1500", "S&P Composite 1500 Current & Past" },
+                { "$SPDAUDP", "S&P 500 Dividend Aristocrats Current & Past" },
+
+
+                { "$RUI", "Russell 1000 Current & Past" },
+                { "$RUT", "Russell 2000 Current & Past" },
+                { "$RUA", "Russell 3000 Current & Past" },
+                { "$RMC", "Russell Mid Cap Current & Past" },
+                { "$RUMIC", "Russell Micro Cap Current & Past" },
+
+                { "$NDX", "NASDAQ 100 Current & Past" },
+                { "$NGX", "Nasdaq Next Generation 100 Current & Past" },
+                { "$NXTQ", "Nasdaq Q-50 Current & Past" },
+                { "$DJI", "Dow Jones Industrial Average Current & Past" },
+            };
+            private NDW.Watchlist _watchlist;
+            private NDW.SecurityList _securityList;
+            private Dictionary<int, List<NDU.RecIndicator>> _constituency = new Dictionary<int, List<NDU.RecIndicator>>();
+
+            public _norgateUniverse(Algorithm algo, string universe)
+            {
+                _algorithm = algo;
+                _universe = universe;
+
+                if (!_watchlistNames.ContainsKey(universe))
+                    throw new Exception(String.Format("Unknown universe {0}:{1}", "norgate", universe));
+
+                NDU.OperationResult success;
+                // get watchlist object
+                success = NDU.Api.GetWatchlist(_watchlistNames[universe], out _watchlist);
+
+                // get all securities on that watchlist
+                success = _watchlist.GetSecurityList(out _securityList);
+
+                // get constituency time series
+                foreach (var security in _securityList)
+                {
+                    List<NDU.RecIndicator> timeSeries;
+                    success = NDU.Api.GetIndexConstituentTimeSeries(
+                        security.AssetID, out timeSeries, _universe,
+                        TimeZoneInfo.ConvertTime((DateTime)_algorithm.StartDate - TimeSpan.FromDays(5), _algorithm.TradingCalendar.ExchangeTimeZone).Date,
+                        TimeZoneInfo.ConvertTime((DateTime)_algorithm.EndDate, _algorithm.TradingCalendar.ExchangeTimeZone).Date,
+                        NDU.PaddingType.AllCalendarDays);
+
+                    // NOTE: constituency time series may apruptly end with a '1'.
+                    //       When we evaluate this series later, this leads to the
+                    //       asset being stuck. To prevent this, we add a '0' at
+                    //       the end of the series.
+                    if (timeSeries.Count > 0)
+                    {
+                        var last = timeSeries.Last();
+                        timeSeries.Add(new NDU.RecIndicator
+                        {
+                            Date = last.Date + TimeSpan.FromDays(1),
+                            value = 0
+                        });
+                    }
+
+                    _constituency[security.AssetID] = timeSeries;
+                }
+            }
+
+            public HashSet<string> Constituents()
+            {
+                var localClose = _algorithm.SimDate;
+                var exchangeTime = TimeZoneInfo.ConvertTime(localClose, _algorithm.TradingCalendar.ExchangeTimeZone);
+
+                // advance time series
+                foreach (var security in _securityList)
+                {
+                    var series = _constituency[security.AssetID];
+                    while (series.Count > 1 && series[1].Date < exchangeTime.Date)
+                        series.RemoveAt(0);
+                }
+
+                // collect constituents
+                var constituents = new HashSet<string>();
+                foreach (var security in _securityList)
+                {
+                    var series = _constituency[security.AssetID];
+
+                    if (series.Count > 0 && series[0].Date <= exchangeTime && series[0].value != 0)
+                        constituents.Add("norgate:" + security.Symbol);
+                }
+
+                return constituents;
+            }
+        }
         #endregion
 
-        private static void InitNorgateFeed()
+        private static void NorgateInit()
         {
             NorgateHelpers.HandleUnresovledAssemblies();
         }
 
-        private static List<BarType<OHLCV>> LoadNorgateData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> NorgateLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var tradingDays = algo.TradingCalendar.TradingDays;
             var startDate = tradingDays.First();
@@ -275,7 +376,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
 
-        private static TimeSeriesAsset.MetaType LoadNorgateMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType NorgateLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             //var makeSureWeLoadNorgateDll = new NorgateLoaderObject();
 
@@ -293,6 +394,17 @@ namespace TuringTrader.SimulatorV2
 
                 return meta;
             }
+        }
+
+        private static HashSet<string> NorgateGetUniverse(Algorithm algo, string universe)
+        {
+            NorgateInit();
+
+            //return DataSourceV1.GetConstituents(algo, name);
+            var theUniverse = algo.Cache(string.Format("Universe({0})", universe), () => new _norgateUniverse(algo, universe))
+                .Result;
+
+            return theUniverse.Constituents();
         }
     }
 }
