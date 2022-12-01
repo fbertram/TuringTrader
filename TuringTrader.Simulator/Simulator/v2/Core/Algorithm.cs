@@ -141,7 +141,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + TimeSpan.FromDays(7); } }
+        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + TimeSpan.FromDays(0); } }
 
         private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 

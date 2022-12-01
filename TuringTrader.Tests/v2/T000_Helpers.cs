@@ -1,11 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader, simulator core v2
-// Name:        A203_Yahoo
-// Description: Develop & test Yahoo! finance import.
-// History:     2022xi29, FUB, created
+// Project:     TuringTrader: SimulatorEngine.Tests
+// Name:        T000_Helpers
+// Description: Unit test helper class.
+// History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -23,34 +22,44 @@
 
 #region libraries
 using System;
-using System.Globalization;
-using TuringTrader.SimulatorV2;
 #endregion
 
-// NOTE: creating reports works the same as with the v1 engine
-
-namespace TuringTrader.DemoV2
+namespace TuringTrader.SimulatorV2.Tests
 {
-    public class A203_Yahoo : Algorithm
+    public class T000_Helpers
     {
-        public override string Name => "A203_Yahoo";
-
-        public override void Run()
+        public class UnityStep : Algorithm
         {
-            StartDate = DateTime.Parse("01/29/1993", CultureInfo.InvariantCulture);
-            EndDate = DateTime.Now - TimeSpan.FromDays(5);
-
-            var ticker = "yahoo:SPY"; // S&P 500 ETF
-
-            SimLoop(() =>
+            public override void Run()
             {
-                Plotter.SelectChart("Yahoo Data", "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot(Asset(ticker).Description, Asset(ticker).Close[0]);
-            });
+                //StartDate = DateTime.Parse("2022-01-02T16:00-05:00");
+                //EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                SimLoop(() =>
+                {
+                    return new OHLCV(0.0, 0.0, 0.0, IsFirstBar ? 0.0 : 1.0, 0.0);
+                });
+            }
         }
 
-        public override void Report() => Plotter.OpenWith("SimpleChart");
+        public class NyquistFrequency : Algorithm
+        {
+            public override void Run()
+            {
+                //StartDate = DateTime.Parse("2022-01-02T16:00-05:00");
+                //EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                var isZero = false;
+                SimLoop(() =>
+                {
+                    isZero = !isZero;
+                    return new OHLCV(0.0, 0.0, 0.0, isZero ? 0.0 : 1.0, 0.0);
+                });
+            }
+        }
+
     }
 }
 
