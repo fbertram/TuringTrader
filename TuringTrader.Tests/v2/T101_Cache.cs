@@ -1,11 +1,10 @@
 ﻿//==============================================================================
-// Project:     TuringTrader, simulator core v2
-// Name:        A03_Cache
-// Description: Develop & test cache.
-// History:     2021vi05, FUB, created
+// Project:     TuringTrader: SimulatorEngine.Tests
+// Name:        T101_Cache
+// Description: Unit test for cache.
+// History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -22,39 +21,47 @@
 //==============================================================================
 
 #region libraries
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
-using TuringTrader.SimulatorV2;
 #endregion
 
-// NOTE: The cache is a central feature of TuringTrader. It is used to
-// store asset quotes and indicators. Objects in the cache are referred
-// to by an id. On a cache miss, a method is called to retrieve the result.
-
-namespace TuringTrader.DemoV2
+namespace TuringTrader.SimulatorV2.Tests
 {
-    public class A03_Cache : Algorithm
+    [TestClass]
+    public class T101_Cache
     {
-        public override string Name => "A03_Cache";
-
-        public override void Run()
+        private class Testbed : Algorithm
         {
-            string toDo()
+            private int counter = 0;
+            public int TestResult;
+            public override void Run()
             {
-                Thread.Sleep(2000);
-                return string.Format("completed my todos at {0}", DateTime.Now);
+                int toDo()
+                {
+                    Thread.Sleep(2000);
+                    return ++counter;
+                }
+
+                string cacheId = "unique id";
+                var cache1 = Cache(cacheId, toDo);
+                var cache2 = Cache(cacheId, toDo);
+
+                TestResult = cache2.Result;
             }
-
-            string cacheId = "unique id";
-
-            var cache1 = Cache(cacheId, toDo);
-            Output.WriteLine(cache1.Result);
-
-            var cache2 = Cache(cacheId, toDo);
-            Output.WriteLine(cache2.Result);
         }
 
-        public override void Report() => Output.WriteLine("Here is your report");
+        [TestMethod]
+        public void Test_DataRetrieval()
+        {
+            var algo = new Testbed();
+            algo.Run();
+            var result = algo.TestResult;
+
+            Assert.IsTrue(result == 1);
+        }
     }
 }
 
