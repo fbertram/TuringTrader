@@ -28,7 +28,8 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> LoadSpliceData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        #region internal helpers
+        private static List<BarType<OHLCV>> _spliceLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info, bool splice)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
 
@@ -38,53 +39,72 @@ namespace TuringTrader.SimulatorV2
 #else
             var tradingDays = algo.TradingCalendar.TradingDays;
 
-            var splice = (List<BarType<OHLCV>>)null;
+            var dst = (List<BarType<OHLCV>>)null;
             for (int symIdx = 0; symIdx < symbols.Length; symIdx++)
             {
                 var src = _loadData(algo, symbols[symIdx], false);
 
-                if (splice == null)
+                if (dst == null)
                 {
-                    splice = src;
+                    dst = src;
                 }
                 else
                 {
                     var srcFiltered = src
-                        .Where(b => b.Date < splice.First().Date)
+                        .Where(b => b.Date < dst.First().Date)
                         .ToList();
 
-                    var dataExisting = splice.First();
+                    var dataExisting = dst.First();
                     var dataSplicing = src
-                        .Where(b => b.Date == splice.First().Date)
+                        .Where(b => b.Date == dst.First().Date)
                         .FirstOrDefault();
 
                     if (dataSplicing == null)
                         throw new Exception(string.Format("No overlap while splicing {0}", info[DataSourceParam.nickName2]));
 
-                    var scaleSplicing = new List<double>
-                        {
-                            dataExisting.Value.Open / dataSplicing.Value.Open,
-                            dataExisting.Value.High / dataSplicing.Value.High,
-                            dataExisting.Value.Low / dataSplicing.Value.Low,
-                            dataExisting.Value.Close / dataSplicing.Value.Close,
-                        }
-                        .Average();
+                    var scaleSplicing = splice
+                        ? new List<double>
+                            {
+                                dataExisting.Value.Open / dataSplicing.Value.Open,
+                                dataExisting.Value.High / dataSplicing.Value.High,
+                                dataExisting.Value.Low / dataSplicing.Value.Low,
+                                dataExisting.Value.Close / dataSplicing.Value.Close,
+                            }
+                            .Average()
+                        : 1.0;
 
-                    splice = srcFiltered
+                    dst = srcFiltered
                         .Select(bar => new BarType<OHLCV>(bar.Date,
                             new OHLCV(scaleSplicing * bar.Value.Open, scaleSplicing * bar.Value.High, scaleSplicing * bar.Value.Low, scaleSplicing * bar.Value.Close, 0.0)))
-                        .Concat(splice)
+                        .Concat(dst)
                         .ToList();
                 }
 
-                if (splice.First().Date <= tradingDays.First())
+                if (dst.First().Date <= tradingDays.First())
                     break;
             }
 
-            return splice;
+            return dst;
 #endif
         }
+        #endregion
+
+        private static List<BarType<OHLCV>> LoadSpliceData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+            _spliceLoadData(algo, info, true);
+
         private static TimeSeriesAsset.MetaType LoadSpliceMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        {
+            var symbols = info[DataSourceParam.nickName2].Split(",");
+            var mostRecentSymbol = symbols[0];
+
+            return _loadMeta(algo, mostRecentSymbol);
+        }
+
+
+        private static List<BarType<OHLCV>> LoadJoinData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
+            _spliceLoadData(algo, info, false);
+
+        private static TimeSeriesAsset.MetaType LoadJoinMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
             var mostRecentSymbol = symbols[0];

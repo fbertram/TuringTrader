@@ -31,7 +31,7 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T206_Splice
     {
-        private class DataRetrieval : Algorithm
+        private class Testbed : Algorithm
         {
             public TimeSeriesAsset TestResult;
             public override void Run()
@@ -45,9 +45,9 @@ namespace TuringTrader.SimulatorV2.Tests
         }
 
         [TestMethod]
-        public void Test_DataRetrieval()
+        public void Test_Splice()
         {
-            var algo = new DataRetrieval();
+            var algo = new Testbed();
             algo.Run();
             var result = algo.TestResult;
 
@@ -68,6 +68,45 @@ namespace TuringTrader.SimulatorV2.Tests
 
             var sum = result.Data.Result.Sum(b => b.Value.Close);
             Assert.IsTrue(Math.Abs(sum - 361000) < 1e-3);
+        }
+
+        private class Testbed2 : Algorithm
+        {
+            public TimeSeriesAsset TestResult;
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2021-01-04T16:00-05:00");
+                EndDate = DateTime.Parse("2021-01-29T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                TestResult = Asset("join:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+            }
+        }
+
+        [TestMethod]
+        public void Test_Join()
+        {
+            var algo = new Testbed2();
+            algo.Run();
+            var result = algo.TestResult;
+
+            var firstDate = result.Data.Result.First().Date;
+            Assert.IsTrue(firstDate == DateTime.Parse("2021-01-04T16:00-5:00"));
+
+            var lastDate = result.Data.Result.Last().Date;
+            Assert.IsTrue(lastDate == DateTime.Parse("2021-01-29T16:00-5:00"));
+
+            var barCount = result.Data.Result.Count();
+            Assert.IsTrue(barCount == 19);
+
+            var firstOpen = result.Data.Result.First().Value.Open;
+            Assert.IsTrue(Math.Abs(firstOpen - 1000) < 1e-3);
+
+            var lastClose = result.Data.Result.Last().Value.Close;
+            Assert.IsTrue(Math.Abs(lastClose - 28000) < 1e-3);
+
+            var sum = result.Data.Result.Sum(b => b.Value.Close);
+            Assert.IsTrue(Math.Abs(sum - 230500) < 1e-3);
         }
     }
 }
