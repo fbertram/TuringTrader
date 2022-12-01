@@ -24,7 +24,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
@@ -42,7 +41,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 EndDate = DateTime.Parse("2022-12-01T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
 
-                var alive = (Dictionary<string, bool>)null;
+                var alive = new Dictionary<string, bool>();
 
                 SimLoop(() =>
                 {
@@ -63,9 +62,9 @@ namespace TuringTrader.SimulatorV2.Tests
             var algo = new Testbed();
             algo.Universe = "tiingo:$DJI";
             algo.Run();
-            var result = algo.TestResult;
 
-            Assert.IsTrue(result == 503);
+            var numMembers = algo.TestResult;
+            Assert.IsTrue(numMembers == 30);
         }
     }
 }

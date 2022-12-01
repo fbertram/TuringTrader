@@ -537,10 +537,115 @@ namespace TuringTrader.SimulatorV2
             "NWS",   // 503 News Corporation Class B    NWS
         };
         #endregion
+        #region static oex
+        // for now, we just take the top-100 of spx
+        #endregion
         #region static ndx
         private static List<string> _staticNdx = new List<string>
         {
             // see https://www.slickcharts.com/nasdaq100
+            "AAPL",  // 1   Apple Inc   AAPL
+            "MSFT",  // 2   Microsoft Corp  MSFT
+            "AMZN",  // 3   Amazon.com Inc  AMZN
+            "GOOG",  // 4   Alphabet Inc    GOOG
+            "GOOGL", // 5   Alphabet Inc    GOOGL
+            "TSLA",  // 6   Tesla Inc   TSLA
+            "NVDA",  // 7   NVIDIA Corp NVDA
+            "PEP",   // 8   PepsiCo Inc PEP
+            "COST",  // 9   Costco Wholesale Corp   COST
+            "META",  // 10  Meta Platforms Inc  META
+            "AVGO",  // 11  Broadcom Inc    AVGO
+            "CSCO",  // 12  Cisco Systems Inc   CSCO
+            "TMUS",  // 13  T-Mobile US Inc TMUS
+            "TXN",   // 14  Texas Instruments Inc   TXN
+            "CMCSA", // 15  Comcast Corp    CMCSA
+            "ADBE",  // 16  Adobe Inc   ADBE
+            "AMGN",  // 17  Amgen Inc   AMGN
+            "HON",   // 18  Honeywell International Inc HON
+            "QCOM",  // 19  QUALCOMM Inc    QCOM
+            "NFLX",  // 20  Netflix Inc NFLX
+            "INTC",  // 21  Intel Corp  INTC
+            "AMD",   // 22  Advanced Micro Devices Inc  AMD
+            "SBUX",  // 23  Starbucks Corp  SBUX
+            "GILD",  // 24  Gilead Sciences Inc GILD
+            "INTU",  // 25  Intuit Inc  INTU
+            "ADP",   // 26  Automatic Data Processing Inc   ADP
+            "ISRG",  // 27  Intuitive Surgical Inc  ISRG
+            "MDLZ",  // 28  Mondelez International Inc  MDLZ
+            "PYPL",  // 29  PayPal Holdings Inc PYPL
+            "AMAT",  // 30  Applied Materials Inc   AMAT
+            "ADI",   // 31  Analog Devices Inc  ADI
+            "VRTX",  // 32  Vertex Pharmaceuticals Inc  VRTX
+            "BKNG",  // 33  Booking Holdings Inc    BKNG
+            "REGN",  // 34  Regeneron Pharmaceuticals Inc   REGN
+            "CSX",   // 35  CSX Corp    CSX
+            "MRNA",  // 36  Moderna Inc MRNA
+            "FISV",  // 37  Fiserv Inc  FISV
+            "CHTR",  // 38  Charter Communications Inc  CHTR
+            "MU",    // 39  Micron Technology Inc   MU
+            "LRCX",  // 40  Lam Research Corp   LRCX
+            "ATVI",  // 41  Activision Blizzard Inc ATVI
+            "KDP",   // 42  Keurig Dr Pepper Inc    KDP
+            "ORLY",  // 43  O'Reilly Automotive Inc	ORLY
+            "KLAC",  // 44  KLA Corp    KLAC
+            "MNST",  // 45  Monster Beverage Corp   MNST
+            "MAR",   // 46  Marriott International Inc/MD   MAR
+            "PANW",  // 47  Palo Alto Networks Inc  PANW
+            "ASML",  // 48  ASML Holding NV ASML
+            "SNPS",  // 49  Synopsys Inc    SNPS
+            "AEP",   // 50  American Electric Power Co Inc  AEP
+            "KHC",   // 51  Kraft Heinz Co/The  KHC
+            "CTAS",  // 52  Cintas Corp CTAS
+            "CDNS",  // 53  Cadence Design Systems Inc  CDNS
+            "MELI",  // 54  MercadoLibre Inc    MELI
+            "LULU",  // 55  Lululemon Athletica Inc LULU
+            "DXCM",  // 56  Dexcom Inc  DXCM
+            "NXPI",  // 57  NXP Semiconductors NV   NXPI
+            "PAYX",  // 58  Paychex Inc PAYX
+            "BIIB",  // 59  Biogen Inc  BIIB
+            "ADSK",  // 60  Autodesk Inc    ADSK
+            "ENPH",  // 61  Enphase Energy Inc  ENPH
+            "MCHP",  // 62  Microchip Technology Inc    MCHP
+            "ROST",  // 63  Ross Stores Inc ROST
+            "FTNT",  // 64  Fortinet Inc    FTNT
+            "EXC",   // 65  Exelon Corp EXC
+            "AZN",   // 66  AstraZeneca PLC ADR AZN
+            "ABNB",  // 67  Airbnb Inc  ABNB
+            "XEL",   // 68  Xcel Energy Inc XEL
+            "PDD",   // 69  Pinduoduo Inc ADR   PDD
+            "MRVL",  // 70  Marvell Technology Inc  MRVL
+            "PCAR",  // 71  PACCAR Inc  PCAR
+            "WBA",   // 72  Walgreens Boots Alliance Inc    WBA
+            "EA",    // 73  Electronic Arts Inc EA
+            "IDXX",  // 74  IDEXX Laboratories Inc  IDXX
+            "ILMN",  // 75  Illumina Inc    ILMN
+            "DLTR",  // 76  Dollar Tree Inc DLTR
+            "ODFL",  // 77  Old Dominion Freight Line Inc   ODFL
+            "CTSH",  // 78  Cognizant Technology Solutions Corp CTSH
+            "CEG",   // 79  Constellation Energy Corp   CEG
+            "CPRT",  // 80  Copart Inc  CPRT
+            "CRWD",  // 81  Crowdstrike Holdings Inc    CRWD
+            "FAST",  // 82  Fastenal Co FAST
+            "WDAY",  // 83  Workday Inc WDAY
+            "VRSK",  // 84  Verisk Analytics Inc    VRSK
+            "JD",    // 85  JD.com Inc ADR  JD
+            "SIRI",  // 86  Sirius XM Holdings Inc  SIRI
+            "EBAY",  // 87  eBay Inc    EBAY
+            "SGEN",  // 88  Seagen Inc  SGEN
+            "DDOG",  // 89  Datadog Inc DDOG
+            "ANSS",  // 90  ANSYS Inc   ANSS
+            "VRSN",  // 91  VeriSign Inc    VRSN
+            "ZS",    // 92  Zscaler Inc ZS
+            "BIDU",  // 93  Baidu Inc ADR   BIDU
+            "ZM",    // 94  Zoom Video Communications Inc   ZM
+            "TEAM",  // 95  Atlassian Corp  TEAM
+            "LCID",  // 96  Lucid Group Inc LCID
+            "ALGN",  // 97  Align Technology Inc    ALGN
+            "SWKS",  // 98  Skyworks Solutions Inc  SWKS
+            "MTCH",  // 99  Match Group Inc MTCH
+            "SPLK",  // 100 Splunk Inc  SPLK
+            "NTES",  // 101 NetEase Inc ADR NTES
+            "DOCU",  // 102 DocuSign Inc    DOCU
         };
         #endregion
         #region static dji
