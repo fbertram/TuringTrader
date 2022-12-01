@@ -695,6 +695,21 @@ namespace TuringTrader.SimulatorV2
                 data,
                 meta);
         }
+
+        public static HashSet<string> Universe(Algorithm algo, string name)
+        {
+            var universe = name.Contains(':') ? name.Substring(name.IndexOf(':') + 1) : name;
+            var datafeed = name.Contains(':') ? name.Substring(0, name.IndexOf(':')) : Simulator.GlobalSettings.DefaultDataFeed;
+
+            switch (datafeed.ToLower())
+            {
+                case "norgate":
+                    return DataSourceV1.GetConstituents(algo, name);
+
+                default:
+                    return StaticUniverse(algo, universe, datafeed);
+            }
+        }
     }
 }
 

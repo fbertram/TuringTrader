@@ -302,10 +302,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public HashSet<string> Universe(string name)
-        {
-            return DataSourceV1.GetConstituents(this, name);
-        }
+        public HashSet<string> Universe(string name) => DataSource.Universe(this, name);
         #endregion
         #region reporting
         public Plotter Plotter = null; // instantiated in constructor
