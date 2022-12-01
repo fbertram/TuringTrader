@@ -23,6 +23,7 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 #endregion
 
@@ -31,7 +32,7 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T200_Norgate
     {
-        private class DataRetrieval : Algorithm
+        private class Testbed : Algorithm
         {
             public TimeSeriesAsset TestResult;
             public override void Run()
@@ -47,7 +48,7 @@ namespace TuringTrader.SimulatorV2.Tests
         [TestMethod]
         public void Test_DataRetrieval()
         {
-            var algo = new DataRetrieval();
+            var algo = new Testbed();
             algo.Run();
             var result = algo.TestResult;
 
@@ -69,6 +70,44 @@ namespace TuringTrader.SimulatorV2.Tests
             var lowestLow = result.Data.Result.Min(b => b.Value.Low);
             Assert.IsTrue(Math.Abs(lastClose / firstOpen - 98.48418 / 95.37062) < 1e-3);
             Assert.IsTrue(Math.Abs(highestHigh / lowestLow - 100.47684 / 93.11927) < 1e-3);
+        }
+
+        private class Testbed2 : Algorithm
+        {
+            public TimeSeriesAsset TestResult;
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("1990-01-01T16:00-05:00");
+                EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                var allTickers = new HashSet<string>();
+
+                SimLoop(() =>
+                {
+                    var constituents = Universe("$SPX");
+
+                    foreach (var constituent in constituents)
+                        if (!allTickers.Contains(constituent))
+                            allTickers.Add(constituent);
+
+                    return new OHLCV(constituents.Count, allTickers.Count, 0.0, 0.0, 0.0);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void Test_Universe()
+        {
+            var algo = new Testbed2();
+            algo.Run();
+            var result = algo.Result;
+
+            var avgTickers = result.Average(b => b.Value.Open);
+            Assert.IsTrue(Math.Abs(avgTickers - 507.95126488095241) < 1e-3);
+
+            var totTickers = result.Max(b => b.Value.High);
+            Assert.IsTrue(Math.Abs(totTickers - 1231) < 1e-3);
         }
     }
 }
