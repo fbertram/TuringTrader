@@ -28,8 +28,9 @@ namespace TuringTrader.SimulatorV2.Tests
 {
     public class T000_Helpers
     {
-        public class UnityStep : Algorithm
+        public class StepResponse : Algorithm
         {
+            public double Amplitude = 1.0;
             public override void Run()
             {
                 //StartDate = DateTime.Parse("2022-01-02T16:00-05:00");
@@ -38,13 +39,14 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    return new OHLCV(0.0, 0.0, 0.0, IsFirstBar ? 0.0 : 1.0, 0.0);
+                    return new OHLCV(0.0, 0.0, 0.0, IsFirstBar ? 0.0 : Amplitude, 0.0);
                 });
             }
         }
 
         public class NyquistFrequency : Algorithm
         {
+            public double Amplitude = 1.0;
             public override void Run()
             {
                 //StartDate = DateTime.Parse("2022-01-02T16:00-05:00");
@@ -55,7 +57,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 SimLoop(() =>
                 {
                     isZero = !isZero;
-                    return new OHLCV(0.0, 0.0, 0.0, isZero ? 0.0 : 1.0, 0.0);
+                    return new OHLCV(0.0, 0.0, 0.0, isZero ? 0.0 : Amplitude, 0.0);
                 });
             }
         }

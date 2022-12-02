@@ -53,7 +53,7 @@ namespace TuringTrader.SimulatorV2.Tests
         public void Test_StepResponse()
         {
             var algo = new Testbed();
-            algo.Generator = new T000_Helpers.UnityStep();
+            algo.Generator = new T000_Helpers.StepResponse();
             algo.Run();
             var result = algo.TestResult;
 
