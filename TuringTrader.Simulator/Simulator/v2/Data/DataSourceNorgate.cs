@@ -255,15 +255,13 @@ namespace TuringTrader.SimulatorV2
                     //       When we evaluate this series later, this leads to the
                     //       asset being stuck. To prevent this, we add a '0' at
                     //       the end of the series.
-                    if (timeSeries.Count > 0)
+                    timeSeries.Add(new NDU.RecIndicator
                     {
-                        var last = timeSeries.Last();
-                        timeSeries.Add(new NDU.RecIndicator
-                        {
-                            Date = last.Date + TimeSpan.FromDays(1),
-                            value = 0
-                        });
-                    }
+                        Date = timeSeries.Count > 0
+                            ? timeSeries.Last().Date + TimeSpan.FromDays(1)
+                            : (DateTime)_algorithm.StartDate - TimeSpan.FromDays(5),
+                        value = 0
+                    });
 
                     _constituency[security.AssetID] = timeSeries;
                 }
@@ -288,7 +286,7 @@ namespace TuringTrader.SimulatorV2
                 {
                     var series = _constituency[security.AssetID];
 
-                    if (series.Count > 0 && series[0].Date <= exchangeTime && series[0].value != 0)
+                    if (series[0].Date <= exchangeTime && series[0].value != 0)
                         constituents.Add("norgate:" + security.Symbol);
                 }
 
