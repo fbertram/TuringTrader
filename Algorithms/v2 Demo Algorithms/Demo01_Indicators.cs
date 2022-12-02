@@ -24,7 +24,6 @@
 #region libraries
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -52,7 +51,8 @@ namespace TuringTrader.Demos
             {
                 // let's start with a time series for an instrument
                 // the output of Asset is a time series
-                var prices = Asset("SPY").Close;
+                var asset = Asset(ETF.SPY);
+                var prices = asset.Close;
 
                 // calculate simple indicators
                 // the output of an indicator is also a time series
@@ -67,7 +67,7 @@ namespace TuringTrader.Demos
                 var offset = -150;
                 Plotter.SelectChart("indicators vs time", "date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot(prices.Name, prices[0] + offset);
+                Plotter.Plot(asset.Description, prices[0] + offset);
                 Plotter.Plot("ema26", ema26[0] + offset);
                 Plotter.Plot("ema12", ema12[0] + offset);
                 Plotter.Plot("macd", macd[0]);
