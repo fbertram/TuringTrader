@@ -41,29 +41,33 @@ namespace TuringTrader.Demos
         {
             //---------- initialization
 
-            // set simulation time frame
+            // we start by setting a simulation range
+            // this range is specified in the local time zone
             StartDate = DateTime.Parse("2015-01-01T16:00-05:00");
             EndDate = DateTime.Parse("2016-12-31T16:00-05:00");
 
             //---------- simulation
 
+            // SimLoop loops through all timestamps in the range
             SimLoop(() =>
             {
                 // let's start with a time series for an instrument
                 // the output of Asset is a time series
                 var asset = Asset(ETF.SPY);
+
+                // assets have open, high, low, and closing prices
+                // these are, of course, also time series
                 var prices = asset.Close;
 
-                // calculate simple indicators
-                // the output of an indicator is also a time series
+                // indicators can be applied to any time series
                 var ema26 = prices.EMA(26);
                 var ema12 = prices.EMA(12);
 
-                // we can easily calculate indicators on top of indicators
+                // indicators can also be applied on top of indicators
                 var macd = ema12.Sub(ema26);
                 var signal = macd.EMA(9);
 
-                // we can create custom charts with the Plotter object
+                // to create custom charts, we have the Plotter object
                 var offset = -150;
                 Plotter.SelectChart("indicators vs time", "date");
                 Plotter.SetX(SimDate);
@@ -75,7 +79,7 @@ namespace TuringTrader.Demos
             });
         }
 
-        // to create a report, we need to pick a template
+        // to render the charts, we use pre-defined templates
         public override void Report() => Plotter.OpenWith("SimpleChart");
     }
 }
