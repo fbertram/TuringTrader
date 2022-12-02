@@ -667,7 +667,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         public static TimeSeriesAsset LoadAsset(Algorithm algo, Algorithm child)
         {
-            var name = string.Format("{0}-{1:X}", algo.Name, algo.GetHashCode());
+            var name = string.Format("{0}-{1:X}", algo.Name, child.GetHashCode());
 
             // NOTE: we must put the child algorithm's result in
             //       the parent's algorithm's cache.
