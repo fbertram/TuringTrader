@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
 // Name:        Assets/Benchmarks
-// Description: Definitions for common Indices.
+// Description: Definitions for common benchmarks.
 // History:     2022xi09, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -29,6 +29,9 @@ using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2.Assets
 {
+    /// <summary>
+    /// Collection of common benchmarks.
+    /// </summary>
     public class Benchmark
     {
         /// <summary>

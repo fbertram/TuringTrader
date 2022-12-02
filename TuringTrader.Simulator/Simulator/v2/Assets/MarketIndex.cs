@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
 // Name:        Assets/Indices
-// Description: Definitions for common Indices.
+// Description: Definitions for common indices.
 // History:     2022x29, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC
@@ -26,35 +26,38 @@ namespace TuringTrader.SimulatorV2.Assets
     /// <summary>
     /// Collection of common market indices.
     /// </summary>
-    public class Index
+    public class MarketIndex
     {
         /// <summary>
         /// Dow Jones Industrial Average Index. Available since
         /// 05/26/1896, backfill truncated at 01/02/1970.
         /// </summary>
-        public const string DJI = "splice:$DJI,$DJI#";
+        public const string DJI = "splice:$DJI,csv:backfills/$DJI.csv";
 
         /// <summary>
         /// Dow Jones Industrial Average TR Index. Available since
         /// 09/30/1987, backfilled to 01/02/1970.
         /// </summary>
-        public const string DJITR = "splice:$DJITR,$DJITR#";
+        public const string DJITR = "splice:$DJITR,csv:backfills/$DJITR.csv";
 
         /// <summary>
         /// S&amp;P 500 Index. Available since 01/03/1928, backfill
         /// truncated at 01/02/1970.
         /// </summary>
-        public const string SPX = "splice:$SPX,$SPX#";
+        public const string SPX = "splice:$SPX,csv:backfills/$SPX.csv";
 
         /// <summary>
         /// S&amp;P 500 Total Return Index. Available since 01/04/1988,
         /// backfilled to 01/30/1970.
         /// </summary>
-        public const string SPXTR = "splice:$SPXTR,$SPXTR#";
+        public const string SPXTR = "splice:$SPXTR,csv:backfills/$SPXTR.csv";
+
+        // VIX
 
         // OEX
         // OEXTR
 
+        // COMP
         // NDX
         // NDXTR
 
