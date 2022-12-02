@@ -7,14 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\BooksAndPubs\Assets.cs" Link="Assets.cs" />
-    <Compile Include="..\BooksAndPubs\GlueLogic.cs" Link="GlueLogic.cs" />
-    <Compile Include="..\BooksAndPubs\Indices.cs" Link="Indices.cs" />
-    <Compile Include="..\BooksAndPubs\LazyPortfolios.cs" Link="LazyPortfolios.cs" />
-    <Compile Include="..\BooksAndPubs\Livingston_MuscularPortfolios.cs" Link="Livingston_MuscularPortfolios.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
 
