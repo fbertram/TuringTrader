@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="AvalonLibrary" Version="3.0.0" />
     <PackageReference Include="NetOffice.Excel" Version="1.7.4.11" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.1.0" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.1.2" />
   </ItemGroup>
 
   <ItemGroup>

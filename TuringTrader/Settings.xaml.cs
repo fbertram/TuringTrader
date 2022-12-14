@@ -91,12 +91,15 @@ namespace TuringTrader
 
         private void HomePathButton_Click(object sender, RoutedEventArgs e)
         {
-            FolderBrowserDialog folderDialog = new FolderBrowserDialog()
+            var folderDialog = new FolderBrowserDialog()
             {
-                Title = "Select TuringTrader Home Location"
+                Title = "Select TuringTrader Home Location",
+                //RootSpecialFolder = System.Environment.SpecialFolder.MyDocuments,
+                RootSpecialFolder = System.Environment.SpecialFolder.UserProfile,
+                //RootSpecialFolder = System.Environment.SpecialFolder.MyComputer,
             };
 
-            bool? result = folderDialog.ShowDialog();
+            var result = folderDialog.ShowDialog();
             if (result == true)
             {
                 GlobalSettings.HomePath = folderDialog.SelectedPath;
