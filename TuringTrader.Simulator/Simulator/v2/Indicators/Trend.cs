@@ -46,7 +46,9 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <returns>SMA series</returns>
         public static TimeSeriesFloat SMA(this TimeSeriesFloat series, int n)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.SMA({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
@@ -65,13 +67,12 @@ namespace TuringTrader.SimulatorV2.Indicators
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.SMA({1})", series.Name, n);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
         }
         #endregion
         #region WMA
@@ -90,7 +91,9 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <returns>EMA series</returns>
         public static TimeSeriesFloat EMA(this TimeSeriesFloat series, int n)
         {
-            List<BarType<double>> calcIndicator()
+            var name = string.Format("{0}.EMA({1})", series.Name, n);
+
+            var data = series.Algorithm.Cache(name, () =>
             {
                 var src = series.Data.Result;
                 var dst = new List<BarType<double>>();
@@ -104,13 +107,12 @@ namespace TuringTrader.SimulatorV2.Indicators
                 }
 
                 return dst;
-            }
+            });
 
-            var name = string.Format("{0}.EMA({1})", series.Name, n);
             return new TimeSeriesFloat(
                 series.Algorithm,
                 name,
-                series.Algorithm.Cache(name, calcIndicator));
+                data);
         }
         #endregion
 
