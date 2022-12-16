@@ -21,8 +21,6 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#if false
-
 using System;
 
 namespace TuringTrader.SimulatorV2
@@ -76,8 +74,6 @@ namespace TuringTrader.SimulatorV2
         public static bool operator <=(FloatWrapper a, FloatWrapper b) => a._value <= b._value;
     }
 }
-
-#endif
 
 //==============================================================================
 // end of file

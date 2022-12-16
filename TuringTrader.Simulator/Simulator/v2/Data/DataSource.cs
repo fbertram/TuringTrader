@@ -667,7 +667,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         public static TimeSeriesAsset LoadAsset(Algorithm algo, Algorithm child)
         {
-            var name = string.Format("{0}-{1:X}", algo.Name, child.GetHashCode());
+            var name = string.Format("{0}-{1:X}", child.Name, child.GetHashCode());
 
             // NOTE: we must put the child algorithm's result in
             //       the parent's algorithm's cache.
@@ -685,8 +685,8 @@ namespace TuringTrader.SimulatorV2
 
             var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType
             {
-                Ticker = algo.Name,
-                Description = algo.Name,
+                Ticker = name,
+                Description = child.Name,
             });
 
             return new TimeSeriesAsset(
