@@ -4,8 +4,8 @@
 // Description: Definitions for common benchmarks.
 // History:     2022xi09, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -21,14 +21,18 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace TuringTrader.SimulatorV2.Assets
 {
+    #region Legacy backfills from V1's glue logic
+    internal class BenchmarksV1
+    {
+        #region benchmarks
+        public static readonly string PORTF_0 = "algorithm:Benchmark_Zero";
+        public static readonly string PORTF_60_40 = "algorithm:Benchmark_60_40";
+        #endregion
+    }
+    #endregion
+
     /// <summary>
     /// Collection of common benchmarks.
     /// </summary>

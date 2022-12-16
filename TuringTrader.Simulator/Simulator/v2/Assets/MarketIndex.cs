@@ -4,8 +4,8 @@
 // Description: Definitions for common indices.
 // History:     2022x29, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -23,6 +23,36 @@
 
 namespace TuringTrader.SimulatorV2.Assets
 {
+    #region Legacy backfills from V1's glue logic
+    internal class IndicesV1
+    {
+        #region U.S. Stock Markets
+        /// <summary>
+        /// S&amp;P 500 Index
+        /// </summary>
+        public static readonly string SPX = "splice:$SPX,$SPX++";
+        /// <summary>
+        /// S&amp;P 500 Total Return Index
+        /// </summary>
+        public static readonly string SPXTR = "splice:$SPXTR,$SPXTR++";
+        // Cboe Volatility Index
+        public static readonly string VIX = "$VIX";
+        /// <summary>
+        /// Nasdaq Composite Index
+        /// </summary>
+        public static readonly string COMP = "$COMP";
+        /// <summary>
+        /// Nasdaq-100 Index
+        /// </summary>
+        public static readonly string NDX = "$NDX";
+        /// <summary>
+        /// Nasdaq-100 Total Return Index
+        /// </summary>
+        public static readonly string NDXTR = "$NDXTR";
+        #endregion
+    }
+    #endregion
+
     /// <summary>
     /// Collection of common market indices.
     /// </summary>
