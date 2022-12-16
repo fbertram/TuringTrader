@@ -53,6 +53,7 @@ namespace TuringTrader.SimulatorV2
         public readonly string Name;
         public readonly Task<List<BarType<T>>> Data;
         public readonly Task<object> Meta;
+        private double? _daysPerBar;
 
         /// <summary>
         /// Create new time series.
@@ -78,9 +79,10 @@ namespace TuringTrader.SimulatorV2
 
 #if true
             // move forward in time (coarse)
-            var daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
+            if (_daysPerBar == null) 
+                _daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
             var deltaDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
-            var deltaBars = deltaDays / daysPerBar;
+            var deltaBars = deltaDays / (double)_daysPerBar;
             if (deltaBars > 10)
                 _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
                     _CurrentIndex + (int)Math.Floor(deltaBars) - 1));
