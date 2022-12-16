@@ -507,11 +507,47 @@ namespace TuringTrader.SimulatorV2.Assets
     /// </summary>
     public class ETF
     {
-        #region stock market
+        #region stocks
+        #region U.S. stock markets
         /// <summary>
-        /// SPDR S&amp;P 500 Trust ETF. Available since February 1993.
+        /// SPDR S&amp;P 500 Trust ETF
+        /// (since Jan 1993, backfilled to Jan 1950)
         /// </summary>
         public const string SPY = AssetsV1.SPY;
+        /// <summary>
+        /// SPDR Portfolio S&P 500 Growth ETF (since Sep 2000)
+        /// </summary>
+        public const string SPYG = AssetsV1.SPYG;
+        /// <summary>
+        /// SPDR Portfolio S&P 500 Value ETF (since Sep 2000)
+        /// </summary>
+        public const string SPYV = AssetsV1.SPYV;
+        /// <summary>
+        /// SPDR S&amp;P MidCap 400 ETF
+        /// (since May 1995, backfilled to July 1991)
+        /// </summary>
+        public const string MDY = AssetsV1.MDY;
+        /// <summary>
+        /// SPDR S&amp;P 400 Mid Cap Growth ETF (since Nov 2005)
+        /// </summary>
+        public const string MDYG = AssetsV1.MDYG;
+        /// <summary>
+        /// SPDR S&amp;P 400 Mid Cap Value ETF (since Nov 2005)
+        /// </summary>
+        public const string MDYV = AssetsV1.MDYV;
+        /// <summary>
+        /// SPDR S&amp;P 600 SmallCap ETF
+        /// (since Nov 2005, backfilled to Jan 1995)
+        /// </summary>
+        public const string SLY = AssetsV1.SLY;
+        /// <summary>
+        /// SPDR S&amp;P 600 Small Cap Growth ETF (since Sep 2000)
+        /// </summary>
+        public const string SLYG = AssetsV1.SLYG;
+        /// <summary>
+        /// SPDR S&amp;P 600 Small Cap Value ETF (since Sep 2000)
+        /// </summary>
+        public const string SLYV = AssetsV1.SLYV;
         /// <summary>
         /// Invesco QQQ Trust Series 1 ETF. Available since March 1999.
         /// </summary>
@@ -564,6 +600,66 @@ namespace TuringTrader.SimulatorV2.Assets
         /// Vanguard Total World Stock Index ETF. Available since July 2008.
         /// </summary>
         public const string VT = "VT";
+        #endregion
+        #region S&P sectors
+        /// <summary>
+        /// Materials Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLB = AssetsV1.XLB;
+        /// <summary>
+        /// Communication Services Select Sector SPDR ETF
+        /// (since Jun 2018, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLC = AssetsV1.XLC;
+        /// <summary>
+        /// Engergy Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLE = AssetsV1.XLE;
+        /// <summary>
+        /// Financial Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLF = AssetsV1.XLF;
+        /// <summary>
+        /// Industrial Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLI = AssetsV1.XLI;
+        /// <summary>
+        /// Technology Select Sector SPDR ETF
+        /// </summary>
+        /// (since Dec 1998, backfilled to Jan 1990)
+        public const string XLK = AssetsV1.XLK;
+        /// <summary>
+        /// Consumer Staples Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLP = AssetsV1.XLP;
+        /// <summary>
+        /// Real Estate Select Sector SPDR ETF
+        /// (since Oct 2015, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLRE = AssetsV1.XLRE;
+        /// <summary>
+        /// Utilities Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLU = AssetsV1.XLU;
+        /// <summary>
+        /// Health Care Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLV = AssetsV1.XLV;
+        /// <summary>
+        /// Consumer Discretionary Select Sector SPDR ETF
+        /// (since Dec 1998, backfilled to Jan 1990)
+        /// </summary>
+        public const string XLY = AssetsV1.XLY;
+        #endregion
+        #region non-US and others
+        #endregion
         #endregion
         #region bonds
         #region broad markets
