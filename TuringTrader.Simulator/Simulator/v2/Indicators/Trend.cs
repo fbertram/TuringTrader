@@ -4,8 +4,8 @@
 // Description: Trend indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -48,31 +49,30 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.SMA({1})", series.Name, n);
 
-            var data = series.Algorithm.Cache(name, () =>
-            {
-                var src = series.Data.Result;
-                var dst = new List<BarType<double>>();
-
-                var window = new Queue<double>();
-                for (var i = 0; i < n; i++)
-                    window.Enqueue(src[0].Value);
-
-                for (int idx = 0; idx < src.Count; idx++)
-                {
-                    window.Enqueue(src[idx].Value);
-                    window.Dequeue();
-
-                    var sma = window.Average(w => w);
-                    dst.Add(new BarType<double>(src[idx].Date, sma));
-                }
-
-                return dst;
-            });
-
-            return new TimeSeriesFloat(
-                series.Algorithm,
+            return series.Algorithm.Cache(
                 name,
-                data);
+                () => new TimeSeriesFloat(
+                    series.Algorithm, name,
+                    Task.Run(() =>
+                    {
+                        var src = series.Data.Result;
+                        var dst = new List<BarType<double>>();
+
+                        var window = new Queue<double>();
+                        for (var i = 0; i < n; i++)
+                            window.Enqueue(src[0].Value);
+
+                        for (int idx = 0; idx < src.Count; idx++)
+                        {
+                            window.Enqueue(src[idx].Value);
+                            window.Dequeue();
+
+                            var sma = window.Average(w => w);
+                            dst.Add(new BarType<double>(src[idx].Date, sma));
+                        }
+
+                        return dst;
+                    })));
         }
         #endregion
         #region WMA
@@ -93,26 +93,25 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.EMA({1})", series.Name, n);
 
-            var data = series.Algorithm.Cache(name, () =>
-            {
-                var src = series.Data.Result;
-                var dst = new List<BarType<double>>();
-                var ema = src[0].Value;
-                var alpha = 2.0 / (1.0 + n);
-
-                foreach (var it in src)
-                {
-                    ema += alpha * (it.Value - ema);
-                    dst.Add(new BarType<double>(it.Date, ema));
-                }
-
-                return dst;
-            });
-
-            return new TimeSeriesFloat(
-                series.Algorithm,
+            return series.Algorithm.Cache(
                 name,
-                data);
+                () => new TimeSeriesFloat(
+                    series.Algorithm, name,
+                    Task.Run(() =>
+                    {
+                        var src = series.Data.Result;
+                        var dst = new List<BarType<double>>();
+                        var ema = src[0].Value;
+                        var alpha = 2.0 / (1.0 + n);
+
+                        foreach (var it in src)
+                        {
+                            ema += alpha * (it.Value - ema);
+                            dst.Add(new BarType<double>(it.Date, ema));
+                        }
+
+                        return dst;
+                    })));
         }
         #endregion
 

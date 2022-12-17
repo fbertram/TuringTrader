@@ -4,7 +4,8 @@
 // Description: Unit test for cache.
 // History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -49,7 +50,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 var cache1 = Cache(cacheId, toDo);
                 var cache2 = Cache(cacheId, toDo);
 
-                TestResult = cache2.Result;
+                TestResult = cache2;
             }
         }
 

@@ -4,8 +4,8 @@
 // Description: Time series class.
 // History:     2022x26, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -79,7 +79,7 @@ namespace TuringTrader.SimulatorV2
 
 #if true
             // move forward in time (coarse)
-            if (_daysPerBar == null) 
+            if (_daysPerBar == null)
                 _daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
             var deltaDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
             var deltaBars = deltaDays / (double)_daysPerBar;
@@ -223,22 +223,22 @@ namespace TuringTrader.SimulatorV2
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
-            List<BarType<double>> extractAsset()
-            {
-                var ohlcv = Data.Result; // wait until async result is available
-                var data = new List<BarType<double>>();
+            var name = Name + "." + fieldName;
 
-                foreach (var it in ohlcv)
-                    data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
+            return Algorithm.Cache(
+                name,
+                () => new TimeSeriesFloat(
+                    Algorithm, name,
+                    Task.Run(() =>
+                    {
+                        var ohlcv = Data.Result;
+                        var data = new List<BarType<double>>();
 
-                return data;
-            }
+                        foreach (var it in ohlcv)
+                            data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
 
-            var cacheId = Name + "." + fieldName;
-            return new TimeSeriesFloat(
-                Algorithm,
-                cacheId,
-                Algorithm.Cache(cacheId, extractAsset));
+                        return data;
+                    })));
         }
 
         /// <summary>

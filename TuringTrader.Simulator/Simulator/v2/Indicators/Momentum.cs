@@ -4,8 +4,8 @@
 // Description: Momentum indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -90,82 +91,83 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.LinRegression({1})", series.Name, n);
 
-            var regr = series.Algorithm.Cache(name, () =>
-            {
-                var src = series.Data.Result;
-                var slope = new List<BarType<double>>();
-                var intercept = new List<BarType<double>>();
-                var r2 = new List<BarType<double>>();
-
-                var window = new Queue<double>();
-                for (var i = 0; i < n; i++)
-                    window.Enqueue(src[0].Value);
-
-                for (int idx = 0; idx < src.Count; idx++)
+            var regr = series.Algorithm.Cache(
+                name + "-private",
+                () => Task.Run(() =>
                 {
-                    window.Enqueue(src[idx].Value);
-                    window.Dequeue();
+                    var src = series.Data.Result;
+                    var slope = new List<BarType<double>>();
+                    var intercept = new List<BarType<double>>();
+                    var r2 = new List<BarType<double>>();
 
-                    // simple linear regression
-                    // https://en.wikipedia.org/wiki/Simple_linear_regression
-                    // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
-                    // a = avg(y) - b * avg(x)
+                    var window = new Queue<double>();
+                    for (var i = 0; i < n; i++)
+                        window.Enqueue(src[0].Value);
 
-                    double avgX = Enumerable.Range(-n + 1, n)
-                        .Average(x => x);
-                    double avgY = Enumerable.Range(-n + 1, n)
-                        .Average(x => src[Math.Max(0, idx + x)].Value);
-                    double sumXx = Enumerable.Range(-n + 1, n)
-                        .Sum(x => Math.Pow(x - avgX, 2));
-                    double sumXy = Enumerable.Range(-n + 1, n)
-                        .Sum(x => (x - avgX) * (src[Math.Max(0, idx + x)].Value - avgY));
-                    double b = sumXy / sumXx;
-                    double a = avgY - b * avgX;
+                    for (int idx = 0; idx < src.Count; idx++)
+                    {
+                        window.Enqueue(src[idx].Value);
+                        window.Dequeue();
 
-                    // coefficient of determination
-                    // https://en.wikipedia.org/wiki/Coefficient_of_determination
-                    // f = a + b * x
-                    // SStot = sum((y - avg(y))^2)
-                    // SSreg = sum((f - avg(y))^2)
-                    // SSres = sum((y - f)^2)
-                    // R2 = 1 - SSres / SStot
-                    //    = SSreg / SStot
+                        // simple linear regression
+                        // https://en.wikipedia.org/wiki/Simple_linear_regression
+                        // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
+                        // a = avg(y) - b * avg(x)
 
-                    double totalSumOfSquares = Enumerable.Range(-n + 1, n)
-                        .Sum(x => Math.Pow(src[Math.Max(0, idx + x)].Value - avgY, 2));
-                    double regressionSumOfSquares = Enumerable.Range(-n + 1, n)
-                        .Sum(x => Math.Pow(a + b * x - avgY, 2));
-                    //double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
-                    //    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
+                        double avgX = Enumerable.Range(-n + 1, n)
+                            .Average(x => x);
+                        double avgY = Enumerable.Range(-n + 1, n)
+                            .Average(x => src[Math.Max(0, idx + x)].Value);
+                        double sumXx = Enumerable.Range(-n + 1, n)
+                            .Sum(x => Math.Pow(x - avgX, 2));
+                        double sumXy = Enumerable.Range(-n + 1, n)
+                            .Sum(x => (x - avgX) * (src[Math.Max(0, idx + x)].Value - avgY));
+                        double b = sumXy / sumXx;
+                        double a = avgY - b * avgX;
 
-                    // NOTE: this is debatable. we are returning r2 = 0.0, 
-                    //       when it is actually NaN
-                    double rr = totalSumOfSquares != 0.0
-                        //? 1.0 - residualSumOfSquares / totalSumOfSquares
-                        ? regressionSumOfSquares / totalSumOfSquares
-                        : 0.0;
+                        // coefficient of determination
+                        // https://en.wikipedia.org/wiki/Coefficient_of_determination
+                        // f = a + b * x
+                        // SStot = sum((y - avg(y))^2)
+                        // SSreg = sum((f - avg(y))^2)
+                        // SSres = sum((y - f)^2)
+                        // R2 = 1 - SSres / SStot
+                        //    = SSreg / SStot
 
-                    slope.Add(new BarType<double>(src[idx].Date, b));
-                    intercept.Add(new BarType<double>(src[idx].Date, a));
-                    r2.Add(new BarType<double>(src[idx].Date, rr));
-                }
+                        double totalSumOfSquares = Enumerable.Range(-n + 1, n)
+                            .Sum(x => Math.Pow(src[Math.Max(0, idx + x)].Value - avgY, 2));
+                        double regressionSumOfSquares = Enumerable.Range(-n + 1, n)
+                            .Sum(x => Math.Pow(a + b * x - avgY, 2));
+                        //double residualSumOfSquares = Enumerable.Range(-_n + 1, _n)
+                        //    .Sum(x => Math.Pow(a + b * x - _series[-x], 2));
 
-                return Tuple.Create(slope, intercept, r2);
-            });
+                        // NOTE: this is debatable. we are returning r2 = 0.0, 
+                        //       when it is actually NaN
+                        double rr = totalSumOfSquares != 0.0
+                            //? 1.0 - residualSumOfSquares / totalSumOfSquares
+                            ? regressionSumOfSquares / totalSumOfSquares
+                            : 0.0;
 
-            return new RegressionT(
-                new TimeSeriesFloat(
-                    series.Algorithm,
-                    name,
-                    series.Algorithm.Cache(name + ".Slope", () => { var r = regr.Result; return r.Item1; })),
-                new TimeSeriesFloat(
-                    series.Algorithm,
-                    name,
-                    series.Algorithm.Cache(name + ".Intercept", () => { var r = regr.Result; return r.Item2; })),
-                new TimeSeriesFloat(
-                    series.Algorithm,
-                    name,
-                    series.Algorithm.Cache(name + ".R2", () => { var r = regr.Result; return r.Item3; })));
+                        slope.Add(new BarType<double>(src[idx].Date, b));
+                        intercept.Add(new BarType<double>(src[idx].Date, a));
+                        r2.Add(new BarType<double>(src[idx].Date, rr));
+                    }
+
+                    return Tuple.Create(slope, intercept, r2);
+                }));
+
+            return series.Algorithm.Cache(
+                name,
+                () => new RegressionT(
+                    new TimeSeriesFloat(
+                        series.Algorithm, name + ".Slope",
+                        Task.Run(() => { var r = regr.Result; return r.Item1; })),
+                    new TimeSeriesFloat(
+                        series.Algorithm, name + ".Intercept",
+                        Task.Run(() => { var r = regr.Result; return r.Item2; })),
+                    new TimeSeriesFloat(
+                        series.Algorithm, name + ".R2",
+                        Task.Run(() => { var r = regr.Result; return r.Item3; }))));
         }
         #endregion
         #region LogRegression

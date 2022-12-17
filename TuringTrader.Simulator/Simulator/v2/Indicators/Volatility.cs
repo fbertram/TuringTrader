@@ -4,8 +4,8 @@
 // Description: Volatility indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -23,7 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using TuringTrader.SimulatorV2;
+using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -41,28 +41,27 @@ namespace TuringTrader.SimulatorV2.Indicators
         #region TrueRange
         public static TimeSeriesFloat TrueRange(this TimeSeriesAsset series)
         {
-            List<BarType<double>> calcIndicator()
-            {
-                var src = series.Data.Result;
-                var dst = new List<BarType<double>>();
-
-                for (int idx = 0; idx < src.Count; idx++)
-                {
-                    var idxPrev = Math.Max(0, idx - 1);
-                    var high = Math.Max(src[idxPrev].Value.Close, src[idx].Value.High);
-                    var low = Math.Min(src[idxPrev].Value.Close, src[idx].Value.Low);
-                    dst.Add(new BarType<double>(src[idx].Date, high - low));
-                }
-
-                return dst;
-            }
-
             var name = string.Format("{0}.TrueRange", series.Name);
-            return new TimeSeriesFloat(
-                series.Algorithm,
-                name,
-                series.Algorithm.Cache(name, calcIndicator));
 
+            return series.Algorithm.Cache(
+                name,
+                () => new TimeSeriesFloat(
+                    series.Algorithm, name,
+                    Task.Run(() =>
+                    {
+                        var src = series.Data.Result;
+                        var dst = new List<BarType<double>>();
+
+                        for (int idx = 0; idx < src.Count; idx++)
+                        {
+                            var idxPrev = Math.Max(0, idx - 1);
+                            var high = Math.Max(src[idxPrev].Value.Close, src[idx].Value.High);
+                            var low = Math.Min(src[idxPrev].Value.Close, src[idx].Value.Low);
+                            dst.Add(new BarType<double>(src[idx].Date, high - low));
+                        }
+
+                        return dst;
+                    })));
         }
         #endregion
         #region AverageTrueRange

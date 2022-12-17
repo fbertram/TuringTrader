@@ -649,14 +649,12 @@ namespace TuringTrader.SimulatorV2
         /// <exception cref="Exception"></exception>
         public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
         {
-            var data = algo.Cache(nickname, () => _loadData(algo, nickname));
-            var meta = algo.Cache(nickname + ".Meta", () => (object)_loadMeta(algo, nickname));
-
-            return new TimeSeriesAsset(
-                algo,
+            return algo.Cache(
                 nickname,
-                data,
-                meta);
+                () => new TimeSeriesAsset(
+                    algo, nickname,
+                    Task.Run(() => _loadData(algo, nickname)),
+                    Task.Run(() => (object)_loadMeta(algo, nickname))));
         }
 
         /// <summary>
@@ -669,31 +667,25 @@ namespace TuringTrader.SimulatorV2
         {
             var name = string.Format("{0}-{1:X}", child.Name, child.GetHashCode());
 
-            // NOTE: we must put the child algorithm's result in
-            //       the parent's algorithm's cache.
-            var data = algo.Cache(name, () =>
-            {
-                //----- run child algorithm
-                var tradingDays = algo.TradingCalendar.TradingDays;
-                child.StartDate = tradingDays.First();
-                child.EndDate = tradingDays.Last();
-
-                child.Run(); // => child's equity curve in child.Result
-
-                return _resampleToTradingCalendar(algo, child.Result);
-            });
-
-            var meta = Task.FromResult((object)new TimeSeriesAsset.MetaType
-            {
-                Ticker = name,
-                Description = child.Name,
-            });
-
-            return new TimeSeriesAsset(
-                algo,
+            return algo.Cache(
                 name,
-                data,
-                meta);
+                () => new TimeSeriesAsset(
+                    algo, name,
+                    Task.Run(() =>
+                    {
+                        var tradingDays = algo.TradingCalendar.TradingDays;
+                        child.StartDate = tradingDays.First();
+                        child.EndDate = tradingDays.Last();
+
+                        child.Run();
+
+                        return _resampleToTradingCalendar(algo, child.Result);
+                    }),
+                    Task.FromResult((object)new TimeSeriesAsset.MetaType
+                    {
+                        Ticker = name,
+                        Description = child.Name,
+                    })));
         }
 
         /// <summary>

@@ -4,8 +4,8 @@
 // Description: Algorithm base class/ simulator core.
 // History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TuringTrader.Optimizer;
 
 namespace TuringTrader.SimulatorV2
@@ -254,19 +253,19 @@ namespace TuringTrader.SimulatorV2
         #region cache functionality
         private Dictionary<string, object> _cache = new Dictionary<string, object>();
         /// <summary>
-        /// Retrieve object from cache, or calculate in new task.
+        /// Retrieve object from cache, or calculate result.
         /// </summary>
         /// <param name="cacheId">cache id</param>
         /// <param name="missFun">retrieval function for cache miss</param>
         /// <returns>cached object</returns>
-        public Task<T> Cache<T>(string cacheId, Func<T> missFun)
+        public T Cache<T>(string cacheId, Func<T> missFun)
         {
             lock (_cache)
             {
                 if (!_cache.ContainsKey(cacheId))
-                    _cache[cacheId] = Task.Run(() => missFun());
+                    _cache[cacheId] = missFun();
 
-                return (Task<T>)_cache[cacheId];
+                return (T)_cache[cacheId];
             }
         }
         #endregion
