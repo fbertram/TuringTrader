@@ -244,31 +244,49 @@ namespace TuringTrader.SimulatorV2
                     success = NDU.Api.GetWatchlist(_watchlistNames[universe], out _watchlist);
 
                     // get all securities on that watchlist
-                    success = _watchlist.GetSecurityList(out _securityList);
+                    var allSecurities = (NDW.SecurityList)null;
+                    success = _watchlist.GetSecurityList(out allSecurities);
 
                     // get constituency time series
-                    foreach (var security in _securityList)
+                    _securityList = new NDW.SecurityList();
+                    foreach (var security in allSecurities)
                     {
-                        List<NDU.RecIndicator> timeSeries;
+                        var rawTimeSeries = (List<NDU.RecIndicator>)null;
                         success = NDU.Api.GetIndexConstituentTimeSeries(
-                            security.AssetID, out timeSeries, _universe,
+                            security.AssetID, out rawTimeSeries, _universe,
                             TimeZoneInfo.ConvertTime((DateTime)_algorithm.StartDate - TimeSpan.FromDays(5), _algorithm.TradingCalendar.ExchangeTimeZone).Date,
                             TimeZoneInfo.ConvertTime((DateTime)_algorithm.EndDate, _algorithm.TradingCalendar.ExchangeTimeZone).Date,
                             NDU.PaddingType.AllCalendarDays);
 
-                        // NOTE: constituency time series may apruptly end with a '1'.
-                        //       When we evaluate this series later, this leads to the
-                        //       asset being stuck. To prevent this, we add a '0' at
-                        //       the end of the series.
-                        timeSeries.Add(new NDU.RecIndicator
+                        // NOTE: the constituency time series occupy a lot of memory.
+                        //       we compress the data here by removing unnecessary
+                        //       series and time stamps.
+                        if (rawTimeSeries.Count > 0)
                         {
-                            Date = timeSeries.Count > 0
-                                ? timeSeries.Last().Date + TimeSpan.FromDays(1)
-                                : (DateTime)_algorithm.StartDate - TimeSpan.FromDays(5),
-                            value = 0
-                        });
+                            // NOTE: constituency time series may apruptly end with a '1'.
+                            //       When we evaluate this series later, this leads to the
+                            //       asset being stuck. To prevent this, we add a '0' at
+                            //       the end of the series.
+                            rawTimeSeries.Add(new NDU.RecIndicator
+                            {
+                                Date = rawTimeSeries.Last().Date + TimeSpan.FromDays(1),
+                                value = 0,
+                            });
 
-                        _constituency[security.AssetID] = timeSeries;
+                            var prevValue = (double?)47.11;
+                            var timeSeries = new List<NDU.RecIndicator>();
+                            foreach (var t in rawTimeSeries)
+                            {
+                                if (t.value != prevValue)
+                                {
+                                    prevValue = t.value;
+                                    timeSeries.Add(t);
+                                }
+                            }
+
+                            _constituency[security.AssetID] = timeSeries;
+                            _securityList.Add(security);
+                        }
                     }
                 }
             }
