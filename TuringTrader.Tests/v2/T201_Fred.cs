@@ -24,6 +24,7 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Linq;
 #endregion
 
@@ -48,28 +49,36 @@ namespace TuringTrader.SimulatorV2.Tests
         [TestMethod]
         public void Test_DataRetrieval()
         {
-            var algo = new DataRetrieval();
-            algo.Run();
-            var result = algo.TestResult;
+            var cachePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "TuringTrader", "Cache", "EFFR");
+            Directory.Delete(cachePath, true);
 
-            var description = result.Description;
-            Assert.IsTrue(description.ToLower().Contains("effective federal funds rate"));
+            for (int i = 0; i < 2; i++)
+            {
+                var algo = new DataRetrieval();
+                algo.Run();
+                var result = algo.TestResult;
 
-            var firstDate = result.Data.Result.First().Date;
-            Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
+                var description = result.Description;
+                Assert.IsTrue(description.ToLower().Contains("effective federal funds rate"));
 
-            var lastDate = result.Data.Result.Last().Date;
-            Assert.IsTrue(lastDate == DateTime.Parse("2022-11-25T16:00-5:00"));
+                var firstDate = result.Data.Result.First().Date;
+                Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
 
-            var barCount = result.Data.Result.Count();
-            Assert.IsTrue(barCount == 227);
+                var lastDate = result.Data.Result.Last().Date;
+                Assert.IsTrue(lastDate == DateTime.Parse("2022-11-25T16:00-5:00"));
 
-            var firstOpen = result.Data.Result.First().Value.Open;
-            var lastClose = result.Data.Result.Last().Value.Close;
-            var highestHigh = result.Data.Result.Max(b => b.Value.High);
-            var lowestLow = result.Data.Result.Min(b => b.Value.Low);
-            Assert.IsTrue(Math.Abs(lastClose / firstOpen - 3.83 / 0.08) < 1e-3);
-            Assert.IsTrue(Math.Abs(highestHigh / lowestLow - 3.83 / 0.08) < 1e-3);
+                var barCount = result.Data.Result.Count();
+                Assert.IsTrue(barCount == 227);
+
+                var firstOpen = result.Data.Result.First().Value.Open;
+                var lastClose = result.Data.Result.Last().Value.Close;
+                var highestHigh = result.Data.Result.Max(b => b.Value.High);
+                var lowestLow = result.Data.Result.Min(b => b.Value.Low);
+                Assert.IsTrue(Math.Abs(lastClose / firstOpen - 3.83 / 0.08) < 1e-3);
+                Assert.IsTrue(Math.Abs(highestHigh / lowestLow - 3.83 / 0.08) < 1e-3);
+            }
         }
     }
 }
