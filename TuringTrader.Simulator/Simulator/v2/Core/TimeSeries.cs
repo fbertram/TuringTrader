@@ -53,7 +53,7 @@ namespace TuringTrader.SimulatorV2
         public readonly string Name;
         public readonly Task<List<BarType<T>>> Data;
         public readonly Task<object> Meta;
-        private double? _daysPerBar;
+        private bool _firstLookup = true;
 
         /// <summary>
         /// Create new time series.
@@ -74,31 +74,51 @@ namespace TuringTrader.SimulatorV2
         private int _CurrentIndex = 0;
         private int GetIndex(DateTime date = default)
         {
+            // NOTE: this routine is time critical as it is called
+            //       many thousand times thoughout a typical backtest.
+            //       there are a few cases to consider:
+            //       - repeated calls. This should be the typical
+            //         case and will, for most strategies, require
+            //         only one (or a few) increments forward.
+            //       - first call for a new instrument. This may
+            //         happen far into a backtest, requiring an optimized
+            //         jump forward.
+            //       - lookup by date. This case is different, as it is
+            //         independent from the simulator's state. Consequently,
+            //         we should not mess with the current index position.
+
             var data = Data.Result;
-            var lookupDate = date != default ? date : Algorithm.SimDate;
+            var lookupDate = date == default ? Algorithm.SimDate : date;
 
-#if true
-            // move forward in time (coarse)
-            if (_daysPerBar == null)
-                _daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
-            var deltaDays = (int)Math.Floor((lookupDate - data[_CurrentIndex].Date).TotalDays);
-            var deltaBars = deltaDays / (double)_daysPerBar;
-            if (deltaBars > 10)
-                _CurrentIndex = Math.Max(0, Math.Min(data.Count - 1,
-                    _CurrentIndex + (int)Math.Floor(deltaBars) - 1));
-#endif
+            int index;
+            if (date == default && !_firstLookup)
+            {
+                // simulator lookup
+                index = _CurrentIndex;
+            }
+            else
+            {
+                // initial jump forward or direct date lookup
+                var daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
+                index = (int)Math.Floor(
+                    Math.Max(0, Math.Min(data.Count - 1,
+                        (date - data.First().Date).TotalDays * daysPerBar)));
 
-            // move forward in time (incrementally)
-            while (_CurrentIndex < data.Count - 1 && data[_CurrentIndex + 1].Date <= lookupDate)
-                _CurrentIndex++;
+                // coarse jump might have been too far
+                while (index > 0 && data[index].Date > lookupDate)
+                    index--;
 
-            // move back in time (incrementally)
-            // this may be required due to the coarse forward jump
-            while (_CurrentIndex > 0 && data[_CurrentIndex].Date > lookupDate)
-                _CurrentIndex--;
+                _firstLookup = false;
+            }
 
-            return _CurrentIndex;
+            // advance time forward
+            while (index < data.Count - 1 && data[index + 1].Date <= lookupDate)
+                index++;
 
+            if (date == default)
+                _CurrentIndex = index;
+
+            return index;
         }
 
         /// <summary>

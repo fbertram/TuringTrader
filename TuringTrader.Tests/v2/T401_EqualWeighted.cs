@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T400_MaCross
-// Description: Unit test for simple MA-cross strategy.
-// History:     2022xi30, FUB, created
+// Name:        T401_EqualWeighted
+// Description: Strategy test for equal-weighted index.
+// History:     2022xii18, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
@@ -24,60 +24,56 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T400_MaCross
+    public class T401_EqualWeighted
     {
         private class Testbed : Algorithm
         {
+            public List<DateTime> TestResult;
             public override void Run()
             {
-                StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
+                StartDate = DateTime.Parse("1990-01-01T16:00-05:00");
                 EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
-                WarmupPeriod = TimeSpan.FromDays(365);
+                WarmupPeriod = TimeSpan.FromDays(0);
 
                 SimLoop(() =>
                 {
-                    var asset = Asset("$SPX");
-                    var weight = asset.Close.EMA(50)[0] > asset.Close.EMA(200)[0] ? 1.0 : 0.0;
+                    var constituents = Universe("$OEX");
 
-                    if (Math.Abs(asset.Position - weight) > 0.05)
-                        asset.Allocate(weight, OrderType.openNextBar);
+                    var assets = constituents
+                        .Concat(Positions.Keys)
+                        .ToHashSet();
+
+                    //if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
+                    {
+                        foreach (var asset in assets)
+                        {
+                            Asset(asset).Allocate(
+                                constituents.Contains(asset) ? 1.0 / constituents.Count : 0.0,
+                                OrderType.closeThisBar);
+                        }
+                    }
                 });
-
             }
         }
 
         [TestMethod]
-        public void Test_Strategy()
+        public void Test_Speed()
         {
             var algo = new Testbed();
+
+            var start = DateTime.Now;
             algo.Run();
-            var result = algo.Result;
-            var account = algo.Account;
+            var end = DateTime.Now;
 
-            var firstDate = result.First().Date;
-            Assert.IsTrue(firstDate == DateTime.Parse("2007-01-03T16:00-5:00"));
-
-            var lastDate = result.Last().Date;
-            Assert.IsTrue(lastDate == DateTime.Parse("2021-12-31T16:00-5:00"));
-
-            var barCount = result.Count();
-            Assert.IsTrue(barCount == 3777);
-
-            var cagr = account.AnnualizedReturn;
-            Assert.IsTrue(Math.Abs(cagr - 0.062978353632788586) < 1e-5);
-
-            var mdd = account.MaxDrawdown;
-            Assert.IsTrue(Math.Abs(mdd - 0.29532656508770572) < 1e-5);
-
-            var trades = account.TradeLog.Count;
-            Assert.IsTrue(trades == 19);
+            Assert.IsTrue(Math.Abs(algo.NetAssetValue - 38957.689261914849) < 1e-3);
+            Assert.IsTrue((end - start).TotalSeconds < 41.0); // ~37s Surface Pro 8, i5-1135G7 @ 2.40GHz
         }
     }
 }
