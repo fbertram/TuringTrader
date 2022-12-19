@@ -251,7 +251,7 @@ namespace TuringTrader.SimulatorV2
 
         #endregion
         #region cache functionality
-        private Dictionary<string, object> _cache = new Dictionary<string, object>();
+        private Cache _cache = new Cache();
         /// <summary>
         /// Retrieve object from cache, or calculate result.
         /// </summary>
@@ -260,13 +260,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns>cached object</returns>
         public T Cache<T>(string cacheId, Func<T> missFun)
         {
-            lock (_cache)
-            {
-                if (!_cache.ContainsKey(cacheId))
-                    _cache[cacheId] = missFun();
-
-                return (T)_cache[cacheId];
-            }
+            return _cache.Fetch(cacheId, missFun);
         }
         #endregion
         #region assets & universes
