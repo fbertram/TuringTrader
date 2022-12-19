@@ -171,6 +171,12 @@ namespace TuringTrader.SimulatorV2
                     var currentAlloc = currentShares * price / nav;
                     var targetAlloc = Math.Abs(order.TargetAllocation) >= MinPosition ? order.TargetAllocation : 0.0;
 
+#if false
+                    // TODO: determine if this is helpful
+                    if (Math.Abs(targetAlloc - currentAlloc) < MinPosition && targetAlloc != 0.0)
+                        continue;
+#endif
+
                     if (currentAlloc == 0.0 && targetAlloc == 0.0)
                         continue;
 
