@@ -7,7 +7,8 @@
 // History:     2018xii14, FUB, created
 //              2022x31, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
+// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 

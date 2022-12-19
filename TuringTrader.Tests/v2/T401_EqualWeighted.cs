@@ -41,23 +41,20 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("1990-01-01T16:00-05:00");
                 EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                Account.Friction = 0.0;
 
                 SimLoop(() =>
                 {
                     var constituents = Universe("$OEX");
-
                     var assets = constituents
                         .Concat(Positions.Keys)
                         .ToHashSet();
 
-                    //if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
+                    foreach (var asset in assets)
                     {
-                        foreach (var asset in assets)
-                        {
-                            Asset(asset).Allocate(
-                                constituents.Contains(asset) ? 1.0 / constituents.Count : 0.0,
-                                OrderType.closeThisBar);
-                        }
+                        Asset(asset).Allocate(
+                            constituents.Contains(asset) ? 1.0 / constituents.Count : 0.0,
+                            OrderType.closeThisBar);
                     }
                 });
             }
@@ -72,7 +69,27 @@ namespace TuringTrader.SimulatorV2.Tests
             algo.Run();
             var end = DateTime.Now;
 
-            Assert.IsTrue(Math.Abs(algo.NetAssetValue - 38957.689261914849) < 1e-3);
+            var result = algo.Result;
+            var account = algo.Account;
+
+            var firstDate = result.First().Date;
+            Assert.IsTrue(firstDate == DateTime.Parse("1990-01-02T16:00-5:00"));
+
+            var lastDate = result.Last().Date;
+            Assert.IsTrue(lastDate == DateTime.Parse("2021-12-31T16:00-5:00"));
+
+            var barCount = result.Count();
+            Assert.IsTrue(barCount == 8064);
+
+            var cagr = account.AnnualizedReturn;
+            Assert.IsTrue(Math.Abs(cagr - 0.12298366239190828) < 1e-5);
+
+            var mdd = account.MaxDrawdown;
+            Assert.IsTrue(Math.Abs(mdd - 0.56697767504083529) < 1e-5);
+
+            var trades = account.TradeLog.Count;
+            Assert.IsTrue(trades == 809228);
+
             Assert.IsTrue((end - start).TotalSeconds < 41.0); // ~37s Surface Pro 8, i5-1135G7 @ 2.40GHz
         }
     }

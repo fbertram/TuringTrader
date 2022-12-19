@@ -4,7 +4,7 @@
 // Description: Time series class.
 // History:     2022x26, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
