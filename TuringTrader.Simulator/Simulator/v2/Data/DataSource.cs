@@ -21,6 +21,7 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// ENABLE_xxx: if defined, enable loading from the respective data feeds.
 #define ENABLE_NORGATE
 #define ENABLE_TIINGO
 #define ENABLE_FRED
@@ -650,12 +651,22 @@ namespace TuringTrader.SimulatorV2
         /// <exception cref="Exception"></exception>
         public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
         {
-            return algo.Cache(
+            return algo.ObjectCache.Fetch(
                 nickname,
-                () => new TimeSeriesAsset(
-                    algo, nickname,
-                    Task.Run(() => _loadData(algo, nickname)),
-                    Task.Run(() => (object)_loadMeta(algo, nickname))));
+                () =>
+                {
+                    var data = algo.DataCache.Fetch(
+                        nickname,
+                        () => Task.Run(() => _loadData(algo, nickname)));
+
+                    var meta = algo.DataCache.Fetch(
+                        nickname + "-meta",
+                        () => Task.Run(() => (object)_loadMeta(algo, nickname)));
+
+                    return new TimeSeriesAsset(
+                        algo, nickname,
+                        data, meta);
+                });
         }
 
         /// <summary>
@@ -668,25 +679,35 @@ namespace TuringTrader.SimulatorV2
         {
             var name = string.Format("{0}-{1:X}", child.Name, child.GetHashCode());
 
-            return algo.Cache(
+            return algo.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesAsset(
-                    algo, name,
-                    Task.Run(() =>
-                    {
-                        var tradingDays = algo.TradingCalendar.TradingDays;
-                        child.StartDate = tradingDays.First();
-                        child.EndDate = tradingDays.Last();
+                () =>
+                {
+                    var data = algo.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var tradingDays = algo.TradingCalendar.TradingDays;
+                            child.StartDate = tradingDays.First();
+                            child.EndDate = tradingDays.Last();
 
-                        child.Run();
+                            child.Run();
 
-                        return _resampleToTradingCalendar(algo, child.Result);
-                    }),
-                    Task.FromResult((object)new TimeSeriesAsset.MetaType
-                    {
-                        Ticker = name,
-                        Description = child.Name,
-                    })));
+                            return _resampleToTradingCalendar(algo, child.Result);
+                        }));
+
+                    var meta = algo.DataCache.Fetch(
+                        name + "-meta",
+                        () => Task.FromResult((object)new TimeSeriesAsset.MetaType
+                        {
+                            Ticker = name,
+                            Description = child.Name,
+                        }));
+
+                    return new TimeSeriesAsset(
+                        algo, name,
+                        data, meta);
+                });
         }
 
         /// <summary>

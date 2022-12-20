@@ -36,7 +36,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Return algorithm's friendly name.
         /// </summary>
-        public virtual string Name => this.GetType().Name;
+        public virtual string Name => GetType().Name;
 
         #region instantiation
         /// <summary>
@@ -191,8 +191,10 @@ namespace TuringTrader.SimulatorV2
                     NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
                     IsLastBar = NextSimDate > EndDate;
 
-                    var ohlcv = innerBarFun();
-                    bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
+                    var ohlcv = innerBarFun(); // execute user logic
+
+                    if (!IsOptimizing)
+                        bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
                     IsFirstBar = false;
                 }
             }
@@ -251,17 +253,8 @@ namespace TuringTrader.SimulatorV2
 
         #endregion
         #region cache functionality
-        private Cache _cache = new Cache();
-        /// <summary>
-        /// Retrieve object from cache, or calculate result.
-        /// </summary>
-        /// <param name="cacheId">cache id</param>
-        /// <param name="missFun">retrieval function for cache miss</param>
-        /// <returns>cached object</returns>
-        public T Cache<T>(string cacheId, Func<T> missFun)
-        {
-            return _cache.Fetch(cacheId, missFun);
-        }
+        public ICache ObjectCache = new Cache();
+        public ICache DataCache = new DummyCache();
         #endregion
         #region assets & universes
         /// <summary>

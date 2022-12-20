@@ -75,27 +75,32 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Monthly({1})", series.Name, offset);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var clock = series.Clock((current, next) => current.Month != next.Month, offset);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            if (clock[idx])
-                            {
-                                dst.Add(src[idx]);
-                            }
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            var clock = series.Clock((current, next) => current.Month != next.Month, offset);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                if (clock[idx])
+                                {
+                                    dst.Add(src[idx]);
+                                }
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
 
         /// <summary>
@@ -108,30 +113,36 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Monthly({1})", series.Name, offset);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesAsset(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<OHLCV>>();
-
-                        var clock = series.Close.Clock((current, next) => current.Month != next.Month, offset);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            if (clock[idx])
-                            {
-                                // BUGBUG: this returns the last OHLCV bar
-                                // FIXME: calculate open, high, low and volume here
-                                dst.Add(src[idx]);
-                            }
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<OHLCV>>();
 
-                        return dst;
-                    }),
-                    Task.FromResult((object)series.Meta)));
+                            var clock = series.Close.Clock((current, next) => current.Month != next.Month, offset);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                if (clock[idx])
+                                {
+                                    // BUGBUG: this returns the last OHLCV bar
+                                    // FIXME: calculate open, high, low and volume here
+                                    dst.Add(src[idx]);
+                                }
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesAsset(
+                        series.Algorithm, name,
+                        data, series.Meta);
+                });
         }
 
         /// <summary>
@@ -144,27 +155,32 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Weekly({1})", series.Name, offset);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var clock = series.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            if (clock[idx])
-                            {
-                                dst.Add(src[idx]);
-                            }
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            var clock = series.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                if (clock[idx])
+                                {
+                                    dst.Add(src[idx]);
+                                }
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
 
         /// <summary>
@@ -177,30 +193,36 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Weekly({1})", series.Name, offset);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesAsset(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<OHLCV>>();
-
-                        var clock = series.Close.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            if (clock[idx])
-                            {
-                                // BUGBUG: this returns the last OHLCV bar
-                                // FIXME: calculate open, high, low and volume here
-                                dst.Add(src[idx]);
-                            }
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<OHLCV>>();
 
-                        return dst;
-                    }),
-                    Task.FromResult((object)series.Meta)));
+                            var clock = series.Close.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                if (clock[idx])
+                                {
+                                    // BUGBUG: this returns the last OHLCV bar
+                                    // FIXME: calculate open, high, low and volume here
+                                    dst.Add(src[idx]);
+                                }
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesAsset(
+                        series.Algorithm, name,
+                        data, series.Meta);
+                });
         }
     }
 }

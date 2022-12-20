@@ -37,47 +37,57 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2.Name);
 
-            return summand1.Algorithm.Cache(
+            return summand1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    summand1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = summand1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = summand1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value + summand2[it.Date]));
-                        }
+                            var src = summand1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value + summand2[it.Date]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(summand1.Algorithm, name, data);
+                });
         }
         public static TimeSeriesFloat Add(this TimeSeriesFloat summand1, double summand2)
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2);
 
-            return summand1.Algorithm.Cache(
+            return summand1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    summand1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = summand1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = summand1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value + summand2));
-                        }
+                            var src = summand1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value + summand2));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(summand1.Algorithm, name, data);
+                });
         }
         #endregion
         #region Sub
@@ -85,47 +95,57 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend.Name);
 
-            return minuend.Algorithm.Cache(
+            return minuend.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    minuend.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = minuend.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = minuend.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value - subtrahend[it.Date]));
-                        }
+                            var src = minuend.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value - subtrahend[it.Date]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(minuend.Algorithm, name, data);
+                });
         }
         public static TimeSeriesFloat Sub(this TimeSeriesFloat minuend, double subtrahend)
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend);
 
-            return minuend.Algorithm.Cache(
+            return minuend.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    minuend.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = minuend.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = minuend.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value - subtrahend));
-                        }
+                            var src = minuend.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value - subtrahend));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(minuend.Algorithm, name, data);
+                });
         }
         #endregion
         #region Mul
@@ -133,47 +153,57 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2.Name);
 
-            return multiplicand1.Algorithm.Cache(
+            return multiplicand1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    multiplicand1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = multiplicand1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = multiplicand1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value * multiplicand2[it.Date]));
-                        }
+                            var src = multiplicand1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value * multiplicand2[it.Date]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(multiplicand1.Algorithm, name, data);
+                });
         }
         public static TimeSeriesFloat Mul(this TimeSeriesFloat multiplicand1, double multiplicand2)
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2);
 
-            return multiplicand1.Algorithm.Cache(
+            return multiplicand1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    multiplicand1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = multiplicand1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = multiplicand1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value * multiplicand2));
-                        }
+                            var src = multiplicand1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value * multiplicand2));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(multiplicand1.Algorithm, name, data);
+                });
         }
         #endregion
         #region Div
@@ -187,25 +217,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Div({1})", dividend.Name, divisor.Name);
 
-            return dividend.Algorithm.Cache(
+            return dividend.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    dividend.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = dividend.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = dividend.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value / divisor[it.Date]));
-                        }
+                            var src = dividend.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value / divisor[it.Date]));
+                            }
 
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(dividend.Algorithm, name, data);
+                });
         }
         /// <summary>
         /// Divide time series by constant value.
@@ -217,24 +251,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Div({1})", dividend.Name, divisor);
 
-            return dividend.Algorithm.Cache(
+            return dividend.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    dividend.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = dividend.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = dividend.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value / divisor));
-                        }
+                            var src = dividend.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value / divisor));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(dividend.Algorithm, name, data);
+                });
         }
         #endregion
         #region Min
@@ -242,47 +281,57 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2.Name);
 
-            return min1.Algorithm.Cache(
+            return min1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    min1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = min1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = min1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Min(it.Value, min2[it.Date])));
-                        }
+                            var src = min1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Min(it.Value, min2[it.Date])));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(min1.Algorithm, name, data);
+                });
         }
         public static TimeSeriesFloat Min(this TimeSeriesFloat min1, double min2)
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2);
 
-            return min1.Algorithm.Cache(
+            return min1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    min1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = min1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = min1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Min(it.Value, min2)));
-                        }
+                            var src = min1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Min(it.Value, min2)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(min1.Algorithm, name, data);
+                });
         }
         #endregion
         #region Max
@@ -290,47 +339,57 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2.Name);
 
-            return max1.Algorithm.Cache(
+            return max1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    max1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = max1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = max1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Max(it.Value, max2[it.Date])));
-                        }
+                            var src = max1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Max(it.Value, max2[it.Date])));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(max1.Algorithm, name, data);
+                });
         }
         public static TimeSeriesFloat Max(this TimeSeriesFloat max1, double max2)
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2);
 
-            return max1.Algorithm.Cache(
+            return max1.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    max1.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = max1.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = max1.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Max(it.Value, max2)));
-                        }
+                            var src = max1.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Max(it.Value, max2)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(max1.Algorithm, name, data);
+                });
         }
         #endregion
     }

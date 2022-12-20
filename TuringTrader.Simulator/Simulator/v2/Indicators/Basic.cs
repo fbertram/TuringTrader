@@ -66,25 +66,30 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Delay({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            var srcIdx = Math.Max(0, idx - n);
-                            dst.Add(new BarType<double>(
-                                src[idx].Date,
-                                src[srcIdx].Value));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                var srcIdx = Math.Max(0, idx - n);
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date,
+                                    src[srcIdx].Value));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
 
@@ -99,31 +104,36 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Highest({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var window = new Queue<double>();
-                        for (var i = 0; i < n; i++)
-                            window.Enqueue(src[0].Value);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            window.Enqueue(src[idx].Value);
-                            window.Dequeue();
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                            dst.Add(new BarType<double>(
-                                src[idx].Date,
-                                window.Max(w => w)));
-                        }
+                            var window = new Queue<double>();
+                            for (var i = 0; i < n; i++)
+                                window.Enqueue(src[0].Value);
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                window.Enqueue(src[idx].Value);
+                                window.Dequeue();
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date,
+                                    window.Max(w => w)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region Lowest
@@ -137,31 +147,36 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Lowest({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var window = new Queue<double>();
-                        for (var i = 0; i < n; i++)
-                            window.Enqueue(src[0].Value);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            window.Enqueue(src[idx].Value);
-                            window.Dequeue();
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                            dst.Add(new BarType<double>(
-                                src[idx].Date,
-                                window.Min(w => w)));
-                        }
+                            var window = new Queue<double>();
+                            for (var i = 0; i < n; i++)
+                                window.Enqueue(src[0].Value);
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                window.Enqueue(src[idx].Value);
+                                window.Dequeue();
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date,
+                                    window.Min(w => w)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region Range
@@ -175,31 +190,36 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Range({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var window = new Queue<double>();
-                        for (var i = 0; i < n; i++)
-                            window.Enqueue(src[0].Value);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            window.Enqueue(src[idx].Value);
-                            window.Dequeue();
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                            dst.Add(new BarType<double>(
-                                src[idx].Date,
-                                window.Max(w => w) - window.Min(w => w)));
-                        }
+                            var window = new Queue<double>();
+                            for (var i = 0; i < n; i++)
+                                window.Enqueue(src[0].Value);
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                window.Enqueue(src[idx].Value);
+                                window.Dequeue();
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date,
+                                    window.Max(w => w) - window.Min(w => w)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
 
@@ -213,27 +233,32 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.AbsReturn", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-                        var prev = src[0].Value;
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value - prev));
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
+                            var prev = src[0].Value;
 
-                            prev = it.Value;
-                        }
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value - prev));
 
-                        return dst;
-                    })));
+                                prev = it.Value;
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region RelReturn
@@ -246,27 +271,32 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.RelReturn", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-                        var prev = src[0].Value;
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value / prev - 1.0));
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
+                            var prev = src[0].Value;
 
-                            prev = it.Value;
-                        }
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value / prev - 1.0));
 
-                        return dst;
-                    })));
+                                prev = it.Value;
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region LogReturn
@@ -279,27 +309,32 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.LogReturn", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-                        var prev = src[0].Value;
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Log(it.Value / prev)));
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
+                            var prev = src[0].Value;
 
-                            prev = it.Value;
-                        }
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Log(it.Value / prev)));
 
-                        return dst;
-                    })));
+                                prev = it.Value;
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
 
@@ -313,24 +348,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.AbsValue", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Abs(it.Value)));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Abs(it.Value)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region Square
@@ -343,24 +383,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Square", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                it.Value * it.Value));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    it.Value * it.Value));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region Sqrt
@@ -373,24 +418,31 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Sqrt", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Sqrt(it.Value)));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Sqrt(it.Value)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(
+                      series.Algorithm, name,
+                      data);
+                });
         }
         #endregion
         #region Log
@@ -403,24 +455,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Log", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Log(it.Value)));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Log(it.Value)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region Exp
@@ -433,24 +490,29 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Sqrt", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            dst.Add(new BarType<double>(
-                                it.Date,
-                                Math.Exp(it.Value)));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                dst.Add(new BarType<double>(
+                                    it.Date,
+                                    Math.Exp(it.Value)));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
     }

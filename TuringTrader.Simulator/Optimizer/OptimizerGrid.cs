@@ -21,6 +21,10 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// ENABLE_V2_DATA_SHARING: if defined: allow cloned instances to share data.
+//                         otherwise, all data are private.
+#define ENABLE_V2_DATA_SHARING
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -48,6 +52,7 @@ namespace TuringTrader.Optimizer
         private DateTime? _algoStart;
         private DateTime? _algoEnd;
         private bool _verbose;
+        private SimulatorV2.Cache _v2DataCache;
         #endregion
         #region internal helpers
         #region private void RunIteration()
@@ -65,6 +70,15 @@ namespace TuringTrader.Optimizer
 
             // mark this as an optimizer run
             instanceToRun.IsOptimizing = true;
+
+#if ENABLE_V2_DATA_SHARING
+            // use shared data cache (v2 algorithms only)
+            var instanceV2 = (instanceToRun as SimulatorV2.Algorithm);
+            if (instanceV2 != null)
+            {
+                instanceV2.DataCache = _v2DataCache;
+            }
+#endif
 
             // create result entry
             OptimizerResult result = new OptimizerResult();
@@ -230,6 +244,7 @@ namespace TuringTrader.Optimizer
             if (_verbose) Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations
+            _v2DataCache = new SimulatorV2.Cache();
             IterateLevel(0);
 
             // wait for completion

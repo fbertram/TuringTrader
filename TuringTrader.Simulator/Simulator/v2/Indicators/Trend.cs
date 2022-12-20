@@ -49,30 +49,35 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.SMA({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        var window = new Queue<double>();
-                        for (var i = 0; i < n; i++)
-                            window.Enqueue(src[0].Value);
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            window.Enqueue(src[idx].Value);
-                            window.Dequeue();
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                            var sma = window.Average(w => w);
-                            dst.Add(new BarType<double>(src[idx].Date, sma));
-                        }
+                            var window = new Queue<double>();
+                            for (var i = 0; i < n; i++)
+                                window.Enqueue(src[0].Value);
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                window.Enqueue(src[idx].Value);
+                                window.Dequeue();
+
+                                var sma = window.Average(w => w);
+                                dst.Add(new BarType<double>(src[idx].Date, sma));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region WMA
@@ -93,25 +98,30 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.EMA({1})", series.Name, n);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-                        var ema = src[0].Value;
-                        var alpha = 2.0 / (1.0 + n);
-
-                        foreach (var it in src)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            ema += alpha * (it.Value - ema);
-                            dst.Add(new BarType<double>(it.Date, ema));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
+                            var ema = src[0].Value;
+                            var alpha = 2.0 / (1.0 + n);
 
-                        return dst;
-                    })));
+                            foreach (var it in src)
+                            {
+                                ema += alpha * (it.Value - ema);
+                                dst.Add(new BarType<double>(it.Date, ema));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
 

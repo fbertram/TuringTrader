@@ -52,7 +52,8 @@ namespace TuringTrader.SimulatorV2.Tests
             var cachePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "TuringTrader", "Cache", "msft");
-            Directory.Delete(cachePath, true);
+            if (Directory.Exists(cachePath))
+                Directory.Delete(cachePath, true);
 
             for (int i = 0; i < 2; i++)
             {

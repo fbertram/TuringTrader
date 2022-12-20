@@ -43,25 +43,30 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.TrueRange", series.Name);
 
-            return series.Algorithm.Cache(
+            return series.Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    series.Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var src = series.Data.Result;
-                        var dst = new List<BarType<double>>();
-
-                        for (int idx = 0; idx < src.Count; idx++)
+                () =>
+                {
+                    var data = series.Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
                         {
-                            var idxPrev = Math.Max(0, idx - 1);
-                            var high = Math.Max(src[idxPrev].Value.Close, src[idx].Value.High);
-                            var low = Math.Min(src[idxPrev].Value.Close, src[idx].Value.Low);
-                            dst.Add(new BarType<double>(src[idx].Date, high - low));
-                        }
+                            var src = series.Data.Result;
+                            var dst = new List<BarType<double>>();
 
-                        return dst;
-                    })));
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                var idxPrev = Math.Max(0, idx - 1);
+                                var high = Math.Max(src[idxPrev].Value.Close, src[idx].Value.High);
+                                var low = Math.Min(src[idxPrev].Value.Close, src[idx].Value.Low);
+                                dst.Add(new BarType<double>(src[idx].Date, high - low));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                });
         }
         #endregion
         #region AverageTrueRange

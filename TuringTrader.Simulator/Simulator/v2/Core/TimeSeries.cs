@@ -245,20 +245,25 @@ namespace TuringTrader.SimulatorV2
         {
             var name = Name + "." + fieldName;
 
-            return Algorithm.Cache(
+            return Algorithm.ObjectCache.Fetch(
                 name,
-                () => new TimeSeriesFloat(
-                    Algorithm, name,
-                    Task.Run(() =>
-                    {
-                        var ohlcv = Data.Result;
-                        var data = new List<BarType<double>>();
+                () =>
+                {
+                    var data = Algorithm.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var ohlcv = Data.Result;
+                            var data = new List<BarType<double>>();
 
-                        foreach (var it in ohlcv)
-                            data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
+                            foreach (var it in ohlcv)
+                                data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
 
-                        return data;
-                    })));
+                            return data;
+                        }));
+
+                    return new TimeSeriesFloat(Algorithm, name, data);
+                });
         }
 
         /// <summary>

@@ -217,13 +217,14 @@ namespace TuringTrader.SimulatorV2
                         _cash -= orderAmount;
                         _cash -= frictionAmount;
 
-                        _tradeLog.Add(new OrderReceipt(
-                            order,
-                            execDate,
-                            targetAlloc - currentAlloc,
-                            price,
-                            orderAmount,
-                            frictionAmount));
+                        if (!_algorithm.IsOptimizing)
+                            _tradeLog.Add(new OrderReceipt(
+                                order,
+                                execDate,
+                                targetAlloc - currentAlloc,
+                                price,
+                                orderAmount,
+                                frictionAmount));
                     }
                 }
 

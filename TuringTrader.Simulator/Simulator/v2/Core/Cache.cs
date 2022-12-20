@@ -23,15 +23,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
+    public interface ICache
+    {
+        public T Fetch<T>(string cacheId, Func<T> missFun);
+    }
+
     /// <summary>
     /// Simple cache. This class is essential to TuringTrader's 
     /// automagic indicators.
     /// </summary>
-    public class Cache
+    public class Cache : ICache
     {
         private Dictionary<string, object> _cache = new Dictionary<string, object>();
 
@@ -46,7 +50,9 @@ namespace TuringTrader.SimulatorV2
             lock (_cache)
             {
                 if (!_cache.ContainsKey(cacheId))
+                {
                     _cache[cacheId] = missFun();
+                }
 
                 return (T)_cache[cacheId];
             }
@@ -59,6 +65,16 @@ namespace TuringTrader.SimulatorV2
         {
             _cache.Clear();
         }
+    }
+
+    /// <summary>
+    /// Dummy cache. This class does not cache, but forward requests
+    /// directly to the miss-function. This is the default for the
+    /// data cache.
+    /// </summary>
+    public class DummyCache : ICache
+    {
+        public T Fetch<T>(string cacheId, Func<T> missFun) => missFun();
     }
 }
 

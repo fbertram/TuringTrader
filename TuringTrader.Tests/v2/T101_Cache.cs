@@ -47,8 +47,8 @@ namespace TuringTrader.SimulatorV2.Tests
                 }
 
                 string cacheId = "unique id";
-                var cache1 = Cache(cacheId, toDo);
-                var cache2 = Cache(cacheId, toDo);
+                var cache1 = ObjectCache.Fetch(cacheId, toDo);
+                var cache2 = ObjectCache.Fetch(cacheId, toDo);
 
                 TestResult = cache2;
             }

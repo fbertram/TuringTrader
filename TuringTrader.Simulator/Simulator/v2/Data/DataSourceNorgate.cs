@@ -423,8 +423,8 @@ namespace TuringTrader.SimulatorV2
         {
             NorgateInit();
 
-            var theUniverse = algo.Cache(
-                string.Format("Universe({0})", universe), 
+            var theUniverse = algo.ObjectCache.Fetch(
+                string.Format("Universe({0})", universe),
                 () => new _norgateUniverse(algo, universe));
 
             return theUniverse.Constituents();
