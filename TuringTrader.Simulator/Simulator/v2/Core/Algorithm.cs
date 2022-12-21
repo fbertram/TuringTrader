@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TuringTrader.Optimizer;
 
 namespace TuringTrader.SimulatorV2
@@ -175,13 +176,14 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public List<BarType<OHLCV>> Result = null;
 
-        private void _simLoop(Func<OHLCV> innerBarFun)
+        private List<BarType<OHLCV>> _simLoop(Func<double, OHLCV> innerBarFun, double init = 0.0)
         {
             var tradingDays = TradingCalendar.TradingDays;
             IsFirstBar = true;
             IsLastBar = false;
             var bars = new List<BarType<OHLCV>>();
 
+            var prev = init;
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
                 SimDate = tradingDays[idx];
@@ -191,13 +193,21 @@ namespace TuringTrader.SimulatorV2
                     NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
                     IsLastBar = NextSimDate > EndDate;
 
-                    var ohlcv = innerBarFun(); // execute user logic
+                    var ohlcv = innerBarFun(prev); // execute user logic
+                    prev = ohlcv.Close;
 
                     if (!IsOptimizing)
                         bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
                     IsFirstBar = false;
                 }
             }
+
+            return bars;
+        }
+        private void _simLoopOuter(Func<OHLCV> innerBarFun)
+        {
+
+            var bars = _simLoop((prev) => innerBarFun());
 
             //SimDate = default; // we need SimDate to calculate the last asset allocation
             //_cache.Clear(); // we need quote data to calculate the last asset allocation
@@ -217,7 +227,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="barFun"></param>
         public void SimLoop(Action barFun)
         {
-            _simLoop(() =>
+            _simLoopOuter(() =>
             {
                 barFun();
                 return Account.ProcessBar();
@@ -232,12 +242,58 @@ namespace TuringTrader.SimulatorV2
         /// <param name="barFun"></param>
         public void SimLoop(Func<OHLCV> barFun)
         {
-            _simLoop(() =>
+            _simLoopOuter(() =>
             {
                 var bar = barFun();
                 Account.ProcessBar();
                 return bar;
             });
+        }
+
+        /// <summary>
+        /// Calculate indicator from lambda function.
+        /// </summary>
+        /// <param name="cacheId">unique cache id</param>
+        /// <param name="barFun">lambda function</param>
+        /// <param name="init">initial value</param>
+        /// <returns>output time series</returns>
+        public TimeSeriesFloat Lambda(string cacheId, Func<double, double> barFun, double init)
+        {
+            var name = "Lambda(" + cacheId + ")";
+
+            return ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    // save current simloop status
+                    var _isFirstBar = IsFirstBar;
+                    var _isLastBar = IsLastBar;
+                    var _simDate = SimDate;
+                    var _nextSimDate = NextSimDate;
+
+                    // run simloop
+
+                    var bars = _simLoop((prev) => new OHLCV(0.0, 0.0, 0.0, barFun(prev), 0.0), init);
+                    var data = Task.FromResult(bars
+                        .Select(ohlcv => new BarType<double>(ohlcv.Date, ohlcv.Value.Close))
+                        .ToList());
+
+                    // restore previous simloop status
+                    IsFirstBar = _isFirstBar;
+                    IsLastBar = _isLastBar;
+                    SimDate = _simDate;
+                    NextSimDate = _nextSimDate;
+
+                    return new TimeSeriesFloat(this, name, data);
+                });
+        }
+
+        public TimeSeriesFloat Lambda(string cacheId, Func<double> barFun)
+        {
+            return Lambda(
+                cacheId,
+                (prev) => barFun(),
+                0.0);
         }
 
         /// <summary>
