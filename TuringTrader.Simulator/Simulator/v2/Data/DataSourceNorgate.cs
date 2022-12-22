@@ -211,7 +211,6 @@ namespace TuringTrader.SimulatorV2
                 { "$SP1500", "S&P Composite 1500 Current & Past" },
                 { "$SPDAUDP", "S&P 500 Dividend Aristocrats Current & Past" },
 
-
                 { "$RUI", "Russell 1000 Current & Past" },
                 { "$RUT", "Russell 2000 Current & Past" },
                 { "$RUA", "Russell 3000 Current & Past" },
@@ -226,6 +225,8 @@ namespace TuringTrader.SimulatorV2
             private NDW.Watchlist _watchlist;
             private NDW.SecurityList _securityList;
             private Dictionary<int, List<NDU.RecIndicator>> _constituency = new Dictionary<int, List<NDU.RecIndicator>>();
+            private Dictionary<int, int> _constituencyIndex = new Dictionary<int, int>();
+            private DateTime _previousLocalClose = default;
 
             public _norgateUniverse(Algorithm algo, string universe)
             {
@@ -287,6 +288,7 @@ namespace TuringTrader.SimulatorV2
 
                             _constituency[security.AssetID] = timeSeries;
                             _securityList.Add(security);
+
                         }
                     }
                 }
@@ -297,22 +299,36 @@ namespace TuringTrader.SimulatorV2
                 var localClose = _algorithm.SimDate;
                 var exchangeTime = TimeZoneInfo.ConvertTime(localClose, _algorithm.TradingCalendar.ExchangeTimeZone);
 
-                // advance time series
-                foreach (var security in _securityList)
+                // reset time series
+                // NOTE: this should only happen when the simloop is reentered,
+                //       most likely through the use of a lambda-function indicator.
+                if (_previousLocalClose == default || localClose < _previousLocalClose)
                 {
-                    var series = _constituency[security.AssetID];
-                    while (series.Count > 1 && series[1].Date < exchangeTime.Date)
-                        series.RemoveAt(0);
+                    foreach (var security in _securityList)
+                        _constituencyIndex[security.AssetID] = 0;
+                }
+                _previousLocalClose = localClose;
+
+                // advance time series
+                foreach (var id in _securityList.Select(s => s.AssetID))
+                {
+                    while (_constituencyIndex[id] < _constituency[id].Count - 1
+                    && _constituency[id][_constituencyIndex[id] + 1].Date < exchangeTime.Date)
+                    {
+                        _constituencyIndex[id]++;
+                    }
                 }
 
                 // collect constituents
                 var constituents = new HashSet<string>();
                 foreach (var security in _securityList)
                 {
-                    var series = _constituency[security.AssetID];
-
-                    if (series[0].Date <= exchangeTime && series[0].value != 0)
+                    var id = security.AssetID;
+                    if (_constituency[id][_constituencyIndex[id]].Date <= exchangeTime
+                    && _constituency[id][_constituencyIndex[id]].value != 0)
+                    {
                         constituents.Add("norgate:" + security.Symbol);
+                    }
                 }
 
                 return constituents;

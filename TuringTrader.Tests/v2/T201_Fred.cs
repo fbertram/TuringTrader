@@ -25,7 +25,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using System.Linq;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
@@ -33,16 +32,38 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T201_Fred
     {
-        private class DataRetrieval : Algorithm
+        private class Testbed : Algorithm
         {
-            public TimeSeriesAsset TestResult;
+            public string Description;
+            public double FirstOpen;
+            public double LastClose;
+            public double HighestHigh = 0.0;
+            public double LowestLow = 1e99;
+            public double NumBars;
             public override void Run()
             {
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-11-25T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
 
-                TestResult = Asset("fred:EFFR"); // Effective Federal Funds Rate
+                SimLoop(() =>
+                {
+                    var a = Asset("fred:EFFR"); // Effective Federal Funds Rate
+
+                    if (IsFirstBar)
+                    {
+                        Description = a.Description;
+                        FirstOpen = a.Open[0];
+                        NumBars = 0;
+                    }
+                    if (IsLastBar)
+                    {
+                        LastClose = a.Close[0];
+                    }
+                    HighestHigh = Math.Max(HighestHigh, a.High[0]);
+                    LowestLow = Math.Min(LowestLow, a.Low[0]);
+                    NumBars++;
+                });
             }
         }
 
@@ -57,28 +78,13 @@ namespace TuringTrader.SimulatorV2.Tests
 
             for (int i = 0; i < 2; i++)
             {
-                var algo = new DataRetrieval();
+                var algo = new Testbed();
                 algo.Run();
-                var result = algo.TestResult;
 
-                var description = result.Description;
-                Assert.IsTrue(description.ToLower().Contains("effective federal funds rate"));
-
-                var firstDate = result.Data.Result.First().Date;
-                Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
-
-                var lastDate = result.Data.Result.Last().Date;
-                Assert.IsTrue(lastDate == DateTime.Parse("2022-11-25T16:00-5:00"));
-
-                var barCount = result.Data.Result.Count();
-                Assert.IsTrue(barCount == 227);
-
-                var firstOpen = result.Data.Result.First().Value.Open;
-                var lastClose = result.Data.Result.Last().Value.Close;
-                var highestHigh = result.Data.Result.Max(b => b.Value.High);
-                var lowestLow = result.Data.Result.Min(b => b.Value.Low);
-                Assert.IsTrue(Math.Abs(lastClose / firstOpen - 3.83 / 0.08) < 1e-3);
-                Assert.IsTrue(Math.Abs(highestHigh / lowestLow - 3.83 / 0.08) < 1e-3);
+                Assert.IsTrue(algo.Description.ToLower().Contains("effective federal funds rate"));
+                Assert.IsTrue(algo.NumBars == 227);
+                Assert.IsTrue(Math.Abs(algo.LastClose / algo.FirstOpen - 3.83 / 0.08) < 1e-3);
+                Assert.IsTrue(Math.Abs(algo.HighestHigh / algo.LowestLow - 3.83 / 0.08) < 1e-3);
             }
         }
     }

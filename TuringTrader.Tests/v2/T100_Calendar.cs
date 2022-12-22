@@ -35,14 +35,23 @@ namespace TuringTrader.SimulatorV2.Tests
     {
         private class Testbed : Algorithm
         {
-            public List<DateTime> TestResult;
+            public List<DateTime> TradingDays = new List<DateTime>();
+            public DateTime FirstBar;
+            public DateTime LastBar;
+
             public override void Run()
             {
                 StartDate = DateTime.Parse("2020-01-01T16:00-05:00");
                 EndDate = DateTime.Parse("2020-12-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
 
-                TestResult = TradingCalendar.TradingDays;
+                SimLoop(() =>
+                {
+                    if (IsFirstBar) FirstBar = SimDate;
+                    if (IsLastBar) LastBar = SimDate;
+
+                    TradingDays.Add(SimDate);
+                });
             }
         }
 
@@ -51,16 +60,13 @@ namespace TuringTrader.SimulatorV2.Tests
         {
             var algo = new Testbed();
             algo.Run();
-            var result = algo.TestResult;
 
-            var firstDate = result.First();
-            Assert.IsTrue(firstDate == DateTime.Parse("2020-01-02T16:00-5:00"));
+            Assert.IsTrue(algo.FirstBar == DateTime.Parse("2020-01-02T16:00-5:00"));
+            Assert.IsTrue(algo.LastBar == DateTime.Parse("2020-12-31T16:00-5:00"));
 
-            var lastDate = result.Last();
-            Assert.IsTrue(lastDate == DateTime.Parse("2020-12-31T16:00-5:00"));
-
-            var barCount = result.Count();
-            Assert.IsTrue(barCount == 253);
+            Assert.IsTrue(algo.TradingDays.First() == DateTime.Parse("2020-01-02T16:00-5:00"));
+            Assert.IsTrue(algo.TradingDays.Last() == DateTime.Parse("2020-12-31T16:00-5:00"));
+            Assert.IsTrue(algo.TradingDays.Count == 253);
         }
     }
 }

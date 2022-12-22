@@ -32,82 +32,102 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T206_Splice
     {
-        private class Testbed : Algorithm
+        private class TestbedSplice : Algorithm
         {
-            public TimeSeriesAsset TestResult;
+            public string Description;
+            public double FirstOpen;
+            public double LastClose;
+            public double HighestHigh = 0.0;
+            public double LowestLow = 1e99;
+            public double NumBars;
             public override void Run()
             {
                 StartDate = DateTime.Parse("2021-01-04T16:00-05:00");
                 EndDate = DateTime.Parse("2021-01-29T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
 
-                TestResult = Asset("splice:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+                SimLoop(() =>
+                {
+                    var a = Asset("splice:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+
+                    if (IsFirstBar)
+                    {
+                        Description = a.Description;
+                        FirstOpen = a.Open[0];
+                        NumBars = 0;
+                    }
+                    if (IsLastBar)
+                    {
+                        LastClose = a.Close[0];
+                    }
+                    HighestHigh = Math.Max(HighestHigh, a.High[0]);
+                    LowestLow = Math.Min(LowestLow, a.Low[0]);
+                    NumBars++;
+                });
             }
         }
+
 
         [TestMethod]
         public void Test_Splice()
         {
-            var algo = new Testbed();
+            var algo = new TestbedSplice();
             algo.Run();
-            var result = algo.TestResult;
 
-            var firstDate = result.Data.Result.First().Date;
-            Assert.IsTrue(firstDate == DateTime.Parse("2021-01-04T16:00-5:00"));
-
-            var lastDate = result.Data.Result.Last().Date;
-            Assert.IsTrue(lastDate == DateTime.Parse("2021-01-29T16:00-5:00"));
-
-            var barCount = result.Data.Result.Count();
-            Assert.IsTrue(barCount == 19);
-
-            var firstOpen = result.Data.Result.First().Value.Open;
-            Assert.IsTrue(Math.Abs(firstOpen - 10000) < 1e-3);
-
-            var lastClose = result.Data.Result.Last().Value.Close;
-            Assert.IsTrue(Math.Abs(lastClose - 28000) < 1e-3);
-
-            var sum = result.Data.Result.Sum(b => b.Value.Close);
-            Assert.IsTrue(Math.Abs(sum - 361000) < 1e-3);
+            Assert.IsTrue(algo.NumBars == 19);
+            Assert.IsTrue(Math.Abs(algo.FirstOpen - 10000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.LastClose - 28000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.HighestHigh - 28000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.LowestLow - 10000) < 1e-3);
         }
 
-        private class Testbed2 : Algorithm
+        private class TestbedJoin : Algorithm
         {
-            public TimeSeriesAsset TestResult;
+            public string Description;
+            public double FirstOpen;
+            public double LastClose;
+            public double HighestHigh = 0.0;
+            public double LowestLow = 1e99;
+            public double NumBars;
             public override void Run()
             {
                 StartDate = DateTime.Parse("2021-01-04T16:00-05:00");
                 EndDate = DateTime.Parse("2021-01-29T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
 
-                TestResult = Asset("join:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+                SimLoop(() =>
+                {
+                    var a = Asset("join:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+
+                    if (IsFirstBar)
+                    {
+                        Description = a.Description;
+                        FirstOpen = a.Open[0];
+                        NumBars = 0;
+                    }
+                    if (IsLastBar)
+                    {
+                        LastClose = a.Close[0];
+                    }
+                    HighestHigh = Math.Max(HighestHigh, a.High[0]);
+                    LowestLow = Math.Min(LowestLow, a.Low[0]);
+                    NumBars++;
+                });
             }
         }
+
 
         [TestMethod]
         public void Test_Join()
         {
-            var algo = new Testbed2();
+            var algo = new TestbedJoin();
             algo.Run();
-            var result = algo.TestResult;
 
-            var firstDate = result.Data.Result.First().Date;
-            Assert.IsTrue(firstDate == DateTime.Parse("2021-01-04T16:00-5:00"));
-
-            var lastDate = result.Data.Result.Last().Date;
-            Assert.IsTrue(lastDate == DateTime.Parse("2021-01-29T16:00-5:00"));
-
-            var barCount = result.Data.Result.Count();
-            Assert.IsTrue(barCount == 19);
-
-            var firstOpen = result.Data.Result.First().Value.Open;
-            Assert.IsTrue(Math.Abs(firstOpen - 1000) < 1e-3);
-
-            var lastClose = result.Data.Result.Last().Value.Close;
-            Assert.IsTrue(Math.Abs(lastClose - 28000) < 1e-3);
-
-            var sum = result.Data.Result.Sum(b => b.Value.Close);
-            Assert.IsTrue(Math.Abs(sum - 230500) < 1e-3);
+            Assert.IsTrue(algo.NumBars == 19);
+            Assert.IsTrue(Math.Abs(algo.FirstOpen - 1000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.LastClose - 28000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.HighestHigh - 28000) < 1e-3);
+            Assert.IsTrue(Math.Abs(algo.LowestLow - 1000) < 1e-3);
         }
     }
 }

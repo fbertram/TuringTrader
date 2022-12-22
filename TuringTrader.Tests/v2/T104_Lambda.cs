@@ -100,6 +100,39 @@ namespace TuringTrader.SimulatorV2.Tests
 
             Assert.IsTrue(algo.ResultsMatch == true);
         }
+
+        private class TestbedUniverse : Algorithm
+        {
+            public double Result;
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2021-01-04T16:00-05:00");
+                EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                SimLoop(() =>
+                {
+                    var equalWeightedIndex = Lambda("eq-idx", (prev) =>
+                    {
+                        var r = Universe("$DJI")
+                            .Average(a => Asset(a).Close.LogReturn()[0]);
+                        return prev * Math.Exp(r);
+                    }, 1.0)[0];
+
+                    if (IsLastBar)
+                        Result = equalWeightedIndex;
+                });
+            }
+        }
+
+        [TestMethod]
+        public void Test_LambdaUniverse()
+        {
+            var algo = new TestbedUniverse();
+            algo.Run();
+
+            Assert.IsTrue(Math.Abs(algo.Result - 1.190168578711746) < 1e-5);
+        }
     }
 }
 

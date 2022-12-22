@@ -141,7 +141,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + TimeSpan.FromDays(0); } }
+        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + CooldownPeriod; } }
 
         private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 
@@ -150,6 +150,8 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public TimeSpan WarmupPeriod { get => _warmupPeriod; set { _warmupPeriod = value; TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
 
+        private TimeSpan _cooldownPeriod = TimeSpan.FromDays(5);
+        public TimeSpan CooldownPeriod { get => _cooldownPeriod; set { _cooldownPeriod = value; TradingCalendar.EndDate = (DateTime)_endDate + CooldownPeriod; } }
         /// <summary>
         /// Current simulation timestamp.
         /// </summary>
@@ -186,11 +188,13 @@ namespace TuringTrader.SimulatorV2
             var prev = init;
             for (int idx = 0; idx < tradingDays.Count; idx++)
             {
-                SimDate = tradingDays[idx];
+                var simDate = tradingDays[idx];
+                var nextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
 
-                if (SimDate >= StartDate && SimDate <= EndDate)
+                if (simDate >= StartDate && simDate <= EndDate)
                 {
-                    NextSimDate = tradingDays[Math.Min(tradingDays.Count - 1, idx + 1)];
+                    SimDate = simDate;
+                    NextSimDate = nextSimDate;
                     IsLastBar = NextSimDate > EndDate;
 
                     var ohlcv = innerBarFun(prev); // execute user logic

@@ -49,7 +49,6 @@ namespace TuringTrader.SimulatorV2.Tests
                     if (Math.Abs(asset.Position - weight) > 0.05)
                         asset.Allocate(weight, OrderType.openNextBar);
                 });
-
             }
         }
 

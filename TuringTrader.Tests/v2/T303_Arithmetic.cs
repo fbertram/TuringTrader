@@ -41,6 +41,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
@@ -91,6 +92,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
@@ -141,6 +143,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
@@ -191,6 +194,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
@@ -241,6 +245,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
@@ -291,6 +296,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
                 EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
 
                 var one = new T000_Helpers.StepResponse();
                 one.StartDate = StartDate;
