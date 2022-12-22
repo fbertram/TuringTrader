@@ -42,6 +42,7 @@ namespace TuringTrader.SimulatorV2
 
             if (instanceV1 != null)
             {
+                instanceV1.IsDataSource = true;
                 var barsV1 = instanceV1.Run(startDate, endDate)
                     .ToList();
 
@@ -66,7 +67,7 @@ namespace TuringTrader.SimulatorV2
                 // also see Algorithm.Asset(Algorithm)
                 instanceV2.StartDate = startDate;
                 instanceV2.EndDate = endDate;
-
+                instanceV2.IsDataSource = true;
                 instanceV2.Run();
                 return instanceV2.Result;
             }

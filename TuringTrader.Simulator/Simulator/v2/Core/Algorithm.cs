@@ -79,6 +79,11 @@ namespace TuringTrader.SimulatorV2
 
             return clonedInstance;
         }
+        /// <summary>
+        /// Return true, if algorithm is used as a data source. Use this feature
+        /// to disable optional operations that are time or memory consuming.
+        /// </summary>
+        public bool IsDataSource { get; set; } = false;
         #endregion
         #region optimization
         /// <summary>
@@ -110,7 +115,7 @@ namespace TuringTrader.SimulatorV2
         /// Return true, if algorithm is currently being optimized. Use this feature
         /// to disable optional operations that are time or memory consuming.
         /// </summary>
-        public bool IsOptimizing { get; set; }
+        public bool IsOptimizing { get; set; } = false;
         /// <summary>
         /// Return algorithm's fitness value (return component).
         /// </summary>

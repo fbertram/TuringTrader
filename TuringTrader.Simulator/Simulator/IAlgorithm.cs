@@ -99,6 +99,14 @@ namespace TuringTrader.Simulator
         public bool IsOptimizing { set; }
 
         /// <summary>
+        /// Field indicating if this algorithm instance is used
+        /// as a data source. Algorithms should use this to reduce
+        /// unnecessary calculations and output, to speed up calculation
+        /// and conserve memory.
+        /// </summary>
+        public bool IsDataSource { set; }
+
+        /// <summary>
         /// Custom fitness value representing the return-aspect of the algorithm.
         /// </summary>
         public double FitnessReturn { get; }
