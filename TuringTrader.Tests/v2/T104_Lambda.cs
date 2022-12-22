@@ -112,11 +112,12 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    var equalWeightedIndex = Lambda("eq-idx", (prev) =>
+                    var equalWeightedIndex = Lambda("ew-idx", (prev) =>
                     {
-                        var r = Universe("$DJI")
-                            .Average(a => Asset(a).Close.LogReturn()[0]);
-                        return prev * Math.Exp(r);
+                        var universe = Universe("$DJI");
+                        return prev
+                            * (1.0 + universe
+                                .Average(asset => Asset(asset).Close.RelReturn()[0]));
                     }, 1.0)[0];
 
                     if (IsLastBar)
@@ -131,7 +132,7 @@ namespace TuringTrader.SimulatorV2.Tests
             var algo = new TestbedUniverse();
             algo.Run();
 
-            Assert.IsTrue(Math.Abs(algo.Result - 1.190168578711746) < 1e-5);
+            Assert.IsTrue(Math.Abs(algo.Result - 1.2130976664261734) < 1e-5);
         }
     }
 }

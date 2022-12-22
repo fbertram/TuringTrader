@@ -200,8 +200,8 @@ namespace TuringTrader.SimulatorV2
                     var ohlcv = innerBarFun(prev); // execute user logic
                     prev = ohlcv.Close;
 
-                    if (!IsOptimizing)
-                        bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
+                    //if (!IsOptimizing)
+                    bars.Add(new BarType<OHLCV>(SimDate, ohlcv));
                     IsFirstBar = false;
                 }
             }
@@ -263,7 +263,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns>output time series</returns>
         public TimeSeriesFloat Lambda(string cacheId, Func<double, double> barFun, double init)
         {
-            var name = "Lambda(" + cacheId + ")";
+            var name = string.Format("Lambda({0}-{1:X})", cacheId, this.GetHashCode());
 
             return ObjectCache.Fetch(
                 name,
@@ -276,7 +276,6 @@ namespace TuringTrader.SimulatorV2
                     var _nextSimDate = NextSimDate;
 
                     // run simloop
-
                     var bars = _simLoop((prev) => new OHLCV(0.0, 0.0, 0.0, barFun(prev), 0.0), init);
                     var data = Task.FromResult(bars
                         .Select(ohlcv => new BarType<double>(ohlcv.Date, ohlcv.Value.Close))
