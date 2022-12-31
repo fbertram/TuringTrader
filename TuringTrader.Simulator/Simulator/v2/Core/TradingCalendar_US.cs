@@ -987,7 +987,7 @@ namespace TuringTrader.SimulatorV2
             get
             {
                 var startDate = StartDate > _earliestTime ? StartDate : _earliestTime;
-                var endDate = EndDate < DateTime.Now ? EndDate : DateTime.Now;
+                var endDate = EndDate > startDate ? EndDate : startDate + TimeSpan.FromDays(5);
 
 #if true
                 // new 11/04/2022
