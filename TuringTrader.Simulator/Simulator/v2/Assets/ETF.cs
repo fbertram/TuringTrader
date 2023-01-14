@@ -515,11 +515,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// </summary>
         public const string SPY = AssetsV1.SPY;
         /// <summary>
-        /// SPDR Portfolio S&P 500 Growth ETF (since Sep 2000)
+        /// SPDR Portfolio S&amp;P 500 Growth ETF (since Sep 2000)
         /// </summary>
         public const string SPYG = AssetsV1.SPYG;
         /// <summary>
-        /// SPDR Portfolio S&P 500 Value ETF (since Sep 2000)
+        /// SPDR Portfolio S&ampP 500 Value ETF (since Sep 2000)
         /// </summary>
         public const string SPYV = AssetsV1.SPYV;
         /// <summary>

@@ -24,7 +24,7 @@ see https://dotnet.microsoft.com/download/dotnet-core/3.1
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
 - .NET Core 6 SDK
 - WiX Toolset version 3.11
-- WiX Toolset Visual Studio 2019 Extension
+- WiX Toolset Visual Studio 2022 Extension
 - DocFX toolset version 2.43.2.0
 
 ### Build Steps
