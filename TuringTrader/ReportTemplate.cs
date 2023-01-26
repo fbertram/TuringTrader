@@ -107,6 +107,7 @@ namespace TuringTrader
         /// NAV as an area, and the following columns/ benchmarks as lines.
         /// </summary>
         protected virtual bool CFG_IS_AREA(string label) => label == _firstYLabel && _numYLabels <= 2;
+        protected virtual int CFG_SCATTER_SIZE => 2;
         #endregion
 
         #region internal data
@@ -763,11 +764,12 @@ namespace TuringTrader
         protected bool IsScatter(string selectedChart)
         {
             var chartData = PlotData[selectedChart];
+            var pointsPerSeries = new Dictionary<string, int>();
 
             object prevX = null;
-
             foreach (var row in chartData)
             {
+                //--- criterion #1: if the x-value goes backwards, it's a scatter
                 object curX = row.First().Value;
                 prevX = prevX ?? curX;
 
@@ -785,9 +787,18 @@ namespace TuringTrader
                 }
 
                 prevX = curX;
+
+                //--- criterion #2: if there is only one datapoint per series, it's a scatter
+                foreach (var col in row.Keys.Skip(1))
+                {
+                    if (!pointsPerSeries.ContainsKey(col))
+                        pointsPerSeries[col] = 1;
+                    else
+                        pointsPerSeries[col]++;
+                }
             }
 
-            return false;
+            return pointsPerSeries.Max(kv => kv.Value) <= 1 ? true : false;
         }
         #endregion
 
@@ -957,7 +968,7 @@ namespace TuringTrader
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
                         newSeries.MarkerType = MarkerType.Circle;
-                        newSeries.MarkerSize = 2;
+                        newSeries.MarkerSize = CFG_SCATTER_SIZE;
                         newSeries.MarkerStroke = CFG_COLORS[allSeries.Count % CFG_COLORS.Count()];
                         newSeries.MarkerFill = newSeries.MarkerStroke;
                         allSeries[yLabel] = newSeries;
@@ -2552,6 +2563,56 @@ namespace TuringTrader
             }
         }
         #endregion
+        #region public void SaveAsHtml(string chartToSave, string csvFilePath)
+        /// <summary>
+        /// save table as Html
+        /// </summary>
+        /// <param name="chartToSave">chart to save</param>
+        /// <param name="csvFilePath">path to Html</param>
+        public void SaveAsHtml(string chartToSave, string csvFilePath)
+        {
+            using (StreamWriter sw = new StreamWriter(csvFilePath))
+            {
+
+                List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)GetModel(chartToSave);
+
+                List<string> columns = tableModel
+                    .SelectMany(row => row.Keys)
+                    .Distinct()
+                    .ToList();
+
+                sw.WriteLine("<html lang=\"en-us\"><head><link rel=\"stylesheet\" href=\"styles.css\"/><title>{0}</title></head><body><table>", chartToSave);
+
+                //----- header row
+                sw.Write("<thead><tr>");
+                for (var col = 0; col < columns.Count; col++)
+                {
+                    sw.Write("<th>{0}</th>", columns[col]);
+                }
+                sw.WriteLine("</tr></thead>");
+
+                //----- data rows
+                sw.Write("<tbody>");
+                for (var row = 0; row < tableModel.Count; row++)
+                {
+                    sw.Write("<tr>");
+                    for (var col = 0; col < columns.Count; col++)
+                    {
+                        sw.Write("<td>{0}</td>",
+                            tableModel[row].ContainsKey(columns[col])
+                                ? tableModel[row][columns[col]]
+                                : "");
+                    }
+                    sw.WriteLine("</tr>");
+                }
+                sw.WriteLine("</tbody>");
+
+                //----- close
+                sw.WriteLine("</table></body></html>");
+            }
+        }
+        #endregion
+
         #region public void SaveAs(string chartToSave, string filePathWithoutExtension)
         public void SaveAs(string chartToSave, string filePathWithoutExtension)
         {
@@ -2574,6 +2635,10 @@ namespace TuringTrader
 #if true
                 string jsonFilePath = Path.ChangeExtension(filePathWithoutExtension, ".json");
                 SaveAsJson(chartToSave, jsonFilePath);
+#endif
+#if false
+                string htmlFilePath = Path.ChangeExtension(filePathWithoutExtension, ".html");
+                SaveAsHtml(chartToSave, htmlFilePath);
 #endif
             }
         }
