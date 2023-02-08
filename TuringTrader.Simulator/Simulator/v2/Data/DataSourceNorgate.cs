@@ -341,9 +341,9 @@ namespace TuringTrader.SimulatorV2
             NorgateHelpers.HandleUnresovledAssemblies();
         }
 
-        private static List<BarType<OHLCV>> NorgateLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> NorgateLoadData(Algorithm owner, Dictionary<DataSourceParam, string> info)
         {
-            var tradingDays = algo.TradingCalendar.TradingDays;
+            var tradingDays = owner.TradingCalendar.TradingDays;
             var startDate = tradingDays.First();
             var endDate = tradingDays.Last();
 
@@ -415,7 +415,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
 
-        private static TimeSeriesAsset.MetaType NorgateLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType NorgateLoadMeta(Algorithm owner, Dictionary<DataSourceParam, string> info)
         {
             //var makeSureWeLoadNorgateDll = new NorgateLoaderObject();
 
@@ -435,13 +435,20 @@ namespace TuringTrader.SimulatorV2
             }
         }
 
-        private static HashSet<string> NorgateGetUniverse(Algorithm algo, string universe)
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> NorgateGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                NorgateLoadData(owner, info),
+                NorgateLoadMeta(owner, info));
+        }
+
+        private static HashSet<string> NorgateGetUniverse(Algorithm owner, string universe)
         {
             NorgateInit();
 
-            var theUniverse = algo.ObjectCache.Fetch(
+            var theUniverse = owner.ObjectCache.Fetch(
                 string.Format("Universe({0})", universe),
-                () => new _norgateUniverse(algo, universe));
+                () => new _norgateUniverse(owner, universe));
 
             return theUniverse.Constituents();
         }

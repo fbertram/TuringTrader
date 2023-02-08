@@ -158,6 +158,13 @@ namespace TuringTrader.SimulatorV2
                     Ticker = (string)jsonData["seriess"][0]["id"],
                     Description = (string)jsonData["seriess"][0]["title"],
                 });
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> FredGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                FredLoadData(owner, info),
+                FredLoadMeta(owner, info));
+        }
     }
 }
 

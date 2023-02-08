@@ -142,6 +142,13 @@ namespace TuringTrader.SimulatorV2
                     Ticker = info[DataSourceParam.ticker],
                     Description = stringTitle.Replace("&amp;", "&"),
                 });
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> StooqGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                StooqLoadData(owner, info),
+                StooqLoadMeta(owner, info));
+        }
     }
 }
 

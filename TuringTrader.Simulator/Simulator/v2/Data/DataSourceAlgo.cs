@@ -29,11 +29,11 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> AlgoLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static List<BarType<OHLCV>> AlgoLoadData(Algorithm owner, Dictionary<DataSourceParam, string> info)
         {
             var algoName = info[DataSourceParam.nickName2];
             var algoInstance = Simulator.AlgorithmLoader.InstantiateAlgorithm(algoName);
-            var tradingDays = algo.TradingCalendar.TradingDays;
+            var tradingDays = owner.TradingCalendar.TradingDays;
             var startDate = tradingDays.First();
             var endDate = tradingDays.Last();
 
@@ -51,7 +51,7 @@ namespace TuringTrader.SimulatorV2
                 {
                     // v1 algorithms run in the exchange's time zone
                     var exchangeAtClose = bar.Time;
-                    var localAtClose = TimeZoneInfo.ConvertTimeToUtc(exchangeAtClose, algo.TradingCalendar.ExchangeTimeZone)
+                    var localAtClose = TimeZoneInfo.ConvertTimeToUtc(exchangeAtClose, owner.TradingCalendar.ExchangeTimeZone)
                         .ToLocalTime();
 
                     barsV2.Add(new BarType<OHLCV>(
@@ -90,6 +90,16 @@ namespace TuringTrader.SimulatorV2
                 Description = generator.Name,
                 Generator = generatorV2,
             };
+        }
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> AlgoGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            // TODO: merge these two into a single function,
+            //       so that we can create the meta information
+            //       without the need to instantiate another algorithm
+            return Tuple.Create(
+                AlgoLoadData(owner, info),
+                AlgoLoadMeta(owner, info));
         }
     }
 }

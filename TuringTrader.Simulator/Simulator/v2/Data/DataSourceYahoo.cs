@@ -170,6 +170,13 @@ namespace TuringTrader.SimulatorV2
                     Ticker = info[DataSourceParam.ticker],
                     Description = stringH1.Replace("&amp;", "&"),
                 });
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> YahooGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                YahooLoadData(owner, info),
+                YahooLoadMeta(owner, info));
+        }
     }
 }
 

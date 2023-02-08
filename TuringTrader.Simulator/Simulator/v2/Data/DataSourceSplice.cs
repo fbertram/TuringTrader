@@ -30,20 +30,24 @@ namespace TuringTrader.SimulatorV2
     public static partial class DataSource
     {
         #region internal helpers
-        private static List<BarType<OHLCV>> _spliceLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info, bool splice)
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> _spliceGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info, bool splice)
         {
             var symbols = info[DataSourceParam.nickName2].Split(",");
 
 #if false
-            var mostRecentSymbol = symbols[0];
-            return _loadData(algo, mostRecentSymbol);
+            // debugging only
+            return _loadAsset(owner, symbols.First(), true);
 #else
-            var tradingDays = algo.TradingCalendar.TradingDays;
+            var allData = symbols
+                .Select(symbol => _loadAsset(owner, symbol, false))
+                .ToList();
+
+            var tradingDays = owner.TradingCalendar.TradingDays;
 
             var dst = (List<BarType<OHLCV>>)null;
-            for (int symIdx = 0; symIdx < symbols.Length; symIdx++)
+            foreach (var data in allData)
             {
-                var src = _loadData(algo, symbols[symIdx], false);
+                var src = data.Item1;
 
                 if (dst == null)
                 {
@@ -85,33 +89,16 @@ namespace TuringTrader.SimulatorV2
                     break;
             }
 
-            return dst;
+            return Tuple.Create(dst, allData.First().Item2);
 #endif
         }
         #endregion
 
-        private static List<BarType<OHLCV>> SpliceLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
-            _spliceLoadData(algo, info, true);
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> SpliceGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+            => _spliceGetAsset(owner, info, true);
 
-        private static TimeSeriesAsset.MetaType SpliceLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
-        {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
-            var mostRecentSymbol = symbols[0];
-
-            return _loadMeta(algo, mostRecentSymbol);
-        }
-
-
-        private static List<BarType<OHLCV>> JoinLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
-            _spliceLoadData(algo, info, false);
-
-        private static TimeSeriesAsset.MetaType JoinLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
-        {
-            var symbols = info[DataSourceParam.nickName2].Split(",");
-            var mostRecentSymbol = symbols[0];
-
-            return _loadMeta(algo, mostRecentSymbol);
-        }
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> JoinGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+            => _spliceGetAsset(owner, info, false);
     }
 }
 

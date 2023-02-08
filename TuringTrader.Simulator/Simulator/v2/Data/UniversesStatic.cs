@@ -697,26 +697,14 @@ namespace TuringTrader.SimulatorV2
         /// <exception cref="Exception"></exception>
         public static HashSet<string> StaticGetUniverse(Algorithm algo, string universe, string datafeed)
         {
-            var constituents = (IEnumerable<string>)null;
-
-            switch (universe.ToLower())
+            var constituents = universe.ToLower() switch
             {
-                case "$spx":
-                    constituents = _staticSpx;
-                    break;
-                case "$oex":
-                    constituents = _staticSpx.Take(100);
-                    break;
-                case "$ndx":
-                    constituents = _staticNdx;
-                    break;
-                case "$dji":
-                    constituents = _staticDji;
-                    break;
-            }
-
-            if (constituents == null || constituents.Count() == 0)
-                throw new Exception(string.Format("Universe {0}:{1} not supported", datafeed, universe));
+                "$spx" => _staticSpx,
+                "$oex" => _staticSpx.Take(100),
+                "$ndx" => _staticNdx,
+                "$dji" => _staticDji,
+                _ => throw new Exception(string.Format("Universe {0}:{1} not supported", datafeed, universe)),
+            };
 
             return constituents
                 .Select(name => datafeed + ':' + name)

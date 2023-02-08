@@ -140,6 +140,13 @@ namespace TuringTrader.SimulatorV2
                     Ticker = (string)jsonData["ticker"], //info[DataSourceParam.ticker],
                     Description = (string)jsonData["name"],
                 });
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> TiingoGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                TiingoLoadData(owner, info),
+                TiingoLoadMeta(owner, info));
+        }
     }
 }
 

@@ -207,6 +207,13 @@ namespace TuringTrader.SimulatorV2
                 Description = info[DataSourceParam.nickName2],
             };
         }
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> CsvGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        {
+            return Tuple.Create(
+                CsvLoadData(owner, info),
+                CsvLoadMeta(owner, info));
+        }
     }
 }
 

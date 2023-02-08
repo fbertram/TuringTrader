@@ -21,6 +21,11 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// TODO: merge load-data and load-meta functions into single one
+//       this is required to properly implement data sources for
+//       child algorithms, as for these data and meta information
+//       are generated together
+
 // ENABLE_xxx: if defined, enable loading from the respective data feeds.
 #define ENABLE_NORGATE
 #define ENABLE_TIINGO
@@ -337,43 +342,41 @@ namespace TuringTrader.SimulatorV2
         private static HashSet<Tuple<
                 string,
                 Action,
-                Func<Algorithm, Dictionary<DataSourceParam, string>, List<BarType<OHLCV>>>,
-                Func<Algorithm, Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
+                Func<Algorithm, Dictionary<DataSourceParam, string>, Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>>>>
             _feeds
                 = new HashSet<Tuple<
                     string,
                     Action,
-                    Func<Algorithm, Dictionary<DataSourceParam, string>, List<BarType<OHLCV>>>,
-                    Func<Algorithm, Dictionary<DataSourceParam, string>, TimeSeriesAsset.MetaType>>>
+                    Func<Algorithm, Dictionary<DataSourceParam, string>, Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>>>>
                 {
 #if ENABLE_NORGATE
-                Tuple.Create("norgate", NorgateInit, NorgateLoadData, NorgateLoadMeta),
+                Tuple.Create("norgate", NorgateInit, NorgateGetAsset),
 #endif
 #if ENABLE_TIINGO
-                Tuple.Create("tiingo", (Action)null, TiingoLoadData, TiingoLoadMeta),
+                Tuple.Create("tiingo", (Action)null, TiingoGetAsset),
 #endif
 #if ENABLE_FRED
-                Tuple.Create("fred", (Action)null, FredLoadData, FredLoadMeta),
+                Tuple.Create("fred", (Action)null, FredGetAsset),
 #endif
 #if ENABLE_CSV
-                Tuple.Create("csv", (Action)null, CsvLoadData, CsvLoadMeta),
+                Tuple.Create("csv", (Action)null, CsvGetAsset),
 #endif
 #if ENABLE_YAHOO
-                Tuple.Create("yahoo", (Action)null, YahooLoadData, YahooLoadMeta),
+                Tuple.Create("yahoo", (Action)null, YahooGetAsset),
 #endif
 #if ENABLE_STOOQ
-                Tuple.Create("stooq", (Action)null, StooqLoadData, StooqLoadMeta),
+                Tuple.Create("stooq", (Action)null, StooqGetAsset),
 #endif
 #if ENABLE_SPLICE
-                Tuple.Create("splice", (Action)null, SpliceLoadData, SpliceLoadMeta),
-                Tuple.Create("join", (Action)null, JoinLoadData, JoinLoadMeta),
+                Tuple.Create("splice", (Action)null, SpliceGetAsset),
+                Tuple.Create("join", (Action)null, JoinGetAsset),
 #endif
 #if ENABLE_ALGO
-                Tuple.Create("algo", (Action)null, AlgoLoadData, AlgoLoadMeta),
+                Tuple.Create("algo", (Action)null, AlgoGetAsset),
 #endif
                 };
 
-        private static List<BarType<OHLCV>> _loadData(Algorithm owner, string nickname, bool fillPrior = true)
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> _loadAsset(Algorithm owner, string nickname, bool fillPrior = true)
         {
             var info = _getInfo(owner, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
@@ -383,25 +386,10 @@ namespace TuringTrader.SimulatorV2
                 {
                     if (i.Item2 != null) i.Item2();
 
-                    var barsRaw = i.Item3(owner, info);
-                    var barsResampled = _resampleToTradingCalendar(owner, barsRaw, fillPrior);
-                    return barsResampled;
-                }
+                    var data = i.Item3(owner, info);
+                    var barsResampled = _resampleToTradingCalendar(owner, data.Item1, fillPrior);
 
-            throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
-        }
-        private static TimeSeriesAsset.MetaType _loadMeta(Algorithm owner, string nickname)
-        {
-            var info = _getInfo(owner, nickname);
-            string dataSource = info[DataSourceParam.dataFeed].ToLower();
-
-            foreach (var i in _feeds)
-                if (dataSource.Contains(i.Item1))
-                {
-                    if (i.Item2 != null) i.Item2();
-
-                    var meta = i.Item4(owner, info);
-                    return meta;
+                    return Tuple.Create(barsResampled, data.Item2);
                 }
 
             throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
@@ -657,15 +645,13 @@ namespace TuringTrader.SimulatorV2
                 {
                     var data = owner.DataCache.Fetch(
                         nickname,
-                        () => Task.Run(() => (object)Tuple.Create(
-                            _loadData(owner, nickname),
-                            _loadMeta(owner, nickname))));
+                        () => Task.Run(() => (object)_loadAsset(owner, nickname)));
 
                     return new TimeSeriesAsset(
                         owner, nickname,
                         data,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item2);
                 });
         }
 
@@ -706,8 +692,8 @@ namespace TuringTrader.SimulatorV2
                     return new TimeSeriesAsset(
                         owner, name,
                         data,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item2);
                 });
         }
 
