@@ -2012,6 +2012,28 @@ namespace TuringTrader
                 row["Value"] = cagr;
                 retvalue.Add(row);
             }
+            //--- year-to-date
+            {
+                DateTime datePastTarget = dateLast - TimeSpan.FromDays(dateLast.DayOfYear);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePastTarget - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                DateTime datePast = (DateTime)rowPast[_xLabel];
+                double years = (dateLast - datePast).TotalDays / 365.25;
+                double navPast = (double)rowPast[_firstYLabel];
+                double change = 100.0 * (navLast / navPast - 1.0);
+                double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "cagr-ytd";
+                row["Value"] = cagr;
+                retvalue.Add(row);
+
+                row = new Dictionary<String, object>();
+                row[METRIC_LABEL] = "chg-ytd";
+                row["Value"] = change;
+                retvalue.Add(row);
+            }
 
             //--- other metrics
             var metrics = new List<Tuple<string, Func<object>>>
