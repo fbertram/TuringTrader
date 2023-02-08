@@ -21,9 +21,12 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// RESOLVE_CHILD_HOLDINGS: if defined, resolve asset holdings of child strategies
+#define RESOLVE_CHILD_HOLDINGS
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -66,22 +69,50 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddTargetAllocation()
         {
-            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS, "Symbol");
+            var holdings = new Dictionary<string, double>();
+            var names = new Dictionary<string, string>();
+            var prices = new Dictionary<string, double>();
 
-            foreach (var kv in Algorithm.Account.Positions.OrderByDescending(p => p.Value))
+            void addAssetAllocation(Algorithm algo, double scale = 1.0)
             {
-                var asset = Algorithm.Asset(kv.Key);
-                var symbol = Regex.Replace(asset.Ticker, @"\.$", ""); // remove trailing dot from quote splicing
-                var name = asset.Description;
-                var pcnt = string.Format("{0:P2}", kv.Value);
-                var lastClose = string.Format("{0:C2}", asset.Close[0]);
+                foreach (var kv in algo.Positions)
+                {
+                    var asset = algo.Asset(kv.Key);
 
-                SetX(symbol);
-                Plot("Name", name);
-                Plot("Allocation", pcnt);
-                Plot("Price", lastClose);
+#if RESOLVE_CHILD_HOLDINGS
+                    // optional code to resolve holdings of child strategies
+                    if (asset.Meta.Generator != null)
+                    {
+                        addAssetAllocation(asset.Meta.Generator, kv.Value * scale);
+                    }
+                    else
+#endif
+                    {
+                        var ticker = asset.Ticker;
+
+                        if (!holdings.ContainsKey(ticker))
+                        {
+                            holdings[ticker] = 0.0;
+                            names[ticker] = asset.Description;
+                            prices[ticker] = asset.Close[0];
+                        }
+
+                        holdings[ticker] += kv.Value * scale;
+                    }
+                }
+            }
+            addAssetAllocation(Algorithm);
+
+            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS, "Symbol");
+            foreach (var ticker in holdings.Keys.OrderByDescending(ticker => holdings[ticker]))
+            {
+                SetX(ticker);
+                Plot("Name", names[ticker]);
+                Plot("Allocation", string.Format("{0:P2}", holdings[ticker]));
+                Plot("Price", string.Format("{0:C2}", prices[ticker]));
             }
 
+            // BUGBUG: this is incorrect as it does not consider the child strategies
             SelectChart(Simulator.Plotter.SheetNames.LAST_REBALANCE, "Key");
             SetX("LastRebalance");
             Plot("Value", Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate);
