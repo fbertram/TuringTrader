@@ -166,15 +166,15 @@ namespace TuringTrader.SimulatorV2.Indicators
                         new TimeSeriesFloat(
                             series.Owner, name + ".Slope",
                             retrieve,
-                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item1),
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item1),
                         new TimeSeriesFloat(
                             series.Owner, name + ".Intercept",
                             retrieve,
-                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item2),
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item2),
                         new TimeSeriesFloat(
                             series.Owner, name + ".R2",
                             retrieve,
-                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item3));
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item3));
                 });
         }
         #endregion

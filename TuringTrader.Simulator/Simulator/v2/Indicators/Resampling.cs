@@ -142,8 +142,8 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesAsset(
                         series.Owner, name,
                         data,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item2);
                 });
         }
 
@@ -224,8 +224,8 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesAsset(
                         series.Owner, name,
                         data,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
-                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data).Item2);
                 });
         }
     }

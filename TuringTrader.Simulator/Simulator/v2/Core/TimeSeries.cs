@@ -56,8 +56,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         protected readonly Task<object> _retrieveUntyped;
         private readonly Task<List<BarType<T>>> _retrieveTyped;
-        private readonly Func<Task<object>, List<BarType<T>>> _extract;
-        private List<BarType<T>> waitAndCast(Task<object> retrievedData) => (List<BarType<T>>)retrievedData.Result;
+        private readonly Func<object, List<BarType<T>>> _extract;
         private bool _firstLookup = true;
         private int _CurrentIndex = 0;
         private int GetIndex(DateTime date = default)
@@ -127,7 +126,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="name">time series name</param>
         /// <param name="retrieve">data retrieval task</param>
         /// <param name="extract">data extraction function</param>
-        public TimeSeries(Algorithm owner, string name, Task<object> retrieve, Func<Task<object>, List<BarType<T>>> extract)
+        public TimeSeries(Algorithm owner, string name, Task<object> retrieve, Func<object, List<BarType<T>>> extract)
         {
             Owner = owner;
             Name = name;
@@ -184,7 +183,7 @@ namespace TuringTrader.SimulatorV2
         /// The time series data. Note that accessing this field will
         /// wait for the retrieval task to finish and then extract the data.
         /// </summary>
-        public List<BarType<T>> Data => _retrieveTyped != null ? _retrieveTyped.Result : _extract(_retrieveUntyped);
+        public List<BarType<T>> Data => _retrieveTyped != null ? _retrieveTyped.Result : _extract(_retrieveUntyped.Result);
 
         /// <summary>
         /// Indexer to return time series value at offset.
@@ -297,7 +296,7 @@ namespace TuringTrader.SimulatorV2
     public class TimeSeriesAsset : TimeSeries<OHLCV>
     {
         #region internal stuff
-        private Func<Task<object>, MetaType> _extractMeta;
+        private Func<object, MetaType> _extractMeta;
 
         private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
         {
@@ -336,8 +335,9 @@ namespace TuringTrader.SimulatorV2
         public TimeSeriesAsset(
             Algorithm owner, string name,
             Task<object> retrieve,
-            Func<Task<object>, List<BarType<OHLCV>>> extractBars,
-            Func<Task<object>, MetaType> extractMeta) : base(owner, name, retrieve, extractBars)
+            Func<object, List<BarType<OHLCV>>> extractBars,
+            Func<object, MetaType> extractMeta)
+            : base(owner, name, retrieve, extractBars)
         {
             _extractMeta = extractMeta;
         }
@@ -364,7 +364,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Asset's meta data including its ticker symbol and descriptive name.
         /// </summary>
-        public MetaType Meta => _extractMeta(_retrieveUntyped);
+        public MetaType Meta => _extractMeta(_retrieveUntyped.Result);
 
         /// <summary>
         /// Convenience function to asset's full descriptive name.
@@ -433,7 +433,7 @@ namespace TuringTrader.SimulatorV2
         public TimeSeriesFloat(
             Algorithm owner, string name,
             Task<object> retrieve,
-            Func<Task<object>, List<BarType<double>>> extract)
+            Func<object, List<BarType<double>>> extract)
                 : base(owner, name, retrieve, extract)
         { }
         public TimeSeriesFloat(
