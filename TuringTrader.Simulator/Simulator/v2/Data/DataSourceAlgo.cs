@@ -69,20 +69,26 @@ namespace TuringTrader.SimulatorV2
                 instanceV2.EndDate = endDate;
                 instanceV2.IsDataSource = true;
                 instanceV2.Run();
-                return instanceV2.Result;
+                return instanceV2.EquityCurve;
             }
 
             throw new Exception(string.Format("failed to instantiate algorithm '{0}'", algoName));
         }
-        private static TimeSeriesAsset.MetaType AlgoLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
+        private static TimeSeriesAsset.MetaType AlgoLoadMeta(Algorithm owner, Dictionary<DataSourceParam, string> info)
         {
-            var algoName = info[DataSourceParam.nickName2];
-            var algoInstance = Simulator.AlgorithmLoader.InstantiateAlgorithm(algoName);
+            var generatorName = info[DataSourceParam.nickName2];
+            var generator = Simulator.AlgorithmLoader.InstantiateAlgorithm(generatorName);
+            //var generatorV1 = (generator as Simulator.Algorithm);
+            var generatorV2 = (generator as Algorithm);
+
+            // TODO: for v1 algorithms, we need to convert the results to V2 format here,
+            //       so that we can build portfolios of strategies with V1 algos
 
             return new TimeSeriesAsset.MetaType
             {
                 Ticker = info[DataSourceParam.nickName],
-                Description = algoInstance.Name,
+                Description = generator.Name,
+                Generator = generatorV2,
             };
         }
     }

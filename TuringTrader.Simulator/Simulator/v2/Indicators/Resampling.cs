@@ -75,11 +75,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Monthly({1})", series.Name, offset);
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -99,7 +99,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                    return new TimeSeriesFloat(series.Owner, name, data);
                 });
         }
 
@@ -113,11 +113,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Monthly({1})", series.Name, offset);
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -140,7 +140,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         }));
 
                     return new TimeSeriesAsset(
-                        series.Algorithm, name,
+                        series.Owner, name,
                         data, series.Meta);
                 });
         }
@@ -155,11 +155,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Weekly({1})", series.Name, offset);
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -179,7 +179,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                    return new TimeSeriesFloat(series.Owner, name, data);
                 });
         }
 
@@ -193,11 +193,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Weekly({1})", series.Name, offset);
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -220,7 +220,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         }));
 
                     return new TimeSeriesAsset(
-                        series.Algorithm, name,
+                        series.Owner, name,
                         data, series.Meta);
                 });
         }

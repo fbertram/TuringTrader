@@ -154,23 +154,23 @@ namespace TuringTrader.SimulatorV2.Indicators
                 return Tuple.Create(slope, intercept, r2);
             }
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() => calcRegression()));
 
                     return new RegressionT(
                         new TimeSeriesFloat(
-                            series.Algorithm, name + ".Slope",
+                            series.Owner, name + ".Slope",
                             Task.Run(() => { var r = data.Result; return r.Item1; })),
                         new TimeSeriesFloat(
-                            series.Algorithm, name + ".Intercept",
+                            series.Owner, name + ".Intercept",
                             Task.Run(() => { var r = data.Result; return r.Item2; })),
                         new TimeSeriesFloat(
-                            series.Algorithm, name + ".R2",
+                            series.Owner, name + ".R2",
                             Task.Run(() => { var r = data.Result; return r.Item3; })));
                 });
         }

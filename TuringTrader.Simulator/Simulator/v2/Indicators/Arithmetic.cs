@@ -37,11 +37,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2.Name);
 
-            return summand1.Algorithm.ObjectCache.Fetch(
+            return summand1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = summand1.Algorithm.DataCache.Fetch(
+                    var data = summand1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -58,18 +58,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(summand1.Algorithm, name, data);
+                    return new TimeSeriesFloat(summand1.Owner, name, data);
                 });
         }
         public static TimeSeriesFloat Add(this TimeSeriesFloat summand1, double summand2)
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2);
 
-            return summand1.Algorithm.ObjectCache.Fetch(
+            return summand1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = summand1.Algorithm.DataCache.Fetch(
+                    var data = summand1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -86,7 +86,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(summand1.Algorithm, name, data);
+                    return new TimeSeriesFloat(summand1.Owner, name, data);
                 });
         }
         #endregion
@@ -95,11 +95,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend.Name);
 
-            return minuend.Algorithm.ObjectCache.Fetch(
+            return minuend.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = minuend.Algorithm.DataCache.Fetch(
+                    var data = minuend.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -116,18 +116,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(minuend.Algorithm, name, data);
+                    return new TimeSeriesFloat(minuend.Owner, name, data);
                 });
         }
         public static TimeSeriesFloat Sub(this TimeSeriesFloat minuend, double subtrahend)
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend);
 
-            return minuend.Algorithm.ObjectCache.Fetch(
+            return minuend.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = minuend.Algorithm.DataCache.Fetch(
+                    var data = minuend.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -144,7 +144,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(minuend.Algorithm, name, data);
+                    return new TimeSeriesFloat(minuend.Owner, name, data);
                 });
         }
         #endregion
@@ -153,11 +153,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2.Name);
 
-            return multiplicand1.Algorithm.ObjectCache.Fetch(
+            return multiplicand1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = multiplicand1.Algorithm.DataCache.Fetch(
+                    var data = multiplicand1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -174,18 +174,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(multiplicand1.Algorithm, name, data);
+                    return new TimeSeriesFloat(multiplicand1.Owner, name, data);
                 });
         }
         public static TimeSeriesFloat Mul(this TimeSeriesFloat multiplicand1, double multiplicand2)
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2);
 
-            return multiplicand1.Algorithm.ObjectCache.Fetch(
+            return multiplicand1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = multiplicand1.Algorithm.DataCache.Fetch(
+                    var data = multiplicand1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -202,7 +202,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(multiplicand1.Algorithm, name, data);
+                    return new TimeSeriesFloat(multiplicand1.Owner, name, data);
                 });
         }
         #endregion
@@ -217,11 +217,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Div({1})", dividend.Name, divisor.Name);
 
-            return dividend.Algorithm.ObjectCache.Fetch(
+            return dividend.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = dividend.Algorithm.DataCache.Fetch(
+                    var data = dividend.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -238,7 +238,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(dividend.Algorithm, name, data);
+                    return new TimeSeriesFloat(dividend.Owner, name, data);
                 });
         }
         /// <summary>
@@ -251,11 +251,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Div({1})", dividend.Name, divisor);
 
-            return dividend.Algorithm.ObjectCache.Fetch(
+            return dividend.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = dividend.Algorithm.DataCache.Fetch(
+                    var data = dividend.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -272,7 +272,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(dividend.Algorithm, name, data);
+                    return new TimeSeriesFloat(dividend.Owner, name, data);
                 });
         }
         #endregion
@@ -281,11 +281,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2.Name);
 
-            return min1.Algorithm.ObjectCache.Fetch(
+            return min1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = min1.Algorithm.DataCache.Fetch(
+                    var data = min1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -302,18 +302,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(min1.Algorithm, name, data);
+                    return new TimeSeriesFloat(min1.Owner, name, data);
                 });
         }
         public static TimeSeriesFloat Min(this TimeSeriesFloat min1, double min2)
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2);
 
-            return min1.Algorithm.ObjectCache.Fetch(
+            return min1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = min1.Algorithm.DataCache.Fetch(
+                    var data = min1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -330,7 +330,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(min1.Algorithm, name, data);
+                    return new TimeSeriesFloat(min1.Owner, name, data);
                 });
         }
         #endregion
@@ -339,11 +339,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2.Name);
 
-            return max1.Algorithm.ObjectCache.Fetch(
+            return max1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = max1.Algorithm.DataCache.Fetch(
+                    var data = max1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -360,18 +360,18 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(max1.Algorithm, name, data);
+                    return new TimeSeriesFloat(max1.Owner, name, data);
                 });
         }
         public static TimeSeriesFloat Max(this TimeSeriesFloat max1, double max2)
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2);
 
-            return max1.Algorithm.ObjectCache.Fetch(
+            return max1.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = max1.Algorithm.DataCache.Fetch(
+                    var data = max1.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -388,7 +388,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(max1.Algorithm, name, data);
+                    return new TimeSeriesFloat(max1.Owner, name, data);
                 });
         }
         #endregion

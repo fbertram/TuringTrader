@@ -125,19 +125,24 @@ namespace TuringTrader.SimulatorV2
             if (_lastDate < _algorithm.SimDate)
                 _lastDate = _algorithm.SimDate;
 
-            var navOpen = 0.0; ;
+            var navOpen = 0.0;
             var navClose = 0.0;
 
-            foreach (var orderType in new List<OrderType> {
+            foreach (var orderTypeFilter in new List<OrderType> {
                 OrderType.closeThisBar,
                 OrderType.openNextBar })
             {
+                // execute pending next-day orders on close of last bar
+                var orderType = orderTypeFilter switch
+                {
+                    OrderType.openNextBar => _algorithm.IsLastBar ? OrderType.closeThisBar : orderTypeFilter,
+                    _ => orderTypeFilter,
+                };
+
                 var navType = orderType switch
                 {
                     OrderType.closeThisBar => NavType.closeThisBar,
-                    _ => _algorithm.IsLastBar
-                        ? NavType.closeThisBar
-                        : NavType.openNextBar,
+                    _ => NavType.openNextBar,
                 };
 
                 var execDate = orderType switch
@@ -147,8 +152,10 @@ namespace TuringTrader.SimulatorV2
                 };
 
                 //----- process orders
-                foreach (var order in _orderQueue.Where(o => o.OrderType == orderType))
+                foreach (var order in _orderQueue.Where(o => o.OrderType == orderTypeFilter))
                 {
+                    var orderAsset = _algorithm.Asset(order.Name);
+
                     // FIXME: this code has not been tested with short positions
                     // it is likely that the logic around isBuy and price2 needs to change
                     var price = orderType switch
@@ -158,9 +165,7 @@ namespace TuringTrader.SimulatorV2
                         // at the opening price. this will not be true for limit
                         // and stop orders, but we see no better alternative, as
                         // the asset's high and low prices are not aligned in time.
-                        _ => _algorithm.IsLastBar
-                            ? _algorithm.Asset(order.Name).Close[0]
-                            : _algorithm.Asset(order.Name).Open[-1],
+                        _ => _algorithm.Asset(order.Name).Open[-1],
                     };
 
                     // we need to calculate the nav every time we get
@@ -172,7 +177,7 @@ namespace TuringTrader.SimulatorV2
                     var targetAlloc = Math.Abs(order.TargetAllocation) >= MinPosition ? order.TargetAllocation : 0.0;
 
 #if false
-                    // TODO: determine if this is helpful
+                    // TODO: determine if skipping small orders is helpful
                     if (Math.Abs(targetAlloc - currentAlloc) < MinPosition && targetAlloc != 0.0)
                         continue;
 #endif
@@ -229,7 +234,7 @@ namespace TuringTrader.SimulatorV2
                 }
 
                 //----- save NAV
-                switch (orderType)
+                switch (orderTypeFilter)
                 {
                     case OrderType.closeThisBar:
                         navClose = CalcNetAssetValue(NavType.closeThisBar);
@@ -244,10 +249,6 @@ namespace TuringTrader.SimulatorV2
             _orderQueue.Clear();
 
             //----- calculate NAV at open and close
-            // FIXME: as we calculate this after trades on the next
-            // day have been executed, the asset allocation used
-            // is that after tomorrow's open. This is obviously
-            // incorrect.
             var navHigh = Math.Max(navOpen, navClose);
             var navLow = Math.Min(navOpen, navClose);
             _navMax = Math.Max(_navMax, navClose);
@@ -303,7 +304,8 @@ namespace TuringTrader.SimulatorV2
         public class OrderTicket
         {
             /// <summary>
-            /// Asset name.
+            /// Asset name. This is the name that was used to load the asset,
+            /// which may or may not be identical to the asset's ticker symbol.
             /// </summary>
             public readonly string Name;
 

@@ -43,11 +43,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         {
             var name = string.Format("{0}.TrueRange", series.Name);
 
-            return series.Algorithm.ObjectCache.Fetch(
+            return series.Owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = series.Algorithm.DataCache.Fetch(
+                    var data = series.Owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
@@ -65,7 +65,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             return dst;
                         }));
 
-                    return new TimeSeriesFloat(series.Algorithm, name, data);
+                    return new TimeSeriesFloat(series.Owner, name, data);
                 });
         }
         #endregion

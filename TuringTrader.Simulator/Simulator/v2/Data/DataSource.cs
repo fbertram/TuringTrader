@@ -645,26 +645,26 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Load asset data from various data feeds.
         /// </summary>
-        /// <param name="algo">parent algorithm</param>
+        /// <param name="owner">parent/ owning algorithm</param>
         /// <param name="nickname">asset nickname</param>
         /// <returns>time series for asset</returns>
         /// <exception cref="Exception"></exception>
-        public static TimeSeriesAsset LoadAsset(Algorithm algo, string nickname)
+        public static TimeSeriesAsset LoadAsset(Algorithm owner, string nickname)
         {
-            return algo.ObjectCache.Fetch(
+            return owner.ObjectCache.Fetch(
                 nickname,
                 () =>
                 {
-                    var data = algo.DataCache.Fetch(
+                    var data = owner.DataCache.Fetch(
                         nickname,
-                        () => Task.Run(() => _loadData(algo, nickname)));
+                        () => Task.Run(() => _loadData(owner, nickname)));
 
-                    var meta = algo.DataCache.Fetch(
+                    var meta = owner.DataCache.Fetch(
                         nickname + "-meta",
-                        () => Task.Run(() => (object)_loadMeta(algo, nickname)));
+                        () => Task.Run(() => _loadMeta(owner, nickname)));
 
                     return new TimeSeriesAsset(
-                        algo, nickname,
+                        owner, nickname,
                         data, meta);
                 });
         }
@@ -672,40 +672,48 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Load result from child algorithm as an asset.
         /// </summary>
-        /// <param name="algo">parent/ host algorithm</param>
-        /// <param name="child">child algorithm</param>
+        /// <param name="owner">parent/ owning algorithm</param>
+        /// <param name="generator">child/ generating algorithm</param>
         /// <returns></returns>
-        public static TimeSeriesAsset LoadAsset(Algorithm algo, Algorithm child)
+        public static TimeSeriesAsset LoadAsset(Algorithm owner, Algorithm generator)
         {
-            var name = string.Format("{0}-{1:X}", child.Name, child.GetHashCode());
+            var name = string.Format("{0}-{1:X}", generator.Name, generator.GetHashCode());
 
-            return algo.ObjectCache.Fetch(
+            return owner.ObjectCache.Fetch(
                 name,
                 () =>
                 {
-                    var data = algo.DataCache.Fetch(
+                    var data = owner.DataCache.Fetch(
                         name,
                         () => Task.Run(() =>
                         {
-                            var tradingDays = algo.TradingCalendar.TradingDays;
-                            child.StartDate = tradingDays.First();
-                            child.EndDate = tradingDays.Last();
+                            var tradingDays = owner.TradingCalendar.TradingDays;
+                            generator.StartDate = tradingDays.First();
+                            generator.EndDate = tradingDays.Last();
 
-                            child.Run();
+                            generator.Run();
 
-                            return _resampleToTradingCalendar(algo, child.Result);
+                            return _resampleToTradingCalendar(owner, generator.EquityCurve);
                         }));
 
-                    var meta = algo.DataCache.Fetch(
+                    var meta = owner.DataCache.Fetch(
                         name + "-meta",
-                        () => Task.FromResult((object)new TimeSeriesAsset.MetaType
-                        {
-                            Ticker = name,
-                            Description = child.Name,
+                        () => Task.Run(() => {
+                            // NOTE: we wait for the algorithm to finish, so that
+                            // we can access the final state of the algorithm,
+                            // including its account status for the final asset
+                            // allocation.
+                            var wait = data.Result;
+                            return new TimeSeriesAsset.MetaType
+                            {
+                                Ticker = name,
+                                Description = generator.Name,
+                                Generator = generator,
+                            };
                         }));
 
                     return new TimeSeriesAsset(
-                        algo, name,
+                        owner, name,
                         data, meta);
                 });
         }
