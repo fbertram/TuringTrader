@@ -373,9 +373,9 @@ namespace TuringTrader.SimulatorV2
 #endif
                 };
 
-        private static List<BarType<OHLCV>> _loadData(Algorithm algo, string nickname, bool fillPrior = true)
+        private static List<BarType<OHLCV>> _loadData(Algorithm owner, string nickname, bool fillPrior = true)
         {
-            var info = _getInfo(algo, nickname);
+            var info = _getInfo(owner, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
 
             foreach (var i in _feeds)
@@ -383,16 +383,16 @@ namespace TuringTrader.SimulatorV2
                 {
                     if (i.Item2 != null) i.Item2();
 
-                    var barsRaw = i.Item3(algo, info);
-                    var barsResampled = _resampleToTradingCalendar(algo, barsRaw, fillPrior);
+                    var barsRaw = i.Item3(owner, info);
+                    var barsResampled = _resampleToTradingCalendar(owner, barsRaw, fillPrior);
                     return barsResampled;
                 }
 
             throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
         }
-        private static TimeSeriesAsset.MetaType _loadMeta(Algorithm algo, string nickname)
+        private static TimeSeriesAsset.MetaType _loadMeta(Algorithm owner, string nickname)
         {
-            var info = _getInfo(algo, nickname);
+            var info = _getInfo(owner, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
 
             foreach (var i in _feeds)
@@ -400,7 +400,7 @@ namespace TuringTrader.SimulatorV2
                 {
                     if (i.Item2 != null) i.Item2();
 
-                    var meta = i.Item4(algo, info);
+                    var meta = i.Item4(owner, info);
                     return meta;
                 }
 
@@ -410,17 +410,17 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Resample OHLCV data to algorithm's trading calendar.
         /// </summary>
-        /// <param name="algo">parent algorithm</param>
+        /// <param name="owner">parent algorithm</param>
         /// <param name="src">source data</param>
         /// <returns>resampled data</returns>
-        private static List<BarType<OHLCV>> _resampleToTradingCalendar(Algorithm algo, List<BarType<OHLCV>> src, bool fillPrior = true)
+        private static List<BarType<OHLCV>> _resampleToTradingCalendar(Algorithm owner, List<BarType<OHLCV>> src, bool fillPrior = true)
         {
             if (src.Count == 0) return src;
 
             var dst = new List<BarType<OHLCV>>();
             var srcIdx = -1;
 
-            foreach (var tradingDay in algo.TradingCalendar.TradingDays)
+            foreach (var tradingDay in owner.TradingCalendar.TradingDays)
             {
                 var freshBar = false;
 
@@ -574,7 +574,7 @@ namespace TuringTrader.SimulatorV2
         /// This helper is used for the web-based data sources, namely FRED, Yahoo, and Tiingo.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="algo"></param>
+        /// <param name="owner"></param>
         /// <param name="info"></param>
         /// <param name="getMeta"></param>
         /// <param name="parseMeta"></param>
@@ -582,7 +582,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         private static TimeSeriesAsset.MetaType _loadMetaHelper<T>(
-            Algorithm algo,
+            Algorithm owner,
             Dictionary<DataSourceParam, string> info,
             Func<string> getMeta,
             Func<string, T> parseMeta,
@@ -657,15 +657,15 @@ namespace TuringTrader.SimulatorV2
                 {
                     var data = owner.DataCache.Fetch(
                         nickname,
-                        () => Task.Run(() => _loadData(owner, nickname)));
-
-                    var meta = owner.DataCache.Fetch(
-                        nickname + "-meta",
-                        () => Task.Run(() => _loadMeta(owner, nickname)));
+                        () => Task.Run(() => (object)Tuple.Create(
+                            _loadData(owner, nickname),
+                            _loadMeta(owner, nickname))));
 
                     return new TimeSeriesAsset(
                         owner, nickname,
-                        data, meta);
+                        data,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
                 });
         }
 
@@ -693,28 +693,21 @@ namespace TuringTrader.SimulatorV2
 
                             generator.Run();
 
-                            return _resampleToTradingCalendar(owner, generator.EquityCurve);
-                        }));
-
-                    var meta = owner.DataCache.Fetch(
-                        name + "-meta",
-                        () => Task.Run(() => {
-                            // NOTE: we wait for the algorithm to finish, so that
-                            // we can access the final state of the algorithm,
-                            // including its account status for the final asset
-                            // allocation.
-                            var wait = data.Result;
-                            return new TimeSeriesAsset.MetaType
-                            {
-                                Ticker = name,
-                                Description = generator.Name,
-                                Generator = generator,
-                            };
+                            return (object)Tuple.Create(
+                                _resampleToTradingCalendar(owner, generator.EquityCurve),
+                                new TimeSeriesAsset.MetaType
+                                {
+                                    Ticker = name,
+                                    Description = generator.Name,
+                                    Generator = generator,
+                                });
                         }));
 
                     return new TimeSeriesAsset(
                         owner, name,
-                        data, meta);
+                        data,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
                 });
         }
 

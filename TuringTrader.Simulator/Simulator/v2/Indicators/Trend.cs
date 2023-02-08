@@ -57,7 +57,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<double>>();
 
                             var window = new Queue<double>();
@@ -106,7 +106,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<double>>();
                             var ema = src[0].Value;
                             var alpha = 2.0 / (1.0 + n);

@@ -34,7 +34,7 @@ namespace TuringTrader.SimulatorV2.Indicators
     {
         private static List<bool> Clock(this TimeSeriesFloat series, Func<DateTime, DateTime, bool> trigger, int offset = 0)
         {
-            var src = series.Data.Result;
+            var src = series.Data;
             var dst = new List<bool>();
 
             for (int idx = 0; idx < src.Count; idx++)
@@ -83,7 +83,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<double>>();
 
                             var clock = series.Clock((current, next) => current.Month != next.Month, offset);
@@ -121,7 +121,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<OHLCV>>();
 
                             var clock = series.Close.Clock((current, next) => current.Month != next.Month, offset);
@@ -130,18 +130,20 @@ namespace TuringTrader.SimulatorV2.Indicators
                             {
                                 if (clock[idx])
                                 {
-                                    // BUGBUG: this returns the last OHLCV bar
+                                    // BUGBUG: this returns the last OHLCV bar of each monthly period
                                     // FIXME: calculate open, high, low and volume here
                                     dst.Add(src[idx]);
                                 }
                             }
 
-                            return dst;
+                            return (object)Tuple.Create(dst, series.Meta);
                         }));
 
                     return new TimeSeriesAsset(
                         series.Owner, name,
-                        data, series.Meta);
+                        data,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
                 });
         }
 
@@ -163,7 +165,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<double>>();
 
                             var clock = series.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
@@ -201,7 +203,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<OHLCV>>();
 
                             var clock = series.Close.Clock((current, next) => current.DayOfWeek >= next.DayOfWeek, offset);
@@ -210,18 +212,20 @@ namespace TuringTrader.SimulatorV2.Indicators
                             {
                                 if (clock[idx])
                                 {
-                                    // BUGBUG: this returns the last OHLCV bar
+                                    // BUGBUG: this returns the last OHLCV bar of each weekly period
                                     // FIXME: calculate open, high, low and volume here
                                     dst.Add(src[idx]);
                                 }
                             }
 
-                            return dst;
+                            return (object)Tuple.Create(dst, series.Meta);
                         }));
 
                     return new TimeSeriesAsset(
                         series.Owner, name,
-                        data, series.Meta);
+                        data,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item1,
+                        (data) => ((Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType>)data.Result).Item2);
                 });
         }
     }

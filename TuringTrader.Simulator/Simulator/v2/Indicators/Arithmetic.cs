@@ -45,7 +45,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = summand1.Data.Result;
+                            var src = summand1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -73,7 +73,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = summand1.Data.Result;
+                            var src = summand1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -103,7 +103,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = minuend.Data.Result;
+                            var src = minuend.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -131,7 +131,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = minuend.Data.Result;
+                            var src = minuend.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -161,7 +161,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = multiplicand1.Data.Result;
+                            var src = multiplicand1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -189,7 +189,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = multiplicand1.Data.Result;
+                            var src = multiplicand1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -225,7 +225,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = dividend.Data.Result;
+                            var src = dividend.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -259,7 +259,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = dividend.Data.Result;
+                            var src = dividend.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -289,7 +289,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = min1.Data.Result;
+                            var src = min1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -317,7 +317,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = min1.Data.Result;
+                            var src = min1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -347,7 +347,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = max1.Data.Result;
+                            var src = max1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)
@@ -375,7 +375,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = max1.Data.Result;
+                            var src = max1.Data;
                             var dst = new List<BarType<double>>();
 
                             foreach (var it in src)

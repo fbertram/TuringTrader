@@ -49,43 +49,16 @@ namespace TuringTrader.SimulatorV2
     /// <typeparam name="T"></typeparam>
     public class TimeSeries<T>
     {
+        #region internal stuff
         /// <summary>
-        /// Algorithm instance owning this time series. This is the algorithm
-        /// instance that holds this time series in its cache. Note that for
-        /// child algorithms, this is not the same instance that generated
-        /// the data.
+        /// Task to retrieve time series' data. Note that these data are untyped,
+        /// and that an extract function is required to wait for the result, and unpack them.
         /// </summary>
-        public readonly Algorithm Owner;
-        /// <summary>
-        /// Name of the time series. For assets, this is the nickname used
-        /// to initially load the data. For indicators, this name is 
-        /// typically derived from any input series, the indicator's name, 
-        /// and its parameters.
-        /// </summary>
-        public readonly string Name;
-        /// <summary>
-        /// The time series data. This is a promise for a result that will
-        /// be resolved at a later time.
-        /// </summary>
-        public readonly Task<List<BarType<T>>> Data;
-
+        protected readonly Task<object> _retrieveUntyped;
+        private readonly Task<List<BarType<T>>> _retrieveTyped;
+        private readonly Func<Task<object>, List<BarType<T>>> _extract;
+        private List<BarType<T>> waitAndCast(Task<object> retrievedData) => (List<BarType<T>>)retrievedData.Result;
         private bool _firstLookup = true;
-
-        /// <summary>
-        /// Create new time series.
-        /// </summary>
-        /// <param name="owner">parent algorithm</param>
-        /// <param name="name">time series name</param>
-        /// <param name="data">time series data</param>
-        public TimeSeries(Algorithm owner, string name, Task<List<BarType<T>>> data)
-        {
-            Owner = owner;
-            Name = name;
-            Data = data;
-
-            Time = new TimeIndexer<T>(this);
-        }
-
         private int _CurrentIndex = 0;
         private int GetIndex(DateTime date = default)
         {
@@ -102,7 +75,7 @@ namespace TuringTrader.SimulatorV2
             //         independent from the simulator's state. Consequently,
             //         we should preserve the current index position.
 
-            var data = Data.Result;
+            var data = Data;
             var lookupDate = date == default ? Owner.SimDate : date;
 
             int index;
@@ -136,6 +109,83 @@ namespace TuringTrader.SimulatorV2
             return index;
         }
 
+        private DateTime GetDate(int offset)
+        {
+            var data = Data;
+            var baseIdx = GetIndex();
+            var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
+
+            return data[idx].Date;
+        }
+        #endregion
+
+        /// <summary>
+        /// Create new time series. The retrieval function is untyped, requiring
+        /// an extraction function to unpack the data.
+        /// </summary>
+        /// <param name="owner">parent algorithm</param>
+        /// <param name="name">time series name</param>
+        /// <param name="retrieve">data retrieval task</param>
+        /// <param name="extract">data extraction function</param>
+        public TimeSeries(Algorithm owner, string name, Task<object> retrieve, Func<Task<object>, List<BarType<T>>> extract)
+        {
+            Owner = owner;
+            Name = name;
+            Time = new TimeIndexer<T>(this);
+            _retrieveUntyped = retrieve;
+            _extract = extract;
+        }
+
+        /// <summary>
+        /// Create new time series.
+        /// </summary>
+        /// <param name="owner">parent/ owning algorithm</param>
+        /// <param name="name">time series name</param>
+        /// <param name="retrieve">data retrieval task</param>
+        public TimeSeries(Algorithm owner, string name, Task<List<BarType<T>>> retrieve)
+        {
+            Owner = owner;
+            Name = name;
+            Time = new TimeIndexer<T>(this);
+            _retrieveTyped = retrieve;
+        }
+
+        /// <summary>
+        /// Create new time series
+        /// </summary>
+        /// <param name="owner">parent/ owning algorithm</param>
+        /// <param name="name">time series name</param>
+        /// <param name="data">time series data</param>
+        public TimeSeries(Algorithm owner, string name, List<BarType<T>> data)
+        {
+            Owner = owner;
+            Name = name;
+            Time = new TimeIndexer<T>(this);
+            _retrieveTyped = Task.FromResult(data);
+        }
+
+        /// <summary>
+        /// Algorithm instance owning this time series. This is the algorithm
+        /// instance that holds this time series in its cache. Note that for
+        /// child algorithms, this is not the same instance that generated
+        /// the data.
+        /// </summary>
+        public readonly Algorithm Owner;
+
+        /// <summary>
+        /// Name of the time series. For assets, this is the nickname used
+        /// to initially load the data. For indicators, this name is 
+        /// typically derived from any input series, the indicator's name, 
+        /// and its parameters.
+        /// </summary>
+        public readonly string Name;
+
+        /// <summary>
+        /// The time series data. Note that accessing this field will
+        /// wait for the retrieval task to finish and then extract the data.
+        /// </summary>
+        public List<BarType<T>> Data => _retrieveTyped != null ? _retrieveTyped.Result : _extract(_retrieveUntyped);
+
         /// <summary>
         /// Indexer to return time series value at offset.
         /// </summary>
@@ -145,7 +195,7 @@ namespace TuringTrader.SimulatorV2
         {
             get
             {
-                var data = Data.Result;
+                var data = Data;
                 var baseIdx = GetIndex();
                 var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
 
@@ -153,23 +203,19 @@ namespace TuringTrader.SimulatorV2
             }
         }
 
+        /// <summary>
+        /// Indexer to return time series value at a specific date.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>value at date</returns>
         public T this[DateTime date]
         {
             get
             {
-                var data = Data.Result;
+                var data = Data;
                 var idx = GetIndex(date);
                 return data[idx].Value;
             }
-        }
-
-        private DateTime GetDate(int offset)
-        {
-            var data = Data.Result;
-            var baseIdx = GetIndex();
-            var idx = Math.Max(0, Math.Min(data.Count - 1, baseIdx - offset));
-
-            return data[idx].Date;
         }
 
         /// <summary>
@@ -250,6 +296,52 @@ namespace TuringTrader.SimulatorV2
     /// </summary>
     public class TimeSeriesAsset : TimeSeries<OHLCV>
     {
+        #region internal stuff
+        private Func<Task<object>, MetaType> _extractMeta;
+
+        private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
+        {
+            var name = Name + "." + fieldName;
+
+            return Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var ohlcv = Data;
+                            var data = new List<BarType<double>>();
+
+                            foreach (var it in ohlcv)
+                                data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
+
+                            return data;
+                        }));
+
+                    return new TimeSeriesFloat(Owner, name, data);
+                });
+        }
+        #endregion
+
+        /// <summary>
+        /// Create new time series for an asset.
+        /// </summary>
+        /// <param name="owner">Algorithm instance requesting/ owning this time series</param>
+        /// <param name="name">Asset's nickname</param>
+        /// <param name="retrieve">data retrieval task</param>
+        /// <param name="extractBars">extractor for time series bars</param>
+        /// <param name="extractMeta">extractor for meta information</param>
+        public TimeSeriesAsset(
+            Algorithm owner, string name,
+            Task<object> retrieve,
+            Func<Task<object>, List<BarType<OHLCV>>> extractBars,
+            Func<Task<object>, MetaType> extractMeta) : base(owner, name, retrieve, extractBars)
+        {
+            _extractMeta = extractMeta;
+        }
+
         /// <summary>
         /// Container class to store meta data for TimeSeriesAsset.
         /// </summary>
@@ -268,82 +360,42 @@ namespace TuringTrader.SimulatorV2
             /// </summary>
             public Algorithm Generator;
         }
+
         /// <summary>
         /// Asset's meta data including its ticker symbol and descriptive name.
         /// </summary>
-        public readonly Task<MetaType> Meta;
+        public MetaType Meta => _extractMeta(_retrieveUntyped);
 
         /// <summary>
-        /// Create new time series for an asset.
+        /// Convenience function to asset's full descriptive name.
         /// </summary>
-        /// <param name="owner">Algorithm instance requesting/ owning this time series</param>
-        /// <param name="name">Asset's nickname</param>
-        /// <param name="data">Asset's data series</param>
-        /// <param name="meta">Asset's meta data</param>
-        public TimeSeriesAsset(Algorithm owner, string name, Task<List<BarType<OHLCV>>> data, Task<MetaType> meta) : base(owner, name, data)
-        {
-            Meta = meta;
-        }
+        public string Description => Meta.Description;
 
         /// <summary>
-        /// Return asset's full descriptive name.
+        /// Convenience function to return asset's ticker symbol.
         /// </summary>
-        public string Description { get => Meta.Result.Description; }
-        /// <summary>
-        /// Return asset's ticker symbol.
-        /// </summary>
-        public string Ticker { get => Meta.Result.Ticker; }
-        /// <summary>
-        /// Return algorithm instance that generated asset's data, if this
-        /// asset is a child algorithm. Otherwise null.
-        /// </summary>
-        public Algorithm Generator { get => Meta.Result.Generator; }
-
-        private TimeSeriesFloat ExtractFieldSeries(string fieldName, Func<OHLCV, double> extractFun)
-        {
-            var name = Name + "." + fieldName;
-
-            return Owner.ObjectCache.Fetch(
-                name,
-                () =>
-                {
-                    var data = Owner.DataCache.Fetch(
-                        name,
-                        () => Task.Run(() =>
-                        {
-                            var ohlcv = Data.Result;
-                            var data = new List<BarType<double>>();
-
-                            foreach (var it in ohlcv)
-                                data.Add(new BarType<double>(it.Date, extractFun(it.Value)));
-
-                            return data;
-                        }));
-
-                    return new TimeSeriesFloat(Owner, name, data);
-                });
-        }
+        public string Ticker => Meta.Ticker;
 
         /// <summary>
         /// Return time series of opening prices.
         /// </summary>
-        public TimeSeriesFloat Open { get => ExtractFieldSeries("Open", bar => bar.Open); }
+        public TimeSeriesFloat Open => ExtractFieldSeries("Open", bar => bar.Open);
         /// <summary>
         /// Return time series of highest prices.
         /// </summary>
-        public TimeSeriesFloat High { get => ExtractFieldSeries("High", bar => bar.High); }
+        public TimeSeriesFloat High => ExtractFieldSeries("High", bar => bar.High);
         /// <summary>
         /// Return time series of lowest prices.
         /// </summary>
-        public TimeSeriesFloat Low { get => ExtractFieldSeries("Low", bar => bar.Low); }
+        public TimeSeriesFloat Low => ExtractFieldSeries("Low", bar => bar.Low);
         /// <summary>
         /// Return time series of closing prices.
         /// </summary>
-        public TimeSeriesFloat Close { get => ExtractFieldSeries("Close", bar => bar.Close); }
+        public TimeSeriesFloat Close => ExtractFieldSeries("Close", bar => bar.Close);
         /// <summary>
         /// Return time series of trading volumes.
         /// </summary>
-        public TimeSeriesFloat Volume { get => ExtractFieldSeries("Volume", bar => bar.Volume); }
+        public TimeSeriesFloat Volume => ExtractFieldSeries("Volume", bar => bar.Volume);
 
         /// <summary>
         /// Set target allocation as fraction of account's NAV.
@@ -372,20 +424,42 @@ namespace TuringTrader.SimulatorV2
     }
     #endregion
     #region class TimeSeriesFloat
+    /// <summary>
+    /// Time series for floating point data. This is mainly used for
+    /// indicators.
+    /// </summary>
     public class TimeSeriesFloat : TimeSeries<double>
     {
-        public TimeSeriesFloat(Algorithm owner, string name, Task<List<BarType<double>>> data) : base(owner, name, data)
-        {
-        }
+        public TimeSeriesFloat(
+            Algorithm owner, string name,
+            Task<object> retrieve,
+            Func<Task<object>, List<BarType<double>>> extract)
+                : base(owner, name, retrieve, extract)
+        { }
+        public TimeSeriesFloat(
+            Algorithm owner, string name,
+            Task<List<BarType<double>>> retrieve)
+            : base(owner, name, retrieve)
+        { }
+        public TimeSeriesFloat(
+            Algorithm owner, string name,
+            List<BarType<double>> data)
+            : base(owner, name, data)
+        { }
     }
     #endregion
     #region class TimeSeriesBool
+    /*
+    /// <summary>
+    /// Time series for boolean data. This is used for signals.
+    /// </summary>
     public class TimeSeriesBool : TimeSeries<bool>
     {
-        public TimeSeriesBool(Algorithm owner, string name, Task<List<BarType<bool>>> data) : base(owner, name, data)
+        public TimeSeriesBool(Algorithm owner, string name, Task<object> retrieve) : base(owner, name, retrieve)
         {
         }
     }
+    */
     #endregion
 }
 

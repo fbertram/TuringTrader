@@ -93,7 +93,7 @@ namespace TuringTrader.SimulatorV2.Indicators
 
             Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>> calcRegression()
             {
-                var src = series.Data.Result;
+                var src = series.Data;
                 var slope = new List<BarType<double>>();
                 var intercept = new List<BarType<double>>();
                 var r2 = new List<BarType<double>>();
@@ -158,20 +158,23 @@ namespace TuringTrader.SimulatorV2.Indicators
                 name,
                 () =>
                 {
-                    var data = series.Owner.DataCache.Fetch(
+                    var retrieve = series.Owner.DataCache.Fetch(
                         name,
-                        () => Task.Run(() => calcRegression()));
+                        () => Task.Run(() => (object)calcRegression()));
 
                     return new RegressionT(
                         new TimeSeriesFloat(
                             series.Owner, name + ".Slope",
-                            Task.Run(() => { var r = data.Result; return r.Item1; })),
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item1),
                         new TimeSeriesFloat(
                             series.Owner, name + ".Intercept",
-                            Task.Run(() => { var r = data.Result; return r.Item2; })),
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item2),
                         new TimeSeriesFloat(
                             series.Owner, name + ".R2",
-                            Task.Run(() => { var r = data.Result; return r.Item3; })));
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve.Result).Item3));
                 });
         }
         #endregion

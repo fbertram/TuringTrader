@@ -51,7 +51,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data.Result;
+                            var src = series.Data;
                             var dst = new List<BarType<double>>();
 
                             for (int idx = 0; idx < src.Count; idx++)
