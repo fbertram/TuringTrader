@@ -90,37 +90,27 @@ namespace TuringTrader.SimulatorV2.Tests
             var algo = new Testbed_Instance();
             algo.Run();
 
-            Assert.IsTrue(Math.Abs(algo.NetAssetValue - 800.31918528935819) < 1e-5);
-            Assert.IsTrue(algo.Account.TradeLog.Count == 2);
-            Assert.IsTrue(algo.NumChildTrades == 3);
+            Assert.AreEqual(algo.NetAssetValue, 800.31918528935819, 1e-5);
+            Assert.AreEqual(algo.Account.TradeLog.Count, 2);
+            Assert.AreEqual(algo.NumChildTrades, 3);
 
             var alloc = algo.Plotter.AllData[Simulator.Plotter.SheetNames.HOLDINGS];
-            Assert.IsTrue(alloc.Count == 1);
-            Assert.IsTrue((string)alloc[0]["Symbol"] == "$SPX");
-            Assert.IsTrue(Math.Abs(double.Parse(((string)alloc[0]["Allocation"]).TrimEnd('%')) - 125.35) < 1e-5);
+            Assert.AreEqual(alloc.Count, 1);
+            Assert.AreEqual((string)alloc[0]["Symbol"], "$SPX");
+            Assert.AreEqual(double.Parse(((string)alloc[0]["Allocation"]).TrimEnd('%')), 125.35, 1e-5);
 
             var last = algo.Plotter.AllData[Simulator.Plotter.SheetNames.LAST_REBALANCE];
             Assert.IsTrue(last.Count == 1);
             Assert.IsTrue((DateTime)last[0]["Value"] == DateTime.Parse("2022-07-01T16:00-04:00"));
 
-            // TODO: add checks of historical allocation here
+            var history = algo.Plotter.AllData[Simulator.Plotter.SheetNames.HOLDINGS_HISTORY];
+            Assert.AreEqual(history.Count, 2);
+            Assert.AreEqual((DateTime)history[0]["Date"], DateTime.Parse("2022-01-03T16:00-05:00"));
+            Assert.AreEqual((string)history[0]["Allocation"], "$SPX=100.00%");
+            Assert.AreEqual((DateTime)history[1]["Date"], DateTime.Parse("2022-07-01T16:00-04:00"));
+            Assert.AreEqual((string)history[1]["Allocation"], "$SPX=100.00%");
+
             // TODO: add checks of trading log here
-
-            /*
-            Assert.IsTrue(algo.Account.TradeLog.Count == 2);
-
-            var order1 = algo.Account.TradeLog[0];
-            Assert.IsTrue(order1.ExecDate.Date == DateTime.Parse("2022-12-14"));
-            Assert.IsTrue(Math.Abs(order1.FillPrice - 4015.5400390625) < 1e-5);
-            Assert.IsTrue(Math.Abs(order1.OrderAmount - 999.50024987506242) < 1e-5);
-            Assert.IsTrue(Math.Abs(order1.FrictionAmount - 0.49975012493753124) < 1e-5);
-
-            var order2 = algo.Account.TradeLog[1];
-            Assert.IsTrue(order2.ExecDate.Date == DateTime.Parse("2022-12-16"));
-            Assert.IsTrue(Math.Abs(order2.FillPrice - 3890.909912109375) < 1e-5);
-            Assert.IsTrue(Math.Abs(order2.OrderAmount - -968.47880772286521) < 1e-5);
-            Assert.IsTrue(Math.Abs(order2.FrictionAmount - 0.4842394038614326) < 1e-5);
-            */
         }
 
         // TODO: add test for including child algorithm via "algo:xxx" nickname
