@@ -109,7 +109,7 @@ namespace TuringTrader.SimulatorV2.Tests
         {
             var algo = new Testbed2();
             algo.Run();
-            var result = algo.Result;
+            var result = algo.EquityCurve;
 
             var avgTickers = result.Average(b => b.Value.Open);
             Assert.IsTrue(Math.Abs(avgTickers - 500.93551587301585) < 1e-3);

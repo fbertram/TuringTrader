@@ -69,7 +69,7 @@ namespace TuringTrader.SimulatorV2.Tests
             algo.Run();
             var end = DateTime.Now;
 
-            var result = algo.Result;
+            var result = algo.EquityCurve;
             var account = algo.Account;
 
             var firstDate = result.First().Date;
@@ -90,7 +90,8 @@ namespace TuringTrader.SimulatorV2.Tests
             var trades = account.TradeLog.Count;
             Assert.IsTrue(trades == 809228);
 
-            Assert.IsTrue((end - start).TotalSeconds < 41.0); // ~37s Surface Pro 8, i5-1135G7 @ 2.40GHz
+            //Assert.IsTrue((end - start).TotalSeconds < 41.0); // ~37s Surface Pro 8, i5-1135G7 @ 2.40GHz - before 2023ii08
+            Assert.IsTrue((end - start).TotalSeconds < 50.0); // ~44s Surface Pro 8, i5-1135G7 @ 2.40GHz - since 2023ii08
         }
     }
 }

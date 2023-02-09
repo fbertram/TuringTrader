@@ -57,7 +57,7 @@ namespace TuringTrader.SimulatorV2.Tests
         {
             var algo = new Testbed();
             algo.Run();
-            var result = algo.Result;
+            var result = algo.EquityCurve;
             var account = algo.Account;
 
             var firstDate = result.First().Date;

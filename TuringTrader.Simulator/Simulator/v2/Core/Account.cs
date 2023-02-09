@@ -178,6 +178,9 @@ namespace TuringTrader.SimulatorV2
 
 #if false
                     // TODO: determine if skipping small orders is helpful
+                    //       it is unclear how much this really increases execution speed.
+                    //       At the same time, it seems that for an equal-weighted index,
+                    //       this optimization might result in about 0.2% deviation in CAGR
                     if (Math.Abs(targetAlloc - currentAlloc) < MinPosition && targetAlloc != 0.0)
                         continue;
 #endif

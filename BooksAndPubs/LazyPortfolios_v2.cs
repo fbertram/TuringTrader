@@ -21,6 +21,8 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+#if false
+
 #region libraries
 using System;
 using System.Collections.Generic;
@@ -254,6 +256,8 @@ namespace TuringTrader.BooksAndPubsV2
 #endif
     #endregion
 }
+
+#endif
 
 //==============================================================================
 // end of file

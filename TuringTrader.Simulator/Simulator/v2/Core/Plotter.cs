@@ -165,15 +165,13 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddParameters()
         {
-#if false
-            plotter.SelectChart("Parameters", "Name");
-            foreach (var param in algo.OptimizerParams.Keys)
+            SelectChart("Parameters", "Name");
+            foreach (var param in Algorithm.OptimizerParams.Keys)
             {
-                plotter.SetX(algo.OptimizerParams[param].Name);
-                plotter.Plot("Value", algo.OptimizerParams[param].Value);
+                SetX(Algorithm.OptimizerParams[param].Name);
+                Plot("Value", Algorithm.OptimizerParams[param].Value);
 
             }
-#endif
         }
 
         /// <summary>

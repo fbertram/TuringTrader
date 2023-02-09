@@ -62,18 +62,18 @@ namespace TuringTrader.SimulatorV2.Tests
             var description = result.Name;
             Assert.IsTrue(description.ToLower().EndsWith("close.ema(20)"));
 
-            var firstDate = result.Data.Result.First().Date;
+            var firstDate = result.Data.First().Date;
             Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
 
-            var lastDate = result.Data.Result.Last().Date;
+            var lastDate = result.Data.Last().Date;
             Assert.IsTrue(lastDate == DateTime.Parse("2022-01-31T16:00-5:00"));
 
-            var barCount = result.Data.Result.Count();
+            var barCount = result.Data.Count();
             Assert.IsTrue(barCount == 20);
 
-            var min = result.Data.Result.Min(b => b.Value);
-            var max = result.Data.Result.Max(b => b.Value);
-            var sum = result.Data.Result.Sum(b => b.Value);
+            var min = result.Data.Min(b => b.Value);
+            var max = result.Data.Max(b => b.Value);
+            var sum = result.Data.Sum(b => b.Value);
             Assert.IsTrue(Math.Abs(min - 0.0) < 1e-5);
             Assert.IsTrue(Math.Abs(max - 0.85066836567421422) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 10.918650526094964) < 1e-5);
@@ -90,18 +90,18 @@ namespace TuringTrader.SimulatorV2.Tests
             var description = result.Name;
             Assert.IsTrue(description.ToLower().EndsWith("close.ema(20)"));
 
-            var firstDate = result.Data.Result.First().Date;
+            var firstDate = result.Data.First().Date;
             Assert.IsTrue(firstDate == DateTime.Parse("2022-01-03T16:00-5:00"));
 
-            var lastDate = result.Data.Result.Last().Date;
+            var lastDate = result.Data.Last().Date;
             Assert.IsTrue(lastDate == DateTime.Parse("2022-01-31T16:00-5:00"));
 
-            var barCount = result.Data.Result.Count();
+            var barCount = result.Data.Count();
             Assert.IsTrue(barCount == 20);
 
-            var min = result.Data.Result.Min(b => b.Value);
-            var max = result.Data.Result.Max(b => b.Value);
-            var sum = result.Data.Result.Sum(b => b.Value);
+            var min = result.Data.Min(b => b.Value);
+            var max = result.Data.Max(b => b.Value);
+            var sum = result.Data.Sum(b => b.Value);
             Assert.IsTrue(Math.Abs(min - 0.0) < 1e-5);
             Assert.IsTrue(Math.Abs(max - 0.4540674736952518) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 5.6863589998951092) < 1e-5);
