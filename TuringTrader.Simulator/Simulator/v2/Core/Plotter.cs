@@ -73,6 +73,8 @@ namespace TuringTrader.SimulatorV2
             var names = new Dictionary<string, string>();
             var prices = new Dictionary<string, double>();
 
+            var lastRebalanceDate = Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate;
+
             void addAssetAllocation(Algorithm algo, double scale = 1.0)
             {
                 foreach (var kv in algo.Positions)
@@ -83,6 +85,9 @@ namespace TuringTrader.SimulatorV2
                     // optional code to resolve holdings of child strategies
                     if (asset.Meta.Generator != null)
                     {
+                        var lastRebalanceDateChild = asset.Meta.Generator.Account.TradeLog.Last().OrderTicket.SubmitDate;
+                        if (lastRebalanceDateChild > lastRebalanceDate) lastRebalanceDate = lastRebalanceDateChild;
+
                         addAssetAllocation(asset.Meta.Generator, kv.Value * scale);
                     }
                     else
@@ -115,7 +120,7 @@ namespace TuringTrader.SimulatorV2
             // BUGBUG: this is incorrect as it does not consider the child strategies
             SelectChart(Simulator.Plotter.SheetNames.LAST_REBALANCE, "Key");
             SetX("LastRebalance");
-            Plot("Value", Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate);
+            Plot("Value", lastRebalanceDate);
         }
 
         /// <summary>

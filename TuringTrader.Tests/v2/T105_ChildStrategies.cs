@@ -56,7 +56,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 }
             }
 
-            public int NumTrades = 0;
+            public int NumChildTrades = 0;
 
             public override void Run()
             {
@@ -69,11 +69,14 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    Asset(algo1).Allocate(1.0, OrderType.closeThisBar);
-                    Asset(algo2).Allocate(1.0, OrderType.closeThisBar);
+                    if (IsFirstBar)
+                    {
+                        Asset(algo1).Allocate(1.0, OrderType.closeThisBar);
+                        Asset(algo2).Allocate(1.0, OrderType.closeThisBar);
+                    }
                 });
 
-                NumTrades = algo1.Account.TradeLog.Count + algo2.Account.TradeLog.Count;
+                NumChildTrades = algo1.Account.TradeLog.Count + algo2.Account.TradeLog.Count;
 
                 Plotter.AddTargetAllocation();
                 Plotter.AddTradeLog();
@@ -87,13 +90,18 @@ namespace TuringTrader.SimulatorV2.Tests
             var algo = new Testbed_Instance();
             algo.Run();
 
-            Assert.IsTrue(Math.Abs(algo.NetAssetValue - 799.673401689968) < 1e-5);
-            Assert.IsTrue(algo.NumTrades == 3);
+            Assert.IsTrue(Math.Abs(algo.NetAssetValue - 800.31918528935819) < 1e-5);
+            Assert.IsTrue(algo.Account.TradeLog.Count == 2);
+            Assert.IsTrue(algo.NumChildTrades == 3);
 
             var alloc = algo.Plotter.AllData[Simulator.Plotter.SheetNames.HOLDINGS];
             Assert.IsTrue(alloc.Count == 1);
             Assert.IsTrue((string)alloc[0]["Symbol"] == "$SPX");
-            Assert.IsTrue(Math.Abs(double.Parse(((string)alloc[0]["Allocation"]).TrimEnd('%')) - 100.0) < 1e-5);
+            Assert.IsTrue(Math.Abs(double.Parse(((string)alloc[0]["Allocation"]).TrimEnd('%')) - 125.35) < 1e-5);
+
+            var last = algo.Plotter.AllData[Simulator.Plotter.SheetNames.LAST_REBALANCE];
+            Assert.IsTrue(last.Count == 1);
+            Assert.IsTrue((DateTime)last[0]["Value"] == DateTime.Parse("2022-07-01T16:00-04:00"));
 
             // TODO: add checks of historical allocation here
             // TODO: add checks of trading log here
