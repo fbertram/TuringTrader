@@ -132,6 +132,7 @@ namespace TuringTrader.BooksAndPubs
     }
     #endregion
 
+#if false // removed here - implemented in LazyPortfolios_v2.cs
     #region all-cash/ zero-return portfolio
     public class Benchmark_Zero : LazyPortfolio
     {
@@ -254,6 +255,7 @@ namespace TuringTrader.BooksAndPubs
     }
 #endif
     #endregion
+#endif
 }
 
 //==============================================================================
