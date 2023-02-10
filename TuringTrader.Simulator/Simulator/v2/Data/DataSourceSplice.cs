@@ -39,7 +39,15 @@ namespace TuringTrader.SimulatorV2
             return _loadAsset(owner, symbols.First(), true);
 #else
             var allData = symbols
-                .Select(symbol => _loadAsset(owner, symbol, false))
+                .Select(symbol =>
+                {
+                    // we must resample here, to make sure we have the
+                    // required overlap for successful splicing
+                    var data = _loadAsset(owner, symbol);
+                    return Tuple.Create(
+                        _resampleToTradingCalendar(owner, data.Item1, false),
+                        data.Item2);
+                })
                 .ToList();
 
             var tradingDays = owner.TradingCalendar.TradingDays;

@@ -29,16 +29,25 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
-        private static List<BarType<OHLCV>> AlgoLoadData(Algorithm owner, Dictionary<DataSourceParam, string> info)
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> AlgoGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
         {
             var algoName = info[DataSourceParam.nickName2];
             var algoInstance = Simulator.AlgorithmLoader.InstantiateAlgorithm(algoName);
+
+            if (algoInstance == null)
+                throw new Exception(string.Format("failed to instantiate algorithm '{0}'", algoName));
+
+            return AlgoGetAssetInstance(owner, algoInstance, info[DataSourceParam.nickName]);
+        }
+
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> AlgoGetAssetInstance(Algorithm owner, Simulator.IAlgorithm generator, string nickname)
+        {
             var tradingDays = owner.TradingCalendar.TradingDays;
             var startDate = tradingDays.First();
             var endDate = tradingDays.Last();
 
-            var instanceV1 = (algoInstance as Simulator.Algorithm);
-            var instanceV2 = (algoInstance as Algorithm);
+            var instanceV1 = (generator as Simulator.Algorithm);
+            var instanceV2 = (generator as Algorithm);
 
             if (instanceV1 != null)
             {
@@ -59,7 +68,18 @@ namespace TuringTrader.SimulatorV2
                         new OHLCV(bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)));
                 }
 
-                return barsV2;
+                // TODO: create a fake generator instance here,
+                //       which we can use to examine the asset allocation
+                var generatorV2 = (Algorithm)null;
+
+                return Tuple.Create(
+                    barsV2,
+                    new TimeSeriesAsset.MetaType
+                    {
+                        Ticker = nickname,
+                        Description = generator.Name,
+                        Generator = generatorV2,
+                    });
             }
 
             if (instanceV2 != null)
@@ -69,37 +89,18 @@ namespace TuringTrader.SimulatorV2
                 instanceV2.EndDate = endDate;
                 instanceV2.IsDataSource = true;
                 instanceV2.Run();
-                return instanceV2.EquityCurve;
+
+                return Tuple.Create(
+                    instanceV2.EquityCurve,
+                    new TimeSeriesAsset.MetaType
+                    {
+                        Ticker = nickname,
+                        Description = generator.Name,
+                        Generator = instanceV2,
+                    });
             }
 
-            throw new Exception(string.Format("failed to instantiate algorithm '{0}'", algoName));
-        }
-        private static TimeSeriesAsset.MetaType AlgoLoadMeta(Algorithm owner, Dictionary<DataSourceParam, string> info)
-        {
-            var generatorName = info[DataSourceParam.nickName2];
-            var generator = Simulator.AlgorithmLoader.InstantiateAlgorithm(generatorName);
-            //var generatorV1 = (generator as Simulator.Algorithm);
-            var generatorV2 = (generator as Algorithm);
-
-            // TODO: for v1 algorithms, we need to convert the results to V2 format here,
-            //       so that we can build portfolios of strategies with V1 algos
-
-            return new TimeSeriesAsset.MetaType
-            {
-                Ticker = info[DataSourceParam.nickName],
-                Description = generator.Name,
-                Generator = generatorV2,
-            };
-        }
-
-        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> AlgoGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
-        {
-            // TODO: merge these two into a single function,
-            //       so that we can create the meta information
-            //       without the need to instantiate another algorithm
-            return Tuple.Create(
-                AlgoLoadData(owner, info),
-                AlgoLoadMeta(owner, info));
+            return null;
         }
     }
 }

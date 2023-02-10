@@ -376,7 +376,7 @@ namespace TuringTrader.SimulatorV2
 #endif
                 };
 
-        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> _loadAsset(Algorithm owner, string nickname, bool fillPrior = true)
+        private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> _loadAsset(Algorithm owner, string nickname)
         {
             var info = _getInfo(owner, nickname);
             string dataSource = info[DataSourceParam.dataFeed].ToLower();
@@ -385,11 +385,7 @@ namespace TuringTrader.SimulatorV2
                 if (dataSource.Contains(i.Item1))
                 {
                     if (i.Item2 != null) i.Item2();
-
-                    var data = i.Item3(owner, info);
-                    var barsResampled = _resampleToTradingCalendar(owner, data.Item1, fillPrior);
-
-                    return Tuple.Create(barsResampled, data.Item2);
+                    return i.Item3(owner, info);
                 }
 
             throw new Exception(string.Format("DataSource: unknown data feed '{0}'", dataSource));
@@ -645,7 +641,14 @@ namespace TuringTrader.SimulatorV2
                 {
                     var data = owner.DataCache.Fetch(
                         nickname,
-                        () => Task.Run(() => (object)_loadAsset(owner, nickname)));
+                        () => Task.Run(() =>
+                        {
+                            var data2 = _loadAsset(owner, nickname);
+
+                            return (object)Tuple.Create(
+                                _resampleToTradingCalendar(owner, data2.Item1),
+                                data2.Item2);
+                        }));
 
                     return new TimeSeriesAsset(
                         owner, nickname,
@@ -661,7 +664,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="owner">parent/ owning algorithm</param>
         /// <param name="generator">child/ generating algorithm</param>
         /// <returns></returns>
-        public static TimeSeriesAsset LoadAsset(Algorithm owner, Algorithm generator)
+        public static TimeSeriesAsset LoadAsset(Algorithm owner, Simulator.IAlgorithm generator)
         {
             var name = string.Format("{0}-{1:X}", generator.Name, generator.GetHashCode());
 
@@ -673,20 +676,11 @@ namespace TuringTrader.SimulatorV2
                         name,
                         () => Task.Run(() =>
                         {
-                            var tradingDays = owner.TradingCalendar.TradingDays;
-                            generator.StartDate = tradingDays.First();
-                            generator.EndDate = tradingDays.Last();
-
-                            generator.Run();
+                            var data2 = AlgoGetAssetInstance(owner, generator, name);
 
                             return (object)Tuple.Create(
-                                _resampleToTradingCalendar(owner, generator.EquityCurve),
-                                new TimeSeriesAsset.MetaType
-                                {
-                                    Ticker = name,
-                                    Description = generator.Name,
-                                    Generator = generator,
-                                });
+                                _resampleToTradingCalendar(owner, data2.Item1),
+                                data2.Item2);
                         }));
 
                     return new TimeSeriesAsset(

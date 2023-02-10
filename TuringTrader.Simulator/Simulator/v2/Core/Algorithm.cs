@@ -340,7 +340,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="generator"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(Algorithm generator) => DataSource.LoadAsset(this, generator);
+        public TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
 
         /// <summary>
         /// Load quotations or run algorithm.
