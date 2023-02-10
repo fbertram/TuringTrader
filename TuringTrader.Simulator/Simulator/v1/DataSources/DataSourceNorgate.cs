@@ -249,8 +249,9 @@ namespace TuringTrader.Simulator
                     NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                     //--- run NDU as required
-#if true
+#if false
                     // this should work, but seems broken as of 01/09/2019
+                    // confirmed broken as of 02/10/2023
                     DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
