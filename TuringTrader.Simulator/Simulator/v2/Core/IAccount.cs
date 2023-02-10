@@ -50,7 +50,6 @@ namespace TuringTrader.SimulatorV2
     /// </summary>
     public interface IAccount
     {
-
         /// <summary>
         /// Submit and queue order.
         /// </summary>
@@ -75,18 +74,6 @@ namespace TuringTrader.SimulatorV2
         /// debugging.
         /// </summary>
         public double NetAssetValue { get; }
-
-        /// <summary>
-        /// Calculate annualized return over the full simulation range. This
-        /// method is maily used for calculating an algorithm's fitness score.
-        /// </summary>
-        public double AnnualizedReturn { get; } // TODO: check if we want to keep this here
-
-        /// <summary>
-        /// Return maximum drawdown over the full simulation range.
-        /// This method is mainly used for calculating an algorithm's fitness score.
-        /// </summary>
-        public double MaxDrawdown { get; } // TODO: check if we want to keep this here
 
         /// <summary>
         /// Return positions, as fraction of NAV.

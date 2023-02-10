@@ -221,9 +221,16 @@ namespace TuringTrader.SimulatorV2
             //SimDate = default; // we need SimDate to calculate the last asset allocation
             //_cache.Clear(); // we need quote data to calculate the last asset allocation
 
-            FitnessReturn = Account.NetAssetValue;
-            FitnessRisk = Account.MaxDrawdown;
-            FitnessValue = Account.AnnualizedReturn / Account.MaxDrawdown;
+            // NOTE: we only calculate fitness values for default accounts.
+            //       for all other accounts, this value needs to be
+            //       calculated at the end of the algorithm's Run method.
+            var defaultAccount = Account as Account_Default;
+            if (defaultAccount != null)
+            {
+                FitnessReturn = Account.NetAssetValue;
+                FitnessRisk = defaultAccount.MaxDrawdown;
+                FitnessValue = defaultAccount.AnnualizedReturn / defaultAccount.MaxDrawdown;
+            }
 
             EquityCurve = bars;
         }

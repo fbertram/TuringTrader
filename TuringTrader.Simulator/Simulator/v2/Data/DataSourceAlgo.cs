@@ -32,63 +32,54 @@ namespace TuringTrader.SimulatorV2
         #region V1 algorithm wrapper
         class V1AlgoWrapper : Algorithm
         {
-            private Simulator.Algorithm _v1Algo;
+            private Algorithm _v2Owner;
+            private Simulator.Algorithm _v1Generator;
 
             // v1 algorithms run in the exchange's timezone
             // while v2 algorithms run in the local timezone
             private DateTime convertTimeFromV1(DateTime v1Time)
-                => TimeZoneInfo.ConvertTimeToUtc(v1Time, TradingCalendar.ExchangeTimeZone)
+                => TimeZoneInfo.ConvertTimeToUtc(v1Time, _v2Owner.TradingCalendar.ExchangeTimeZone)
                     .ToLocalTime();
 
             // BUGBUG: convertTimeToV1 not implemented
             private DateTime convertTimeToV1(DateTime v2Time)
-                => v2Time;
+                => TimeZoneInfo.ConvertTime(v2Time, _v2Owner.TradingCalendar.ExchangeTimeZone);
 
             private class V1AccountDummy : IAccount
             {
-                public double NetAssetValue => throw new NotImplementedException();
-
+                //--- we convert positions and trade log from the v1
+                //    algorithm and make them available here
                 public Dictionary<string, double> Positions { get; set; }
-
-                public double Cash => throw new NotImplementedException();
-
                 public List<IAccount.OrderReceipt> TradeLog { get; set; }
 
-                public double AnnualizedReturn => throw new NotImplementedException();
-
-                public double MaxDrawdown => throw new NotImplementedException();
-
-                public OHLCV ProcessBar()
-                {
-                    throw new NotImplementedException();
-                }
-
-                public void SubmitOrder(string Name, double weight, OrderType orderType)
-                {
-                    throw new NotImplementedException();
-                }
+                //--- these are not required for operation
+                public double NetAssetValue => throw new NotImplementedException();
+                public double Cash => throw new NotImplementedException();
+                public OHLCV ProcessBar() { throw new NotImplementedException(); }
+                public void SubmitOrder(string Name, double weight, OrderType orderType) { throw new NotImplementedException(); }
             }
-            public V1AlgoWrapper(Simulator.Algorithm algo)
+            public V1AlgoWrapper(Algorithm v2Owner, Simulator.Algorithm v1Generator)
             {
-                _v1Algo = algo;
+                _v2Owner = v2Owner;
+                _v1Generator = v1Generator;
                 Account = new V1AccountDummy();
             }
 
             public override void Run()
             {
                 //--- prepare v1 algo for execution
-                _v1Algo.IsDataSource = true;
+                _v1Generator.IsDataSource = true;
 
-                //--- runv1 algo
+                //--- run v1 algo
                 var v1Bars = new List<Simulator.Bar>();
                 var v1Positions = (Dictionary<Simulator.Instrument, int>)null;
-                foreach (var v1Bar in _v1Algo.Run(
+                foreach (var v1Bar in _v1Generator.Run(
                     convertTimeToV1((DateTime)StartDate),
                     convertTimeToV1((DateTime)EndDate)))
                 {
                     v1Bars.Add(v1Bar);
-                    if (_v1Algo.IsLastBar)
-                        v1Positions = new Dictionary<Simulator.Instrument, int>(_v1Algo.Positions);
+                    if (_v1Generator.IsLastBar)
+                        v1Positions = new Dictionary<Simulator.Instrument, int>(_v1Generator.Positions);
                 }
 
                 //--- convert bars from v1 to v2 format
@@ -99,7 +90,7 @@ namespace TuringTrader.SimulatorV2
                         new OHLCV(bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)));
 
                 if (v2Bars.Count == 0)
-                    throw new Exception(string.Format("no bars received from algorithm '{0}'", _v1Algo.Name));
+                    throw new Exception(string.Format("no bars received from algorithm '{0}'", _v1Generator.Name));
 
                 //--- convert positions from v1 to v2 format
                 var v2Positions = new Dictionary<string, double>();
@@ -107,12 +98,12 @@ namespace TuringTrader.SimulatorV2
                 {
                     v2Positions.Add(
                         pos.Key.Symbol,
-                        pos.Value * pos.Key.Close[0] / _v1Algo.NetAssetValue[0]);
+                        pos.Value * pos.Key.Close[0] / _v1Generator.NetAssetValue[0]);
                 }
 
                 //--- convert order log from v1 to v2 format
                 var v2Log = new List<IAccount.OrderReceipt>();
-                foreach (var entry in _v1Algo.Log)
+                foreach (var entry in _v1Generator.Log)
                 {
                     switch (entry.OrderTicket.Type)
                     {
@@ -123,7 +114,7 @@ namespace TuringTrader.SimulatorV2
                                     entry.OrderTicket.Instrument.Nickname,
                                     entry.TargetPercentageOfNav,
                                     OrderType.openNextBar,
-                                    entry.OrderTicket.QueueTime),
+                                    convertTimeFromV1(entry.OrderTicket.QueueTime)),
                                 convertTimeFromV1(entry.BarOfExecution.Time),
                                 0.0,   // order size
                                 entry.FillPrice,
@@ -162,7 +153,7 @@ namespace TuringTrader.SimulatorV2
             var instanceV2 = (generator as Algorithm);
 
             if (instanceV1 != null)
-                instanceV2 = new V1AlgoWrapper(instanceV1);
+                instanceV2 = new V1AlgoWrapper(owner, instanceV1);
 
             if (instanceV2 != null)
             {

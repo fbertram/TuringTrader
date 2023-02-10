@@ -81,10 +81,10 @@ namespace TuringTrader.SimulatorV2.Tests
             var barCount = result.Count();
             Assert.IsTrue(barCount == 8064);
 
-            var cagr = account.AnnualizedReturn;
+            var cagr = ((Account_Default)account).AnnualizedReturn;
             Assert.IsTrue(Math.Abs(cagr - 0.12298366239190828) < 1e-5);
 
-            var mdd = account.MaxDrawdown;
+            var mdd = ((Account_Default)account).MaxDrawdown;
             Assert.IsTrue(Math.Abs(mdd - 0.56697767504083529) < 1e-5);
 
             var trades = account.TradeLog.Count;
