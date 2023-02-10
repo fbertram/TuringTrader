@@ -29,13 +29,27 @@
   </Target>
 
   <ItemGroup>
+    <Compile Remove="Bensdorp_30MinStockTrader.cs" />
     <Compile Remove="Clenow_StocksOnTheMove.cs" />
+    <Compile Remove="Connors_AlphaFormula.cs" />
+    <Compile Remove="Keller_FAA.cs" />
+    <Compile Remove="Keller_LAA.cs" />
+    <Compile Remove="LazyPortfolios.cs" />
     <Compile Remove="Livingston_MuscularPortfolios.cs" />
+    <Compile Remove="Soto_SectorRotation.cs" />
+    <Compile Remove="TradingMarkets_Quantamentals.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Bensdorp_30MinStockTrader.cs" />
     <None Include="Clenow_StocksOnTheMove.cs" />
+    <None Include="Connors_AlphaFormula.cs" />
+    <None Include="Keller_FAA.cs" />
+    <None Include="Keller_LAA.cs" />
+    <None Include="LazyPortfolios.cs" />
     <None Include="Livingston_MuscularPortfolios.cs" />
+    <None Include="Soto_SectorRotation.cs" />
+    <None Include="TradingMarkets_Quantamentals.cs" />
   </ItemGroup>
 
   <ItemGroup>

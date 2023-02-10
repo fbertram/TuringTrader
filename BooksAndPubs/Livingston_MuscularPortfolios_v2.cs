@@ -211,18 +211,16 @@ namespace TuringTrader.BooksAndPubsV2
     }
 
     #region Baby Bear
-#if false
     public class Livingston_MuscularPortfolios_BabyBear : LazyPortfolio
     {
         public override string Name => "Livingston's Baby Bear";
-        public override HashSet<Tuple<string, double>> ALLOCATION => new HashSet<Tuple<string, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
         {
-            new Tuple<string, double>(ETF.VT,  0.50),
-            new Tuple<string, double>(ETF.AGG, 0.50),
+            new Tuple<object, double>(ETF.VT,  0.50),
+            new Tuple<object, double>(ETF.AGG, 0.50),
         };
         public override string BENCH => Benchmark.PORTFOLIO_60_40;
     }
-#endif
     #endregion
     #region Mama Bear
     // https://muscularportfolios.com/mama-bear/

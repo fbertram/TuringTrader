@@ -130,8 +130,6 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddHistoricalAllocations()
         {
-#if true
-            // improved code since 2023ii09
             var allEodAllocations = new Dictionary<Algorithm, List<Tuple<DateTime, Dictionary<string, double>>>>();
             var allTradeDates = new HashSet<DateTime>();
 
@@ -147,14 +145,17 @@ namespace TuringTrader.SimulatorV2
                     // new date: copy previous allocation
                     // BUGBUG: this is inaccurate. Due to the fluctuation
                     //         of asset prices, the new line has deviated
-                    //         from the previous allocation
+                    //         from the previous allocation.
+                    //         However, because typically all assets weights
+                    //         are adjusted simultaneously, this shouldn't
+                    //         matter too much.
                     if (eodAllocation.Count == 0)
                         eodAllocation.Add(Tuple.Create(
                             trade.OrderTicket.SubmitDate,
                             new Dictionary<string, double>()));
                     else if (eodAllocation.Last().Item1 != trade.OrderTicket.SubmitDate)
                         eodAllocation.Add(Tuple.Create(
-                            trade.OrderTicket.SubmitDate, 
+                            trade.OrderTicket.SubmitDate,
                             new Dictionary<string, double>(eodAllocation.Last().Item2)));
 
                     // adjust the asset allocation according to the order
@@ -182,6 +183,12 @@ namespace TuringTrader.SimulatorV2
             // - all child strategies resolved
             Tuple<DateTime, Dictionary<string, double>> getAllocation(Algorithm algo, DateTime date)
             {
+                // BUGBUG: this is inaccurate. Due to the fluctuation
+                //         of asset prices, the new line has deviated
+                //         from the previous allocation.
+                //         In this case, this may make a notible difference,
+                //         when the asset is a child strategy that is
+                //         then replaced with its internal holdings.
                 var eodAlloc = allEodAllocations[algo]
                     .Where(a => a.Item1 <= date)
                     .LastOrDefault();
@@ -205,6 +212,8 @@ namespace TuringTrader.SimulatorV2
                             resolvedAlloc.Item2[child.Key] += asset.Value * child.Value;
                         }
 
+                        // if the child strategy's last trade is more recent,
+                        // use that date as the allocation's latest
                         if (resolvedAlloc.Item1 < childAlloc.Item1)
                             resolvedAlloc = Tuple.Create(childAlloc.Item1, resolvedAlloc.Item2);
                     }
@@ -234,6 +243,8 @@ namespace TuringTrader.SimulatorV2
 
                 foreach (var kv in alloc.Item2)
                 {
+                    if (kv.Value == 0.0) continue; // ignore flat positions
+
                     var asset = Algorithm.Asset(kv.Key);
 
                     if (!tickerAlloc.ContainsKey(asset.Ticker))
@@ -254,46 +265,12 @@ namespace TuringTrader.SimulatorV2
                     SetX(date);
 
                     string row = "";
-                    foreach (var kv in alloc)
+                    foreach (var kv in alloc.OrderByDescending(kv => kv.Value))
                         row += string.Format("{0}{1}={2:P2}", row.Length > 0 ? ", " : "", kv.Key, kv.Value);
 
                     Plot("Allocation", row);
                 }
             }
-#else
-            // simple code until 2023ii09
-            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS_HISTORY, "Date");
-
-            var lastDate = default(DateTime);
-            var lastAlloc = "";
-
-            foreach (var trade in Algorithm.Account.TradeLog)
-            {
-                if (trade.OrderTicket.SubmitDate != lastDate)
-                {
-                    if (lastAlloc != "")
-                    {
-                        //SetX(lastDate);
-                        SetX(string.Format("{0:MM/dd/yyyy}", lastDate));
-                        Plot("Allocation", lastAlloc);
-                    }
-
-                    lastDate = trade.OrderTicket.SubmitDate;
-                    lastAlloc = "";
-                }
-
-                lastAlloc = lastAlloc
-                    + ((lastAlloc == "") ? "" : ", ")
-                    + string.Format("{0}={1:P2}", Algorithm.Asset(trade.OrderTicket.Name).Ticker, trade.OrderTicket.TargetAllocation);
-            }
-
-            if (lastAlloc != "")
-            {
-                //SetX(lastDate);
-                SetX(string.Format("{0:MM/dd/yyyy}", lastDate));
-                Plot("Allocation", lastAlloc);
-            }
-#endif
         }
 
         /// <summary>
