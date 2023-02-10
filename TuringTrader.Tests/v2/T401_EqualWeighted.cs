@@ -41,7 +41,7 @@ namespace TuringTrader.SimulatorV2.Tests
                 StartDate = DateTime.Parse("1990-01-01T16:00-05:00");
                 EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
                 WarmupPeriod = TimeSpan.FromDays(0);
-                Account.Friction = 0.0;
+                ((Account_Default)Account).Friction = 0.0;
 
                 SimLoop(() =>
                 {

@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Account
-// Description: Account class.
+// Name:        Account_Default
+// Description: Default account class.
 // History:     2022x25, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -28,32 +28,14 @@ using System.Linq;
 namespace TuringTrader.SimulatorV2
 {
     /// <summary>
-    /// OrderType is an enumeration of orders supported by the
-    /// simulator.
-    /// </summary>
-    public enum OrderType
-    {
-        /// <summary>
-        /// buy or sell assets on this bar's close
-        /// </summary>
-        closeThisBar,
-        /// <summary>
-        /// buy or sell assets on the next bar's open
-        /// </summary>
-        openNextBar,
-        // SellStopNextBar,
-        // BuyLimitNextBar,
-    }
-
-    /// <summary>
     /// The Account class maintains the status of the trading account.
     /// </summary>
-    public class Account
+    public class Account_Default : IAccount
     {
         #region internal stuff
         private readonly Algorithm _algorithm;
-        private List<OrderTicket> _orderQueue = new List<OrderTicket>();
-        private List<OrderReceipt> _tradeLog = new List<OrderReceipt>();
+        private List<IAccount.OrderTicket> _orderQueue = new List<IAccount.OrderTicket>();
+        private List<IAccount.OrderReceipt> _tradeLog = new List<IAccount.OrderReceipt>();
         private Dictionary<string, double> _positions = new Dictionary<string, double>();
         private const double INITIAL_CAPITAL = 1000.00;
         private double _cash = INITIAL_CAPITAL;
@@ -94,7 +76,7 @@ namespace TuringTrader.SimulatorV2
         /// Create new account.
         /// </summary>
         /// <param name="algorithm">parent algorithm, to get access to assets and pricing</param>
-        public Account(Algorithm algorithm)
+        public Account_Default(Algorithm algorithm)
         {
             _algorithm = algorithm;
         }
@@ -108,7 +90,7 @@ namespace TuringTrader.SimulatorV2
         public void SubmitOrder(string Name, double weight, OrderType orderType)
         {
             _orderQueue.Add(
-                new OrderTicket(
+                new IAccount.OrderTicket(
                     Name, weight, orderType, _algorithm.SimDate));
         }
 
@@ -226,7 +208,7 @@ namespace TuringTrader.SimulatorV2
                         _cash -= frictionAmount;
 
                         if (!_algorithm.IsOptimizing)
-                            _tradeLog.Add(new OrderReceipt(
+                            _tradeLog.Add(new IAccount.OrderReceipt(
                                 order,
                                 execDate,
                                 targetAlloc - currentAlloc,
@@ -302,115 +284,10 @@ namespace TuringTrader.SimulatorV2
         public double Cash { get => _cash / CalcNetAssetValue(); }
 
         /// <summary>
-        /// Container collecting all order information at time of order submittal.
-        /// </summary>
-        public class OrderTicket
-        {
-            /// <summary>
-            /// Asset name. This is the name that was used to load the asset,
-            /// which may or may not be identical to the asset's ticker symbol.
-            /// </summary>
-            public readonly string Name;
-
-            /// <summary>
-            /// Asset target allocation, as fraction of NAV.
-            /// </summary>
-            public readonly double TargetAllocation;
-
-            /// <summary>
-            /// Order type.
-            /// </summary>
-            public readonly OrderType OrderType;
-
-            /// <summary>
-            /// Order submit date.
-            /// </summary>
-            public readonly DateTime SubmitDate;
-
-            /// <summary>
-            /// Create new order ticket.
-            /// </summary>
-            /// <param name="symbol"></param>
-            /// <param name="targetAllocation"></param>
-            /// <param name="orderType"></param>
-            /// <param name="submitDate"></param>
-            public OrderTicket(string symbol, double targetAllocation, OrderType orderType, DateTime submitDate)
-            {
-                Name = symbol;
-                TargetAllocation = targetAllocation;
-                OrderType = orderType;
-                SubmitDate = submitDate;
-            }
-        }
-
-        /// <summary>
-        /// Container collecting all order information at time of order execution.
-        /// </summary>
-        public class OrderReceipt
-        {
-            /// <summary>
-            /// Order ticket.
-            /// </summary>
-            public readonly OrderTicket OrderTicket;
-
-            /// <summary>
-            /// Order execution date.
-            /// </summary>
-            public readonly DateTime ExecDate;
-
-            /// <summary>
-            /// Order size, as a fraction of NAV.
-            /// </summary>
-            public readonly double OrderSize;
-
-            /// <summary>
-            /// Order fill price.
-            /// </summary>
-            public readonly double FillPrice;
-
-            /// <summary>
-            /// Currency spent/received for assets traded. Note that throughout
-            /// the v2 engine, currency has no significance. This is only to
-            /// make trades more tangible while analyzing and debugging.
-            /// </summary>
-            public readonly double OrderAmount;
-
-            /// <summary>
-            /// Currency lost for trade friction. Note that throughout the v2
-            /// engine, currency has no significance. This is only to make trades
-            /// more tangible while analyzing and debugging.
-            /// </summary>
-            public readonly double FrictionAmount;
-
-            /// <summary>
-            /// Create order receipt.
-            /// </summary>
-            /// <param name="orderTicket"></param>
-            /// <param name="orderSize"></param>
-            /// <param name="fillPrice"></param>
-            /// <param name="orderAmount"></param>
-            /// <param name="frictionAmount"></param>
-            public OrderReceipt(OrderTicket orderTicket,
-                DateTime execDate,
-                double orderSize,
-                double fillPrice,
-                double orderAmount,
-                double frictionAmount)
-            {
-                OrderTicket = orderTicket;
-                ExecDate = execDate;
-                OrderSize = orderSize;
-                FillPrice = fillPrice;
-                OrderAmount = orderAmount;
-                FrictionAmount = frictionAmount;
-            }
-        }
-
-        /// <summary>
         /// Retrieve trade log. Note that this log only contains trades executed
         /// and not orders that were not executed.
         /// </summary>
-        public List<OrderReceipt> TradeLog { get { return new List<OrderReceipt>(_tradeLog); } }
+        public List<IAccount.OrderReceipt> TradeLog { get { return new List<IAccount.OrderReceipt>(_tradeLog); } }
 
         /// <summary>
         /// Friction to model commissions, fees, and slippage.

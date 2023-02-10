@@ -53,7 +53,7 @@ namespace TuringTrader.SimulatorV2
             foreach (OptimizerParam param in OptimizerParam.GetParams(this))
                 OptimizerParams[param.Name] = param;
 
-            Account = new Account(this);
+            Account = new Account_Default(this);
             Plotter = new Plotter(this);
         }
         /// <summary>
@@ -347,9 +347,16 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(object obj) => obj as string != null
-                ? Asset(obj as string)
-                : Asset(obj as Algorithm);
+        public TimeSeriesAsset Asset(object obj)
+        {
+            var objString = obj as string;
+            var objAlgorithm = obj as Algorithm;
+
+            if (objString != null) return Asset(objString);
+            if (objAlgorithm != null) return Asset(objAlgorithm);
+
+            throw new Exception(string.Format("Can't load asset for {0}", obj.ToString()));
+        }
 
         /// <summary>
         /// Return constituents of universe at current simulator timestamp.
@@ -374,7 +381,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Account model.
         /// </summary>
-        public Account Account { get; set; } = null; // instantiated in constructor
+        public IAccount Account { get; set; } = null; // instantiated in constructor
         /// <summary>
         /// Positions currently held by algorithm.
         /// </summary>

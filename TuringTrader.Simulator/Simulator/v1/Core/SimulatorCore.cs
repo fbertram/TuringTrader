@@ -187,6 +187,12 @@ namespace TuringTrader.Simulator
                     ? price
                     : FillModel(ticket, execBar, price);
 
+            // calculate target allocation of asset as
+            // achieved by executing the order. This is
+            // required for interaction with v2 hosts
+            var positionValueAfterOrder = ((Positions.ContainsKey(instrument) ? Positions[instrument] : 0) + ticket.Quantity) * price;
+            var positionPercentageAfterOrder = positionValueAfterOrder / _calcNetAssetValue();
+
             // adjust position, unless its the end-of-sim order
             // this is to ensure that the Positions collection can
             // be queried after the simulation finished
@@ -231,6 +237,7 @@ namespace TuringTrader.Simulator
                 BarOfExecution = execBar,
                 FillPrice = fillPrice,
                 Commission = commission,
+                TargetPercentageOfNav = positionPercentageAfterOrder,
             };
             // do not remove instrument here, is required for MFE/ MAE analysis
             //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
@@ -384,16 +391,17 @@ namespace TuringTrader.Simulator
         /// derived class, typically a proprietary algorithm derived from
         /// Algorithm.
         /// </summary>
-        public virtual string Name 
-        { 
-            get 
+        public virtual string Name
+        {
+            get
             {
                 _Name = _Name ?? GetType().Name;
                 return _Name;
             }
             set
-            { _Name = value; 
-            } 
+            {
+                _Name = value;
+            }
         }
         #endregion
 
