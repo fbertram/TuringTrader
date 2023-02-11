@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        T302_Momentum
-// Description: Unit test for basic indicators.
+// Description: Unit test for momentum indicators.
 // History:     2023ii11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
