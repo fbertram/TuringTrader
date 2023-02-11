@@ -221,7 +221,7 @@ namespace TuringTrader.BooksAndPubsV2
                         //       upon Clenow's original strategy.
                         var rawWeight = Math.Min(
                             Math.Min(availableCapital, MAX_PER_STOCK / 100.0),
-                            RISK_PER_STOCK * 0.0001 * Asset(name).Close[0] / Asset(name).AverageTrueRange(20)[0]);
+                            RISK_PER_STOCK * 0.0001 * Asset(name).Close[0] / Asset(name).AverageTrueRange(ATR_PERIOD)[0]);
 
                         // only buy any shares, while S&P-500 is trading above its 200-day moving average
                         // NOTE: the 10-day SMA on the benchmark is NOT mentioned in

@@ -33,12 +33,22 @@ namespace TuringTrader.SimulatorV2.Indicators
     public static class Volatility
     {
         #region StandardDeviation
+        /// <summary>
+        /// Calculate historical standard deviation.
+        /// </summary>
         #endregion
         #region SemiDeviation
         #endregion
         #region Volatility
+        /// <summary>
+        /// Calculate historical volatility, based on log-returns.
+        /// </summary>
         #endregion
         #region TrueRange
+        /// <summary>
+        /// Calculate True Range, non averaged, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
+        /// </summary>
         public static TimeSeriesFloat TrueRange(this TimeSeriesAsset series)
         {
             var name = string.Format("{0}.TrueRange", series.Name);
@@ -70,14 +80,25 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region AverageTrueRange
+        /// <summary>
+        /// Calculate Averaged True Range, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Average_true_range"/>.
+        /// </summary>
         public static TimeSeriesFloat AverageTrueRange(this TimeSeriesAsset series, int n)
         {
             return series.TrueRange().SMA(n);
         }
         #endregion
         #region UlcerIndex
+        /// <summary>
+        /// Calculate Ulcer Index.
+        /// </summary>
         #endregion
         #region BollingerBands
+        /// <summary>
+        /// Calculate Bollinger Bands, as described here:
+        /// <see href="https://traderhq.com/ultimate-guide-to-bollinger-bands/"/>.
+        /// </summary>
         #endregion
     }
 }
