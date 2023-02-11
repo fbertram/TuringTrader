@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T105_ChildStrategies
-// Description: Unit test for child strategies.
+// Name:        T208_Algorithm
+// Description: Unit test for child algorithms.
 // History:     2023ii08, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -30,8 +30,9 @@ using System.Collections.Generic;
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T105_ChildStrategies
+    public class T208_Algorithm
     {
+        #region v2 algorithms
         private class Testbed_v2 : Algorithm
         {
             private class SwitchHalfTime_v2 : Algorithm
@@ -113,7 +114,8 @@ namespace TuringTrader.SimulatorV2.Tests
 
             // TODO: add checks of trading log here
         }
-
+        #endregion
+        #region v1 algorithms
         private class Testbed_v1 : Algorithm
         {
             private class SwitchHalfTime_v1 : Simulator.Algorithm
@@ -208,6 +210,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
             // TODO: add checks of trading log here
         }
+        #endregion
     }
 }
 
