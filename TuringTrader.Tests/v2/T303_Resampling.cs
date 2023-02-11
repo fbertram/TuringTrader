@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T302_Resampling
+// Name:        T303_Resampling
 // Description: Unit test for Resampling indicator.
 // History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
@@ -31,9 +31,10 @@ using TuringTrader.SimulatorV2.Indicators;
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T302_Resampling
+    public class T303_Resampling
     {
-        private class Testbed : Algorithm
+        #region weekly
+        private class Testbed_Weekly : Algorithm
         {
             public TimeSeriesFloat TestResult;
             public Algorithm Generator;
@@ -52,9 +53,9 @@ namespace TuringTrader.SimulatorV2.Tests
         }
 
         [TestMethod]
-        public void Test_StepResponse()
+        public void Test_Weekly_StepResponse()
         {
-            var algo = new Testbed();
+            var algo = new Testbed_Weekly();
             algo.Generator = new T000_Helpers.StepResponse();
             algo.Run();
             var result = algo.TestResult;
@@ -80,9 +81,9 @@ namespace TuringTrader.SimulatorV2.Tests
         }
 
         [TestMethod]
-        public void Test_NyquistResponse()
+        public void Test_Weekly_NyquistResponse()
         {
-            var algo = new Testbed();
+            var algo = new Testbed_Weekly();
             algo.Generator = new T000_Helpers.NyquistFrequency();
             algo.Run();
             var result = algo.TestResult;
@@ -106,6 +107,7 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 0.64) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 2.0544000000000002) < 1e-5);
         }
+        #endregion
     }
 }
 

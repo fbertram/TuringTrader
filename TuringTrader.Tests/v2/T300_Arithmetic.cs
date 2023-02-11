@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T303_Arithmetic
+// Name:        T300_Arithmetic
 // Description: Unit test for indicator arithmetic.
 // History:     2022xii01, FUB, created
 //------------------------------------------------------------------------------
@@ -31,8 +31,9 @@ using TuringTrader.SimulatorV2.Indicators;
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T303_Arithmetic
+    public class T300_Arithmetic
     {
+        #region Add
         private class Testbed_Add : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -83,7 +84,8 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 2.0) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 34.0) < 1e-5);
         }
-
+        #endregion
+        #region Sub
         private class Testbed_Sub : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -134,7 +136,8 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 0.5) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 4.0) < 1e-5);
         }
-
+        #endregion
+        #region Mul
         private class Testbed_Mul : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -185,7 +188,8 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 1.0) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 14.5) < 1e-5);
         }
-
+        #endregion
+        #region Div
         private class Testbed_Div : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -236,7 +240,8 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 2.0) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 28.0) < 1e-5);
         }
-
+        #endregion
+        #region Min
         private class Testbed_Min : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -287,7 +292,8 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 1.0) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 14.5) < 1e-5);
         }
-
+        #endregion
+        #region Max
         private class Testbed_Max : Algorithm
         {
             public TimeSeriesFloat TestResult;
@@ -338,6 +344,7 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(max - 1.0) < 1e-5);
             Assert.IsTrue(Math.Abs(sum - 19.5) < 1e-5);
         }
+        #endregion
     }
 }
 
