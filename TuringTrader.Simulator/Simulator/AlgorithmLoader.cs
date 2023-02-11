@@ -262,11 +262,9 @@ namespace TuringTrader.Simulator
                     .ToList();
             }
 
-            return publicOnly
-                ? allAlgorithms
-                    .Where(t => t.IsPublic == true)
-                    .ToList()
-                : allAlgorithms;
+            return allAlgorithms
+                    .Where(t => t.IsPublic == true || publicOnly == false)
+                    .ToList();
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)

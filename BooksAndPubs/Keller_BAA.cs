@@ -130,7 +130,7 @@ namespace TuringTrader.BooksAndPubsV2
             WarmupPeriod = TimeSpan.FromDays(365);
 
             // Keller assumes 0.1% transaction cost
-            Account.Friction = TC / 100.0;
+            ((Account_Default)Account).Friction = TC / 100.0;
 
             //========== simulation loop ==========
 

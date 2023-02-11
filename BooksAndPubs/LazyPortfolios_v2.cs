@@ -52,7 +52,7 @@ namespace TuringTrader.BooksAndPubsV2
             EndDate = EndDate ?? END_TIME;
             WarmupPeriod = TimeSpan.FromDays(0);
 
-            Account.Friction = COMMISSION;
+            ((Account_Default)Account).Friction = COMMISSION;
 
             var autoAlloc = ALLOCATION.Sum(a => a.Item2) == 0.0;
 
@@ -95,7 +95,7 @@ namespace TuringTrader.BooksAndPubsV2
     public class Benchmark_Zero : LazyPortfolio
     {
         public override string Name => "All-Cash/ Zero-Return";
-        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION { get; set; } = new HashSet<Tuple<object, double>>
         {
             new Tuple<object, double>(ETF.BIL, 1e-10),
         };
@@ -106,7 +106,7 @@ namespace TuringTrader.BooksAndPubsV2
     public class Benchmark_60_40 : LazyPortfolio
     {
         public override string Name => "Vanilla 60/40";
-        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION { get; set; } = new HashSet<Tuple<object, double>>
         {
             new Tuple<object, double>(ETF.SPY, 0.60),
             new Tuple<object, double>(ETF.AGG, 0.40),
@@ -118,7 +118,7 @@ namespace TuringTrader.BooksAndPubsV2
     public class Robbins_AllSeasonsPortfolio : LazyPortfolio
     {
         public override string Name => "Robbins' All-Seasons Portfolio";
-        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION { get; set; } = new HashSet<Tuple<object, double>>
         {
             // See Tony Robbins "Money, Master the Game", Chapter 5
             new Tuple<object, double>(ETF.SPY, 0.30),  // 30% S&P 500
@@ -169,7 +169,7 @@ namespace TuringTrader.BooksAndPubsV2
     public class Browne_PermanentPortfolio : LazyPortfolio
     {
         public override string Name => "Browne's Permanent Portfolio";
-        public override HashSet<Tuple<object, double>> ALLOCATION => new HashSet<Tuple<object, double>>
+        public override HashSet<Tuple<object, double>> ALLOCATION { get; set; } = new HashSet<Tuple<object, double>>
         {
             // See Harry Browne, Fail Safe Investing
             new Tuple<object, double>(ETF.SPY, 0.25),  // 25% S&P 500
