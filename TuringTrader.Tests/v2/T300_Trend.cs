@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T300_EMA
-// Description: Unit test for EMA indicator.
+// Name:        T300_Trend
+// Description: Unit test for Trend indicators.
 // History:     2022xi30, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
