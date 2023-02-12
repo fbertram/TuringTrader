@@ -5,10 +5,10 @@
 // History:     2019xii04, FUB, created
 //              2023ii09, FUB, refactored for v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -38,9 +38,6 @@ namespace TuringTrader.BooksAndPubsV2
         #region inputs
         public virtual HashSet<Tuple<object, double>> ALLOCATION { get; set; }
         public virtual string BENCH => Benchmark.PORTFOLIO_60_40;
-        public virtual DateTime START_TIME => DateTime.Parse("2007-01-01T16:00-05:00");
-        public virtual DateTime END_TIME => DateTime.Now;
-        public virtual double COMMISSION => 0.0; // lazy portfolios typically w/o commission
         public virtual bool IsTradingDay => IsFirstBar || SimDate.Month != NextSimDate.Month; // end of month
         #endregion
         #region strategy logic
@@ -48,11 +45,10 @@ namespace TuringTrader.BooksAndPubsV2
         {
             //========== initialization ==========
 
-            StartDate = StartDate ?? START_TIME;
-            EndDate = EndDate ?? END_TIME;
+            StartDate = StartDate ?? AlgorithmConstants.START_DATE;
+            EndDate = EndDate ?? AlgorithmConstants.END_DATE;
             WarmupPeriod = TimeSpan.FromDays(0);
-
-            ((Account_Default)Account).Friction = COMMISSION;
+            ((Account_Default)Account).Friction = 0.0; // lazy portfolios typically w/o commission
 
             var autoAlloc = ALLOCATION.Sum(a => a.Item2) == 0.0;
 

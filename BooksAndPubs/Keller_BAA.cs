@@ -108,7 +108,7 @@ namespace TuringTrader.BooksAndPubsV2
         /// <summary>
         /// Transaction cost (default = 0.1%).
         /// </summary>
-        public virtual double TC { get; set; } = 0.1;
+        //public virtual double TC { get; set; } = 0.1;
 
         public virtual OrderType ORDER_TYPE { get; set; } = OrderType.closeThisBar;
 
@@ -125,12 +125,13 @@ namespace TuringTrader.BooksAndPubsV2
         {
             //========== initialization ==========
 
-            StartDate = StartDate ?? DateTime.Parse("2007-01-01T16:00-05:00"); // 4pm in New York
-            EndDate = EndDate ?? DateTime.Now;
+            StartDate = StartDate ?? AlgorithmConstants.START_DATE;
+            EndDate = EndDate ?? AlgorithmConstants.END_DATE;
             WarmupPeriod = TimeSpan.FromDays(365);
 
             // Keller assumes 0.1% transaction cost
-            ((Account_Default)Account).Friction = TC / 100.0;
+            //((Account_Default)Account).Friction = TC / 100.0;
+            ((Account_Default)Account).Friction = AlgorithmConstants.FRICTION;
 
             //========== simulation loop ==========
 

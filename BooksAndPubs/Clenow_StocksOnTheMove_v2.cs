@@ -7,7 +7,7 @@
 // History:     2018xii14, FUB, created
 //              2022x31, FUB, ported to v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
@@ -152,10 +152,11 @@ namespace TuringTrader.BooksAndPubsV2
             StartDate = StartDate ?? DateTime.Parse("1999-01-01T16:00-05:00"); // 4pm in New York
             EndDate = EndDate ?? DateTime.Parse("2014-12-31T16:00-05:00");
 #else
-            StartDate = StartDate ?? DateTime.Parse("2007-01-01T16:00-05:00"); // 4pm in New York
-            EndDate = EndDate ?? DateTime.Now;
+            StartDate = StartDate ?? AlgorithmConstants.START_DATE;
+            EndDate = EndDate ?? AlgorithmConstants.END_DATE;
 #endif
             WarmupPeriod = TimeSpan.FromDays(365);
+            ((Account_Default)Account).Friction = AlgorithmConstants.FRICTION;
 
             //========== simulation loop ==========
 

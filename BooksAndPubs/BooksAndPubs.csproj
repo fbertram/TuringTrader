@@ -34,7 +34,6 @@
     <Compile Remove="Connors_AlphaFormula.cs" />
     <Compile Remove="Keller_FAA.cs" />
     <Compile Remove="Keller_LAA.cs" />
-    <Compile Remove="Livingston_MuscularPortfolios_v2.cs" />
     <Compile Remove="Soto_SectorRotation.cs" />
     <Compile Remove="TradingMarkets_Quantamentals.cs" />
   </ItemGroup>
@@ -45,7 +44,6 @@
     <None Include="Connors_AlphaFormula.cs" />
     <None Include="Keller_FAA.cs" />
     <None Include="Keller_LAA.cs" />
-    <None Include="Livingston_MuscularPortfolios_v2.cs" />
     <None Include="Soto_SectorRotation.cs" />
     <None Include="TradingMarkets_Quantamentals.cs" />
   </ItemGroup>
