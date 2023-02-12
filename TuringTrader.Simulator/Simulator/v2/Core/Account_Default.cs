@@ -290,13 +290,17 @@ namespace TuringTrader.SimulatorV2
         public List<IAccount.OrderReceipt> TradeLog { get { return new List<IAccount.OrderReceipt>(_tradeLog); } }
 
         /// <summary>
-        /// Friction to model commissions, fees, and slippage.
-        /// Expressed as percentage of traded value.
+        /// Friction to model commissions, fees, and slippage
+        /// expressed as a fraction of the traded value. A value of 0.01 is 
+        /// equivalent to 1% of friction. Setting Friction to a negative 
+        /// value will reset it to its default setting.
         /// </summary>
         public double Friction { get => _friction; set { _friction = value >= 0.0 ? value : DEFAULT_FRICTION; } }
 
         /// <summary>
-        /// Minimum position size, as percentage of total.
+        /// Minimum position size, as fraction of total account value. A
+        /// value of 0.01 is equivalent to a minimum position of 1% of the
+        /// account's liquidation value.
         /// </summary>
         public double MinPosition { get; set; } = 0.001; // 0.1%  minimum position
     }

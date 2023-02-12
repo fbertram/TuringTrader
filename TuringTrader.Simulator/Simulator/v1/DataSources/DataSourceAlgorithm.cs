@@ -99,7 +99,6 @@ namespace TuringTrader.Simulator
             /// <returns>bars created from sub-classed algo</returns>
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
-#if true
                 _algo.IsDataSource = true;
                 var algoV1 = _algo as Algorithm;
                 var algoV2 = _algo as SimulatorV2.Algorithm;
@@ -180,17 +179,31 @@ namespace TuringTrader.Simulator
                         {
                             try
                             {
+                                // V1 algorithms run in the exchange's time zone
+                                // while V2 algorithms run in the local time zone
+                                // BUGBUG: this code assumes trading at US stock
+                                //         exchanges with the closing bell at 4pm
+                                var timeZoneNewYork = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                                DateTime convertTimeToV2(DateTime v1Time)
+                                    => TimeZoneInfo.ConvertTimeToUtc(
+                                        new DateTime(v1Time.Year, v1Time.Month, v1Time.Day, 16, 0, 0, DateTimeKind.Unspecified),
+                                        timeZoneNewYork)
+                                        .ToLocalTime();
+
+                                DateTime convertTimeFromV2(DateTime v2Time)
+                                    => TimeZoneInfo.ConvertTime(v2Time, timeZoneNewYork);
+
                                 DateTime t1 = DateTime.Now;
                                 Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
 
-                                algoV2.StartDate = startTime;
-                                algoV2.EndDate = endTime;
+                                algoV2.StartDate = convertTimeToV2(startTime);
+                                algoV2.EndDate = convertTimeToV2(endTime);
                                 algoV2.Run();
 
                                 var bars = new List<Bar>();
                                 foreach (var barV2 in algoV2.EquityCurve)
                                     bars.Add(Bar.NewOHLC(
-                                        algoV2.Name, barV2.Date,
+                                        algoV2.Name, convertTimeFromV2(barV2.Date),
                                         barV2.Value.Open, barV2.Value.High, barV2.Value.Low, barV2.Value.Close,
                                         (long)barV2.Value.Volume));
 
@@ -214,48 +227,6 @@ namespace TuringTrader.Simulator
                     foreach (var bar in data)
                         yield return bar;
                 }
-#else
-                var algoNick = Info[DataSourceParam.nickName];
-
-                var cacheKey = new CacheId(null, "", 0,
-                    algoNick.GetHashCode(), // _algoName.GetHashCode(),
-                    startTime.GetHashCode(),
-                    endTime.GetHashCode());
-
-                List<Bar> retrievalFunction()
-                {
-                    try
-                    {
-                        DateTime t1 = DateTime.Now;
-                        Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
-
-                        _algo.StartTime = startTime;
-                        _algo.EndTime = endTime;
-                        _algo.ParentDataSource = this;
-
-                        _algo.SubclassedData = new List<Bar>(); ;
-
-                        _algo.Run();
-
-                        DateTime t2 = DateTime.Now;
-                        Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
-
-                        return _algo.SubclassedData;
-                    }
-
-                    catch
-                    {
-                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
-                    }
-                }
-
-                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
-
-                if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceAlgorithm: no data for {0}", Info[DataSourceParam.nickName]));
-
-                Data = data;
-#endif
             }
             #endregion
 
