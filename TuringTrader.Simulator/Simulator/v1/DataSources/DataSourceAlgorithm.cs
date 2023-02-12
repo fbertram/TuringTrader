@@ -4,10 +4,10 @@
 // Description: Data source, derived from an algorithm.
 // History:     2019iii13, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -156,6 +156,7 @@ namespace TuringTrader.Simulator
                     {
                         if (algoV1 != null)
                         {
+                            // execute 'native' v1 algorithms
                             try
                             {
                                 DateTime t1 = DateTime.Now;
@@ -177,6 +178,9 @@ namespace TuringTrader.Simulator
                         }
                         if (algoV2 != null)
                         {
+                            // execute 'alien' v2 algorithms
+                            // NOTE: this code has limitations and is only meant to simplify
+                            //       the transition from v1 to v2 algorithms
                             try
                             {
                                 // V1 algorithms run in the exchange's time zone

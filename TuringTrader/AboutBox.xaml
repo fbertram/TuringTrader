@@ -9,7 +9,7 @@
         ResizeMode="NoResize" FontFamily="Segoe UI">
     <Grid>
         <TextBlock Margin="10,31,10,10" TextWrapping="Wrap">
-            <Run Text="An open-source backtesting engine/ market simulator."/>
+            <Run Text="An open-source backtesting engine/ trading simulator."/>
             <Run Text="For news, updates, and more information about the project, please visit our
 website at "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">

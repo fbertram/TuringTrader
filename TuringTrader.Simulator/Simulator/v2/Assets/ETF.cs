@@ -7,8 +7,7 @@
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
-//              TuringTrader is free software: you can redistribute it and/or 
+//              engine/ trading simulator.
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
 //              version 3 of the License, or (at your option) any later version.
