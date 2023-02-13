@@ -56,15 +56,19 @@ namespace TuringTrader.SimulatorV2
                     if (data.First().Date <= tradingDays.First())
                         break;
 
-                    Output.ShowInfo("{0}: {1:MM/dd/yyyy} <= {2:MM/dd/yyyy}", info[DataSourceParam.nickName2], data.First().Date, tradingDays.First());
-                    Output.ShowInfo("{0}: splice {1}", info[DataSourceParam.nickName2], symbol);
-
                     var asset = _loadAsset(owner, symbol);
                     var src = _resampleToTradingCalendar(owner, asset.Item1, false);
 
                     var srcFiltered = src
                         .Where(b => b.Date < data.First().Date)
                         .ToList();
+
+                    if (srcFiltered.Count == 0)
+                    {
+                        Output.ShowWarning("Failed to backfill {0}: no data for {1}",
+                            info[DataSourceParam.nickName2], symbol);
+                        continue; // try next backfill or return what we have
+                    }
 
                     var scaleSplicing = 1.0;
                     if (splice)
@@ -74,8 +78,12 @@ namespace TuringTrader.SimulatorV2
                             .Where(b => b.Date == dataExisting.Date)
                             .FirstOrDefault();
 
-                        if (dataSplicing == null && splice == true)
-                            Output.ThrowError("No overlap while splicing {0}", info[DataSourceParam.nickName2]);
+                        if (dataSplicing == null)
+                        {
+                            Output.ShowWarning("Failed to backfill {0}: no overlap for {1}",
+                                info[DataSourceParam.nickName2], symbol);
+                            continue; // try next backfill or return what we have
+                        }
 
                         scaleSplicing = new List<double>
                         {

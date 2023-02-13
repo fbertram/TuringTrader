@@ -518,7 +518,7 @@ namespace TuringTrader.SimulatorV2.Assets
         /// </summary>
         public const string SPYG = AssetsV1.SPYG;
         /// <summary>
-        /// SPDR Portfolio S&ampP 500 Value ETF (since Sep 2000)
+        /// SPDR Portfolio S&amp;P 500 Value ETF (since Sep 2000)
         /// </summary>
         public const string SPYV = AssetsV1.SPYV;
         /// <summary>
@@ -752,9 +752,10 @@ namespace TuringTrader.SimulatorV2.Assets
         /// </summary>
         public const string GLD = AssetsV1.GLD;
         /// <summary>
-        /// Invesco DB Commodity Index Tracking ETF. Available since February 2006.
+        /// Invesco DB Commodity Index Tracking ETF
+        /// (since February 2006, backfilled to July 2002).
         /// </summary>
-        public const string DBC = AssetsV1.DBC;
+        public const string DBC = "splice:DBC,csv:backfills/DBC.csv";
         /// <summary>
         /// VNQ	Vanguard Real Estate Index ETF. Available since September 2004.
         /// </summary>
