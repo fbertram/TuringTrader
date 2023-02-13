@@ -225,7 +225,7 @@ namespace TuringTrader.BooksAndPubsV2
     #endregion
     #region Mama Bear
     // https://muscularportfolios.com/mama-bear/
-    public class Livingston_MuscularPortfolios_MamaBear_v2test : Livingston_MuscularPortfolios
+    public class Livingston_MuscularPortfolios_MamaBear : Livingston_MuscularPortfolios
     {
         public override string Name => "Livingston's Mama Bear";
         protected override HashSet<string> ETF_MENU => new HashSet<string>()
@@ -275,7 +275,7 @@ namespace TuringTrader.BooksAndPubsV2
     #endregion
     #region Papa Bear
     // see https://muscularportfolios.com/papa-bear/
-    public class Livingston_MuscularPortfolios_PapaBear_v2test : Livingston_MuscularPortfolios
+    public class Livingston_MuscularPortfolios_PapaBear : Livingston_MuscularPortfolios
     {
         public override string Name => "Livingston's Papa Bear";
         protected override HashSet<string> ETF_MENU => new HashSet<string>()
