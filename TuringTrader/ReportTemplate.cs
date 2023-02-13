@@ -1175,7 +1175,8 @@ namespace TuringTrader
             row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}",
-                    Math.Sqrt(12.0) * _stdMonthlyReturn(label));
+                    Math.Sqrt(12.0) * _stdMonthlyReturn(label)); // likely incorrect as we are using log-returns
+                    //(Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(label)) - 1.0)); // is this better? code cuplicated in RenderComps!
             retvalue.Add(row);
 
 
@@ -2038,7 +2039,8 @@ namespace TuringTrader
             //--- other metrics
             var metrics = new List<Tuple<string, Func<object>>>
             {
-                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                //Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("sharpe", () => _sharpeRatio(_firstYLabel)),
