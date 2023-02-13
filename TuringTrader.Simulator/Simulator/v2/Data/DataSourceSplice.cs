@@ -38,66 +38,64 @@ namespace TuringTrader.SimulatorV2
             // debugging only
             return _loadAsset(owner, symbols.First(), true);
 #else
-            var allData = symbols
-                .Select(symbol =>
-                {
-                    // we must resample here, to make sure we have the
-                    // required overlap for successful splicing
-                    var data = _loadAsset(owner, symbol);
-                    return Tuple.Create(
-                        _resampleToTradingCalendar(owner, data.Item1, false),
-                        data.Item2);
-                })
-                .ToList();
 
             var tradingDays = owner.TradingCalendar.TradingDays;
 
-            var dst = (List<BarType<OHLCV>>)null;
-            foreach (var data in allData)
+            var data = (List<BarType<OHLCV>>)null;
+            var meta = (TimeSeriesAsset.MetaType)null;
+            foreach (var symbol in symbols)
             {
-                var src = data.Item1;
-
-                if (dst == null)
+                if (data == null)
                 {
-                    dst = src;
+                    var asset = _loadAsset(owner, symbol);
+                    data = _resampleToTradingCalendar(owner, asset.Item1, false);
+                    meta = asset.Item2;
                 }
                 else
                 {
+                    if (data.First().Date <= tradingDays.First())
+                        break;
+
+                    Output.ShowInfo("{0}: {1:MM/dd/yyyy} <= {2:MM/dd/yyyy}", info[DataSourceParam.nickName2], data.First().Date, tradingDays.First());
+                    Output.ShowInfo("{0}: splice {1}", info[DataSourceParam.nickName2], symbol);
+
+                    var asset = _loadAsset(owner, symbol);
+                    var src = _resampleToTradingCalendar(owner, asset.Item1, false);
+
                     var srcFiltered = src
-                        .Where(b => b.Date < dst.First().Date)
+                        .Where(b => b.Date < data.First().Date)
                         .ToList();
 
-                    var dataExisting = dst.First();
-                    var dataSplicing = src
-                        .Where(b => b.Date == dst.First().Date)
-                        .FirstOrDefault();
+                    var scaleSplicing = 1.0;
+                    if (splice)
+                    {
+                        var dataExisting = data.First();
+                        var dataSplicing = src
+                            .Where(b => b.Date == dataExisting.Date)
+                            .FirstOrDefault();
 
-                    if (dataSplicing == null)
-                        throw new Exception(string.Format("No overlap while splicing {0}", info[DataSourceParam.nickName2]));
+                        if (dataSplicing == null && splice == true)
+                            Output.ThrowError("No overlap while splicing {0}", info[DataSourceParam.nickName2]);
 
-                    var scaleSplicing = splice
-                        ? new List<double>
-                            {
-                                dataExisting.Value.Open / dataSplicing.Value.Open,
-                                dataExisting.Value.High / dataSplicing.Value.High,
-                                dataExisting.Value.Low / dataSplicing.Value.Low,
-                                dataExisting.Value.Close / dataSplicing.Value.Close,
-                            }
-                            .Average()
-                        : 1.0;
+                        scaleSplicing = new List<double>
+                        {
+                            dataExisting.Value.Open / dataSplicing.Value.Open,
+                            dataExisting.Value.High / dataSplicing.Value.High,
+                            dataExisting.Value.Low / dataSplicing.Value.Low,
+                            dataExisting.Value.Close / dataSplicing.Value.Close,
+                        }
+                        .Average();
+                    }
 
-                    dst = srcFiltered
+                    data = srcFiltered
                         .Select(bar => new BarType<OHLCV>(bar.Date,
                             new OHLCV(scaleSplicing * bar.Value.Open, scaleSplicing * bar.Value.High, scaleSplicing * bar.Value.Low, scaleSplicing * bar.Value.Close, 0.0)))
-                        .Concat(dst)
+                        .Concat(data)
                         .ToList();
                 }
-
-                if (dst.First().Date <= tradingDays.First())
-                    break;
             }
 
-            return Tuple.Create(dst, allData.First().Item2);
+            return Tuple.Create(data, meta);
 #endif
         }
         #endregion

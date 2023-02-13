@@ -196,8 +196,10 @@ namespace TuringTrader.SimulatorV2
             else if (Directory.Exists(info2[DataSourceParam.dataPath]))
                 return _csvLoadDir(algo, info2);
 
-            throw new Exception(string.Format("Failed to locate csv data for {0} at {1}", info2[DataSourceParam.nickName2], info2[DataSourceParam.dataPath]));
-
+            Output.ShowWarning("Failed to locate csv data for {0} at {1}",
+                info2[DataSourceParam.nickName2],
+                info2[DataSourceParam.dataPath]);
+            return new List<BarType<OHLCV>>();
         }
         private static TimeSeriesAsset.MetaType CsvLoadMeta(Algorithm algo, Dictionary<DataSourceParam, string> info)
         {
