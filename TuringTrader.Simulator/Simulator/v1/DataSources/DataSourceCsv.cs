@@ -473,8 +473,8 @@ namespace TuringTrader.Simulator
 
                 List<Bar> retrievalFunction()
                 {
-                    DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
+                    //DateTime t1 = DateTime.Now;
+                    Output.ShowInfo(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                     List<Bar> bars = new List<Bar>();
 
@@ -487,8 +487,8 @@ namespace TuringTrader.Simulator
                     else
                         throw new Exception("DataSourceCsv: data path not found");
 
-                    DateTime t2 = DateTime.Now;
-                    Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    //DateTime t2 = DateTime.Now;
+                    //Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                     if (_lastTime == null
                     || _lastTime < endTime)

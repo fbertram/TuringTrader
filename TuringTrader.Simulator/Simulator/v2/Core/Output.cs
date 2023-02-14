@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace TuringTrader.SimulatorV2
@@ -36,12 +37,23 @@ namespace TuringTrader.SimulatorV2
         #region private stuff
         private static Dictionary<string, bool> _showOnce = new Dictionary<string, bool>();
 
-        private static string _formatOutput(string format, params object[] args)
-            => args.Count() > 0 ? string.Format(format, args) : format;
+        private static string _formatMessage(string format, params object[] args)
+            => (args.Count() > 0 ? string.Format(format, args) : format);
 
-        private static void _printOutput(string output)
-            => Simulator.Output.WriteLine(output);
+        private static void _printMessage(string message)
+        {
+            if (WriteEvent == null)
+                Debug.Write(message);
+            else
+                WriteEvent(message);
+        }
         #endregion
+
+        /// <summary>
+        /// Debug output event. The application should attach an event
+        /// handler here to redirect the messages to a console.
+        /// </summary>
+        public static Action<string> WriteEvent;
 
         /// <summary>
         /// Enumeration of output modes.
@@ -49,19 +61,21 @@ namespace TuringTrader.SimulatorV2
         public enum DisplayModeType
         {
             /// <summary>
-            /// show errors (and throw an exception), but suppress warnings and info.
+            /// show errors (and throw an exception), but suppress warnings 
+            /// and informational messages.
             /// </summary>
             errorsOnly,
             /// <summary>
-            /// show errors and first occurrence of warnings, but suppress repeated warnings and info.
+            /// show errors and first occurrence of warnings, but suppress 
+            /// repeated warnings and all informational messages.
             /// </summary>
             errorsAndWarningsOnce,
             /// <summary>
-            /// show errors and all warnings, but suppress info.
+            /// show errors and all warnings, but suppress informational messages.
             /// </summary>
             errorsAndWarnings,
             /// <summary>
-            /// show errors, warnings, and general info.
+            /// show all messages including errors, warnings, and info.
             /// </summary>
             errorsWarningsAndInfo,
         };
@@ -82,7 +96,7 @@ namespace TuringTrader.SimulatorV2
             switch (DisplayMode)
             {
                 case DisplayModeType.errorsWarningsAndInfo:
-                    _printOutput(_formatOutput(format, args));
+                    _printMessage(_formatMessage(format, args) + Environment.NewLine);
                     break;
 
                 case DisplayModeType.errorsAndWarnings:
@@ -104,18 +118,18 @@ namespace TuringTrader.SimulatorV2
         /// <param name="args"></param>
         public static void ShowWarning(string format, params object[] args)
         {
-            var warning = _formatOutput(format, args);
+            var warning = _formatMessage(format + Environment.NewLine, args);
 
             switch (DisplayMode)
             {
                 case DisplayModeType.errorsWarningsAndInfo:
                 case DisplayModeType.errorsAndWarnings:
-                    _printOutput(warning);
+                    _printMessage(warning);
                     break;
 
                 case DisplayModeType.errorsAndWarningsOnce:
                     if (!_showOnce.ContainsKey(warning))
-                        _printOutput(warning);
+                        _printMessage(warning);
                     _showOnce[warning] = true;
                     break;
 
@@ -133,8 +147,8 @@ namespace TuringTrader.SimulatorV2
         /// <exception cref="Exception"></exception>
         public static void ThrowError(string format, params object[] args)
         {
-            var error = _formatOutput(format, args);
-            _printOutput(error);
+            var error = _formatMessage(format + Environment.NewLine, args);
+            _printMessage(error);
             throw new Exception(error);
         }
 
@@ -144,8 +158,18 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
+        public static void Write(string format, params object[] args)
+            => _printMessage(_formatMessage(format, args));
+
+        /// <summary>
+        /// Display output message on a new line. This is a legacy method, 
+        /// and will be removed from the API soon. Use Info, Warning, or 
+        /// Error instead.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="args"></param>
         public static void WriteLine(string format, params object[] args)
-            => _printOutput(_formatOutput(format, args));
+            => _printMessage(_formatMessage(format + Environment.NewLine, args));
     }
 }
 

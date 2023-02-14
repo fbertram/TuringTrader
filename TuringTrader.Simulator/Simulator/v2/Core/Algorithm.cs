@@ -151,11 +151,18 @@ namespace TuringTrader.SimulatorV2
         private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 
         /// <summary>
-        /// Warmup period.
+        /// Warmup period.This period comes before StartDate. It is crucial
+        /// to have enough warmup before beginning to trade, so that
+        /// indicators can settle on their correct values.
         /// </summary>
         public TimeSpan WarmupPeriod { get => _warmupPeriod; set { _warmupPeriod = value; TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
 
         private TimeSpan _cooldownPeriod = TimeSpan.FromDays(5);
+        /// <summary>
+        /// Cooldown period. This period follows EndDate. It is important to
+        /// add a few days to the end of the backtest to make sure the simulator
+        /// can calculate NextSimDate accordingly.
+        /// </summary>
         public TimeSpan CooldownPeriod { get => _cooldownPeriod; set { _cooldownPeriod = value; TradingCalendar.EndDate = (DateTime)_endDate + CooldownPeriod; } }
         /// <summary>
         /// Current simulation timestamp.
@@ -306,7 +313,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Calculate indicator from lambda function.
         /// </summary>
-        /// <param name="cacheId"unique cache id></param>
+        /// <param name="cacheId">unique cache id></param>
         /// <param name="barFun">lambda function</param>
         /// <returns>output time series</returns>
         public TimeSeriesFloat Lambda(string cacheId, Func<double> barFun)

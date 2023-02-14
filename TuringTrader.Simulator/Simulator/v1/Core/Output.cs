@@ -21,51 +21,13 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region libraries
-using System;
-using System.Diagnostics;
-using System.Linq;
-#endregion
-
 namespace TuringTrader.Simulator
 {
     /// <summary>
     /// Class providing formatted text output.
     /// </summary>
-    public class Output
+    public class Output : SimulatorV2.Output
     {
-        /// <summary>
-        /// Debug output event.
-        /// </summary>
-        public static Action<string> WriteEvent;
-
-        /// <summary>
-        /// Write formatted debug output.
-        /// </summary>
-        /// <param name="format">format string</param>
-        /// <param name="args">list or arguments</param>
-        public static void Write(string format, params object[] args)
-        {
-            string message = args.Count() > 0
-                ? string.Format(format, args)
-                : format;
-
-            if (WriteEvent == null)
-                Debug.Write(message);
-            else
-                WriteEvent(message);
-        }
-
-        /// <summary>
-        /// Write formatted debug output, and start new line.
-        /// </summary>
-        /// <param name="format">format string</param>
-        /// <param name="args">list of arguments</param>
-        public static void WriteLine(string format, params object[] args)
-        {
-            Write(format, args);
-            Write(Environment.NewLine);
-        }
     }
 }
 

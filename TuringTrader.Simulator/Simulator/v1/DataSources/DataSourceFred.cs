@@ -316,8 +316,8 @@ namespace TuringTrader.Simulator
 
                     List<Bar> retrievalFunction()
                     {
-                        DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
+                        //DateTime t1 = DateTime.Now;
+                        Output.ShowInfo(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         List<Bar> rawBars = new List<Bar>();
 
@@ -359,8 +359,8 @@ namespace TuringTrader.Simulator
 
                         List<Bar> alignedBars = DataSourceHelper.AlignWithMarket(rawBars, startTime, endTime);
 
-                        DateTime t2 = DateTime.Now;
-                        Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                        //DateTime t2 = DateTime.Now;
+                        //Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                         return alignedBars;
                     };

@@ -159,14 +159,14 @@ namespace TuringTrader.Simulator
                             // execute 'native' v1 algorithms
                             try
                             {
-                                DateTime t1 = DateTime.Now;
-                                Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
+                                //DateTime t1 = DateTime.Now;
+                                Output.ShowInfo(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                                 var bars = algoV1.Run(startTime, endTime)
                                     .ToList();
 
-                                DateTime t2 = DateTime.Now;
-                                Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                                //DateTime t2 = DateTime.Now;
+                                //Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                                 return bars;
                             }
@@ -197,8 +197,8 @@ namespace TuringTrader.Simulator
                                 DateTime convertTimeFromV2(DateTime v2Time)
                                     => TimeZoneInfo.ConvertTime(v2Time, timeZoneNewYork);
 
-                                DateTime t1 = DateTime.Now;
-                                Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
+                                //DateTime t1 = DateTime.Now;
+                                Output.ShowInfo(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
 
                                 algoV2.StartDate = convertTimeToV2(startTime);
                                 algoV2.EndDate = convertTimeToV2(endTime);

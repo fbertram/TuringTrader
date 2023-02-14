@@ -322,15 +322,15 @@ namespace TuringTrader.Simulator
 
                 List<Bar> retrievalFunction()
                 {
-                    DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
+                    //DateTime t1 = DateTime.Now;
+                    Output.ShowInfo(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
 
                     List<Bar> bars = new List<Bar>();
 
                     LoadData(bars, startTime, endTime);
 
-                    DateTime t2 = DateTime.Now;
-                    Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    //DateTime t2 = DateTime.Now;
+                    //Output.ShowInfo(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                     return bars;
                 };
