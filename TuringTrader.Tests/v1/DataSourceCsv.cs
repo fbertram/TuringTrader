@@ -1,8 +1,8 @@
 ﻿//==============================================================================
-// Project:     TuringTrader, BSOL Algorithms
-// Name:        BondETFs
-// Description: Collection of Stock-Market ETFs
-// History:     2020xii10, FUB, created
+// Project:     TuringTrader: SimulatorEngine.Tests
+// Name:        DataSourceTiingo
+// Description: unit test for Tiingo data source
+// History:     2023ii14, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
@@ -22,43 +22,30 @@
 //==============================================================================
 
 #region libraries
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Algorithms.Glue
+namespace SimulatorEngine.Tests
 {
-    public partial class Indices
+    [TestClass]
+    public class DataSourceCsv
     {
-        #region U.S. Stock Markets
-        /// <summary>
-        /// S&amp;P 500 Index
-        /// </summary>
-        public static readonly string SPX = "splice:$SPX,csv:backfills/$SPX.csv";
-        /// <summary>
-        /// S&amp;P 500 Total Return Index
-        /// </summary>
-        public static readonly string SPXTR = "splice:$SPXTR,csv:backfills/$SPXTR.csv";
-        // Cboe Volatility Index
-        public static readonly string VIX = "$VIX";
-        /// <summary>
-        /// Nasdaq Composite Index
-        /// </summary>
-        public static readonly string COMP = "$COMP";
-        /// <summary>
-        /// Nasdaq-100 Index
-        /// </summary>
-        public static readonly string NDX = "$NDX";
-        /// <summary>
-        /// Nasdaq-100 Total Return Index
-        /// </summary>
-        public static readonly string NDXTR = "$NDXTR";
-        #endregion
-        #region benchmarks
-        public static readonly string PORTF_0 = "algorithm:Benchmark_Zero";
-        public static readonly string PORTF_60_40 = "algorithm:Benchmark_60_40";
-        #endregion
+        [TestMethod]
+        public void Test_DataRetrieval()
+        {
+            var ds = DataSource.New("csv:backfills/$SPXTR.csv");
+
+            var d = ds.LoadData(DateTime.Parse("01/01/2019"), DateTime.Parse("01/12/2019"));
+
+            //Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("microsoft"));
+            Assert.IsTrue(d.First().Time.Date == DateTime.Parse("12/31/2018"));
+            Assert.IsTrue(d.Last().Time.Date == DateTime.Parse("01/11/2019"));
+            Assert.IsTrue(d.Count() == 9);
+            Assert.IsTrue(Math.Abs(d.Last().Close / d.First().Open - 131046.7989 / 126057.5265) < 1e-3);
+        }
     }
 }
 

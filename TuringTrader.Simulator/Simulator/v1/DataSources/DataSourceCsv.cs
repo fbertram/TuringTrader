@@ -117,7 +117,8 @@ namespace TuringTrader.Simulator
                             case DataSourceParam.high: high = ParseDouble(mappedString); hasOHLC = true; break;
                             case DataSourceParam.low: low = ParseDouble(mappedString); hasOHLC = true; break;
                             case DataSourceParam.close: close = ParseDouble(mappedString); hasOHLC = true; break;
-                            case DataSourceParam.volume: volume = long.Parse(mappedString); break;
+                            //case DataSourceParam.volume: volume = long.Parse(mappedString); break; // will throw for float values
+                            case DataSourceParam.volume: volume = (long)Math.Floor(ParseDouble(mappedString)); break; // should accept int and float
 
                             case DataSourceParam.bid: bid = ParseDouble(mappedString); hasBidAsk = true; break;
                             case DataSourceParam.ask: ask = ParseDouble(mappedString); hasBidAsk = true; break;

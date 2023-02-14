@@ -354,6 +354,14 @@ namespace TuringTrader.Simulator
             }
 
             //--- fill in nickname w/o source, as required
+#if true
+            // new 2023ii14
+            if (!nickName2.Contains("/") && !nickName2.Contains(Path.DirectorySeparatorChar))
+                defaultInfo[DataSourceParam.dataPath] = "Data" + Path.DirectorySeparatorChar + nickName2;
+            else
+                defaultInfo[DataSourceParam.dataPath] = nickName2.Replace('/', Path.DirectorySeparatorChar);
+#else
+            // retired 2023ii14
             List<DataSourceParam> updateWithNickname2 = new List<DataSourceParam>
             {
                 DataSourceParam.dataPath,
@@ -363,6 +371,7 @@ namespace TuringTrader.Simulator
             {
                 defaultInfo[field] = string.Format(_defaultInfo[field], nickName2);
             }
+#endif
 
             //--- fill in ticker, as required
             List<DataSourceParam> updateWithTicker = new List<DataSourceParam>

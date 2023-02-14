@@ -49,7 +49,7 @@ namespace TuringTrader.Algorithms.Glue
         /// SPDR S&amp;P 500 Trust ETF
         /// (since Jan 1993, backfilled to Jan 1950)
         /// </summary>
-        public static readonly string SPY = "splice:SPY,SPY++";
+        public static readonly string SPY = "splice:SPY,csv:backfills/SPY.csv";
         /// <summary>
         /// SPDR Portfolio S&P 500 Growth ETF (since Sep 2000)
         /// </summary>
@@ -67,12 +67,12 @@ namespace TuringTrader.Algorithms.Glue
         /// Invesco QQQ Trust Series 1 ETF
         /// (since Mar 1999, backfilled to Mar 1999)
         /// </summary>
-        public static readonly string QQQ = "splice:QQQ,QQQ++";
+        public static readonly string QQQ = "splice:QQQ,csv:backfills/QQQ.csv";
         /// <summary>
         /// Dow Jones Industrial Average Trust ETF
         /// (since Jan 1998, backfilled to Oct 1987)
         /// </summary>
-        public static readonly string DIA = "splice:DIA,DIA++";
+        public static readonly string DIA = "splice:DIA,csv:backfills/DIA.csv";
         /// <summary>
         /// iShares Russell 1000 Value ETF
         /// </summary>
@@ -81,12 +81,12 @@ namespace TuringTrader.Algorithms.Glue
         /// iShares Russell 2000 ETF
         /// (since May 2000, backfilled to Dec 1978)
         /// </summary>
-        public static readonly string IWM = "splice:IWM,IWM++";
+        public static readonly string IWM = "splice:IWM,csv:backfills/IWM.csv";
         /// <summary>
         /// SPDR S&P MidCap 400 ETF
         /// (since May 1995, backfilled to July 1991)
         /// </summary>
-        public static readonly string MDY = "splice:MDY,MDY++";
+        public static readonly string MDY = "splice:MDY,csv:backfills/MDY.csv";
         /// <summary>
         /// SPDR S&P 400 Mid Cap Growth ETF (since Nov 2005)
         /// </summary>
@@ -99,7 +99,7 @@ namespace TuringTrader.Algorithms.Glue
         /// SPDR S&P 600 SmallCap ETF
         /// (since Nov 2005, backfilled to Jan 1995)
         /// </summary>
-        public static readonly string SLY = "splice:SLY,SLY++";
+        public static readonly string SLY = "splice:SLY,csv:backfills/SLY.csv";
         /// <summary>
         /// SPDR S&P 600 Small Cap Growth ETF (since Sep 2000)
         /// </summary>
@@ -114,74 +114,74 @@ namespace TuringTrader.Algorithms.Glue
         /// Materials Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLB = "splice:XLB,XLB++";
+        public static readonly string XLB = "splice:XLB,csv:backfills/XLB.csv";
         /// <summary>
         /// Communication Services Select Sector SPDR ETF
         /// (since Jun 2018, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLC = "splice:XLC,XLC++";
+        public static readonly string XLC = "splice:XLC,csv:backfills/XLC.csv";
         /// <summary>
         /// Engergy Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLE = "splice:XLE,XLE++";
+        public static readonly string XLE = "splice:XLE,csv:backfills/XLE.csv";
         /// <summary>
         /// Financial Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLF = "splice:XLF,XLF++";
+        public static readonly string XLF = "splice:XLF,csv:backfills/XLF.csv";
         /// <summary>
         /// Industrial Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLI = "splice:XLI,XLI++";
+        public static readonly string XLI = "splice:XLI,csv:backfills/XLI.csv";
         /// <summary>
         /// Technology Select Sector SPDR ETF
         /// </summary>
         /// (since Dec 1998, backfilled to Jan 1990)
-        public static readonly string XLK = "splice:XLK,XLK++";
+        public static readonly string XLK = "splice:XLK,csv:backfills/XLK.csv";
         /// <summary>
         /// Consumer Staples Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLP = "splice:XLP,XLP++";
+        public static readonly string XLP = "splice:XLP,csv:backfills/XLP.csv";
         /// <summary>
         /// Real Estate Select Sector SPDR ETF
         /// (since Oct 2015, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLRE = "splice:XLRE,XLRE++";
+        public static readonly string XLRE = "splice:XLRE,csv:backfills/XLRE.csv";
         /// <summary>
         /// Utilities Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLU = "splice:XLU,XLU++";
+        public static readonly string XLU = "splice:XLU,csv:backfills/XLU.csv";
         /// <summary>
         /// Health Care Select Sector SPDR ETF
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLV = "splice:XLV,XLV++";
+        public static readonly string XLV = "splice:XLV,csv:backfills/XLV.csv";
         /// <summary>
         /// Consumer Discretionary
         /// (since Dec 1998, backfilled to Jan 1990)
         /// </summary>
-        public static readonly string XLY = "splice:XLY,XLY++";
+        public static readonly string XLY = "splice:XLY,csv:backfills/XLY.csv";
         #endregion
         #region others
         /// <summary>
         /// iShares MSCI ACWI ex US ETF
         /// (since Mar 2008, backfilled to Jan 1980)
         /// </summary>
-        public static readonly string ACWX = "splice:ACWX,ACWX++";
+        public static readonly string ACWX = "splice:ACWX,csv:backfills/ACWX.csv";
         /// <summary>
         /// Vanguard FTSE All-World ex-US Small-Cap Index ETF
         /// (since Apr 2009, backfilled to Nov 1996)
         /// </summary>
-        public static readonly string VSS = "splice:VSS,VSS++";
+        public static readonly string VSS = "splice:VSS,csv:backfills/VSS.csv";
         /// <summary>
         /// Vanguard FTSE All-World ex-US ETF
         /// (since Mar 2007)
         /// </summary>
-        public static readonly string VEU = "splice:VEU,VEU++";
+        public static readonly string VEU = "splice:VEU,csv:backfills/VEU.csv";
         /// <summary>
         /// Vanguard FTSE Europe ETF
         /// </summary>
@@ -210,97 +210,97 @@ namespace TuringTrader.Algorithms.Glue
         /// iShares Core US Aggregate Bond ETF
         /// (since Sep 2003, backfilled to Feb 1977)
         /// </summary>
-        public static readonly string AGG = "splice:AGG,AGG++";
+        public static readonly string AGG = "splice:AGG,csv:backfills/AGG.csv";
         /// <summary>
         /// Vanguard Total Bond Market Index ETF
         /// </summary>
-        public static readonly string BND = "splice:BND,AGG++";
+        public static readonly string BND = "splice:BND,csv:backfills/AGG.csv";
         #endregion
         #region U.S. Treasuries
         /// <summary>
         /// SPDR Bloomberg International Treasury Bond ETF
         /// (since Oct 2007)
         /// </summary>
-        public static readonly string BWX = "splice:BWX,BWX++";
+        public static readonly string BWX = "splice:BWX,csv:backfills/BWX.csv";
         /// <summary>
         /// SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
         /// (since May 2007, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string BIL = "splice:BIL,BIL++";
+        public static readonly string BIL = "splice:BIL,csv:backfills/BIL.csv";
         /// <summary>
         ///  iShares 1-3 Year Treasury Bond ETF
         ///  (since Jul 2002, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string SHY = "splice:SHY,SHY++";
+        public static readonly string SHY = "splice:SHY,csv:backfills/SHY.csv";
         /// <summary>
         /// iShares 3-7 Year Treasury Bond ETF
         /// (since Jan 2007, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string IEI = "splice:IEI,IEI++";
+        public static readonly string IEI = "splice:IEI,csv:backfills/IEI.csv";
         /// <summary>
         /// iShares 7-10 Year Treasury Bond ETF
         /// (since Jul 2002, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string IEF = "splice:IEF,IEF++";
+        public static readonly string IEF = "splice:IEF,csv:backfills/IEF.csv";
         /// <summary>
         /// iShares 10-20 Year Tresury Bond ETF
         /// (since Jan 2007, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string TLH = "splice:TLH,TLH++";
+        public static readonly string TLH = "splice:TLH,csv:backfills/TLH.csv";
         /// <summary>
         /// iShares 20+ Year Treasury Bond ETF
         /// (since Jul 2002, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string TLT = "splice:TLT,TLT++";
+        public static readonly string TLT = "splice:TLT,csv:backfills/TLT.csv";
         /// <summary>
         /// Vanguard Long-Term Treasury Index ETF
         /// (since Nov 2009, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string VGLT = "splice:VGLT,VGLT++";
+        public static readonly string VGLT = "splice:VGLT,csv:backfills/VGLT.csv";
         /// <summary>
         /// iShares TIPS bond ETF
         /// (since Dec 2003, backfilled to Jun 2000)
         /// </summary>
-        public static readonly string TIP = "splice:TIP,TIP++";
+        public static readonly string TIP = "splice:TIP,csv:backfills/TIP.csv";
         /// <summary>
         /// Vanguard Sht-Term Inflation-Protected Sec Idx ETF
         /// (since Oct 2012, backfilled to Jun 2000)
         /// </summary>
-        public static readonly string VTIP = "splice:VTIP,TIP++";
+        public static readonly string VTIP = "splice:VTIP,csv:backfills/TIP.csv";
         #endregion
         #region U.S. Corporate
         /// <summary>
         /// iShares iBoxx $ Investment Grade Corporate Bond ETF
         /// (since Jul 2002, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string LQD = "splice:LQD,LQD++";
+        public static readonly string LQD = "splice:LQD,csv:backfills/LQD.csv";
         /// <summary>
         /// iShares 5-10 Yr Investment Grade Corporate Bond ETF
         /// (since Jan 2007, backfilled to Jan 1968)
         /// </summary>
-        public static readonly string IGIB = "splice:IGIB,IGIB++";
+        public static readonly string IGIB = "splice:IGIB,csv:backfills/IGIB.csv";
         /// <summary>
         /// iShares iBoxx $ High Yield Corporate Bond ETF
         /// (since Apr 2007, backfilled to Jan 1980)
         /// </summary>
-        public static readonly string HYG = "splice:HYG,HYG++";
+        public static readonly string HYG = "splice:HYG,csv:backfills/HYG.csv";
         /// <summary>
         /// SPDR Bloomberg Barclays High Yield Bond ETF
         /// (since Dec 2007, backfilled to Jan 1980)
         /// </summary>
-        public static readonly string JNK = "splice:JNK,JNK++";
+        public static readonly string JNK = "splice:JNK,csv:backfills/JNK.csv";
         /// <summary>
         /// SPDR Boomberg Barclay's Convertible Securities ETF
         /// (since April 2009, backfilled to April 2007)
         /// </summary>
-        public static readonly string CWB = "splice:CWB,CWB++";
+        public static readonly string CWB = "splice:CWB,csv:backfills/CWB.csv";
         #endregion
         #endregion
         #region commodities
         /// <summary>
         /// SPDR Gold Shares ETF (since Nov 2004, backfilled to Jul 1982)
         /// </summary>
-        public static readonly string GLD = "splice:GLD,GLD++";
+        public static readonly string GLD = "splice:GLD,csv:backfills/GLD.csv";
         /// <summary>
         /// iShares Silver Trust ETF (since Apr 2006)
         /// </summary>
@@ -309,7 +309,7 @@ namespace TuringTrader.Algorithms.Glue
         /// Invesco DB Commodity Index Tracking ETF
         /// (since Feb 2006, backfilled to Jun 2002)
         /// </summary>
-        public static readonly string DBC = "splice:DBC,DBC++";
+        public static readonly string DBC = "splice:DBC,csv:backfills/DBC.csv";
         /// <summary>
         /// iShares S&P GSCI Commodity-Indexed Trust
         /// </summary>
@@ -334,27 +334,27 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares Ultra S&amp;P 500 ETF
         /// (since Jun 2006, backfilled to Jan 1988)
         /// </summary>
-        public static readonly string SSO = "splice:SSO,SSO++";
+        public static readonly string SSO = "splice:SSO,csv:backfills/SSO.csv";
         /// <summary>
         /// Direxion Daily S&amp;P 500 Bull 2x Shares ETF
         /// (since May 2014, backfilled to Jan 1988)
         /// </summary>
-        public static readonly string SPUU = "splice:SPUU,SPUU++";
+        public static readonly string SPUU = "splice:SPUU,csv:backfills/SPUU.csv";
         /// <summary>
         /// ProShares UltraPro S&amp;P 500 ETF
         /// (since Jun 2009, backfilled to Jan 1970)
         /// </summary>
-        public static readonly string UPRO = "splice:UPRO,UPRO++";
+        public static readonly string UPRO = "splice:UPRO,csv:backfills/UPRO.csv";
         /// <summary>
         /// Direxion Daily S&amp;P 500 Bull 3x Shares ETF
         /// (since Nov 2008, backfilled to Jan 1970)
         /// </summary>
-        public static readonly string SPXL = "splice:SPXL,SPXL++";
+        public static readonly string SPXL = "splice:SPXL,csv:backfills/SPXL.csv";
         /// <summary>
         /// Direxion Daily S&amp;P 500 Bear 3x Shares ETF
         /// (since November 2008, backfilled to 1970)
         /// </summary>
-        public static readonly string SPXU = "splice:SPXU,SPXU++";
+        public static readonly string SPXU = "splice:SPXU,csv:backfills/SPXU.csv";
         /// <summary>
         /// ProShares Ultra MidCap400 ETF
         /// </summary>
@@ -363,7 +363,7 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares UltraPro MidCap400 ETF
         /// (since Feb 2010, backfilled to May 1995)
         /// </summary>
-        public static readonly string UMDD = "splice:UMDD,UMDD++";
+        public static readonly string UMDD = "splice:UMDD,csv:backfills/UMDD.csv";
         /// <summary>
         /// Direxion Daily Mid Cap Bull 3X Shares ETF
         /// (since Jan 2009)
@@ -374,7 +374,7 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares Ultra SmallCap600 ETF
         /// (since Jan 2007, backfilled to Oct 1994)
         /// </summary>
-        public static readonly string SAA = "splice:SAA,SAA++";
+        public static readonly string SAA = "splice:SAA,csv:backfills/SAA.csv";
         /// <summary>
         /// Direxion Daily Small Cap Bull 3X ETF
         /// (since Nov 2008)
@@ -386,12 +386,12 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares Ultra QQQ ETF
         /// (since Jun 2006, backfilled to Mar 1999)
         /// </summary>
-        public static readonly string QLD = "splice:QLD,QLD++";
+        public static readonly string QLD = "splice:QLD,csv:backfills/QLD.csv";
         /// <summary>
         /// ProShares UltraPro QQQ ETF
         /// (since Jan 2010, backfilled to Mar 1999)
         /// </summary>
-        public static readonly string TQQQ = "splice:TQQQ,TQQQ++";
+        public static readonly string TQQQ = "splice:TQQQ,csv:backfills/TQQQ.csv";
         #endregion
         #region others
         /// <summary>
@@ -402,7 +402,7 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares UltraPro Dow30 ETF
         /// (since Feb 2010, backfilled to Feb 1998)
         /// </summary>
-        public static readonly string UDOW = "splice:UDOW,UDOW++";
+        public static readonly string UDOW = "splice:UDOW,csv:backfills/UDOW.csv";
         /// <summary>
         /// ProShares Ultra Russell2000 ETF
         /// </summary>
@@ -411,7 +411,7 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares UltraPro Russell2000 ETF
         /// (since Feb 2010, backfilled to May 2000)
         /// </summary>
-        public static readonly string URTY = "splice:URTY,URTY++";
+        public static readonly string URTY = "splice:URTY,csv:backfills/URTY.csv";
         /// <summary>
         /// Direxion Daily MSCI Emerging Markets Bull 3x Shs ETF
         /// (since Dec 2008)
@@ -456,39 +456,39 @@ namespace TuringTrader.Algorithms.Glue
         /// ProShares Ultra 7-10 Year Treasury ETF
         /// (since January 2010, backfilled)
         /// </summary>
-        public static readonly string UST = "splice:UST,UST++";
+        public static readonly string UST = "splice:UST,csv:backfills/UST.csv";
         /// <summary>
         /// Direxion Daily 7-10 Year Treasury Bull 3x Shares ETF
         /// (inception April 2009, backfilled to July 2002)
         /// </summary>
-        public static readonly string TYD = "splice:TYD,TYD++";
+        public static readonly string TYD = "splice:TYD,csv:backfills/TYD.csv";
         /// <summary>
         ///  ProShares Ultra 20+ Year Treasury ETF
         ///  (since Januaryh 2010, backfilled)
         /// </summary>
-        public static readonly string UBT = "splice:UBT,UBT++";
+        public static readonly string UBT = "splice:UBT,csv:backfills/UBT.csv";
         /// <summary>
         /// Direxion Daily 20+ Year Treasury Bull 3X Shares
         /// (since April 2009, backfilled to July 2002)
         /// </summary>
-        public static readonly string TMF = "splice:TMF,TMF++";
+        public static readonly string TMF = "splice:TMF,csv:backfills/TMF.csv";
         #endregion
         #region commodities
         /// <summary>
         /// ProShares Ultra Gold ETF
         /// (since Dec 2008, backfilled to Jul 1982)
         /// </summary>
-        public static readonly string UGL = "splice:UGL,UGL++";
+        public static readonly string UGL = "splice:UGL,csv:backfills/UGL.csv";
         /// <summary>
         /// DB Gold Double Long ETN
         /// (since Feb 2008, backfilled to Jul 1982)
         /// </summary>
-        public static readonly string DGP = "splice:DGP,UGL++";
+        public static readonly string DGP = "splice:DGP,csv:backfills/UGL.csv";
         /// <summary>
         /// Credit Suisse VelocityShares 3x Long Gold SP GSCI Gold Index ER ETN
         /// (since Oct 2011, backfilled to Jul 1982)
         /// </summary>
-        public static readonly string UGLDF = "splice:UGLDF,UGLDF++";
+        public static readonly string UGLDF = "splice:UGLDF,csv:backfills/UGLDF.csv";
         #endregion
         #endregion
         #region volatility
@@ -496,12 +496,12 @@ namespace TuringTrader.Algorithms.Glue
         /// Barclays iPath Series B S&P 500 VIX Short-Term Futures ETN
         /// (since Jan 2018, backfilled to Jan 2008)
         /// </summary>
-        public static readonly string VXX = "splice:VXX,VXX++";
+        public static readonly string VXX = "splice:VXX,csv:backfills/VXX.csv";
         /// <summary>
         /// ProShares VIX Short-Term Futures ETF
         /// (since Jan 2011, backfilled to Jan 2008)
         /// </summary>
-        public static readonly string VIXY = "splice:VIXY,VXX++";
+        public static readonly string VIXY = "splice:VIXY,csv:backfills/VXX.csv";
         /// <summary>
         /// ProShares Ultra VIX Short Term Futures ETF
         /// </summary>
