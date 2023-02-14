@@ -5,15 +5,15 @@
     <Authors>Felix Bertram et al</Authors>
     <Company>Bertram Enterprises LLC</Company>
     <Product>TuringTrader</Product>
-    <Description>Showcase Algorithms (Legacy)</Description>
+    <Description>Showcase Algorithms (V2)</Description>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
     <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageId>TuringTrader.BooksAndPubs</PackageId>
+    <PackageId>TuringTrader.BooksAndPubsV2</PackageId>
     <Platforms>x64</Platforms>
-    <RootNamespace>TuringTrader.BooksAndPubs</RootNamespace>
+    <RootNamespace>TuringTrader.BooksAndPubsV2</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
