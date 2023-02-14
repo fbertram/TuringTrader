@@ -2,7 +2,8 @@
 // Project:     TuringTrader, simulator core v2
 // Name:        Output
 // Description: Algorithm output capabilities.
-// History:     2023ii13, FUB, created
+// History:     2018ix11, FUB, created
+//              2023ii13, FUB, new info/ warning/ error methods for v2 engine.
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
@@ -83,7 +84,7 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Current output mode.
         /// </summary>
-        public static DisplayModeType DisplayMode { get; set; } = DisplayModeType.errorsWarningsAndInfo;
+        public static DisplayModeType DisplayMode => GlobalSettings.DisplayMode;
 
         /// <summary>
         /// Display informational message. These messages will only be shown
