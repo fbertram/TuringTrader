@@ -48,8 +48,15 @@ namespace TuringTrader.SimulatorV2
                 if (data == null)
                 {
                     var asset = _loadAsset(owner, symbol);
-                    data = _resampleToTradingCalendar(owner, asset.Item1, false);
-                    meta = asset.Item2;
+                    if (asset.Item1.Count > 0)
+                    {
+                        // FIXME: if the first symbol on the list does not 
+                        //        have any bars in the requested range,
+                        //        we will end up using the meta of a
+                        //        lower-priority asset
+                        data = _resampleToTradingCalendar(owner, asset.Item1, false);
+                        meta = asset.Item2;
+                    }
                 }
                 else
                 {

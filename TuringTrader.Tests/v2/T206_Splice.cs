@@ -24,7 +24,7 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
+using System.IO;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
@@ -67,7 +67,6 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
 
-
         [TestMethod]
         public void Test_Splice()
         {
@@ -79,6 +78,60 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.IsTrue(Math.Abs(algo.LastClose - 28000) < 1e-3);
             Assert.IsTrue(Math.Abs(algo.HighestHigh - 28000) < 1e-3);
             Assert.IsTrue(Math.Abs(algo.LowestLow - 10000) < 1e-3);
+        }
+
+        private class TestbedSplice2 : Algorithm
+        {
+            public string Description;
+            public double FirstOpen;
+            public double LastClose;
+            public double HighestHigh = 0.0;
+            public double LowestLow = 1e99;
+            public double NumBars;
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2021-01-04T16:00-05:00");
+                EndDate = DateTime.Parse("2021-01-29T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+
+                SimLoop(() =>
+                {
+                    var a = Asset("splice:csv:../TestData/splice-b.csv,csv:does-not-exist");
+
+                    if (IsFirstBar)
+                    {
+                        Description = a.Description;
+                        FirstOpen = a.Open[0];
+                        NumBars = 0;
+                    }
+                    if (IsLastBar)
+                    {
+                        LastClose = a.Close[0];
+                    }
+                    HighestHigh = Math.Max(HighestHigh, a.High[0]);
+                    LowestLow = Math.Min(LowestLow, a.Low[0]);
+                    NumBars++;
+                });
+            }
+        }
+
+        [TestMethod]
+        public void Test_Splice2()
+        {
+            // this test makes sure we
+            // - return the data we have
+            // - don't throw for a missing backfill
+            // - don't create a new file or folder for the missing data
+            var algo = new TestbedSplice2();
+            algo.Run();
+
+            Assert.AreEqual(algo.NumBars, 19);
+            Assert.AreEqual(algo.FirstOpen, 20000, 1e-3);
+            Assert.AreEqual(algo.LastClose, 28000, 1e-3);
+            Assert.AreEqual(algo.HighestHigh, 28000, 1e-3);
+            Assert.AreEqual(algo.LowestLow, 20000, 1e-3);
+            Assert.IsFalse(File.Exists(Path.Combine(GlobalSettings.DataPath, "does-not-exist")));
+            Assert.IsFalse(Directory.Exists(Path.Combine(GlobalSettings.DataPath, "does-not-exist")));
         }
 
         private class TestbedJoin : Algorithm
@@ -115,7 +168,6 @@ namespace TuringTrader.SimulatorV2.Tests
                 });
             }
         }
-
 
         [TestMethod]
         public void Test_Join()
