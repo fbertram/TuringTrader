@@ -35,10 +35,11 @@ namespace TuringTrader.SimulatorV2
     /// Class providing read/ write access to global settings, stored in the
     /// Windows registry.
     /// </summary>
-    public class GlobalSettings
+    public static class GlobalSettings
     {
-        #region static private RegistryKey OpenSubKey(string sub, bool writable = false)
-        static private RegistryKey OpenSubKey(string sub, bool writable = false)
+        #region internal stuff
+        #region OpenSubKey
+        static public RegistryKey OpenSubKey(string sub, bool writable = false)
         {
             var assy = Assembly.GetEntryAssembly();
 
@@ -59,7 +60,7 @@ namespace TuringTrader.SimulatorV2
             return key;
         }
         #endregion
-        #region static public object GetRegistryValue(string sub, string valueName)
+        #region GetRegistryValue
         static public object GetRegistryValue(string sub, string valueName)
         {
             using (RegistryKey key = OpenSubKey(sub))
@@ -68,7 +69,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public void SetRegistryValue(string sub, string valueName, object value)
+        #region SetRegistryValue
         static public void SetRegistryValue(string sub, string valueName, object value)
         {
             using (RegistryKey key = OpenSubKey(sub, true))
@@ -76,6 +77,7 @@ namespace TuringTrader.SimulatorV2
                 key.SetValue(valueName, value);
             }
         }
+        #endregion
         #endregion
 
         #region static public string HomePath
@@ -303,10 +305,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-    }
 
-    public static class GlobalSettingsExtensions
-    {
         #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
         /// <summary>
         /// Retrieve algorithm-specific registry value.

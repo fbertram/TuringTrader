@@ -33,7 +33,7 @@ namespace TuringTrader.SimulatorV2
     /// Class to provide output capabilities. Output can be filtered
     /// by errors, warnings, and general info. 
     /// </summary>
-    public class Output
+    public static class Output
     {
         #region private stuff
         private static Dictionary<string, bool> _showOnce = new Dictionary<string, bool>();
@@ -54,7 +54,7 @@ namespace TuringTrader.SimulatorV2
         /// Debug output event. The application should attach an event
         /// handler here to redirect the messages to a console.
         /// </summary>
-        public static Action<string> WriteEvent;
+        public static Action<string> WriteEvent { get; set; }
 
         /// <summary>
         /// Enumeration of output modes.
