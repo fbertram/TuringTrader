@@ -23,16 +23,6 @@
 
 namespace TuringTrader.SimulatorV2.Assets
 {
-    #region Legacy backfills from V1's glue logic
-    internal class BenchmarksV1
-    {
-        #region benchmarks
-        public static readonly string PORTF_0 = "algorithm:Benchmark_Zero";
-        public static readonly string PORTF_60_40 = "algorithm:Benchmark_60_40";
-        #endregion
-    }
-    #endregion
-
     /// <summary>
     /// Collection of common benchmarks.
     /// </summary>
