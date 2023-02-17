@@ -148,6 +148,10 @@ namespace TuringTrader
             PlotterRenderCSharp.Register();
             PlotterRenderR.Register();
             PlotterRenderRMarkdown.Register();
+
+            WriteEventHandler(string.Format("TuringTrader Version = {0}\n", GitInfo.Version));
+            WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
+            WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
         }
         private void CheckSettings()
         {

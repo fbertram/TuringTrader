@@ -1,0 +1,92 @@
+Ticker,Description,"Available since","Backfilled to"
+$SPX,"S&P 500 Index",01/02/1970,01/02/1970
+$SPXTR,"S&P 500 Total Return Index",01/04/1988,01/30/1970
+$NDX,"Nasdaq-100 Index",01/31/1985,01/31/1985
+$NDXTR,"Nasdaq-100 Total Return Index",03/04/1999,03/04/1999
+$DJI,"Dow Jones Industrial Average",01/02/1970,01/02/1970
+$DJITR,"Dow Jones Industrial Average Total Return",09/30/1987,01/02/1970
+SPY,"SPDR S&P 500 Trust ETF",06/30/1997,01/01/1990
+SPYG,"SPDR Portfolio S&P 500 Growth ETF",09/29/2000,09/29/2000
+SPYV,"SPDR Portfolio S&P 500 Value ETF",09/29/2000,09/29/2000
+MDY,"SPDR S&P MidCap 400 ETF",05/04/1995,07/01/1991
+MDYG,"SPDR S&P 400 Mid Cap Growth ETF",11/15/2005,06/08/2004
+MDYV,"SPDR S&P 400 Mid Cap Value ETF",11/15/2005,06/08/2004
+SLY,"SPDR S&P 600 Small Cap ETF",11/15/2005,12/30/1994
+VIOO,"Vanguard S&P Small-Cap 600 Index ETF",09/09/2010,12/30/1994
+SLYG,"SPDR S&P 600 Small Cap Growth ETF",09/29/2000,09/29/2000
+VIOG,"Vanguard S&P Small-Cap 600 Growth Index ETF",09/09/2010,07/28/2000
+SLYV,"SPDR S&P 600 Small Cap Value ETF",09/29/2000,09/29/2000
+VIOV,"Vanguard S&P Small Cap 600 Value ETF",09/09/2010,07/28/2000
+VTV,"Vanguard Value Index ETF",01/30/2004,01/30/2004
+VUG,"Vanguard Growth Index ETF",01/30/2004,01/30/2004
+XLB,"Materials Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLC,"Communication Services Select Sector SPDR ETF",06/19/2018,09/11/1989
+XLE,"Energy Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLF,"Financial Select Sector SPDR ETF",01/29/1999,09/11/1989
+XLI,"Industrial Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLK,"Technology Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLP,"Consumer Staples Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLRE,"Real Estate Select Sector SPDR ETF",10/08/2015,10/09/2001
+XLU,"Utilities Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLV,"Health Care Select Sector SPDR ETF",12/22/1998,09/11/1989
+XLY,"Consumer Discretionary Select Sector SPDR ETF",12/22/1998,09/11/1989
+QQQ,"Invesco QQQ Trust Series 1 ETF",03/10/1999,03/10/1999
+DIA,"SPDR Dow Jones Industrial Average Trust ETF",01/20/1998,01/01/1990
+IWM,"iShares Russell 2000 ETF",05/26/2000,01/01/1990
+VONE,"Vanguard Russell 1000 Index ETF",09/22/2010,01/01/1990
+VEA,"Vanguard Developed Markets Index ETF",07/26/2007,08/17/2001
+ACWX,"iShares MSCI ACWI ex US ETF",03/31/2008,01/01/1980
+VEU,"Vanguard FTSE All World ex US ETF",03/08/2007,01/01/1980
+VSS,"Vanguard FTSE All-World ex-US Small-Cap Index ETF",04/06/2009,11/01/1996
+VGK,"Vanguard European Stock Index ETF",03/10/2005,03/10/2005
+EWJ,"iShares MSCI Japan ETF",03/18/1996,03/18/1996
+VWO,"Vanguard Emerging Markets Stock Index ETF",03/10/2005,03/10/2005
+VT,"Vanguard Total World Stock Index ETF",06/26/2008,06/26/2008
+TLT,"iShares 20 Plus Year Treasury Bond ETF",07/26/2002,02/01/1962
+VGLT,"Vanguard Long-Term Treasury Index ETF",11/24/2009,02/01/1962
+EDV,"Vanguard Extended Duration ETF",12/19/2007,02/01/1962
+TLH,"iShares 10-20 Year Treasury Bond ETF",01/11/2007,02/01/1962
+IEF,"iShares 7-10 Year Treasury Bond ETF",07/26/2002,01/02/1962
+IEI,"iShares 3-7 Year Treasury Bond ETF",01/11/2007,01/02/1962
+VGIT,"Vanguard Intermediate-Term Treasury Index ETF",11/23/2009,07/26/2002
+SHY,"iShares 1-3 Year Treasury Bond ETF",07/26/2002,01/02/1962
+SHV,"iShares Short Treasury Bond ETF",01/11/2007,07/26/2002
+BIL,"SPDR Bloomberg 1-3 Month T-Bill ETF",05/30/2007,01/04/1954
+TIP,"iShares TIPS Bond ETF",12/19/2007,06/26/2000
+LQD,"iShares iBoxx $ Investment Grade Corporate Bond ETF",07/26/2002,02/01/1962
+IGIB,"iShares 5-10 Yr Investment Grade Corporate Bond ETF",01/11/2007,02/01/1962
+VCLT,"Vanguard Long-Term Corporate Bond Index ETF",11/23/2009,02/01/1962
+HYG,"iShares iBoxx $ High Yield Corporate Bond ETF",04/11/2007,01/01/1980
+JNK,"SPDR Bloomberg High Yield Bond ETF",04/11/2007,01/01/1980
+CWB,"SPDR Bloomberg Convertible Securities ETF",04/16/2009,06/16/1986
+AGG,"iShares Core US Aggregate Bond ETF",09/26/2003,02/01/1962
+BND,"Vanguard Total Bond Market Index ETF",04/10/2007,02/01/1962
+BWX,"SPDR Bloomberg International Treasury Bond ETF",10/05/2007,10/05/2007
+BNDX,"Vanguard Total International Bond Index ETF",06/04/2013,01/04/1993
+GLD,"SPDR Gold Shares ETF",11/18/2004,07/01/1982
+IAU,"iShares Gold Trust ETF",01/28/2005,07/01/1982
+DBC,"Invesco DB Commodity Index Tracking ETF",02/03/2006,07/01/2002
+PDBC,"Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",11/07/2014,07/01/2002
+VNQ,"Vanguard Real Estate Index ETF",09/29/2004,09/29/2004
+SPUU,"Direxion Daily S&P 500 Bull 2X Shares ETF",05/28/2014,06/01/1976
+SSO,"ProShares Ultra S&P500 ETF",06/21/2006,06/01/1976
+SPXL,"Direxion Daily S&P 500 Bull 3X Shares ETF",11/05/2008,06/01/1976
+UPRO,"ProShares UltraPro S&P500 ETF",06/25/2009,06/01/1976
+SH,"ProShares Short S&P500 ETF",06/21/2006,06/01/1976
+SDS,"ProShares UltraShort S&P500 ETF",07/13/2006,06/01/1976
+SPXS,"Direxion Daily S&P 500 Bear 3X Shares ETF",11/05/2009,06/01/1976
+SPXU,"ProShares UltraPro Short S&P500 ETF",06/25/2009,06/01/1976
+SAA,"ProShares Ultra SmallCap600 ETF",11/05/2008,10/28/1994
+UMDD,"ProShares UltraPro MidCap400 ETF",02/11/2010,10/28/1994
+QLD,"ProShares Ultra QQQ ETF",06/21/2006,03/04/1999
+TQQQ,"ProShares UltraPro QQQ ETF",02/11/2010,03/04/1999
+UDOW,"ProShares UltraPro Dow30 ETF",02/11/2010,06/01/1976
+URTY,"ProShares UltraPro Russell2000 ETF",02/11/2010,12/29/1978
+UBT,"ProShares Ultra 20+ Year Treasury ETF",01/21/2010,02/01/1962
+TMF,"Direxion Daily 20+ Year Treasury Bull 3X Shares ETF",04/16/2009,02/01/1962
+UST,"ProShares Ultra 7-10 Year Treasury ETF",01/21/2010,02/01/1962
+TYD,"Direxion Daily 7-10 Year Treasury Bull 3X Shares ETF",04/16/2009,02/01/1962
+UGL,"ProShares Ultra Gold ETF",02/11/2010,07/01/1982
+UGLDF,"Credit Suisse VelocityShares 3x Long Gold SP GSCI Gold Index ER ETN",10/17/2011,07/01/1982
+VXX,"Barclays iPath Series B S&P 500 VIX Short-Term Futures ETN",01/18/2018,01/02/2008
+
