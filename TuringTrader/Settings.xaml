@@ -13,14 +13,20 @@
             <TabItem Header="General">
                 <Grid Background="#FFE5E5E5">
                     <Label Content="Home Path:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,15,0,0"/>
-                    <Label Name ="LabelHomePath" Content="{Binding HomePath}" HorizontalAlignment="Left" Margin="160,15,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <Label Name ="LabelHomePath" Content="{Binding HomePath}" Margin="180,15,45,0" VerticalAlignment="Top"/>
                     <Button Content="..." Margin="0,18,10,0" VerticalAlignment="Top" Click="HomePathButton_Click" HorizontalAlignment="Right" Width="30" RenderTransformOrigin="1.101,0.406"/>
+                    <Label Content="Console Output:" HorizontalAlignment ="Left" VerticalAlignment="Top" Margin="10,36,0,0"/>
+                    <ComboBox Margin="180,40,10,0" VerticalAlignment="Top" Text="{Binding ConsoleMode}">
+                        <ComboBoxItem Name ="errorsOnly">errorsOnly</ComboBoxItem>
+                        <ComboBoxItem Name ="errorsAndWarnings">errorsAndWarnings</ComboBoxItem>
+                        <ComboBoxItem Name ="errorsWarningsAndInfo">errorsWarningsAndInfo</ComboBoxItem>
+                    </ComboBox>
                 </Grid>
             </TabItem>
             <TabItem Header="Data Feeds">
                 <Grid Background="#FFE5E5E5">
                     <Label Content="Default Data Feed:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultDataSource}" Grid.Column="1">
+                    <ComboBox Margin="180,12,10,0" VerticalAlignment="Top" Text="{Binding DefaultDataSource}">
                         <ComboBoxItem>Yahoo</ComboBoxItem>
                         <ComboBoxItem>Tiingo</ComboBoxItem>
                         <ComboBoxItem>Norgate</ComboBoxItem>
@@ -33,7 +39,7 @@
             <TabItem Header="Report Output">
                 <Grid Background="#FFE5E5E5">
                     <Label Content="Default Template Extension:" HorizontalAlignment ="Left" VerticalAlignment="top" Margin="10,10,0,0" Grid.ColumnSpan="3"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="180,12,0,0" VerticalAlignment="Top" Width="120" Text="{Binding DefaultTemplateExtension}" Grid.Column="2">
+                    <ComboBox Margin="180,12,10,0" VerticalAlignment="Top" Text="{Binding DefaultTemplateExtension}">
                         <ComboBoxItem Name ="cs">.cs</ComboBoxItem>
                         <ComboBoxItem Name ="xlsm">.xlsm</ComboBoxItem>
                         <ComboBoxItem Name ="r">.r</ComboBoxItem>

@@ -109,10 +109,10 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// specify display mode
         /// </summary>
-        static public Output.DisplayModeType DisplayMode
+        static public string ConsoleMode
         {
-            get => (Output.DisplayModeType)Enum.Parse(typeof(Output.DisplayModeType), SimulatorV2.GlobalSettings.DisplayMode.ToString());
-            set => SimulatorV2.GlobalSettings.DisplayMode = (SimulatorV2.Output.DisplayModeType)Enum.Parse(typeof(SimulatorV2.Output.DisplayModeType), value.ToString());
+            get => SimulatorV2.GlobalSettings.ConsoleMode;
+            set => SimulatorV2.GlobalSettings.ConsoleMode = value;
         }
 
         /// <summary>

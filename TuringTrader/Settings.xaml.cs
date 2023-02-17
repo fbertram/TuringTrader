@@ -49,37 +49,25 @@ namespace TuringTrader
         }
         public string TiingoApiKey
         {
-            get
-            {
-                return GlobalSettings.TiingoApiKey;
-            }
-            set
-            {
-                GlobalSettings.TiingoApiKey = value;
-            }
+            get => GlobalSettings.TiingoApiKey;
+            set => GlobalSettings.TiingoApiKey = value;
         }
 
         public string DefaultDataSource
         {
-            get
-            {
-                return GlobalSettings.DefaultDataFeed;
-            }
-            set
-            {
-                GlobalSettings.DefaultDataFeed = value;
-            }
+            get => GlobalSettings.DefaultDataFeed;
+            set => GlobalSettings.DefaultDataFeed = value;
         }
         public string DefaultTemplateExtension
         {
-            get
-            {
-                return GlobalSettings.DefaultTemplateExtension;
-            }
-            set
-            {
-                GlobalSettings.DefaultTemplateExtension = value;
-            }
+            get => GlobalSettings.DefaultTemplateExtension;
+            set => GlobalSettings.DefaultTemplateExtension = value;
+        }
+
+        public string ConsoleMode
+        {
+            get => SimulatorV2.GlobalSettings.ConsoleMode;
+            set => SimulatorV2.GlobalSettings.ConsoleMode = value;
         }
         #endregion
 

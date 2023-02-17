@@ -84,7 +84,19 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Current output mode.
         /// </summary>
-        public static DisplayModeType DisplayMode => GlobalSettings.DisplayMode;
+        public static DisplayModeType DisplayMode
+        {
+            get
+            {
+                var consoleMode = GlobalSettings.ConsoleMode;
+
+                // TODO: we probably want to optimize this?
+                DisplayModeType displayMode;
+                return Enum.TryParse(consoleMode, out displayMode)
+                    ? displayMode
+                    : DisplayModeType.errorsWarningsAndInfo;
+            }
+        }
 
         /// <summary>
         /// Display informational message. These messages will only be shown

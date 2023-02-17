@@ -222,32 +222,14 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public Output.DisplayModeType DisplayMode
-        private static Output.DisplayModeType? _displayMode = null;
+        #region public static string ConsoleMode
         /// <summary>
-        /// specify display mode
+        /// Display mode for console output.
         /// </summary>
-        static public Output.DisplayModeType DisplayMode
+        static public string ConsoleMode
         {
-            get
-            {
-                if (_displayMode == null)
-                {
-                    string value = (string)GetRegistryValue("SimulatorEngine", "DisplayMode");
-                    Output.DisplayModeType displayMode;
-                    if (Enum.TryParse(value, out displayMode))
-                        _displayMode = displayMode;
-                    else
-                        DisplayMode = Output.DisplayModeType.errorsWarningsAndInfo;
-                }
-
-                return (Output.DisplayModeType)_displayMode;
-            }
-            set
-            {
-                SetRegistryValue("SimulatorEngine", "DisplayMode", value);
-            }
-
+            get => (string)GetRegistryValue("SimulatorEngine", "DisplayMode");
+            set => SetRegistryValue("SimulatorEngine", "DisplayMode", value);
         }
         #endregion
 
