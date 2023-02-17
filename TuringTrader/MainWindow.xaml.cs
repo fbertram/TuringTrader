@@ -152,27 +152,28 @@ namespace TuringTrader
         private void CheckSettings()
         {
             //===== check home path
-            string path = GlobalSettings.HomePath;
 
-            if (path.Length == 0 || !Directory.Exists(path))
+            // on first launch, create home directory in default location
+            if (GlobalSettings.HomePath.Length == 0)
             {
-                // create folder in user's documents
-                string homePath = Path.Combine(
+                GlobalSettings.HomePath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "TuringTrader");
 
-                if (!Directory.Exists(homePath))
-                    Directory.CreateDirectory(homePath);
+                if (!Directory.Exists(GlobalSettings.HomePath))
+                    Directory.CreateDirectory(GlobalSettings.HomePath);
+            }
 
-                GlobalSettings.HomePath = homePath;
+            // if home directory doesn't exist, ask user to set new one
+            if (!Directory.Exists(GlobalSettings.HomePath))
+            {
+                MessageBox.Show("Please set TuringTrader's home folder");
+                MenuEditSettings_Click(null, null);
+            }
 
-                // copy files from install directory
-
-                string homeTemplate = Path.Combine(
-                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                    "..",
-                    "Home");
-
+            // if home directory exists, make sure to copy all required files
+            if (Directory.Exists(GlobalSettings.HomePath))
+            {
                 void copyFolderFiles(string srcPath, string dstPath)
                 {
                     DirectoryInfo src = new DirectoryInfo(srcPath);
@@ -180,7 +181,9 @@ namespace TuringTrader
                     FileInfo[] srcFiles = src.GetFiles();
                     foreach (FileInfo srcFile in srcFiles)
                     {
-                        File.Copy(srcFile.FullName, Path.Combine(dstPath, srcFile.Name));
+                        var dstFile = Path.Combine(dstPath, srcFile.Name);
+                        if (!File.Exists(dstFile))
+                            File.Copy(srcFile.FullName, dstFile);
                     }
 
                     DirectoryInfo[] srcDirs = src.GetDirectories();
@@ -192,13 +195,13 @@ namespace TuringTrader
                     }
                 }
 
+                string homeTemplate = Path.Combine(
+                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                    "..",
+                    "Home");
+
                 if (Directory.Exists(homeTemplate))
-                    copyFolderFiles(homeTemplate, homePath);
-            }
-            else if (!Directory.Exists(path))
-            {
-                MessageBox.Show("Please set TuringTrader's home folder");
-                MenuEditSettings_Click(null, null);
+                    copyFolderFiles(homeTemplate, GlobalSettings.HomePath);
             }
 
             //===== check Tiingo API key
