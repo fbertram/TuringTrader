@@ -77,8 +77,8 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string SPX = "splice:$SPX,csv:backfills/$SPX.csv";
 
         /// <summary>
-        /// S&amp;P 500 Total Return Index. Available since 01/04/1988,
-        /// backfilled to 01/30/1970.
+        /// S&amp;P 500 Total Return Index
+        /// (since Jan 1988, backfilled to Jan 1970)
         /// </summary>
         public const string SPXTR = "splice:$SPXTR,csv:backfills/$SPXTR.csv";
 
@@ -88,8 +88,16 @@ namespace TuringTrader.SimulatorV2.Assets
         // OEXTR
 
         // COMP
-        // NDX
-        // NDXTR
+        /// <summary>
+        /// NASDAQ-100 (NDX)
+        /// (since Jan 1985)
+        /// </summary>
+        public const string NDX = "splice:$NDX,csv:backfills/NDX.csv";
+        /// <summary>
+        /// NASDAQ-100 Total Return
+        /// (since Mar 1999)
+        /// </summary>
+        public const string NDXTR = "splice:$NDXTR,csv:backfills/NDXTR.csv";
 
         // corporate bonds
         // US treasuries

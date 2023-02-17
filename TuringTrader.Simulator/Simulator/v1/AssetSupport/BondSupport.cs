@@ -147,6 +147,7 @@ namespace TuringTrader.Support
 
             // periodic payment of coupon
             double couponPayment = faceValue * couponPerPeriod;
+            // BUGBUG: this does not work with non-integer numPeriods
             for (int t = 1; t <= numPeriods; t++)
                 presentValue += PresentValue(couponPayment, yieldPerPeriod, t);
 
