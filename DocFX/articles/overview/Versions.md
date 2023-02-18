@@ -1,11 +1,18 @@
 # Version History
 
 - 0.15.189 - February 18, 2023
-    - preview of upcoming 0.16 release
+  - general
     - update Nuget packages
     - update to .net core 6
+  - simulator core
     - implement new v2 simulator engine
-    - start migrating showcase algorithms to v2 engine
+    - add forward and backward compatibility features
+  - algorithms
+    - migrate Livingston's Mama Bear to v2
+    - migrate Clenow's Stocks on the Loose to v2
+    - implement Keller's BAA for v2
+  - data
+    - add backfills for many common ETFs
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
