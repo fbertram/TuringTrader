@@ -30,6 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\TuringTrader\GitVersion.cs" Link="Simulator\v2\Core\GitVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Simulator\v2\Core\FloatWrapper.cs" />
   </ItemGroup>
 

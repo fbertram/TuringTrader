@@ -23,7 +23,6 @@
 
 #region Libraries
 using Microsoft.Win32;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -61,11 +60,19 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
         #region GetRegistryValue
-        static public object GetRegistryValue(string sub, string valueName)
+        static public object GetRegistryValue(string sub, string valueName, object defaultValue = null)
         {
             using (RegistryKey key = OpenSubKey(sub))
             {
-                return key.GetValue(valueName);
+                var value = key.GetValue(valueName);
+
+                if (value == null && defaultValue != null)
+                {
+                    key.SetValue(valueName, defaultValue);
+                    return defaultValue;
+                }
+
+                return value;
             }
         }
         #endregion
@@ -80,7 +87,16 @@ namespace TuringTrader.SimulatorV2
         #endregion
         #endregion
 
-        #region static public string HomePath
+        #region Version
+        /// <summary>
+        /// Return version of simulation engine.
+        /// </summary>
+        static public string Version => GitInfo.Version
+                .Replace("\r", string.Empty)
+                .Replace("\n", string.Empty)
+                .Replace(" ", string.Empty);
+        #endregion
+        #region HomePath
         /// <summary>
         /// Property to store the path to the TuringTrader's home location.
         /// </summary>
@@ -98,7 +114,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string DataPath
+        #region DataPath
         /// <summary>
         /// Property to store the path to the simulator's database.
         /// </summary>
@@ -110,7 +126,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string TemplatePath
+        #region TemplatePath
         /// <summary>
         /// Property to store the path to the simulator's templates.
         /// </summary>
@@ -122,7 +138,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string CachePath
+        #region CachePath
         /// <summary>
         /// Property to store path to simulator's cache directory.
         /// </summary>
@@ -134,7 +150,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string AlgorithmPath
+        #region AlgorithmPath
         /// <summary>
         /// Property to store path to simulator's algorithm directory.
         /// </summary>
@@ -146,7 +162,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public bool LoadAlgoDlls
+        #region LoadAlgoDlls
         /// <summary>
         /// Enable/ disable loading of algorithms from external DLLs. Default is true.
         /// Note that this setting can only be made prior to accessing the
@@ -155,7 +171,7 @@ namespace TuringTrader.SimulatorV2
         static public bool LoadAlgoDlls { get; set; } = true;
         #endregion
 
-        #region static public string MostRecentAlgorithm
+        #region MostRecentAlgorithm
         /// <summary>
         /// Property returing the name of the most-recently run algorithm.
         /// </summary>
@@ -173,7 +189,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string DefaultRCore
+        #region DefaultRCore
         /// <summary>
         /// Default R-core, as found in HKLM/SOFTWARE/R-core/R
         /// </summary>
@@ -204,43 +220,28 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string DefaultTemplateExtension
+        #region DefaultTemplateExtension
         /// <summary>
         /// Default file-extension for template files.
         /// </summary>
         static public string DefaultTemplateExtension
         {
-            get
-            {
-                object value = GetRegistryValue("SimulatorEngine", "DefaultTemplateExtension");
-                return value != null
-                    ? value.ToString()
-                    : ".cs";
-            }
-            set
-            {
-                SetRegistryValue("SimulatorEngine", "DefaultTemplateExtension", value);
-            }
+            get => (string)GetRegistryValue("SimulatorEngine", "DefaultTemplateExtension", ".cs");
+            set => SetRegistryValue("SimulatorEngine", "DefaultTemplateExtension", value);
         }
         #endregion
-        #region public static string ConsoleMode
+        #region ConsoleMode
         /// <summary>
         /// Display mode for console output.
         /// </summary>
         static public string ConsoleMode
         {
-            get
-            {
-                object value = GetRegistryValue("SimulatorEngine", "DisplayMode");
-                return value != null
-                    ? value.ToString()
-                    : "errorsWarningsAndInfo";
-            }
+            get => (string)GetRegistryValue("SimulatorEngine", "DisplayMode", "errorsWarningsAndInfo");
             set => SetRegistryValue("SimulatorEngine", "DisplayMode", value);
         }
         #endregion
 
-        #region static public string DefaultDataFeed
+        #region DefaultDataFeed
         /// <summary>
         /// default data feed
         /// </summary>
@@ -258,7 +259,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string TiingoApiKey
+        #region TiingoApiKey
         /// <summary>
         ///  Tiingo API key
         /// </summary>
@@ -276,7 +277,7 @@ namespace TuringTrader.SimulatorV2
             }
         }
         #endregion
-        #region static public string QuandlApiKey
+        #region QuandlApiKey
         /// <summary>
         ///  Tiingo API key
         /// </summary>
@@ -295,7 +296,7 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
 
-        #region public static object GetRegistryValue(this SimulatorCore algo, string valueName, object defaultValue = null)
+        #region GetRegistryValue
         /// <summary>
         /// Retrieve algorithm-specific registry value.
         /// </summary>
@@ -304,19 +305,9 @@ namespace TuringTrader.SimulatorV2
         /// <param name="defaultValue">default value, in case it has not been assigned</param>
         /// <returns></returns>
         public static object GetRegistryValue(this Algorithm algo, string valueName, object defaultValue = null)
-        {
-            object retValue = GlobalSettings.GetRegistryValue(algo.Name, valueName);
-
-            if (retValue == null && defaultValue != null)
-            {
-                GlobalSettings.SetRegistryValue(algo.Name, valueName, defaultValue);
-                retValue = defaultValue;
-            }
-
-            return retValue;
-        }
+            => GetRegistryValue(algo.Name, valueName, defaultValue);
         #endregion
-        #region public static void SetRegistryValue(this SimulatorCore algo, string valueName, object value)
+        #region SetRegistryValue
         /// <summary>
         /// Set algorithm-specific registry value.
         /// </summary>
@@ -324,9 +315,7 @@ namespace TuringTrader.SimulatorV2
         /// <param name="valueName">name of the value</param>
         /// <param name="value">new value to be assigned</param>
         public static void SetRegistryValue(this Algorithm algo, string valueName, object value)
-        {
-            GlobalSettings.SetRegistryValue(algo.Name, valueName, value);
-        }
+            => SetRegistryValue(algo.Name, valueName, value);
         #endregion
     }
 }
