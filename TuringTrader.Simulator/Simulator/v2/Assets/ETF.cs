@@ -364,42 +364,42 @@ namespace TuringTrader.SimulatorV2.Assets
         #endregion
         #region leveraged
         /// <summary>
-        /// Direxion Daily S&P 500 Bull 2x Shares ETF
+        /// Direxion Daily S&amp;P 500 Bull 2x Shares ETF
         /// (since May 2014, backfilled to Jun 1976)
         /// </summary>
         public const string SPUU = "splice:SPUU,csv:backfills/SPUU.csv";
         /// <summary>
-        /// ProShares Ultra S&P 500 ETF
+        /// ProShares Ultra S&amp;P 500 ETF
         /// (since Jun 2006, backfilled to Jun 1976)
         /// </summary>
         public const string SSO = "splice:SSO,csv:backfills/SSO.csv";
         /// <summary>
-        /// Direxion Daily S&P 500 Bull 3x Shares ETF
+        /// Direxion Daily S&amp;P 500 Bull 3x Shares ETF
         /// (since Nov 2008, backfilled to Jun 1976)
         /// </summary>
         public const string SPXL = "splice:SPXL,csv:backfills/SPXL.csv";
         /// <summary>
-        /// ProShares UltraPro S&P500 ETF
+        /// ProShares UltraPro S&amp;P500 ETF
         /// (since Jun 2009, backfilled to Jun 1976)
         /// </summary>
         public const string UPRO = "splice:UPRO,csv:backfills/UPRO.csv";
         /// <summary>
-        /// ProShares Short S&P 500 ETF
+        /// ProShares Short S&amp;P 500 ETF
         /// (since Jun 2006, backfilled to Jun 1976)
         /// </summary>
         public const string SH = "splice:SH,csv:backfills/SH.csv";
         /// <summary>
-        /// ProShares UltraShort S&P500 ETF
+        /// ProShares UltraShort S&amp;P500 ETF
         /// (since Jul 2006, backfilled to Jun 1976)
         /// </summary>
         public const string SDS = "splice:SDS,csv:backfills/SDS.csv";
         /// <summary>
-        /// Direxion Daily S&P 500 Bear 3x Shares ETF
+        /// Direxion Daily S&amp;P 500 Bear 3x Shares ETF
         /// (since Nov 2009, backfilled to Jun 1976)
         /// </summary>
         public const string SPXS = "splice:SPXS,csv:backfills/SPXS.csv";
         /// <summary>
-        /// ProShares UltraPro S&P500 Bear 3x ETF
+        /// ProShares UltraPro S&amp;500 Bear 3x ETF
         /// (since Jun 2009, backfilled to Jun 1976)
         /// </summary>
         public const string SPXU = "splice:SPXU,csv:backfills/SPXU.csv";
@@ -466,7 +466,7 @@ namespace TuringTrader.SimulatorV2.Assets
         #endregion
         #region volatility
         /// <summary>
-        /// Barclays iPath Series B S&P 500 VIX Short-Term Futures ETN
+        /// Barclays iPath Series B S&amp;P 500 VIX Short-Term Futures ETN
         /// (since Jan 2018, backfilled to Jan 2008)
         /// </summary>
         public const string VXX = "splice:VXX,csv:backfills/VXX.csv";

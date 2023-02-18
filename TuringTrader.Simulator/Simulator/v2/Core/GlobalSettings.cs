@@ -213,8 +213,9 @@ namespace TuringTrader.SimulatorV2
             get
             {
                 object value = GetRegistryValue("SimulatorEngine", "DefaultTemplateExtension");
-                if (value == null) return ".cs";
-                return value.ToString();
+                return value != null
+                    ? value.ToString()
+                    : ".cs";
             }
             set
             {
@@ -228,7 +229,13 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         static public string ConsoleMode
         {
-            get => (string)GetRegistryValue("SimulatorEngine", "DisplayMode");
+            get
+            {
+                object value = GetRegistryValue("SimulatorEngine", "DisplayMode");
+                return value != null
+                    ? value.ToString()
+                    : "errorsWarningsAndInfo";
+            }
             set => SetRegistryValue("SimulatorEngine", "DisplayMode", value);
         }
         #endregion

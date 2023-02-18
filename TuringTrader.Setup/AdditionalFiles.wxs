@@ -1,222 +1,229 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   
-	<Fragment>
-    <DirectoryRef Id="HOMEFOLDER">
-      <Directory Id="AlgorithmsDir" Name="Algorithms">
-        <Directory Id="DemoAlgorithmsDir" Name="Demo Algorithms" />
-      </Directory>
-      <Directory Id="DataDir" Name="Data">
-        <Directory Id="DataDataDir" Name ="Data">
-          <Directory Id="DataSpxOptionsDir" Name="$SPX.options" />
-          <!-- <Directory Id="Data6040Dir" Name="@60_40" /> -->
-        </Directory>
-      </Directory>
-      <Directory Id="TemplatesDir" Name="Templates" />
-      <Directory Id="BooksAndPubsDir" Name="BooksAndPubs">
-        <Directory Id="BooksAndPubsPropertiesDir" Name="Properties" />
-      </Directory>
-    </DirectoryRef>
-  </Fragment>
+    <Fragment>
+        <DirectoryRef Id="HOMEFOLDER">
+            <Directory Id="dir.algos" Name="Algorithms">
+                <Directory Id="dir.demoV1" Name="Demo Algorithms (Legacy)" />
+                <Directory Id="dir.demoV2" Name="Demo Algorithms (V2)" />
+            </Directory>
+			
+            <Directory Id="dir.datahome" Name="Data">
+                <Directory Id="dir.backfills" Name="backfills" />
+                <Directory Id="dir.data" Name ="Data">
+                    <Directory Id="dir.spx.options" Name="$SPX.options" />
+                </Directory>
+            </Directory>
+			
+            <Directory Id="dir.templates" Name="Templates" />
+			
+            <Directory Id="dir.sourceV1" Name="BooksAndPubs">
+                <Directory Id="dir.propsV1" Name="Properties" />
+            </Directory>
+			
+            <Directory Id="dir.sourceV2" Name="BooksAndPubsV2">
+                <Directory Id="dir.propsV2" Name="Properties" />
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
 
-  <Fragment>
-    <ComponentGroup Id="AdditionalFilesComponentGroup">
+    <Fragment>
+	    <ComponentGroup Id="AdditionalFilesComponentGroup">
 
-      <!-- ===== more binary files ======================================== -->
-      <!--
-      <Component Id="cmpHelp" Directory="BINFOLDER" Guid="*">
-        <File Id="filHelp" KeyPath="yes" Source="$(var.HomeDir)\Help\TuringTrader.chm" />
-      </Component>
-      -->
+			<!-- ===== demo algorithms V1 ======================================== -->
+			<Component Id="comp.demoV1" Directory="dir.demoV1" Guid="22F75F53-3488-495A-817C-5B74FA966B66">
+				<File Id="file.demoV1.demo01" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo01_Indicators.cs" />
+				<File Id="file.demoV1.demo02" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo02_Stocks.cs" />
+				<File Id="file.demoV1.demo03" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo03_Portfolio.cs" />
+				<File Id="file.demoV1.demo04" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo04_Options.cs" />
+				<File Id="file.demoV1.demo05" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo05_Optimizer.cs" />
+				<File Id="file.demoV1.demo06" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo06_OrderTypes.cs" />
+				<File Id="file.demoV1.demo07" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo07_Subclassing.cs" />
+				<File Id="file.demoV1.demo08" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo08_CustomData.cs" />
+				<File Id="file.demoV1.demo09" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo09_WalkForwardOptimization.cs" />
+			</Component>
 
-      <!-- ===== demo algorithms ======================================== -->
-      <Component Id="cmpDemo01" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo01" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo01_Indicators.cs" />
-      </Component>
+			<!-- ===== demo algorithms V2 ======================================== -->
+			<Component Id="comp.demoV2" Directory="dir.demoV2" Guid="B4155B4D-48EF-4545-BD9A-10914EC2348F">
+				<File Id="file.demoV2.demo01" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo01_Indicators.cs" />
+			</Component>
 
-      <Component Id="cmpDemo02" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo02" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo02_Stocks.cs" />
-      </Component>
-      
-      <Component Id="cmpDemo03" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo03" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo03_Portfolio.cs" />
-      </Component>
-      
-      <Component Id="cmpDemo04" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo04" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo04_Options.cs" />
-      </Component>
-      
-      <Component Id="cmpDemo05" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo05" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo05_Optimizer.cs" />
-      </Component>
-      
-      <Component Id="cmpDemo06" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo06" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo06_OrderTypes.cs" />
-      </Component>
-      
-      <Component Id="cmpDemo07" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo07" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo07_Subclassing.cs" />
-      </Component>
+			<!-- ===== books & pubs V1 ======================================== -->
+			<Component Id="comp.sourceV1" Directory="dir.sourceV1" Guid="D95F932C-5527-4D06-A1D3-EC1CD265FC3A">
+				<File Id="file.sourceV1.aeromir" Source="$(var.HomeDir)\BooksAndPubs\Aeromir_ParkingTrade.cs" />
+				<File Id="file.sourceV1.alvarez" Source="$(var.HomeDir)\BooksAndPubs\Alvarez_EtfSectorRotation.cs" />
+				<File Id="file.sourceV1.antonacci" Source="$(var.HomeDir)\BooksAndPubs\Antonacci_DualMomentumInvesting.cs" />
+				<File Id="file.sourceV1.assets" Source="$(var.HomeDir)\BooksAndPubs\Assets.cs" />
+				<File Id="file.sourceV1.bensdorp" Source="$(var.HomeDir)\BooksAndPubs\Bensdorp_30MinStockTrader.cs" />
+				<File Id="file.sourceV1.project" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.csproj" />
+				<File Id="file.sourceV1.solution" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.sln" />
+				<File Id="file.sourceV1.boucher" Source="$(var.HomeDir)\BooksAndPubs\Boucher_HedgeFundEdge.cs" />
+				<File Id="file.sourceV1.clenow" Source="$(var.HomeDir)\BooksAndPubs\Clenow_StocksOnTheMove.cs" />
+				<File Id="file.sourceV1.connors.alpha" Source="$(var.HomeDir)\BooksAndPubs\Connors_AlphaFormula.cs" />
+				<File Id="file.sourceV1.connors.highprob" Source="$(var.HomeDir)\BooksAndPubs\Connors_HighProbEtfTrading.cs" />
+				<File Id="file.sourceV1.connors.shortterm" Source="$(var.HomeDir)\BooksAndPubs\Connors_ShortTermTrading.cs" />
+				<File Id="file.sourceV1.faber" Source="$(var.HomeDir)\BooksAndPubs\Faber_IvyPortfolio.cs" />
+				<File Id="file.sourceV1.glue" Source="$(var.HomeDir)\BooksAndPubs\GlueLogic.cs" />
+				<File Id="file.sourceV1.indices" Source="$(var.HomeDir)\BooksAndPubs\Indices.cs" />
+				<File Id="file.sourceV1.keller.caa" Source="$(var.HomeDir)\BooksAndPubs\Keller_CAA.cs" />
+				<File Id="file.sourceV1.keller.daa" Source="$(var.HomeDir)\BooksAndPubs\Keller_DAA.cs" />
+				<File Id="file.sourceV1.keller.faa" Source="$(var.HomeDir)\BooksAndPubs\Keller_FAA.cs" />
+				<File Id="file.sourceV1.keller.laa" Source="$(var.HomeDir)\BooksAndPubs\Keller_LAA.cs" />
+				<File Id="file.sourceV1.keller.raa" Source="$(var.HomeDir)\BooksAndPubs\Keller_RAA.cs" />
+				<File Id="file.sourceV1.lazy" Source="$(var.HomeDir)\BooksAndPubs\LazyPortfolios.cs" />
+				<File Id="file.sourceV1.logical" Source="$(var.HomeDir)\BooksAndPubs\LI_UniversalInvestmentStrategy.cs" />
+				<File Id="file.sourceV1.livingston" Source="$(var.HomeDir)\BooksAndPubs\Livingston_MuscularPortfolios.cs" />
+				<File Id="file.sourceV1.soto" Source="$(var.HomeDir)\BooksAndPubs\Soto_SectorRotation.cs" />
+				<File Id="file.sourceV1.steadyoptions" Source="$(var.HomeDir)\BooksAndPubs\SteadyOptions_AnchorTrade.cs" />
+				<File Id="file.sourceV1.tradingmarkets" Source="$(var.HomeDir)\BooksAndPubs\TradingMarkets_Quantamentals.cs" />
+				<File Id="file.sourceV1.zweig" Source="$(var.HomeDir)\BooksAndPubs\Zweig_WinningWithNewIRAs.cs" />
+			</Component>
 
-      <Component Id="cmpDemo08" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo08" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo08_CustomData.cs" />
-      </Component>
+			<Component Id="comp.propsV1" Directory="dir.propsV1" Guid="*">
+				<File Id="file.sourceV1.launch" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
+			</Component>
 
-      <Component Id="cmpDemo09" Directory="DemoAlgorithmsDir" Guid="*">
-        <File Id="filDemo09" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\Demo Algorithms\Demo09_WalkForwardOptimization.cs" />
-      </Component>
+			<!-- ===== books & pubs V2 ======================================== -->
+			<Component Id="comp.sourceV2" Directory="dir.sourceV2" Guid="6A6C2D40-4411-400D-89B3-D53AD0ED4F77">
+				<File Id="file.sourceV2.project" Source="$(var.HomeDir)\BooksAndPubsV2\BooksAndPubsV2.csproj" />
+				<File Id="file.sourceV2.solution" Source="$(var.HomeDir)\BooksAndPubsV2\BooksAndPubsV2.sln" />
+				<File Id="file.sourceV2.clenow" Source="$(var.HomeDir)\BooksAndPubsV2\Clenow_StocksOnTheMove_v2.cs" />
+				<File Id="file.sourceV2.glue" Source="$(var.HomeDir)\BooksAndPubs\GlueLogic_v2.cs" />
+				<File Id="file.sourceV2.keller.baa" Source="$(var.HomeDir)\BooksAndPubsV2\Keller_BAA_v2.cs" />
+				<File Id="file.sourceV2.lazy" Source="$(var.HomeDir)\BooksAndPubsV2\LazyPortfolios_v2.cs" />
+				<File Id="file.sourceV2.livingston" Source="$(var.HomeDir)\BooksAndPubsV2\Livingston_MuscularPortfolios_v2.cs" />
+			</Component>
 
-      <Component Id="cmpBooksAndPubs" Directory="AlgorithmsDir" Guid="*">
-        <File Id="filBooksAndPubs" KeyPath="yes" Source="$(var.HomeDir)\Algorithms\BooksAndPubs.dll" />
-      </Component>
+			<Component Id="comp.propsV2" Directory="dir.propsV2" Guid="*">
+				<File Id="file.sourceV2.launch" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
+			</Component>
 
-      <!-- ===== data files ======================================== -->
-      <Component Id="cmpSpxFakeOptionsInf" Directory="DataDir" Guid="*">
-        <File Id="filSpxFakeOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.fake.options.inf" />
-      </Component>
+			<!-- ===== showcase algorithm DLLs ======================================== -->
+			<Component Id="comp.showcase" Directory="dir.algos" Guid="B03CC5D3-38C5-4B67-988A-A7F06B79A15C">
+				<File Id="file.showcase.v1" Source="$(var.HomeDir)\Algorithms\BooksAndPubs.dll" />
+				<File Id="file.showcase.v2" Source="$(var.HomeDir)\Algorithms\BooksAndPubsV2.dll" />
+			</Component>
 
-      <Component Id="cmpSpxInf" Directory="DataDir" Guid="*">
-        <File Id="filSpxInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.inf" />
-      </Component>
+			<!-- ===== data files ======================================== -->
+			<Component Id="comp.descriptors" Directory="dir.datahome" Guid="FB8E280E-8C7D-4E5E-AD1F-B36EB0527B60">
+				<File Id="file.descriptors.DJU" Source="$(var.HomeDir)\Data\$DJU.inf" />
+				<File Id="file.descriptors.SPX.fake" Source="$(var.HomeDir)\Data\$SPX.fake.options.inf" />
+				<File Id="file.descriptors.SPX" Source="$(var.HomeDir)\Data\$SPX.inf" />
+				<File Id="file.descriptors.SPX.options" Source="$(var.HomeDir)\Data\$SPX.options.inf" />
+				<File Id="file.descriptors.SPXTR" Source="$(var.HomeDir)\Data\$SPXTR.inf" />
+				<File Id="file.descriptors.VIX" Source="$(var.HomeDir)\Data\$VIX.inf" />
+				<File Id="file.descriptors.6040" Source="$(var.HomeDir)\Data\@60_40.inf" />
+				<File Id="file.descriptors.BRKB" Source="$(var.HomeDir)\Data\BRK.B.inf" />
+			</Component>
+			<Component Id="comp.spx.options" Directory="dir.spx.options" Guid="*">
+				<File Id="file.spx.options" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
+			</Component>
 
-      <Component Id="cmpSpxOptionsInf" Directory="DataDir" Guid="*">
-        <File Id="filSpxOptionsInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPX.options.inf" />
-      </Component>
+			<!-- ===== data backfills ======================================== -->
+			<Component Id="comp.backfills" Directory="dir.backfills" Guid="A8058A7E-BED7-4093-A571-812D8B1D16BA">
+				<File Id="file.backfills.DJI" Source="$(var.HomeDir)\Data\backfills\$DJI.csv" />
+				<File Id="file.backfills.DJITR" Source="$(var.HomeDir)\Data\backfills\$DJITR.csv" />
+				<File Id="file.backfills.NDX" Source="$(var.HomeDir)\Data\backfills\$NDX.csv" />
+				<File Id="file.backfills.NDXTR" Source="$(var.HomeDir)\Data\backfills\$NDXTR.csv" />
+				<File Id="file.backfills.SPX" Source="$(var.HomeDir)\Data\backfills\$SPX.csv" />
+				<File Id="file.backfills.SPXTR" Source="$(var.HomeDir)\Data\backfills\$SPXTR.csv" />
+				<File Id="file.backfills.ACWX" Source="$(var.HomeDir)\Data\backfills\ACWX.csv" />
+				<File Id="file.backfills.AGG" Source="$(var.HomeDir)\Data\backfills\AGG.csv" />
+				<File Id="file.backfills.summary" Source="$(var.HomeDir)\Data\backfills\backfill-summary.txt" />
+				<File Id="file.backfills.BIL" Source="$(var.HomeDir)\Data\backfills\BIL.csv" />
+				<File Id="file.backfills.BND" Source="$(var.HomeDir)\Data\backfills\BND.csv" />
+				<File Id="file.backfills.BNDX" Source="$(var.HomeDir)\Data\backfills\BNDX.csv" />
+				<File Id="file.backfills.BWX" Source="$(var.HomeDir)\Data\backfills\BWX.csv" />
+				<File Id="file.backfills.CWB" Source="$(var.HomeDir)\Data\backfills\CWB.csv" />
+				<File Id="file.backfills.DBC" Source="$(var.HomeDir)\Data\backfills\DBC.csv" />
+				<File Id="file.backfills.DIA" Source="$(var.HomeDir)\Data\backfills\DIA.csv" />
+				<File Id="file.backfills.EDV" Source="$(var.HomeDir)\Data\backfills\EDV.csv" />
+				<File Id="file.backfills.EWJ" Source="$(var.HomeDir)\Data\backfills\EWJ.csv" />
+				<File Id="file.backfills.GLD" Source="$(var.HomeDir)\Data\backfills\GLD.csv" />
+				<File Id="file.backfills.HYG" Source="$(var.HomeDir)\Data\backfills\HYG.csv" />
+				<File Id="file.backfills.IAU" Source="$(var.HomeDir)\Data\backfills\IAU.csv" />
+				<File Id="file.backfills.IEF" Source="$(var.HomeDir)\Data\backfills\IEF.csv" />
+				<File Id="file.backfills.IEI" Source="$(var.HomeDir)\Data\backfills\IEI.csv" />
+				<File Id="file.backfills.IGIB" Source="$(var.HomeDir)\Data\backfills\IGIB.csv" />
+				<File Id="file.backfills.IWM" Source="$(var.HomeDir)\Data\backfills\IWM.csv" />
+				<File Id="file.backfills.JNK" Source="$(var.HomeDir)\Data\backfills\JNK.csv" />
+				<File Id="file.backfills.LQD" Source="$(var.HomeDir)\Data\backfills\LQD.csv" />
+				<File Id="file.backfills.MDY" Source="$(var.HomeDir)\Data\backfills\MDY.csv" />
+				<File Id="file.backfills.MDYG" Source="$(var.HomeDir)\Data\backfills\MDYG.csv" />
+				<File Id="file.backfills.MDYV" Source="$(var.HomeDir)\Data\backfills\MDYV.csv" />
+				<File Id="file.backfills.PDBC" Source="$(var.HomeDir)\Data\backfills\PDBC.csv" />
+				<File Id="file.backfills.QLD" Source="$(var.HomeDir)\Data\backfills\QLD.csv" />
+				<File Id="file.backfills.QQQ" Source="$(var.HomeDir)\Data\backfills\QQQ.csv" />
+				<File Id="file.backfills.SAA" Source="$(var.HomeDir)\Data\backfills\SAA.csv" />
+				<File Id="file.backfills.SDS" Source="$(var.HomeDir)\Data\backfills\SDS.csv" />
+				<File Id="file.backfills.SH" Source="$(var.HomeDir)\Data\backfills\SH.csv" />
+				<File Id="file.backfills.SHV" Source="$(var.HomeDir)\Data\backfills\SHV.csv" />
+				<File Id="file.backfills.SHY" Source="$(var.HomeDir)\Data\backfills\SHY.csv" />
+				<File Id="file.backfills.SLY" Source="$(var.HomeDir)\Data\backfills\SLY.csv" />
+				<File Id="file.backfills.SLYG" Source="$(var.HomeDir)\Data\backfills\SLYG.csv" />
+				<File Id="file.backfills.SLYV" Source="$(var.HomeDir)\Data\backfills\SLYV.csv" />
+				<File Id="file.backfills.SPUU" Source="$(var.HomeDir)\Data\backfills\SPUU.csv" />
+				<File Id="file.backfills.SPXL" Source="$(var.HomeDir)\Data\backfills\SPXL.csv" />
+				<File Id="file.backfills.SPXS" Source="$(var.HomeDir)\Data\backfills\SPXS.csv" />
+				<File Id="file.backfills.SPXU" Source="$(var.HomeDir)\Data\backfills\SPXU.csv" />
+				<File Id="file.backfills.SPY" Source="$(var.HomeDir)\Data\backfills\SPY.csv" />
+				<File Id="file.backfills.SPYG" Source="$(var.HomeDir)\Data\backfills\SPYG.csv" />
+				<File Id="file.backfills.SPYV" Source="$(var.HomeDir)\Data\backfills\SPYV.csv" />
+				<File Id="file.backfills.SSO" Source="$(var.HomeDir)\Data\backfills\SSO.csv" />
+				<File Id="file.backfills.TIP" Source="$(var.HomeDir)\Data\backfills\TIP.csv" />
+				<File Id="file.backfills.TLH" Source="$(var.HomeDir)\Data\backfills\TLH.csv" />
+				<File Id="file.backfills.TLT" Source="$(var.HomeDir)\Data\backfills\TLT.csv" />
+				<File Id="file.backfills.TMF" Source="$(var.HomeDir)\Data\backfills\TMF.csv" />
+				<File Id="file.backfills.TQQQ" Source="$(var.HomeDir)\Data\backfills\TQQQ.csv" />
+				<File Id="file.backfills.TYD" Source="$(var.HomeDir)\Data\backfills\TYD.csv" />
+				<File Id="file.backfills.UBT" Source="$(var.HomeDir)\Data\backfills\UBT.csv" />
+				<File Id="file.backfills.UDOW" Source="$(var.HomeDir)\Data\backfills\UDOW.csv" />
+				<File Id="file.backfills.UGL" Source="$(var.HomeDir)\Data\backfills\UGL.csv" />
+				<File Id="file.backfills.UGLDF" Source="$(var.HomeDir)\Data\backfills\UGLDF.csv" />
+				<File Id="file.backfills.UMDD" Source="$(var.HomeDir)\Data\backfills\UMDD.csv" />
+				<File Id="file.backfills.UPRO" Source="$(var.HomeDir)\Data\backfills\UPRO.csv" />
+				<File Id="file.backfills.URTY" Source="$(var.HomeDir)\Data\backfills\URTY.csv" />
+				<File Id="file.backfills.UST" Source="$(var.HomeDir)\Data\backfills\UST.csv" />
+				<File Id="file.backfills.VCLT" Source="$(var.HomeDir)\Data\backfills\VCLT.csv" />
+				<File Id="file.backfills.VEA" Source="$(var.HomeDir)\Data\backfills\VEA.csv" />
+				<File Id="file.backfills.VEU" Source="$(var.HomeDir)\Data\backfills\VEU.csv" />
+				<File Id="file.backfills.VGIT" Source="$(var.HomeDir)\Data\backfills\VGIT.csv" />
+				<File Id="file.backfills.VGK" Source="$(var.HomeDir)\Data\backfills\VGK.csv" />
+				<File Id="file.backfills.VGLT" Source="$(var.HomeDir)\Data\backfills\VGLT.csv" />
+				<File Id="file.backfills.VIOG" Source="$(var.HomeDir)\Data\backfills\VIOG.csv" />
+				<File Id="file.backfills.VIOO" Source="$(var.HomeDir)\Data\backfills\VIOO.csv" />
+				<File Id="file.backfills.VIOV" Source="$(var.HomeDir)\Data\backfills\VIOV.csv" />
+				<File Id="file.backfills.VNQ" Source="$(var.HomeDir)\Data\backfills\VNQ.csv" />
+				<File Id="file.backfills.VONE" Source="$(var.HomeDir)\Data\backfills\VONE.csv" />
+				<File Id="file.backfills.VSS" Source="$(var.HomeDir)\Data\backfills\VSS.csv" />
+				<File Id="file.backfills.VT" Source="$(var.HomeDir)\Data\backfills\VT.csv" />
+				<File Id="file.backfills.VTV" Source="$(var.HomeDir)\Data\backfills\VTV.csv" />
+				<File Id="file.backfills.VUG" Source="$(var.HomeDir)\Data\backfills\VUG.csv" />
+				<File Id="file.backfills.VWO" Source="$(var.HomeDir)\Data\backfills\VWO.csv" />
+				<File Id="file.backfills.VXX" Source="$(var.HomeDir)\Data\backfills\VXX.csv" />
+				<File Id="file.backfills.XLB" Source="$(var.HomeDir)\Data\backfills\XLB.csv" />
+				<File Id="file.backfills.XLC" Source="$(var.HomeDir)\Data\backfills\XLC.csv" />
+				<File Id="file.backfills.XLE" Source="$(var.HomeDir)\Data\backfills\XLE.csv" />
+				<File Id="file.backfills.XLF" Source="$(var.HomeDir)\Data\backfills\XLF.csv" />
+				<File Id="file.backfills.XLI" Source="$(var.HomeDir)\Data\backfills\XLI.csv" />
+				<File Id="file.backfills.XLK" Source="$(var.HomeDir)\Data\backfills\XLK.csv" />
+				<File Id="file.backfills.XLP" Source="$(var.HomeDir)\Data\backfills\XLP.csv" />
+				<File Id="file.backfills.XLRE" Source="$(var.HomeDir)\Data\backfills\XLRE.csv" />
+				<File Id="file.backfills.XLU" Source="$(var.HomeDir)\Data\backfills\XLU.csv" />
+				<File Id="file.backfills.XLV" Source="$(var.HomeDir)\Data\backfills\XLV.csv" />
+				<File Id="file.backfills.XLY" Source="$(var.HomeDir)\Data\backfills\XLY.csv" />
+			</Component>
 
-      <Component Id="cmpSpxTrInf" Directory="DataDir" Guid="*">
-        <File Id="filSpxTrInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$SPXTR.inf" />
-      </Component>
+			<!-- ===== templates ======================================== -->
+			<Component Id="comp.templates" Directory="dir.templates" Guid="72AAFE9D-846F-473C-A51A-FED4948F9BD1">
+				<File Id="file.templates.simple.cs" Source="$(var.HomeDir)\Templates\SimpleChart.cs" />
+				<File Id="file.templates.simple.r" Source="$(var.HomeDir)\Templates\SimpleChart.r" />
+				<File Id="file.templates.simple.rmd" Source="$(var.HomeDir)\Templates\SimpleChart.rmd" />
+				<File Id="file.templates.simple.xlsm" Source="$(var.HomeDir)\Templates\SimpleChart.xlsm" />
+				<File Id="file.templates.report.cs" Source="$(var.HomeDir)\Templates\SimpleReport.cs" />
+				<File Id="file.templates.report.xlsm" Source="$(var.HomeDir)\Templates\SimpleReport.xlsm" />
+			</Component>
 
-		<Component Id="cmpDjuInf" Directory="DataDir" Guid="*">
-			<File Id="filDjuInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$DJU.inf" />
-		</Component>
-
-		<Component Id="cmpVixInf" Directory="DataDir" Guid="*">
-        <File Id="filVixInf" KeyPath="yes" Source="$(var.HomeDir)\Data\$VIX.inf" />
-      </Component>
-
-      <Component Id="cmp6040Inf" Directory="DataDir" Guid="*">
-        <File Id="fil6040Inf" KeyPath="yes" Source="$(var.HomeDir)\Data\@60_40.inf" />
-      </Component>
-
-      <Component Id="cmpBrkBInf" Directory="DataDir" Guid="*">
-        <File Id="filBrkBInf" KeyPath="yes" Source="$(var.HomeDir)\Data\BRK.B.inf" />
-      </Component>
-
-      <Component Id="cmpSpxOptionsCsv" Directory="DataSpxOptionsDir" Guid="*">
-        <File Id="filSpxOptionsCsv" KeyPath="yes" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
-      </Component>
-
-      <!-- ===== templates ======================================== -->
-      <Component Id="cmpTemplateSimpleChartCs" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleChartsCs" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.cs" />
-      </Component>
-
-      <Component Id="cmpTemplateSimpleChartR" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleChartsR" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.r" />
-      </Component>
-
-      <Component Id="cmpTemplateSimpleChartRmd" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleChartsRmd" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.rmd" />
-      </Component>
-
-      <Component Id="cmpTemplateSimpleChartXlsm" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleChartsXlsm" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleChart.xlsm" />
-      </Component>
-      
-      <Component Id="cmpTemplateSimpleReportCs" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleReportCs" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleReport.cs" />
-      </Component>
-      
-      <Component Id="cmpTemplateSimpleReportXlsm" Directory="TemplatesDir" Guid="*">
-        <File Id="filTemplateSimpleReportXlsm" KeyPath="yes" Source="$(var.HomeDir)\Templates\SimpleReport.xlsm" />
-      </Component>
-
-      <!-- ===== books & pubs ======================================== -->
-      <Component Id="cmpBooksAndPubs_Aeromir_ParkingTrade" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Aeromir_ParkingTrade" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Aeromir_ParkingTrade.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Alvarez_EtfSectorRotation" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Alvarez_EtfSectorRotation" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Alvarez_EtfSectorRotation.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Antonacci_DualMomentumInvesting" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Antonacci_DualMomentumInvesting" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Antonacci_DualMomentumInvesting.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Bensdorp_30MinStockTrader" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Bensdorp_30MinStockTrader" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Bensdorp_30MinStockTrader.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Project" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Project" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.csproj" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Solution" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Solution" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\BooksAndPubs.sln" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Clenow_StocksOnTheMove" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Clenow_StocksOnTheMove" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Clenow_StocksOnTheMove.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Comparison" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Comparison" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Comparison.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Connors_AlphaFormula" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Connors_AlphaFormula" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Connors_AlphaFormula.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Connors_HighProbEtfTrading" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Connors_HighProbEtfTrading" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Connors_HighProbEtfTrading.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Connors_ShortTermTrading" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Connors_ShortTermTrading" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Connors_ShortTermTrading.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Faber_IvyPortfolio" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Faber_IvyPortfolio" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Faber_IvyPortfolio.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_GlueLogic" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_GlueLogic" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\GlueLogic.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Keller_CAA" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Keller_CAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_CAA.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Keller_DAA" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Keller_DAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_DAA.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Keller_FAA" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Keller_FAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_FAA.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Keller_LAA" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Keller_LAA" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Keller_LAA.cs" />
-      </Component>
-      
-      <Component Id="cmpBooksAndPubs_LazyPortfolios" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_LazyPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\LazyPortfolios.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_Livingston_MuscularPortfolios" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_Livingston_MuscularPortfolios" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Livingston_MuscularPortfolios.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_SteadyOptions_AnchorTrade" Directory="BooksAndPubsDir" Guid="*">
-        <File Id="filBooksAndPubs_SteadyOptions_AnchorTrade" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\SteadyOptions_AnchorTrade.cs" />
-      </Component>
-
-      <Component Id="cmpBooksAndPubs_LaunchSettings" Directory="BooksAndPubsPropertiesDir" Guid="*">
-        <File Id="filBooksAndPubs_LaunchSettings" KeyPath="yes" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
-      </Component>
-
-    </ComponentGroup>
-  </Fragment>
+	    </ComponentGroup>
+    </Fragment>
 </Wix>

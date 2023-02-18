@@ -1,19 +1,11 @@
 # Version History
 
-- 0.xx - work in progress
-  - general
+- 0.15.190 - February 18, 2023
+    - preview of upcoming 0.16 release
     - update Nuget packages
     - update to .net core 6
-  - reports
-    - make sure Monte Carlo simulation renders when there is no break-even point
-  - simulator core
-    - fix issue allowing trades on delisted instruments
-    - optimize universe constituents lookup
-    - initial implementation of v2 simulator engine
-  - showcase algorithms
-    - port Livingston's Muscular Portfolios to v2
-    - port Clenow's Stocks on the Loose to v2
-    - implement Keller's Bold Asset Allocation for v2
+    - implement new v2 simulator engine
+    - start migrating showcase algorithms to v2 engine
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time
