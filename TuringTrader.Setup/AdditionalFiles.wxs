@@ -88,7 +88,7 @@
 				<File Id="file.sourceV2.project" Source="$(var.HomeDir)\BooksAndPubsV2\BooksAndPubsV2.csproj" />
 				<File Id="file.sourceV2.solution" Source="$(var.HomeDir)\BooksAndPubsV2\BooksAndPubsV2.sln" />
 				<File Id="file.sourceV2.clenow" Source="$(var.HomeDir)\BooksAndPubsV2\Clenow_StocksOnTheMove_v2.cs" />
-				<File Id="file.sourceV2.glue" Source="$(var.HomeDir)\BooksAndPubs\GlueLogic_v2.cs" />
+				<File Id="file.sourceV2.glue" Source="$(var.HomeDir)\BooksAndPubsV2\GlueLogic_v2.cs" />
 				<File Id="file.sourceV2.keller.baa" Source="$(var.HomeDir)\BooksAndPubsV2\Keller_BAA_v2.cs" />
 				<File Id="file.sourceV2.lazy" Source="$(var.HomeDir)\BooksAndPubsV2\LazyPortfolios_v2.cs" />
 				<File Id="file.sourceV2.livingston" Source="$(var.HomeDir)\BooksAndPubsV2\Livingston_MuscularPortfolios_v2.cs" />

@@ -1,6 +1,6 @@
 # Version History
 
-- 0.15.190 - February 18, 2023
+- 0.15.189 - February 18, 2023
     - preview of upcoming 0.16 release
     - update Nuget packages
     - update to .net core 6
