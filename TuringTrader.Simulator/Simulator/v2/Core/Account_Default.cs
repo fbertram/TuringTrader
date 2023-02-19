@@ -44,6 +44,7 @@ namespace TuringTrader.SimulatorV2
         private DateTime _lastDate = default(DateTime);
         private double _navMax = 0.0;
         private double _mdd = 0.0;
+        // TODO: revisit default friction. 0.1% might be a better choice?
         private const double DEFAULT_FRICTION = 0.0005; // $100.00 x 0.05% = $0.05
         private double _friction = DEFAULT_FRICTION;
 
