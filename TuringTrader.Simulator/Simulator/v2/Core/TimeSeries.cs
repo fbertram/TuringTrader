@@ -75,6 +75,9 @@ namespace TuringTrader.SimulatorV2
             //         we should preserve the current index position.
 
             var data = Data;
+            if (data.Count == 0)
+                Output.ThrowError("No data for time series {0}", Name);
+
             var lookupDate = date == default ? Owner.SimDate : date;
 
             int index;

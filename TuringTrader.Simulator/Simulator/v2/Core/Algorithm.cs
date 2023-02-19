@@ -364,7 +364,7 @@ namespace TuringTrader.SimulatorV2
         public TimeSeriesAsset Asset(object obj)
         {
             var objString = obj as string;
-            var objAlgorithm = obj as Algorithm;
+            var objAlgorithm = obj as Simulator.IAlgorithm;
 
             if (objString != null) return Asset(objString);
             if (objAlgorithm != null) return Asset(objAlgorithm);

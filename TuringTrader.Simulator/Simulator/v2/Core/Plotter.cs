@@ -46,6 +46,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddTradeLog()
         {
+            // TODO: rewrite to support RESOLVE_CHILD_HOLDINGS
             SelectChart("Trade Log", "Date");
             foreach (var trade in Algorithm.Account.TradeLog)
             {

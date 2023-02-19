@@ -97,7 +97,7 @@ namespace TuringTrader.SimulatorV2
                 foreach (var pos in v1Positions)
                 {
                     v2Positions.Add(
-                        pos.Key.Symbol,
+                        pos.Key.Nickname,
                         pos.Value * pos.Key.Close[0] / _v1Generator.NetAssetValue[0]);
                 }
 

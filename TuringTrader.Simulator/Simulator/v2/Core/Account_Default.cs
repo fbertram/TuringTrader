@@ -262,7 +262,10 @@ namespace TuringTrader.SimulatorV2
         public double MaxDrawdown { get => _mdd; }
 
         /// <summary>
-        /// Return positions, as fraction of NAV.
+        /// Return dictionary with currently open positions.
+        /// The key is the nickname used to load the asset. The value
+        /// is a floating point number, representing the allocation to
+        /// the asset as a fraction of the accounts NAV.
         /// </summary>
         public Dictionary<string, double> Positions
         {
