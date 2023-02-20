@@ -69,6 +69,10 @@ namespace TuringTrader.Simulator
         /// Algorithm source path, in case algorithm is contained in C# source file
         /// </summary>
         public string SourcePath;
+        /// <summary>
+        /// Simulation engine version, true for V2 algorithms
+        /// </summary>
+        public bool IsV2Algorithm;
     }
 
     /// <summary>
@@ -126,6 +130,7 @@ namespace TuringTrader.Simulator
                         DllType = type,
                         DllPath = assembly.Location,
                         DisplayPath = new List<string>() { title },
+                        IsV2Algorithm = type.IsSubclassOf(typeof(SimulatorV2.Algorithm))
                     };
                 }
             }

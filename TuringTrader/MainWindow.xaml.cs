@@ -258,7 +258,13 @@ namespace TuringTrader
                 var parent = map[AlgoPathLookupName(algo.DisplayPath)];
                 var newEntry = new MenuItemViewModel
                 {
+#if true
+                    // only display algorithm name
                     Header = "_" + algo.Name,
+#else
+                    // display algorithm name along with simulator engine version
+                    Header = "_" + algo.Name + (algo.IsV2Algorithm ? " (V2)" : " (V1)"),
+#endif
                     CommandParameter = algo,
                 };
 
