@@ -175,6 +175,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// (since Dec 1998, backfilled to Jan Sep 1989)
         /// </summary>
         public const string XLY = "splice:XLY,csv:backfills/XLY.csv";
+
+        // TODO:
+        // XHB
+        // XPH
+        // XRT
         #endregion
         #region non-US and others
         /// <summary>
@@ -470,6 +475,8 @@ namespace TuringTrader.SimulatorV2.Assets
         /// (since Jan 2018, backfilled to Jan 2008)
         /// </summary>
         public const string VXX = "splice:VXX,csv:backfills/VXX.csv";
+        // TODO
+        // VIXY
         #endregion
     }
 }

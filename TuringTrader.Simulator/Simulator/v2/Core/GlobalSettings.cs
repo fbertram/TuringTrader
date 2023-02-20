@@ -68,7 +68,7 @@ namespace TuringTrader.SimulatorV2
 
                 if (value == null && defaultValue != null)
                 {
-                    key.SetValue(valueName, defaultValue);
+                    SetRegistryValue(sub, valueName, defaultValue);
                     return defaultValue;
                 }
 
