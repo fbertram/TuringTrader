@@ -87,6 +87,7 @@ namespace TuringTrader.BooksAndPubsV2
     }
     #endregion
 
+    /*
     #region all-cash/ zero-return portfolio
     public class Benchmark_Zero : LazyPortfolio
     {
@@ -98,6 +99,7 @@ namespace TuringTrader.BooksAndPubsV2
         public override string BENCH => ETF.SPY;
     }
     #endregion
+    */
     #region 60/40 benchmark
     public class Benchmark_60_40 : LazyPortfolio
     {
