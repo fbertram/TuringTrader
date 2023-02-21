@@ -4,11 +4,11 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Authors>Felix Bertram</Authors>
-    <Company>Bertram Enterprises LLC</Company>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
     <Product>TuringTrader</Product>
-    <Description>Open-source backtesting engine and simulator</Description>
+    <Description>Open-source backtesting engine and trading simulator</Description>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2022, Bertram Enterprises LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>

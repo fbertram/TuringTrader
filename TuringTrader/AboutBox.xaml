@@ -15,9 +15,9 @@ website at "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
                 <Run Text="https://www.turingtrader.org/"/></Hyperlink><Run Text="."/><LineBreak/>
             <LineBreak/>
-            <Run Text="Copyright © 2011-2020, "/>
-            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.bertram.solutions/tools/software/">
-                <Run Text="Bertram Solutions LLC"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
+            <Run Text="Copyright © 2011-2023, "/>
+            <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.com">
+                <Run Text="Bertram Enterprises LLC dba TuringTrader.com"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             <Run Text="This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, either version 3 of the

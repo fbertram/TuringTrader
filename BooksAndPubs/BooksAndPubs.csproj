@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <Authors>Felix Bertram et al</Authors>
-    <Company>Bertram Enterprises LLC</Company>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
     <Product>TuringTrader</Product>
     <Description>Showcase Algorithms (Legacy)</Description>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
