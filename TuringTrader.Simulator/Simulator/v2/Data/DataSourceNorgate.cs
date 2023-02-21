@@ -345,7 +345,9 @@ namespace TuringTrader.SimulatorV2
         {
             var tradingDays = owner.TradingCalendar.TradingDays;
             var startDate = tradingDays.First();
-            var endDate = tradingDays.Last();
+            var endDate = tradingDays
+                .Where(t => t <= DateTime.Now)
+                .Last();
 
 #if NO_REENTRY
             lock (_lockReentrance)
