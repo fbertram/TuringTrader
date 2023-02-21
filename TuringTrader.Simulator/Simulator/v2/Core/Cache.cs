@@ -26,14 +26,24 @@ using System.Collections.Generic;
 
 namespace TuringTrader.SimulatorV2
 {
+    /// <summary>
+    /// Interface for cache.
+    /// </summary>
     public interface ICache
     {
+        /// <summary>
+        /// Retrieve data from cache
+        /// </summary>
+        /// <typeparam name="T">type of cached data</typeparam>
+        /// <param name="cacheId">unique identifier for requested data</param>
+        /// <param name="missFun">method to retrieve data on cache miss</param>
+        /// <returns>cached data</returns>
         public T Fetch<T>(string cacheId, Func<T> missFun);
     }
 
     /// <summary>
-    /// Simple cache. This class is essential to TuringTrader's 
-    /// automagic indicators.
+    /// Simple cache. The cache is essential to TuringTrader's 
+    /// automagic indicators and used for the object cache.
     /// </summary>
     public class Cache : ICache
     {
@@ -69,8 +79,8 @@ namespace TuringTrader.SimulatorV2
 
     /// <summary>
     /// Dummy cache. This class does not cache, but forward requests
-    /// directly to the miss-function. This is the default for the
-    /// data cache.
+    /// directly to the miss-function. This is the default for
+    /// TuringTrader's data cache.
     /// </summary>
     public class DummyCache : ICache
     {

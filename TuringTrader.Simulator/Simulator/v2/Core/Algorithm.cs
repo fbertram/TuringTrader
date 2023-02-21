@@ -337,7 +337,21 @@ namespace TuringTrader.SimulatorV2
 
         #endregion
         #region cache functionality
+        /// <summary>
+        /// Object cache, used to store algorithm-specific objects. Most
+        /// importantly, algorithms store all time series in the cache,
+        /// including those for quotes and indicators. It is worth noting
+        /// that there is a separate cache for  the actual raw data.
+        /// </summary>
         public ICache ObjectCache = new Cache();
+        /// <summary>
+        /// Data cache, used to store algorithm data. The default behavior
+        /// for this cache is a dummy, bypassing all requests directly to
+        /// the miss function. Because the object cache is still active,
+        /// this only prevents algorithms from sharing quotes and indicator
+        /// results. However, the optimizer will activate this cache,
+        /// reducing the memory footprint and increasing execution speed.
+        /// </summary>
         public ICache DataCache = new DummyCache();
         #endregion
         #region assets & universes

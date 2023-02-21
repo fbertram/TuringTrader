@@ -26,7 +26,7 @@
 
 // OPTIONAL_CHARTS
 // if defined, render optional chart showing asset momentum
-#define OPTIONAL_CHARTS
+//#define OPTIONAL_CHARTS
 
 /*
 Comments from Brian Livingston, 04/18/2020
@@ -263,8 +263,6 @@ namespace TuringTrader.BooksAndPubsV2
             "BIL"  // SPDR Bloomberg Barclays 1-3 Month T-Bill ETF
 #endif
         };
-        [OptimizerParam(21, 252, 21)]
-        public int LOOKBACK_PERIOD { get; set; } = 105;
         protected override double MOMENTUM(string name)
         {
             // simple 5-month momentum
@@ -272,7 +270,7 @@ namespace TuringTrader.BooksAndPubsV2
             // Note: Livingston calculates momentum based on daily bars,
             // see footnote here: https://muscularportfolios.com/mama-bear/
             var closingPrices = Asset(name).Close;
-            return closingPrices[0] / closingPrices[LOOKBACK_PERIOD] - 1.0;
+            return closingPrices[0] / closingPrices[105] - 1.0;
         }
     }
     #endregion
