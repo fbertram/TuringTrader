@@ -8,7 +8,7 @@
     <Product>TuringTrader</Product>
     <Description>Open-source backtesting engine and trading simulator</Description>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2022, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
+    <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>

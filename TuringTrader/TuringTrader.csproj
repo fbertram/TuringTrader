@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Authors>Felix Bertram</Authors>
-    <Company>Bertram Enterprises LLC</Company>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
     <Description>Open-source backtesting engine and trading simulator</Description>
     <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>

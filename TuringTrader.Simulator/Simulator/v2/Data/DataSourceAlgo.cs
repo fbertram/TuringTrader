@@ -78,7 +78,12 @@ namespace TuringTrader.SimulatorV2
                     convertTimeToV1((DateTime)EndDate)))
                 {
                     v1Bars.Add(v1Bar);
-                    if (_v1Generator.IsLastBar)
+                    // NOTE: _v1Generator.IsLastBar may be unreliable.
+                    //       As a workaround, we grab the positions on each bar,
+                    //       once we get close to the simulation end.
+                    // NOTE2: We copy the position dictionary, as the V1 engine
+                    //        clears all positions at the end of its sim loop.
+                    if (_v1Generator.IsLastBar || ((DateTime)EndDate - convertTimeFromV1(v1Bar.Time)).TotalDays < 21)
                         v1Positions = new Dictionary<Simulator.Instrument, int>(_v1Generator.Positions);
                 }
 
