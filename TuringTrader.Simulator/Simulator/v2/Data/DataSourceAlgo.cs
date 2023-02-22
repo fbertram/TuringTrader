@@ -65,6 +65,8 @@ namespace TuringTrader.SimulatorV2
                 Account = new V1AccountDummy();
             }
 
+            public override string Name => _v1Generator.Name;
+
             public override void Run()
             {
                 //--- prepare v1 algo for execution
