@@ -7,13 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Algorithms\Demo Algorithms\Demo01_Indicators.cs" Link="Demo01_Indicators.cs" />
+    <Compile Include="..\..\Algorithms\Demo Algorithms (V2)\Demo01_Indicators.cs" Link="Demo01_Indicators.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="TuringTrader.Simulator">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\TuringTrader\Bin\TuringTrader.Simulator.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\TuringTrader.Simulator\TuringTrader.Simulator.csproj" />
   </ItemGroup>
 
 </Project>
