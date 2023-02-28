@@ -233,9 +233,9 @@ namespace TuringTrader.BooksAndPubs
             {
                 _plotter.AddTargetAllocation(Alloc);
                 _plotter.AddOrderLog(this);
-                _plotter.AddPositionLog(this);
-                _plotter.AddPnLHoldTime(this);
-                _plotter.AddMfeMae(this);
+                //_plotter.AddPositionLog(this);
+                //_plotter.AddPnLHoldTime(this);
+                //_plotter.AddMfeMae(this);
                 _plotter.AddParameters(this);
             }
 

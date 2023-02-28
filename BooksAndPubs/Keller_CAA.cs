@@ -105,7 +105,7 @@ namespace TuringTrader.BooksAndPubs
                     // find portfolio with specified risk
                     var pf = cla.TargetVolatility(TVOL);
 
-                    Output.WriteLine("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
+                    Output.WriteInfo("{0:MM/dd/yyyy}: {1}", SimTime[0], pf.ToString());
 
                     // adjust all positions
                     foreach (var i in pf.Weights.Keys)

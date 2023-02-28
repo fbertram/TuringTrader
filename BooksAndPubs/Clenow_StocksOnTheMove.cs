@@ -258,6 +258,7 @@ namespace TuringTrader.BooksAndPubs
                         i.Trade(targetShares - i.Position, OrderType.openNextBar);
                     }
 
+#if false
                     if (!IsOptimizing && (EndTime - SimTime[0]).TotalDays < 30)
                     {
                         string message = constituents
@@ -267,6 +268,7 @@ namespace TuringTrader.BooksAndPubs
 
                         Output.WriteLine(message);
                     }
+#endif
                 }
 
                 // create charts
