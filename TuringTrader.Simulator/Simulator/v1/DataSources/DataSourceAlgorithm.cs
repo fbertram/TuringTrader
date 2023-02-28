@@ -160,7 +160,7 @@ namespace TuringTrader.Simulator
                             try
                             {
                                 //DateTime t1 = DateTime.Now;
-                                Output.ShowInfo(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
+                                Output.WriteInfo(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
                                 var bars = algoV1.Run(startTime, endTime)
                                     .ToList();
@@ -198,7 +198,7 @@ namespace TuringTrader.Simulator
                                     => TimeZoneInfo.ConvertTime(v2Time, timeZoneNewYork);
 
                                 //DateTime t1 = DateTime.Now;
-                                Output.ShowInfo(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
+                                Output.WriteInfo(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
 
                                 algoV2.StartDate = convertTimeToV2(startTime);
                                 algoV2.EndDate = convertTimeToV2(endTime);

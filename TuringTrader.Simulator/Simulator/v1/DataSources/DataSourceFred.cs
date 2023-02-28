@@ -104,7 +104,7 @@ namespace TuringTrader.Simulator
                     //--- 2) if failed, try to retrieve from web
                     if (jsonMeta == null)
                     {
-                        Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
+                        Output.WriteInfo("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
                         string url = string.Format(
                             "https://api.stlouisfed.org/fred/series"
@@ -317,7 +317,7 @@ namespace TuringTrader.Simulator
                     List<Bar> retrievalFunction()
                     {
                         //DateTime t1 = DateTime.Now;
-                        Output.ShowInfo(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
+                        Output.WriteInfo(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         List<Bar> rawBars = new List<Bar>();
 

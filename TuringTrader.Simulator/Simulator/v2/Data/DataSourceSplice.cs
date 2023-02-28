@@ -72,7 +72,7 @@ namespace TuringTrader.SimulatorV2
 
                     if (srcFiltered.Count == 0)
                     {
-                        Output.ShowWarning("Failed to backfill {0}: no data for {1}",
+                        Output.WriteWarning("Failed to backfill {0}: no data for {1}",
                             info[DataSourceParam.nickName2], symbol);
                         continue; // try next backfill or return what we have
                     }
@@ -87,7 +87,7 @@ namespace TuringTrader.SimulatorV2
 
                         if (dataSplicing == null)
                         {
-                            Output.ShowWarning("Failed to backfill {0}: no overlap for {1}",
+                            Output.WriteWarning("Failed to backfill {0}: no overlap for {1}",
                                 info[DataSourceParam.nickName2], symbol);
                             continue; // try next backfill or return what we have
                         }

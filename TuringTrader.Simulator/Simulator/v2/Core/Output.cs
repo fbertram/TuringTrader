@@ -104,7 +104,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        public static void ShowInfo(string format, params object[] args)
+        public static void WriteInfo(string format, params object[] args)
         {
             switch (DisplayMode)
             {
@@ -129,7 +129,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        public static void ShowWarning(string format, params object[] args)
+        public static void WriteWarning(string format, params object[] args)
         {
             var warning = _formatMessage(format + Environment.NewLine, args);
 

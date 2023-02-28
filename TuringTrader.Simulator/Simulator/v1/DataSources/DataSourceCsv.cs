@@ -475,7 +475,7 @@ namespace TuringTrader.Simulator
                 List<Bar> retrievalFunction()
                 {
                     //DateTime t1 = DateTime.Now;
-                    Output.ShowInfo(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
+                    Output.WriteInfo(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                     List<Bar> bars = new List<Bar>();
 
