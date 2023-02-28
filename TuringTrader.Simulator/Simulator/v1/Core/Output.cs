@@ -77,8 +77,8 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        public static void ShowInfo(string format, params object[] args)
-            => SimulatorV2.Output.ShowInfo(format, args);
+        public static void WriteInfo(string format, params object[] args)
+            => SimulatorV2.Output.WriteInfo(format, args);
 
         /// <summary>
         /// Display warning message. These messages will only be shown
@@ -89,8 +89,8 @@ namespace TuringTrader.Simulator
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        public static void ShowWarning(string format, params object[] args)
-            => SimulatorV2.Output.ShowWarning(format, args);
+        public static void WriteWarning(string format, params object[] args)
+            => SimulatorV2.Output.WriteWarning(format, args);
 
         /// <summary>
         /// Display error message. Note that this method will also throw an exception.

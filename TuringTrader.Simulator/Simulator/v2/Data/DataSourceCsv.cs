@@ -196,7 +196,7 @@ namespace TuringTrader.SimulatorV2
             else if (Directory.Exists(info2[DataSourceParam.dataPath]))
                 return _csvLoadDir(algo, info2);
 
-            Output.ShowWarning("Failed to locate csv data for {0} at {1}",
+            Output.WriteWarning("Failed to locate csv data for {0} at {1}",
                 info2[DataSourceParam.nickName2],
                 info2[DataSourceParam.dataPath]);
             return new List<BarType<OHLCV>>();

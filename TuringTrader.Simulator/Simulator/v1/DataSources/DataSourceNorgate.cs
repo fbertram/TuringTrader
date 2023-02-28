@@ -323,7 +323,7 @@ namespace TuringTrader.Simulator
                 List<Bar> retrievalFunction()
                 {
                     //DateTime t1 = DateTime.Now;
-                    Output.ShowInfo(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
+                    Output.WriteInfo(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
 
                     List<Bar> bars = new List<Bar>();
 
