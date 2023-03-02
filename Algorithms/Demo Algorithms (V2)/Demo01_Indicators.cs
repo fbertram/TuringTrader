@@ -3,6 +3,7 @@
 // Name:        Demo01_Indicators
 // Description: demonstrate use of indicators
 // History:     2018ix15, FUB, created
+//              2023iii02, FUB, updated for v2 engine
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC
 // License:     This file is part of TuringTrader, an open-source backtesting
@@ -41,17 +42,23 @@ namespace TuringTrader.Demos
             //---------- initialization
 
             // we start by setting a simulation range
-            // this range is specified in the local time zone
+            // note that this range is specified in the local time zone
             StartDate = DateTime.Parse("2015-01-01T16:00-05:00");
             EndDate = DateTime.Parse("2016-12-31T16:00-05:00");
+
+            // the warmup period makes sure indicators have valid values
+            // throughout the simulation range StartDate... EndDate
+            WarmupPeriod = TimeSpan.FromDays(50);            
 
             //---------- simulation
 
             // SimLoop loops through all timestamps in the range
             SimLoop(() =>
             {
-                // let's start with a time series for an instrument
+                // we bring in quotes for an instrument
                 // the output of Asset is a time series
+                // note that we can also use the Asset function 
+                // outside the SimLoop
                 var asset = Asset(ETF.SPY);
 
                 // assets have open, high, low, and closing prices
@@ -59,6 +66,10 @@ namespace TuringTrader.Demos
                 var prices = asset.Close;
 
                 // indicators can be applied to any time series
+                // they are calculated as separate tasks when first 
+                // called, and cached for subsequent use
+                // note that we can also calculate indicators
+                // outside the SimLoop
                 var ema26 = prices.EMA(26);
                 var ema12 = prices.EMA(12);
 
@@ -66,7 +77,9 @@ namespace TuringTrader.Demos
                 var macd = ema12.Sub(ema26);
                 var signal = macd.EMA(9);
 
-                // to create custom charts, we have the Plotter object
+                // data from time series can be accessed relative to the
+                // simulator's current position using square brackets
+                // we can create custom charts, with the Plotter object
                 var offset = -150;
                 Plotter.SelectChart("indicators vs time", "date");
                 Plotter.SetX(SimDate);
