@@ -1,7 +1,5 @@
 - name: Home
   href: http://www.turingtrader.org/
-- name: Download
-  href: http://www.turingtrader.org/download/
 - name: Documentation
   href: docnav/
 - name: Repository
@@ -10,3 +8,5 @@
   href: http://www.turingtrader.org/blog/
 - name: About
   href: http://www.turingtrader.org/about/
+- name: Download
+  href: http://www.turingtrader.org/download/
