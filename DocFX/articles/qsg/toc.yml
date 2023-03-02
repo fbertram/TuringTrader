@@ -1,34 +1,32 @@
 - name: The Five Cent Tour
   href: FiveCentTour.md
 - name: Calculating Indicators
-  href: Demo01.md
+  href: v2/Demo01.md
 - name: Trading Single Instruments
-  href: Demo02.md
+  href: v2/Demo02.md
 - name: Trading Portfolios
-  href: Demo03.md
-- name: Trading Options
-  href: Demo04.md
+  href: v2/Demo03.md
 - name: Running the Optimizer
-  href: Demo05.md
+  href: v2/Demo05.md
 - name: Order Types
-  href: Demo06.md
-- name: Subclassing Algorithms
-  href: Demo07.md
+  href: v2/Demo06.md
+- name: Algorithms as Assets
+  href: v2/Demo07.md
 - name: Data Setup
   href: DataSetup.md
 - name: Using the SimpleReport Template
-  href: SimpleReport.md
+  href: v2/SimpleReport.md
 - name: Creating a DLL
   href: CreateDlls.md
-- name: Creating an Application
-  href: CreateApplications.md
+- name: Creating an Custom Application
+  href: CustomApplications.md
 - name: Creating a Custom Indicator
-  href: CreateIndicators.md
+  href: v2/CustomIndicators.md
 - name: Creating a Custom Data Source
-  href: CreateDataSources.md
-- name: Debugging your Strategy
+  href: v2/CustomData.md
+- name: Debugging your Code
   href: Debugging.md
-- name: Indicator Pitfalls
-  href: IndicatorPitfalls.md
 - name: Showcase Algorithms
   href: ShowcaseAlgorithms.md
+- name: Coding for the v1 (Legacy) engine
+  href: v1/toc.yml

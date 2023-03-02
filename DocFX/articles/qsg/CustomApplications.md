@@ -1,4 +1,4 @@
-# Creating Applications
+# Creating Custom Applications
 
 unfortunately, we didn't write this article yet. However, the dev-branch contains a working sample: [https://github.com/fbertram/TuringTrader/tree/develop/More/TuringTrader.CustomApp](https://github.com/fbertram/TuringTrader/tree/develop/More/TuringTrader.CustomApp)
 

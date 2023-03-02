@@ -10,7 +10,7 @@ In this topic, we describe how these templates work.
 
 ## C#
 
-Unfortunately, we didn't write this section yet. Basically, TuringTrader provides a window with an OxyPlot.PlotView for charts, and a DataGrid for tables. Check out the sample template [here](https://github.com/fbertram/TuringTrader/blob/master/Templates/SimpleChart.cs)
+Unfortunately, we didn't write this section yet. Basically, TuringTrader provides a window with an OxyPlot.PlotView for charts, and a DataGrid for tables. Check out the sample template [here](https://github.com/fbertram/TuringTrader/blob/develop/Templates/SimpleChart.cs)
 
 ## Microsoft Excel
 

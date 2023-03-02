@@ -1,0 +1,24 @@
+- name: Calculating Indicators
+  href: Demo01.md
+- name: Trading Single Instruments
+  href: Demo02.md
+- name: Trading Portfolios
+  href: Demo03.md
+- name: Trading Options
+  href: Demo04.md
+- name: Running the Optimizer
+  href: Demo05.md
+- name: Order Types
+  href: Demo06.md
+- name: Subclassing Algorithms
+  href: Demo07.md
+- name: Data Setup
+  href: DataSetup.md
+- name: Using the SimpleReport Template
+  href: SimpleReport.md
+- name: Creating a Custom Indicator
+  href: CustomIndicators.md
+- name: Creating a Custom Data Source
+  href: CustomData.md
+- name: Indicator Pitfalls
+  href: IndicatorPitfalls.md

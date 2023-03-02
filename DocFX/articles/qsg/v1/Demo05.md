@@ -13,7 +13,7 @@ For TuringTrader to recognize a parameter as optimizable, the parameter must mee
 
 * integer-based
 * public, not static
-* preceded by the [OptimizerParam attribute](xref:TuringTrader.Simulator.OptimizerParamAttribute)
+* preceded by the [OptimizerParam attribute](xref:TuringTrader.Optimizer.OptimizerParamAttribute)
 * either a field or a property
 
 Here is an example declaring two parameters:     
@@ -24,7 +24,7 @@ Here is an example declaring two parameters:
     [OptimizerParam(0, 9, 1)]
     public int Y;
 
-The [OptimizerParam attribute](xref:TuringTrader.Simulator.OptimizerParamAttribute) takes the following optional arguments:
+The [OptimizerParam attribute](xref:TuringTrader.Optimizer.OptimizerParamAttribute) takes the following optional arguments:
 * start value
 * end value
 * step
@@ -35,9 +35,9 @@ These arguments are used to initialize the optimizer settings later.
 
 If an algorithm exposes any optimizable parameters, the `Optimize` button is enabled, as soon as the algorithm is loaded. Clicking the `Optimize` button opens the optimizer settings dialog.
 
-![](../images/demo05/optimizerSettings.jpg)
+![](~/images/qsg-v1/demo05/optimizerSettings.jpg)
 
-The start, end, and step values are initialized from the [OptimizerParam attributes](xref:TuringTrader.Simulator.OptimizerParamAttribute). At this point, you can take the following actions to set up the optimization:
+The start, end, and step values are initialized from the [OptimizerParam attributes](xref:TuringTrader.Optimizer.OptimizerParamAttribute). At this point, you can take the following actions to set up the optimization:
 
 * setting a parameter to a fixed value, by entering a new value in the Value column
 *  enabling a parameter for optimization, by checking the box in the Optimize column
@@ -47,7 +47,7 @@ Once you finished setting up the parameters, you are ready to start the optimize
 
 TuringTrader's optimizer is multi-threaded and uses all available CPU cores. It, therefore, runs best on a machine with many CPU cores. Here is a screenshot from optimization on a 16-core i9:
 
-![](../images/demo05/16cores.png)
+![](~/images/qsg-v1/demo05/16cores.png)
 
 ## Optimization Results
 
@@ -59,7 +59,7 @@ Once the optimization has finished, TuringTrader opens the results dialog with o
 
 The rows can be sorted by clicking on the column headers.
 
-![](../images/demo05/optimizerResults.jpg)
+![](~/images/qsg-v1/demo05/optimizerResults.jpg)
 
 To apply the parameters from a specific optimizer iteration, and run a backtest with these parameters, double-click the row.
 
