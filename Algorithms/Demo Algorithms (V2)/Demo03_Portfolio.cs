@@ -50,9 +50,9 @@ namespace TuringTrader.Demos
             WarmupPeriod = TimeSpan.FromDays(365);
 
             // setup the trading universe. note that we are 
-            // not using strings here, but pre-defined constants,
-            // so that we can benefit from TuringTrader's backfills
-            var tickers = new List<string>{
+            // not using strings here, but TuringTrader's pre-defined 
+            // constants giving us access to backfills spanning many years
+            var universe = new List<string>{
                 ETF.XLY, ETF.XLV, ETF.XLK,
                 ETF.XLP, ETF.XLE, ETF.XLI,
                 ETF.XLF, ETF.XLU, ETF.XLB,
@@ -66,23 +66,15 @@ namespace TuringTrader.Demos
                 if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
                 {
                     // pick the top 3 assets with the highest 1-year momentum
-                    var topAssets = tickers
-                        .OrderByDescending(ticker => Asset(ticker).Close[0] / Asset(ticker).Close[252])
+                    var topAssets = universe
+                        .OrderByDescending(name => Asset(name).Close[0] / Asset(name).Close[252])
                         .Take(3);
 
-                    // let's first assume we close all open positions
-                    var weights = Positions
-                        .ToDictionary(
-                            kv => kv.Key,
-                            kv => 0.0);
-
-                    // now allocate capital equally to the top assets
-                    foreach (var ticker in topAssets)
-                        weights[ticker] = 1.0 / topAssets.Count();
-
-                    // place orders
-                    foreach (var kv in weights)
-                        Asset(kv.Key).Allocate(kv.Value, OrderType.openNextBar);
+                    // hold only the top-ranking assets, flatten all others
+                    foreach (var name in universe)
+                        Asset(name).Allocate(
+                            topAssets.Contains(name) ? 1.0 / topAssets.Count() : 0.0,
+                            OrderType.openNextBar);
                 }
 
                 // create a simple report comparing the
