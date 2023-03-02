@@ -5,8 +5,8 @@
 // History:     2018ix15, FUB, created
 //              2023iii02, FUB, updated for v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2098, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
@@ -45,7 +45,10 @@ namespace TuringTrader.Demos
             // set simulation time frame
             StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
             EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
-            WarmupPeriod = TimeSpan.FromDays(63);            
+
+            // note that the warmup period is specified in calendar days
+            // while most indicators express their parameters in trading days
+            WarmupPeriod = TimeSpan.FromDays(90);            
 
             //---------- simulation
 
