@@ -46,6 +46,13 @@
 			<!-- ===== demo algorithms V2 ======================================== -->
 			<Component Id="comp.demoV2" Directory="dir.demoV2" Guid="B4155B4D-48EF-4545-BD9A-10914EC2348F">
 				<File Id="file.demoV2.demo01" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo01_Indicators.cs" />
+				<File Id="file.demoV2.demo02" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo02_SingleAssets.cs" />
+				<File Id="file.demoV2.demo03" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo03_Portfolios.cs" />
+				<File Id="file.demoV2.demo05" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo05_Optimizer.cs" />
+				<File Id="file.demoV2.demo06" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo06_OrderTypes.cs" />
+				<File Id="file.demoV2.demo07" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo07_ChildAlgos.cs" />
+				<File Id="file.demoV2.demo08" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo08_CustomData.cs" />
+				<File Id="file.demoV2.demo09" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo09_CustomIndicators.cs" />
 			</Component>
 
 			<!-- ===== books & pubs V1 ======================================== -->
