@@ -6,7 +6,7 @@ We implement these strategies as close to the original publication as possible. 
 
 Here are the strategies we implemented, in no particular order:
 
-| Source/ Author | Notes | Source Code |
+| Publication and Author | Description | Source Code |
 | --- | --- | --- |
 | [Parking Trade](https://aeromir.com/) by Tim Pearson and Dave Thomas | A simple options strategy selling far out of the money put credit spreads. | [v1](https://github.com/fbertram/TuringTrader/blob/develop/BooksAndPubs/Aeromir_ParkingTrade.cs) |
 | [ETF Sector Rotation]( https://alvarezquanttrading.com/blog/etf-sector-rotation/) by Cesar Alvarez | A simple strategy, rotating sector ETFs based on their momentum. | [v1](https://github.com/fbertram/TuringTrader/blob/develop/BooksAndPubs/Alvarez_EtfSectorRotation.cs) |
@@ -29,4 +29,4 @@ Here are the strategies we implemented, in no particular order:
 | [Anchor Trades](https://steadyoptions.com/an/) by SteadyOptions | An option strategy hedging deep-in-the-money calls by buying 1-year at-the-money puts, financed through selling monthly at-the-money puts. | [v1](https://github.com/fbertram/TuringTrader/blob/develop/BooksAndPubs/SteadyOptions_AnchorTrade.cs) |
 | [Winning with New IRAs](https://www.amazon.com/Martin-Zweigs-Winning-New-IRAs/dp/0446512761/) by Martin Zweig | Zweig's Bond Model: A simple trend-following model to trade bond ETFs. | [v1](https://github.com/fbertram/TuringTrader/blob/develop/BooksAndPubs/Zweig_WinningWithNewIRAs.cs) |
 
-You can see most of these strategies [running live on TuringTrader.com](https://www.turingtrader.com/portfolios/?tag=basic)
+You can see most of these strategies [running live on TuringTrader.com](https://www.turingtrader.com/portfolios/?tag=basic).

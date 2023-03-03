@@ -67,4 +67,5 @@ Once you mastered the demos, we recommend moving on to our [Showcase Algorithms]
 
 TuringTrader requires data to run any simulations. Out of the box, these data will be downloaded from Yahoo! Finance. As your requirements for accuracy and reliability increase, you will probably want to switch to a more professional data feed. We strongly encourage you to learn about data, by reading through [this topic](DataSetup.md).
 
-This concludes our short tour through TuringTrader. We hope you enjoy developing with TuringTrader as much as we do. Feel free to [reach out](http://www.turingtrader.org/about/) with comments and questions. Happy coding! 
+This concludes our short tour through TuringTrader. We hope you enjoy developing with TuringTrader as much as we do. Feel free to [reach out](http://www.turingtrader.org/about/) with comments and questions. Happy coding!
+ 
