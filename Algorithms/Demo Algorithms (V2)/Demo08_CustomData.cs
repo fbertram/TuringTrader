@@ -59,7 +59,7 @@ namespace Demos
         }
     }
 
-    public class Demo07_ChildAlgos : Algorithm
+    public class Demo08_CustomData : Algorithm
     {
         public override void Run()
         {
