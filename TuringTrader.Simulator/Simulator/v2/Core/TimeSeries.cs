@@ -57,7 +57,7 @@ namespace TuringTrader.SimulatorV2
         protected readonly Task<object> _retrieveUntyped;
         private readonly Task<List<BarType<T>>> _retrieveTyped;
         private readonly Func<object, List<BarType<T>>> _extract;
-        private bool _firstLookup = true;
+        private long _lastTicks = default;
         private int _CurrentIndex = 0;
         private int GetIndex(DateTime date = default)
         {
@@ -67,9 +67,12 @@ namespace TuringTrader.SimulatorV2
             //       - repeated calls. This should be the typical
             //         case and will, for most strategies, require
             //         only one (or very few) increments forward.
-            //       - first call for a new instrument. This may
-            //         happen far into a backtest, requiring an optimized
+            //       - first call for a series. This may happen deep
+            //         into a backtest, requiring an optimized
             //         jump forward.
+            //       - call by a Lambda. Here we will nest a new simloop
+            //         inside the existing one, leading to restart
+            //         from the beginning.
             //       - lookup by date. This case is different, as it is
             //         independent from the simulator's state. Consequently,
             //         we should preserve the current index position.
@@ -78,17 +81,20 @@ namespace TuringTrader.SimulatorV2
             if (data.Count == 0)
                 Output.ThrowError("No data for time series {0}", Name);
 
-            var lookupDate = date == default ? Owner.SimDate : date;
+            var isSimloop = date == default;
+            var lookupDate = isSimloop ? Owner.SimDate : date;
 
             int index;
-            if (date == default && !_firstLookup)
+            if (
+                _lastTicks == default            // first reference to this series
+                || lookupDate.Ticks < _lastTicks // nested simloop
+                || !isSimloop)                   // lookup by date
             {
-                // simulator lookup
-                index = _CurrentIndex;
-            }
-            else
-            {
-                // initial jump forward or direct date lookup
+                // coarse jump
+                // this is needed when we either didn't look up this series before,
+                // we encounter a nested simloop, or we look up by date
+                // here, we make a coarse jump first, aiming to save time
+                // searching through the time stamps
                 var daysPerBar = (data.Last().Date - data.First().Date).TotalDays / data.Count;
                 index = (int)Math.Floor(
                     Math.Max(0, Math.Min(data.Count - 1,
@@ -97,16 +103,28 @@ namespace TuringTrader.SimulatorV2
                 // coarse jump might have been too far
                 while (index > 0 && data[index].Date > lookupDate)
                     index--;
-
-                _firstLookup = false;
+            }
+            else
+            {
+                // regular advance
+                // this happens when we make continued references to a series
+                // while the simulator advances. in this case, the previous
+                // index is a time-saving starting point
+                index = _CurrentIndex;
             }
 
             // advance time forward
+            // typically, this should only require very few iterations,
+            // as we either go from the previous index, or the coarse jump
             while (index < data.Count - 1 && data[index + 1].Date <= lookupDate)
                 index++;
 
-            if (date == default)
+            // save the current index so our next lookup will start there
+            if (isSimloop)
+            {
                 _CurrentIndex = index;
+                _lastTicks = lookupDate.Ticks;
+            }
 
             return index;
         }

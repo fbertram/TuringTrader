@@ -36,31 +36,39 @@ using TuringTrader.SimulatorV2.Assets;
 
 namespace Demos
 {
-    public class Demo09_CustomIndicators : Algorithm
+    static class Demo09_Extensions
     {
-        private TimeSeriesFloat CustomEMA(TimeSeriesFloat series, int period)
+        public static TimeSeriesFloat CustomEMA(this TimeSeriesFloat series, int period)
         {
-            // all indicator instances must have a unique name
+            // indicator instances must have a unique name
             var name = string.Format("{0}.CustomEMA({1})", series.Name, period);
-            var alpha = 2.0 / (1.0 + period);
 
             // use a lambda to calculate the recursive EMA
-            return Lambda(
+            // note how we initialize the series on IsFirstBar
+            // consequently, we pass a dummy initializer to Lambda
+            var alpha = 2.0 / (1.0 + period);
+            return series.Owner.Lambda(
                 name,
-                (ema) => ema + alpha * (series[0] - ema),
-                0.0);
+                (prevEMA) => series.Owner.IsFirstBar
+                    ? series[0]
+                    : prevEMA + alpha * (series[0] - prevEMA),
+                -999.99);
         }
 
-        private TimeSeriesFloat CustomSMA(TimeSeriesFloat series, int period)
+        public static TimeSeriesFloat CustomSMA(this TimeSeriesFloat series, int period)
         {
-            // all indicator instances must have a unique name
+            // indicator instances must have a unique name
             var name = string.Format("{0}.CustomSMA({1})", series.Name, period);
 
             // use a lambda to calculate the non-recursive SMA
-            return Lambda(name, 
+            return series.Owner.Lambda(
+                name,
                 () => Enumerable.Range(0, period).Average(t => series[t]));
         }
+    }
 
+    public class Demo09_CustomIndicators : Algorithm
+    {
         public override void Run()
         {
             //---------- initialization
@@ -70,12 +78,15 @@ namespace Demos
             EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
 
             //---------- simulation
-                
+
             SimLoop(() =>
             {
                 var input = Asset("$SPX").Close;
-                var custom1 = CustomEMA(input, 200);
-                var custom2 = CustomSMA(input, 200);
+
+                // our custom indicators can be used exactly the same way
+                // as any of TuringTrader's built-in indicators
+                var custom1 = input.CustomEMA(200);
+                var custom2 = input.CustomSMA(200);
 
                 Plotter.SelectChart("custom indicators", "date");
                 Plotter.SetX(SimDate);
