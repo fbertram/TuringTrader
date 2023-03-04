@@ -38,27 +38,38 @@ namespace Demos
 {
     public class Demo08_CustomData : Algorithm
     {
-        // it is a good idea to wrap custom data with a method.
-        // that simplifies maintenance of the retrieval function
-        private TimeSeriesAsset CustomData(string name) => Asset(name, () =>
+        // we overload the asset method, so that our custom data
+        // source is localized in a short blob of code
+        public override TimeSeriesAsset Asset(string name)
         {
-            // the retrieval function returns a list of bars
-            // note that it is parameterless, so the asset
-            // name is inferred from the context
-            var bars = new List<BarType<OHLCV>>();
-            foreach (var timestamp in TradingCalendar.TradingDays)
+            switch(name)
             {
-                var p = name == "ernie" ? 360.0 : 180.0;
-                var t = (timestamp - DateTime.Parse("1970-01-01")).TotalDays;
-                var v = Math.Sin(2.0 * Math.PI * t / p);
+                case "ernie":
+                case "bert":
+                    return Asset(name, () =>
+                    {
+                        // the retrieval function returns a list of bars
+                        // note that this function is parameterless
+                        var bars = new List<BarType<OHLCV>>();
+                        foreach (var timestamp in TradingCalendar.TradingDays)
+                        {
+                            var p = name == "ernie" ? 360.0 : 180.0;
+                            var t = (timestamp - DateTime.Parse("1970-01-01")).TotalDays;
+                            var v = Math.Sin(2.0 * Math.PI * t / p);
 
-                bars.Add(new BarType<OHLCV>(
-                    timestamp,
-                    new OHLCV(v, v, v, v, 0.0)));
+                            bars.Add(new BarType<OHLCV>(
+                                timestamp,
+                                new OHLCV(v, v, v, v, 0.0)));
+                        }
+
+                        return bars;
+                    });
+
+                // optionally, we can keep the built-in data sources alive
+                default:
+                    return base.Asset(name);
             }
-
-            return bars;
-        });
+        }
 
         public override void Run()
         {
@@ -72,8 +83,9 @@ namespace Demos
 
                 // custom data behave just like built-in data
                 // they have OHLCV bars, and they are cached
-                Plotter.Plot("custom data #1", CustomData("ernie").Close[0]);
-                Plotter.Plot("custom data #2", CustomData("bert").Close[0]);
+                Plotter.Plot("custom data #1", Asset("ernie").Close[0]);
+                Plotter.Plot("custom data #2", Asset("bert").Close[0]);
+                Plotter.Plot("regular data", Asset("SPY").Close[0] / 350.0 - 1.0);
             });
         }
 
