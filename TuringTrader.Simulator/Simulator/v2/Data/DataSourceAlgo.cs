@@ -56,7 +56,7 @@ namespace TuringTrader.SimulatorV2
                 public double NetAssetValue => throw new NotImplementedException();
                 public double Cash => throw new NotImplementedException();
                 public OHLCV ProcessBar() { throw new NotImplementedException(); }
-                public void SubmitOrder(string Name, double weight, OrderType orderType) { throw new NotImplementedException(); }
+                public void SubmitOrder(string Name, double weight, OrderType orderType, double orderPrice = 0.0) { throw new NotImplementedException(); }
             }
             public V1AlgoWrapper(Algorithm v2Owner, Simulator.Algorithm v1Generator)
             {
@@ -118,10 +118,10 @@ namespace TuringTrader.SimulatorV2
                         case Simulator.OrderType.openNextBar:
                             v2Log.Add(new IAccount.OrderReceipt(
                                 new IAccount.OrderTicket(
+                                    convertTimeFromV1(entry.OrderTicket.QueueTime),
                                     entry.OrderTicket.Instrument.Nickname,
                                     entry.TargetPercentageOfNav,
-                                    OrderType.openNextBar,
-                                    convertTimeFromV1(entry.OrderTicket.QueueTime)),
+                                    OrderType.openNextBar),
                                 convertTimeFromV1(entry.BarOfExecution.Time),
                                 0.0,   // order size
                                 entry.FillPrice,

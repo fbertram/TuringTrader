@@ -423,9 +423,9 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="weight"></param>
         /// <param name="orderType"></param>
-        public void Allocate(double weight, OrderType orderType)
+        public void Allocate(double weight, OrderType orderType, double orderPrice = 0.0)
         {
-            Owner.Account.SubmitOrder(Name, weight, orderType);
+            Owner.Account.SubmitOrder(Name, weight, orderType, orderPrice);
         }
 
         /// <summary>

@@ -88,11 +88,13 @@ namespace TuringTrader.SimulatorV2
         /// <param name="Name">asset name</param>
         /// <param name="weight">asset target allocation</param>
         /// <param name="orderType">order type</param>
-        public void SubmitOrder(string Name, double weight, OrderType orderType)
+        /// <param name="orderPrice">trigger price for stop and limit orders</param>
+        public void SubmitOrder(string Name, double weight, OrderType orderType, double orderPrice = 0.0)
         {
             _orderQueue.Add(
                 new IAccount.OrderTicket(
-                    Name, weight, orderType, _algorithm.SimDate));
+                    _algorithm.SimDate,
+                    Name, weight, orderType, orderPrice));
         }
 
         /// <summary>
@@ -112,10 +114,17 @@ namespace TuringTrader.SimulatorV2
             var navClose = 0.0;
 
             foreach (var orderTypeFilter in new List<OrderType> {
+                // this list is ordered chronologically
                 OrderType.closeThisBar,
-                OrderType.openNextBar })
+                OrderType.openNextBar,
+                // we expect sells to happen before buys,
+                // and stop orders before limit orders
+                OrderType.sellStopNextBar,
+                OrderType.sellLimitNextBar,
+                OrderType.buyStopNextBar,
+                OrderType.buyLimitNextBar})
             {
-                // execute pending next-day orders on close of last bar
+                // execute pending next-day market-on-open orders on close of last bar
                 var orderType = orderTypeFilter switch
                 {
                     OrderType.openNextBar => _algorithm.IsLastBar ? OrderType.closeThisBar : orderTypeFilter,
@@ -125,6 +134,11 @@ namespace TuringTrader.SimulatorV2
                 var navType = orderType switch
                 {
                     OrderType.closeThisBar => NavType.closeThisBar,
+                    // we are using NAV at next day's open for all 
+                    // order types filled tomorrow. this is incorrect
+                    // for stopand limit orders, but we don't see any
+                    // better alternative as the various asset's high
+                    // and low prices are not aligned in time.
                     _ => NavType.openNextBar,
                 };
 
@@ -139,16 +153,21 @@ namespace TuringTrader.SimulatorV2
                 {
                     var orderAsset = _algorithm.Asset(order.Name);
 
-                    // FIXME: this code has not been tested with short positions
-                    // it is likely that the logic around isBuy and price2 needs to change
+                    // FIXME: this code has not been thoroughly tested with short positions
+                    // it is likely there are issues around the handling of isBuy and price2
                     var price = orderType switch
                     {
-                        OrderType.closeThisBar => _algorithm.Asset(order.Name).Close[0],
-                        // for all other order types, we assume they are executed
-                        // at the opening price. this will not be true for limit
-                        // and stop orders, but we see no better alternative, as
-                        // the asset's high and low prices are not aligned in time.
-                        _ => _algorithm.Asset(order.Name).Open[-1],
+                        //--- market orders
+                        OrderType.closeThisBar => orderAsset.Close[0],
+                        OrderType.openNextBar => orderAsset.Open[-1],
+                        //--- stop orders
+                        OrderType.sellStopNextBar => Math.Min(orderAsset.Open[-1], order.OrderPrice),
+                        OrderType.buyStopNextBar => Math.Max(orderAsset.Open[-1], order.OrderPrice),
+                        //--- limit orders
+                        OrderType.buyLimitNextBar => Math.Min(orderAsset.Open[-1], order.OrderPrice),
+                        OrderType.sellLimitNextBar => Math.Max(orderAsset.Open[-1], order.OrderPrice),
+                        //--- default, should never happen
+                        _ => throw new NotImplementedException(),
                     };
 
                     // we need to calculate the nav every time we get
@@ -169,6 +188,24 @@ namespace TuringTrader.SimulatorV2
 #endif
 
                     if (currentAlloc == 0.0 && targetAlloc == 0.0)
+                        continue;
+
+                    var isOrderFilling = orderType switch
+                    {
+                        //--- market orders
+                        OrderType.closeThisBar => true,
+                        OrderType.openNextBar => true,
+                        //--- stop orders
+                        OrderType.sellStopNextBar => orderAsset.Low[-1] <= order.OrderPrice && currentAlloc > targetAlloc,
+                        OrderType.buyStopNextBar => orderAsset.High[-1] >= order.OrderPrice && currentAlloc < targetAlloc,
+                        //--- limit orders
+                        OrderType.buyLimitNextBar => orderAsset.Low[-1] <= order.OrderPrice && currentAlloc < targetAlloc,
+                        OrderType.sellLimitNextBar => orderAsset.High[-1] >= order.OrderPrice && currentAlloc > targetAlloc,
+                        //--- default, should never happen
+                        _ => throw new NotImplementedException(),
+                    };
+
+                    if (!isOrderFilling)
                         continue;
 
                     {

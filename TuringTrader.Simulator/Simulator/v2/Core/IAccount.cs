@@ -33,15 +33,29 @@ namespace TuringTrader.SimulatorV2
     public enum OrderType
     {
         /// <summary>
-        /// buy or sell assets on this bar's close
+        /// market order to buy or sell assets on this bar's close
         /// </summary>
         closeThisBar,
         /// <summary>
-        /// buy or sell assets on the next bar's open
+        /// market order to buy or sell assets on the next bar's open
         /// </summary>
         openNextBar,
-        // SellStopNextBar,
-        // BuyLimitNextBar,
+        /// <summary>
+        /// stop order to sell assets on next bar (at price or worse/ lower)
+        /// </summary>
+        sellStopNextBar,
+        /// <summary>
+        /// limit order to sell assets on next bar (at price or better/ higher)
+        /// </summary>
+        sellLimitNextBar,
+        /// <summary>
+        /// stop order to buy assets on next bar (at price or worse/ higher)
+        /// </summary>
+        buyStopNextBar,
+        /// <summary>
+        /// limit order to buy assets on next bar (at price or better/ lower)
+        /// </summary>
+        buyLimitNextBar,
     }
 
     /// <summary>
@@ -56,7 +70,8 @@ namespace TuringTrader.SimulatorV2
         /// <param name="Name">asset name</param>
         /// <param name="weight">asset target allocation</param>
         /// <param name="orderType">order type</param>
-        public void SubmitOrder(string Name, double weight, OrderType orderType);
+        /// <param name="orderPrice">trigger price for stop and limit orders</param>
+        public void SubmitOrder(string Name, double weight, OrderType orderType, double orderPrice = 0.0);
 
         /// <summary>
         /// Process bar. This method will loop through the queued
@@ -112,18 +127,25 @@ namespace TuringTrader.SimulatorV2
             public readonly DateTime SubmitDate;
 
             /// <summary>
+            /// Price for stop or limit orders.
+            /// </summary>
+            public readonly double OrderPrice;
+
+            /// <summary>
             /// Create new order ticket.
             /// </summary>
             /// <param name="symbol"></param>
             /// <param name="targetAllocation"></param>
             /// <param name="orderType"></param>
+            /// <param name="orderPrice"></param>
             /// <param name="submitDate"></param>
-            public OrderTicket(string symbol, double targetAllocation, OrderType orderType, DateTime submitDate)
+            public OrderTicket(DateTime submitDate, string symbol, double targetAllocation, OrderType orderType, double orderPrice = 0.0)
             {
                 Name = symbol;
                 TargetAllocation = targetAllocation;
                 OrderType = orderType;
                 SubmitDate = submitDate;
+                OrderPrice = orderPrice;
             }
         }
 
