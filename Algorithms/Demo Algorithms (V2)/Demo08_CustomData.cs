@@ -36,50 +36,48 @@ using TuringTrader.SimulatorV2.Assets;
 
 namespace Demos
 {
-    // algorithm acting as a custom data source
-    // we are aware that this solution is not ideal
-    // and will be releasing a more streamlined solution soon
-    class CustomData : Algorithm
-    {
-        public override void Run()
-        {
-            //---------- initialization
-
-            // note that we are not setting the simulation period  here
-            // the parent algorithm will set StartDate and EndDate for us
-
-            //---------- simulation
-
-            SimLoop(() =>
-            {
-                var t = (SimDate - DateTime.Parse("1970-01-01")).TotalDays;                
-                var v = Math.Sin(Math.PI * t / 180.0);
-                return new OHLCV(v, v, v, v, 0.0);
-            });
-        }
-    }
-
     public class Demo08_CustomData : Algorithm
     {
+        // it is a good idea to wrap custom data with a method.
+        // that simplifies maintenance of the retrieval function
+        private TimeSeriesAsset CustomData(string name) => Asset(name, () =>
+        {
+            // the retrieval function returns a list of bars
+            // note that it is parameterless, so the asset
+            // name is inferred from the context
+            var bars = new List<BarType<OHLCV>>();
+            foreach (var timestamp in TradingCalendar.TradingDays)
+            {
+                var p = name == "ernie" ? 360.0 : 180.0;
+                var t = (timestamp - DateTime.Parse("1970-01-01")).TotalDays;
+                var v = Math.Sin(2.0 * Math.PI * t / p);
+
+                bars.Add(new BarType<OHLCV>(
+                    timestamp,
+                    new OHLCV(v, v, v, v, 0.0)));
+            }
+
+            return bars;
+        });
+
         public override void Run()
         {
-            //---------- initialization
-
-            // set the simulation period
-            StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
+            StartDate = DateTime.Parse("2022-01-01T16:00-05:00");
             EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
 
-            //---------- simulation
-                
             SimLoop(() =>
             {
-                Plotter.SelectChart("custom data source", "date");
+                Plotter.SelectChart("custom data", "date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot("custom data", Asset("algorithm:CustomData").Close[0]);
+
+                // custom data behave just like built-in data
+                // they have OHLCV bars, and they are cached
+                Plotter.Plot("custom data #1", CustomData("ernie").Close[0]);
+                Plotter.Plot("custom data #2", CustomData("bert").Close[0]);
             });
         }
 
-        // minimalistic chart
+        // minimalistic report
         public override void Report() => Plotter.OpenWith("SimpleChart");
     }
 }

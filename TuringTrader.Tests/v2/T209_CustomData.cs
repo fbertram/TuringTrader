@@ -60,8 +60,8 @@ namespace TuringTrader.SimulatorV2.Tests
                 {
                     Plotter.SelectChart("custom data", "date");
                     Plotter.SetX(SimDate);
-                    Plotter.Plot("custom data #1", CustomData("ernie")[0]);
-                    Plotter.Plot("custom data #2", CustomData("bert")[0]);
+                    Plotter.Plot("custom data #1", CustomData("ernie").Close[0]);
+                    Plotter.Plot("custom data #2", CustomData("bert").Close[0]);
                 });
             }
         }
