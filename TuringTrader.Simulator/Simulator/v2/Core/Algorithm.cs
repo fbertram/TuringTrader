@@ -361,21 +361,21 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="name">name of asset</param>
         /// <returns>asset</returns>
-        public TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
+        public virtual TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
 
         /// <summary>
         /// Run v2 algorithm and bring its results in as an asset.
         /// </summary>
         /// <param name="generator"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
+        public virtual TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
 
         /// <summary>
         /// Load quotations or run algorithm.
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public TimeSeriesAsset Asset(object obj)
+        public virtual TimeSeriesAsset Asset(object obj)
         {
             var objString = obj as string;
             var objAlgorithm = obj as Simulator.IAlgorithm;
@@ -393,7 +393,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public HashSet<string> Universe(string name) => DataSource.Universe(this, name);
+        public virtual HashSet<string> Universe(string name) => DataSource.Universe(this, name);
         #endregion
         #region reporting
         /// <summary>
