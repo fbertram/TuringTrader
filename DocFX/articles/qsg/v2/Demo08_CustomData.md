@@ -1,8 +1,8 @@
 # Creating Custom Data Sources
 
-The current implementation of custom data sources is a bit clunky; we will fix that asap. In the meantime, check out the demo code below and the previous [article for the v1 engine](../v1/CustomData.md).
+This article needs to be rewritten for the v2 engine. In the meantime, check the out the demo code below and the previous [article for the v1 engine](../v1/CustomData.md).
 
-```C#
+```c#
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,53 +15,60 @@ using TuringTrader.SimulatorV2.Assets;
 
 namespace Demos
 {
-    // algorithm acting as a custom data source
-    // we are aware that this solution is not ideal
-    // and will be releasing a more streamlined solution soon
-    class CustomData : Algorithm
-    {
-        public override void Run()
-        {
-            //---------- initialization
-
-            // note that we are not setting the simulation period  here
-            // the parent algorithm will set StartDate and EndDate for us
-
-            //---------- simulation
-
-            SimLoop(() =>
-            {
-                var t = (SimDate - DateTime.Parse("1970-01-01")).TotalDays;                
-                var v = Math.Sin(Math.PI * t / 180.0);
-
-                // return custom data here,
-                // each timestamped with SimDate
-                return new OHLCV(v, v, v, v, 0.0);
-            });
-        }
-    }
-
     public class Demo08_CustomData : Algorithm
     {
+        // we overload the asset method, so that our custom data
+        // source is localized in a short blob of code
+        public override TimeSeriesAsset Asset(string name)
+        {
+            switch(name)
+            {
+                case "ernie":
+                case "bert":
+                    return Asset(name, () =>
+                    {
+                        // the retrieval function returns a list of bars
+                        // note that this function is parameterless
+                        var bars = new List<BarType<OHLCV>>();
+                        foreach (var timestamp in TradingCalendar.TradingDays)
+                        {
+                            var p = name == "ernie" ? 360.0 : 180.0;
+                            var t = (timestamp - DateTime.Parse("1970-01-01")).TotalDays;
+                            var v = Math.Sin(2.0 * Math.PI * t / p);
+
+                            bars.Add(new BarType<OHLCV>(
+                                timestamp,
+                                new OHLCV(v, v, v, v, 0.0)));
+                        }
+
+                        return bars;
+                    });
+
+                // optionally, we can keep the built-in data sources alive
+                default:
+                    return base.Asset(name);
+            }
+        }
+
         public override void Run()
         {
-            //---------- initialization
-
-            // set the simulation period
-            StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
+            StartDate = DateTime.Parse("2022-01-01T16:00-05:00");
             EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
 
-            //---------- simulation
-                
             SimLoop(() =>
             {
-                Plotter.SelectChart("custom data source", "date");
+                Plotter.SelectChart("custom data", "date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot("custom data", Asset("algorithm:CustomData").Close[0]);
+
+                // custom data behave just like built-in data
+                // they have OHLCV bars, and they are cached
+                Plotter.Plot("custom data #1", Asset("ernie").Close[0]);
+                Plotter.Plot("custom data #2", Asset("bert").Close[0]);
+                Plotter.Plot("regular data", Asset("SPY").Close[0] / 350.0 - 1.0);
             });
         }
 
-        // minimalistic chart
+        // minimalistic report
         public override void Report() => Plotter.OpenWith("SimpleChart");
     }
 }
