@@ -52,7 +52,7 @@
 				<File Id="file.demoV2.demo06" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo06_OrderTypes.cs" />
 				<File Id="file.demoV2.demo07" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo07_ChildAlgos.cs" />
 				<File Id="file.demoV2.demo08" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo08_CustomData.cs" />
-				<File Id="file.demoV2.demo09" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo09_CustomIndicators.cs" />
+				<File Id="file.demoV2.demo10" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (V2)\Demo10_CustomIndicators.cs" />
 			</Component>
 
 			<!-- ===== books & pubs V1 ======================================== -->
