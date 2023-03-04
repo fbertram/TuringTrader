@@ -2,7 +2,7 @@
 
 This article needs to be rewritten for the v2 engine. In the meantime, check out the fully-functional demo code below and the previous [article for the v1 engine](../v1/Demo01.md).
 
-The v2 engine is still a little light regarding the available indicators. We will be expanding that library asap. Check our [available indicators](xref:TuringTrader.SimulatorV2.Indicators). Also, check our article describing [how to create custom indicators](Demo09_CustomIndicators).
+The v2 engine is still a little light regarding the available indicators. We will be expanding that library asap. Check our [available indicators](xref:TuringTrader.SimulatorV2.Indicators). Also, check our article describing [how to create custom indicators](Demo10_CustomIndicators.md).
 
 ```C#
 using System;

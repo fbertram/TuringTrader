@@ -23,7 +23,7 @@
 - name: Creating Custom Data Sources
   href: v2/Demo08_CustomData.md
 - name: Creating Custom Indicators
-  href: v2/Demo09_CustomIndicators.md
+  href: v2/Demo10_CustomIndicators.md
 - name: Debugging your Code
   href: Debugging.md
 - name: Showcase Algorithms
