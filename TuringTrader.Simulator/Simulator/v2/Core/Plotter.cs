@@ -51,7 +51,7 @@ namespace TuringTrader.SimulatorV2
             foreach (var trade in Algorithm.Account.TradeLog)
             {
                 SetX(string.Format("{0:MM/dd/yyyy}", trade.OrderTicket.SubmitDate));
-                Plot("executed", trade.ExecDate);
+                Plot("executed", string.Format("{0:MM/dd/yyyy}", trade.ExecDate));
                 Plot("instr", Algorithm.Asset(trade.OrderTicket.Name).Ticker);
                 Plot("qty", string.Format("{0:P2}", trade.OrderSize));
                 Plot("fill", string.Format("{0:C2}", trade.FillPrice));

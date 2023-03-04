@@ -360,21 +360,24 @@ namespace TuringTrader.SimulatorV2
         /// this method with the same name will be served from a cache.
         /// </summary>
         /// <param name="name">name of asset</param>
-        /// <returns>asset</returns>
+        /// <returns>asset time series</returns>
         public virtual TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
 
         /// <summary>
         /// Run v2 algorithm and bring its results in as an asset.
+        /// Subsequent calls to this method with the same generator
+        /// will be served from a cache.
         /// </summary>
-        /// <param name="generator"></param>
-        /// <returns></returns>
+        /// <param name="generator">algorithm used as asset</param>
+        /// <returns>asset time series</returns>
         public virtual TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
 
         /// <summary>
-        /// Load quotations or run algorithm.
+        /// Load quotations or run algorithm, dependent on the type of 
+        /// the object passed in.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <param name="obj">string or algorithm</param>
+        /// <returns>asset time series</returns>
         public virtual TimeSeriesAsset Asset(object obj)
         {
             var objString = obj as string;
@@ -385,6 +388,15 @@ namespace TuringTrader.SimulatorV2
 
             throw new Exception(string.Format("Can't load asset for {0}", obj.ToString()));
         }
+
+        /// <summary>
+        /// Load asset data through custom code. Subsequent calls to this
+        /// method with the same name will be served from the cache.
+        /// </summary>
+        /// <param name="name">name of asset</param>
+        /// <param name="retrieve">retrieval function for custom data</param>
+        /// <returns></returns>
+        public virtual TimeSeriesAsset Asset(string name, Func<List<BarType<OHLCV>>> retrieve) => DataSource.CustomGetAsset(this, name, retrieve);
 
         /// <summary>
         /// Return constituents of universe at current simulator timestamp.
