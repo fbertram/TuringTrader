@@ -53,6 +53,8 @@ namespace TuringTrader.SimulatorV2
                 SetX(string.Format("{0:MM/dd/yyyy}", trade.OrderTicket.SubmitDate));
                 Plot("executed", string.Format("{0:MM/dd/yyyy}", trade.ExecDate));
                 Plot("instr", Algorithm.Asset(trade.OrderTicket.Name).Ticker);
+                Plot("type", trade.OrderTicket.OrderType);
+                Plot("target", string.Format("{0:P2}", trade.OrderTicket.TargetAllocation));
                 Plot("qty", string.Format("{0:P2}", trade.OrderSize));
                 Plot("fill", string.Format("{0:C2}", trade.FillPrice));
                 Plot("gross", string.Format("{0:C2}", trade.OrderAmount + trade.FrictionAmount));
