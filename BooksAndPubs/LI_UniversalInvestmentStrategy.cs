@@ -201,14 +201,6 @@ namespace TuringTrader.BooksAndPubs
                         i => i,
                         i => i.Close.LogReturn());
 
-#if true
-                foreach (var w in weights)
-                {
-                    if (!assetReturns.ContainsKey(w.Key))
-                        Output.WriteWarning("Missing key '{$0}'", w.Key);
-                }
-#endif
-
                 var rawPortfolioReturns = IndicatorsBasic.BufferedLambda(
                     prev => weights.Sum(kv => kv.Value * assetReturns[kv.Key][0]),
                     0.0);

@@ -147,8 +147,10 @@ namespace TuringTrader.BooksAndPubs
                         }
                     }
 
+#if false
                     if (TradingDays > 0 && !IsOptimizing && (EndTime - SimTime[0]).TotalDays < 63)
-                        Output.WriteLine(message);
+                        Output.WriteInfo(message);
+#endif
                 }
 
                 // plotter output
