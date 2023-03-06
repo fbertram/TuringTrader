@@ -615,6 +615,7 @@ namespace TuringTrader.Simulator
                     {
                         IEnumerable<Instrument> instrumentsToDelist = Instruments
                             .Where(i => !hasData[i.DataSource])
+                            .Where(i => i.DataSource.CachedData.Last().Time < SimTime[0]) // new 2023ii28: don't delist on last bar
                             .ToList();
 
                         foreach (Instrument instr in instrumentsToDelist)
