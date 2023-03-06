@@ -2,7 +2,7 @@
   href: FiveCentTour.md
 - name: Calculating Indicators
   href: v2/Demo01_Indicators.md
-- name: Trading Single Asses
+- name: Trading Single Assets
   href: v2/Demo02_SingleAssets.md
 - name: Trading Portfolios
   href: v2/Demo03_Portfolios.md
@@ -16,17 +16,17 @@
   href: DataSetup.md
 - name: The SimpleReport Template
   href: SimpleReport.md
-- name: Building DLLs
-  href: CreateDlls.md
-- name: Building Custom Applications
-  href: CustomApplications.md
+- name: Showcase Algorithms
+  href: ShowcaseAlgorithms.md
 - name: Creating Custom Data Sources
   href: v2/Demo08_CustomData.md
 - name: Creating Custom Indicators
   href: v2/Demo10_CustomIndicators.md
+- name: Building DLLs
+  href: CreateDlls.md
+- name: Building Custom Applications
+  href: CustomApplications.md
 - name: Debugging your Code
   href: Debugging.md
-- name: Showcase Algorithms
-  href: ShowcaseAlgorithms.md
 - name: Coding for the v1 (Legacy) engine
   href: v1/toc.yml

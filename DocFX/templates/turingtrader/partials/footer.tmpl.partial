@@ -8,4 +8,13 @@
       Copyright &copy; 2011-2023, <a href="https://www.turingtrader.com/" rel="nofollow" target="_blank">Bertram Enterprises LLC dba TuringTrader.com</a>
     </div>
   </div>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G96XPF4NHV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-G96XPF4NHV');
+  </script>
 </footer>
