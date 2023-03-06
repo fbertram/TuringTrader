@@ -1,5 +1,5 @@
 - name: Welcome
-  href: ../../Index.md
+  href: ~/index.md
 - name: FAQ
   href: FAQ.md
 - name: Version History

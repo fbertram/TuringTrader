@@ -54,6 +54,6 @@ instrument.Trade(100, OrderType.openNextBar, 0.0, i => i.Position == 0);
 
 As shown in a [previous demo](Demo03.md), we recommend creating an order log, to analyze the orders placed by your strategy. Here is the output of this demo, when rendered natively:
 
-![](../images/demo06/orderLog.jpg)
+![](~/images/qsg-v1/demo06/orderLog.jpg)
 
 The full source code is available in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo06_OrderTypes.cs).

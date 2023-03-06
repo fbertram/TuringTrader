@@ -1,8 +1,8 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T205_Csv
-// Description: Unit test for CSV data source.
-// History:     2022xi30, FUB, created
+// Name:        T209_CustomData
+// Description: Unit test for custom data.
+// History:     2023iii04, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
@@ -24,59 +24,55 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T205_Csv
+    public class T209_CustomData
     {
         private class Testbed : Algorithm
         {
-            public string Description;
-            public double FirstOpen;
-            public double LastClose;
-            public double HighestHigh = 0.0;
-            public double LowestLow = 1e99;
-            public double NumBars;
+            private TimeSeriesAsset CustomData(string name) => Asset(name, () =>
+            {
+                var bars = new List<BarType<OHLCV>>();
+                foreach (var timestamp in TradingCalendar.TradingDays)
+                {
+                    var p = name == "ernie" ? 360.0 : 180.0;
+                    var t = (timestamp - DateTime.Parse("1970-01-01")).TotalDays;
+                    var v = Math.Sin(2.0 * Math.PI * t / p);
+
+                    bars.Add(new BarType<OHLCV>(
+                        timestamp,
+                        new OHLCV(v, v, v, v, 0.0)));
+                }
+
+                return bars;
+            });
+
             public override void Run()
             {
-                StartDate = DateTime.Parse("2020-01-02T16:00-05:00");
-                EndDate = DateTime.Parse("2020-12-31T16:00-05:00");
-                WarmupPeriod = TimeSpan.FromDays(0);
+                StartDate = DateTime.Parse("2022-01-01T16:00-05:00");
+                EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
 
                 SimLoop(() =>
                 {
-                    var a = Asset("csv:backfills/$SPXTR.csv");
-
-                    if (IsFirstBar)
-                    {
-                        Description = a.Description;
-                        FirstOpen = a.Open[0];
-                        NumBars = 0;
-                    }
-                    if (IsLastBar)
-                    {
-                        LastClose = a.Close[0];
-                    }
-                    HighestHigh = Math.Max(HighestHigh, a.High[0]);
-                    LowestLow = Math.Min(LowestLow, a.Low[0]);
-                    NumBars++;
+                    Plotter.SelectChart("custom data", "date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot("custom data #1", CustomData("ernie").Close[0]);
+                    Plotter.Plot("custom data #2", CustomData("bert").Close[0]);
                 });
             }
         }
 
         [TestMethod]
-        public void Test_DataRetrieval()
+        public void Test_CustomData()
         {
             var algo = new Testbed();
             algo.Run();
 
-            Assert.IsTrue(algo.Description.ToLower().Contains("$spxtr.csv"));
-            Assert.AreEqual(algo.NumBars, 253);
-            Assert.AreEqual(algo.LastClose / algo.FirstOpen, 196865.1465 / 167008.1405, 1e-3);
-            Assert.AreEqual(algo.HighestHigh / algo.LowestLow, 196865.1465 / 113326.6985, 1e-3); // updated 2023iii03
-            //Assert.IsTrue(Math.Abs(algo.HighestHigh / algo.LowestLow - 197063.5459 / 113326.6985) < 1e-3); // failed 2023iii03
+            // TODO: perform tests here
         }
     }
 }

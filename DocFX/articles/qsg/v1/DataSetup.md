@@ -59,7 +59,7 @@ Often symbols differ, depending on the data feed or broker used. TuringTrader al
 
 Typically, we want to select the data feed using TuringTrader's default data feed, as specified in TuringTrader's settings:
 
-![](../images/dataSetup/defaultDataSource.jpg)
+![](~/images/dataSetup/defaultDataSource.jpg)
 
 However, some data are only available using specific data feeds; this is especially true for the economic data provided by FRED. Under these circumstances, we need to set the data feed manually:
 
@@ -88,11 +88,11 @@ Tiingo is a big step up from Yahoo. Tiingo provides quite generous limits for th
 
 To use Tiingo, you first need to sign-up for a free account with them. Once you have signed up, go to https://api.tiingo.com/documentation/end-of-day. Click on `Click here to see your API Token`, and copy the token. 
 
-![](../images/dataSetup/tiingo-1.jpg)
+![](~/images/dataSetup/tiingo-1.jpg)
 
 Next, open the Settings dialog via the `Edit/ Settings` menu. On the `Data Feeds` tab, select `Tiingo` as your default Data Feed, and copy the API key into the field below.
 
-![](../images/dataSetup/tiingo-2.jpg)
+![](~/images/dataSetup/tiingo-2.jpg)
 
 ### FRED (free)
 
@@ -106,11 +106,11 @@ Norgate Data comes as a paid subscription. What makes them unique is how their t
 
 To set things up, first, register for a free trial at https://norgatedata.com/freetrial.php. Then install the Norgate Data Updater from https://norgatedata.com/ndu-installation.php. Next, launch the Norgate Data Updater and click `Check for Updates`. Doing so initializes your computer with initial snapshot of the Norgate database. 
 
-![](../images/dataSetup/norgate-1.jpg)
+![](~/images/dataSetup/norgate-1.jpg)
 
 Downloading the initial snapshot takes a while. Once this is completed, go to TuringTrader's Settings dialog by opening the `Edit/ Settings` menu. Make sure to choose `Norgate` as the Default Data Feed.
 
-![](../images/dataSetup/norgate-2.jpg)
+![](~/images/dataSetup/norgate-2.jpg)
 
 ### IQFeed/ DTN (paid)
 

@@ -173,13 +173,13 @@ _plotter.OpenWith("SimpleChart");
 
 The parameter passed into the method refers to a template, which controls the appearance. If the template file name does not include an extension, like in this example, the extension used is the Default Template Extension from the Report Output Settings:
 
-![](../images/demo01/reportOutputSettings.jpg)
+![](~/images/qsg-v1/demo01/reportOutputSettings.jpg)
 
 Here is how a simple plot could look like, when using a native C# template:
 
-![](../images/demo01/demo01Chart.jpg)
+![](~/images/qsg-v1/demo01/demo01Chart.jpg)
 
 Please find the full code for this demo in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo01_Indicators.cs).
 
-There are virtually no limits to the customized reports and plots we can create. The repository contains simple templates, but you are welcome to create your own, fancier and more elegant ones. Read [this topic](CustomTemplates.md) to learn more.
+There are virtually no limits to the customized reports and plots we can create. The repository contains simple templates, but you are welcome to create your own, fancier and more elegant ones. Read [this topic](../CustomTemplates.md) to learn more.
 

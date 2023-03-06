@@ -119,7 +119,7 @@ if (newOrder != null)
 
 Our algorithm is now ready to run. Here is how the equity curve looks like, compared to a benchmark: 
 
-![](../images/demo03/chart.jpg)
+![](~/images/qsg-v1/demo03/chart.jpg)
 
 ## Creating a Trading Log
 
@@ -140,6 +140,6 @@ foreach (LogEntry entry in Log)
 
 Excel works best for analyzing trade logs, thanks to its filtering features. Here is a snippet of the trading log rendered with Excel:
 
-![](../images/demo03/logExcel.jpg)
+![](~/images/qsg-v1/demo03/logExcel.jpg)
 
 As always, find the full code for this demo in our [repository](https://github.com/fbertram/TuringTrader/blob/master/Algorithms/Demo%20Algorithms/Demo03_Portfolio.cs).

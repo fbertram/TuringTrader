@@ -1,5 +1,3 @@
-- name: The Five Cent Tour
-  href: FiveCentTour.md
 - name: Calculating Indicators
   href: Demo01.md
 - name: Trading Single Instruments
@@ -18,17 +16,9 @@
   href: DataSetup.md
 - name: Using the SimpleReport Template
   href: SimpleReport.md
-- name: Creating a DLL
-  href: CreateDlls.md
-- name: Creating an Application
-  href: CreateApplications.md
 - name: Creating a Custom Indicator
-  href: CreateIndicators.md
+  href: CustomIndicators.md
 - name: Creating a Custom Data Source
-  href: CreateDataSources.md
-- name: Debugging your Strategy
-  href: Debugging.md
+  href: CustomData.md
 - name: Indicator Pitfalls
   href: IndicatorPitfalls.md
-- name: Showcase Algorithms
-  href: ShowcaseAlgorithms.md

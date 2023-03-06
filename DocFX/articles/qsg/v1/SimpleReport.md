@@ -35,7 +35,7 @@ From the single chart sent to the Plotter object, `SimpleReport` creates multipl
 
 After running a backtest, the first thing most developers are interested in is the equity curve. That’s why this is the first page we show, just like most other backtesting engines do. The chart provides a quick overview of the strategy’s performance and risk:
 
-![EquityCurveWithDrawdown](../images/SimpleReport/EquityCurveWithDrawdown.jpg)
+![EquityCurveWithDrawdown](~/images/SimpleReport/EquityCurveWithDrawdown.jpg)
 
 The chart has the following characteristics:
 
@@ -47,7 +47,7 @@ The chart has the following characteristics:
 
 After you’ve had your first visual impression of the strategy’s behavior, it is time for cold facts. The performance metrics page shows a selection of commonly used performance metrics:
 
-![PerformanceMetrics](../images/SimpleReport/PerformanceMetrics.jpg)
+![PerformanceMetrics](~/images/SimpleReport/PerformanceMetrics.jpg)
 
 Please note the following:
 
@@ -59,7 +59,7 @@ Please note the following:
 
 Many investors like to think about their assets in terms of yearly returns. Therefore, we provide a page with annual columns showing the returns:
 
-![AnnualPerformance](../images/SimpleReport/AnnualPerformance.jpg)
+![AnnualPerformance](~/images/SimpleReport/AnnualPerformance.jpg)
 
 Some notes:
 
@@ -69,7 +69,7 @@ Some notes:
 
 The next view shows the cumulative distribution of returns. As with all of our views, we show the strategy alongside its benchmark:
 
-![CumulativeDistributionOfReturns](../images/SimpleReport/CumulativeDistributionOfReturns.jpg)
+![CumulativeDistributionOfReturns](~/images/SimpleReport/CumulativeDistributionOfReturns.jpg)
 
 For those not familiar with [Cumulative Distribution Functions](https://en.wikipedia.org/wiki/Cumulative_distribution_function), the chart shows the maximum daily return for a given probability. The chart above shows that 90% of the days our strategy has a return of about 1% or less.
 
@@ -82,7 +82,7 @@ What makes this chart especially useful is the comparison of a strategy to its b
 
 [Monte Carlo Analysis](https://en.wikipedia.org/wiki/Monte_Carlo_method) takes a given distribution function, like the one from the previous page, reshuffles the returns in time, and creates a large number of “parallel universes” with their alternative realities. Then, it runs statistics on these alternative results:
 
-![MonteCarloAnalysis](../images/SimpleReport/MonteCarloAnalysis.jpg)
+![MonteCarloAnalysis](~/images/SimpleReport/MonteCarloAnalysis.jpg)
 
 This method helps to develop a better idea of how representative a backtest result is, and what we should reasonably expect for out-of-sample performance. The view shows cumulative distribution functions for annual return and maximum drawdowns. The graphs include a marker, showing where the original backtest ranked.
 
@@ -119,4 +119,4 @@ if (IsLastBar)
 
 This code creates a page like this:
 
-![ListOfTrades](../images/SimpleReport/ListOfTrades.jpg)
+![ListOfTrades](~/images/SimpleReport/ListOfTrades.jpg)

@@ -134,6 +134,61 @@ namespace TuringTrader.SimulatorV2.Tests
 
             Assert.IsTrue(Math.Abs(algo.Result - 1.2130976664261734) < 1e-5);
         }
+
+        private class Testbed_Bugfix01 : Algorithm
+        {
+            // taken from Demo09_CustomIndicators.cs
+            private TimeSeriesFloat CustomEMA(TimeSeriesFloat series, int period)
+            {
+                var name = string.Format("{0}.CustomEMA({1})", series.Name, period);
+                var alpha = 2.0 / (1.0 + period);
+
+                return Lambda(
+                    name,
+                    (prevEMA) => IsFirstBar
+                        ? series[0]
+                        : prevEMA + alpha * (series[0] - prevEMA),
+                    -999.99);
+            }
+
+            private TimeSeriesFloat CustomSMA(TimeSeriesFloat series, int period)
+            {
+                var name = string.Format("{0}.CustomSMA({1})", series.Name, period);
+
+                return Lambda(
+                    name,
+                    () => Enumerable.Range(0, period).Average(t => series[t]));
+            }
+
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
+                EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
+
+                SimLoop(() =>
+                {
+                    var input = Asset("$SPX").Close;
+
+                    return new OHLCV(
+                        CustomEMA(input, 200)[0] - input[0],
+                        CustomSMA(input, 200)[0] - input[0],
+                        0.0, 0.0, 0.0);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void Test_Bugfix01()
+        {
+            var algo = new Testbed_Bugfix01();
+            algo.Run();
+
+            var sumEMA = algo.EquityCurve.Sum(b => b.Value.Open);
+            Assert.AreEqual(sumEMA, -257008.86804729505, 1e-5);
+
+            var sumSMA = algo.EquityCurve.Sum(b => b.Value.High);
+            Assert.AreEqual(sumSMA, -248093.10192443867, 1e-5);
+        }
     }
 }
 

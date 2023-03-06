@@ -1,28 +1,10 @@
-﻿//==============================================================================
-// Project:     TuringTrader, demo algorithms
-// Name:        Demo01_Indicators
-// Description: demonstrate use of indicators
-// History:     2018ix15, FUB, created
-//              2023iii02, FUB, updated for v2 engine
-//------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
-//              https://www.turingtrader.org
-// License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
-//              TuringTrader is free software: you can redistribute it and/or 
-//              modify it under the terms of the GNU Affero General Public 
-//              License as published by the Free Software Foundation, either 
-//              version 3 of the License, or (at your option) any later version.
-//              TuringTrader is distributed in the hope that it will be useful,
-//              but WITHOUT ANY WARRANTY; without even the implied warranty of
-//              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-//              GNU Affero General Public License for more details.
-//              You should have received a copy of the GNU Affero General Public
-//              License along with TuringTrader. If not, see 
-//              https://www.gnu.org/licenses/agpl-3.0.
-//==============================================================================
+# Demo 01: Calculating Indicators
 
-#region libraries
+This article needs to be rewritten for the v2 engine. In the meantime, check out the fully-functional demo code below and the previous [article for the v1 engine](../v1/Demo01.md).
+
+The v2 engine is still a little light regarding the available indicators. We will be expanding that library asap. Check our [available indicators](xref:TuringTrader.SimulatorV2.Indicators). Also, check our article describing [how to create custom indicators](Demo10_CustomIndicators.md).
+
+```C#
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +14,6 @@ using System.Threading.Tasks;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Indicators;
 using TuringTrader.SimulatorV2.Assets;
-#endregion
 
 namespace TuringTrader.Demos
 {
@@ -96,6 +77,4 @@ namespace TuringTrader.Demos
         public override void Report() => Plotter.OpenWith("SimpleChart");
     }
 }
-
-//==============================================================================
-// end of file
+```

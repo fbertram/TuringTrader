@@ -1,6 +1,6 @@
 - name: Overview
   href: ../articles/overview/toc.yml
 - name: Quick Start Guide
-  href: ../articles/toc.yml
+  href: ../articles/qsg/toc.yml
 - name: API Documentation
   href: ../api/toc.yml

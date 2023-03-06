@@ -360,22 +360,25 @@ namespace TuringTrader.SimulatorV2
         /// this method with the same name will be served from a cache.
         /// </summary>
         /// <param name="name">name of asset</param>
-        /// <returns>asset</returns>
-        public TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
+        /// <returns>asset time series</returns>
+        public virtual TimeSeriesAsset Asset(string name) => DataSource.LoadAsset(this, name);
 
         /// <summary>
         /// Run v2 algorithm and bring its results in as an asset.
+        /// Subsequent calls to this method with the same generator
+        /// will be served from a cache.
         /// </summary>
-        /// <param name="generator"></param>
-        /// <returns></returns>
-        public TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
+        /// <param name="generator">algorithm used as asset</param>
+        /// <returns>asset time series</returns>
+        public virtual TimeSeriesAsset Asset(Simulator.IAlgorithm generator) => DataSource.LoadAsset(this, generator);
 
         /// <summary>
-        /// Load quotations or run algorithm.
+        /// Load quotations or run algorithm, dependent on the type of 
+        /// the object passed in.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public TimeSeriesAsset Asset(object obj)
+        /// <param name="obj">string or algorithm</param>
+        /// <returns>asset time series</returns>
+        public virtual TimeSeriesAsset Asset(object obj)
         {
             var objString = obj as string;
             var objAlgorithm = obj as Simulator.IAlgorithm;
@@ -387,13 +390,22 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
+        /// Load asset data through custom code. Subsequent calls to this
+        /// method with the same name will be served from the cache.
+        /// </summary>
+        /// <param name="name">name of asset</param>
+        /// <param name="retrieve">retrieval function for custom data</param>
+        /// <returns></returns>
+        public virtual TimeSeriesAsset Asset(string name, Func<List<BarType<OHLCV>>> retrieve) => DataSource.CustomGetAsset(this, name, retrieve);
+
+        /// <summary>
         /// Return constituents of universe at current simulator timestamp.
         /// Please note that not all data feeds support this feature. For those
         /// feeds, the list of symbols returned might be inaccurate or incomplete.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public HashSet<string> Universe(string name) => DataSource.Universe(this, name);
+        public virtual HashSet<string> Universe(string name) => DataSource.Universe(this, name);
         #endregion
         #region reporting
         /// <summary>

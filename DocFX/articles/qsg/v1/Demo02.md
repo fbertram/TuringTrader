@@ -99,4 +99,4 @@ Please find the full code for this demo in our [repository](https://github.com/f
 
 Once the demo completes, we can see how the algorithm attempts to follow bullish trends and exit positions in bearish times: 
 
-![](../images/demo02/chart.jpg)
+![](~/images/qsg-v1/demo02/chart.jpg)

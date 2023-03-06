@@ -21,7 +21,7 @@ The first step is to download the installer file. TuringTrader comes as a plain 
 
 Once you downloaded the installer, double-click the file, to start the Setup Wizard. By default, TuringTrader will install to `C:\Program Files\TuringTrader`. Because this destination is a protected location, you might need to enter your administrator password to complete the installation.
 
-![](../images/tour/installer1.jpg)
+![](~/images/tour/installer1.jpg)
 
 TuringTrader installs the following items:
 
@@ -37,15 +37,15 @@ TuringTrader will store most of the user-specific data in your `Documents\Turing
 
 Now that we have data set up, it is time to run a demo, and see that everything is working as expected. To do so, open the `File/Algorithm` menu, and click `Demo01_Indicators.cs`:
 
-![](../images/tour/openDemo01.png)
+![](~/images/tour/openDemo01.png)
 
 The demo algorithms are provided as C# source code. Therefore, TuringTrader will first compile the source code. Once this has finished, we can run the demo by clicking the `Run` button. 
 
-![](../images/tour/demo01Run.jpg)
+![](~/images/tour/demo01Run.jpg)
 
 Depending on your data feed, TuringTrader might take a little moment to load data from the internet. Once the simulation has finished, a report window will open, displaying a chart with some indicators:
 
-![](../images/tour/demo01Chart.jpg)
+![](~/images/tour/demo01Chart.jpg)
 
 The exact look of the plot depends on the rendering template in use for the algorithm. By the time you run this demo, the template might look a little different.
 
@@ -53,7 +53,7 @@ The exact look of the plot depends on the rendering template in use for the algo
 
 As the demos are provided as C# source code, you can edit them at any time, and start your own experiments. To do so, open the `Edit` menu and click `Algorithm Source`. The Windows shell will use the file association for `.cs` to open your favorite editor. 
 
-![](../images/tour/editSource.PNG)
+![](~/images/tour/editSource.PNG)
 
 Having said that, we recommend installing [Microsoft Visual Studio](https://visualstudio.microsoft.com/). It comes for free, and provides all the features you expect from a powerful development environment.
 
@@ -67,4 +67,5 @@ Once you mastered the demos, we recommend moving on to our [Showcase Algorithms]
 
 TuringTrader requires data to run any simulations. Out of the box, these data will be downloaded from Yahoo! Finance. As your requirements for accuracy and reliability increase, you will probably want to switch to a more professional data feed. We strongly encourage you to learn about data, by reading through [this topic](DataSetup.md).
 
-This concludes our short tour through TuringTrader. We hope you enjoy developing with TuringTrader as much as we do. Feel free to [reach out](http://www.turingtrader.org/about/) with comments and questions. Happy coding! 
+This concludes our short tour through TuringTrader. We hope you enjoy developing with TuringTrader as much as we do. Feel free to [reach out](http://www.turingtrader.org/about/) with comments and questions. Happy coding!
+ 

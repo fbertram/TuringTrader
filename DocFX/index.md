@@ -4,7 +4,9 @@ This site contains the developer documentation for TuringTrader. It contains a q
 
 Here is what we have:
 
-- [FAQ](articles/overview/FAQ.md)
-- [Quick Start Guide](articles/FiveCentTour.md)
-- [API Documentation](xref:TuringTrader.Simulator)
+- [FAQ](~/articles/overview/FAQ.md)
+- [Quick Start Guide](~/articles/qsg/FiveCentTour.md)
+- [API Documentation](xref:TuringTrader.SimulatorV2)
 
+In case you are developing for the v1 (legacy) engine, use this entry point to the API documentation:
+- [v1 API Documentation](xref:TuringTrader.Simulator)
