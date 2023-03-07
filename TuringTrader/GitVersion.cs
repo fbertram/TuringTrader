@@ -1,1 +1,3 @@
-public static class GitInfo { public static string Version = "0.15-189-ga8812cc"; } 
+using System;
+
+public static class GitInfo { public static string Version = string.Format("unversioned-{0:MM/dd/yyyy}", DateTime.Now); } 
