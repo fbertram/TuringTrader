@@ -613,15 +613,21 @@ namespace TuringTrader.Simulator
                     // handle instrument de-listing
                     if (!IsLastBar)
                     {
-                        IEnumerable<Instrument> instrumentsToDelist = Instruments
-                            .Where(i => !hasData[i.DataSource])
-                            .Where(i => i.DataSource.CachedData.Last().Time < SimTime[0]) // new 2023ii28: don't delist on last bar
+                        // the main-purpose of instrument de-listing
+                        // is to speed up searching option chains.
+                        // there is no point in being too aggressive here,
+                        // as that might lead to issues elsewhere.
+                        // as an example, we have seen issues with instruments
+                        // being de-listed after short-lived data glitches
+                        var instrumentsToDelist = Instruments
+                            .Where(i => !hasData[i.DataSource]) // instruments with no more data
+                            .Where(i => i.DataSource.CachedData != null) // don't delist in-sync algorithms
+                            .Where(i => (SimTime[0] - i.DataSource.CachedData.Last().Time).TotalDays > 5) // take a few days time
                             .ToList();
 
                         foreach (Instrument instr in instrumentsToDelist)
                             _delistInstrument(instr);
                     }
-
                 }
 
                 //----- attempt to free up resources
