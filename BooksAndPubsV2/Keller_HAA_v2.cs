@@ -179,7 +179,7 @@ namespace TuringTrader.BooksAndPubsV2
                     var crash = SEL_P
                         .Select(a => MOMENTUM(a))
                         .Where(a => a < 0.0)
-                        .Count() > 1;
+                        .Count() > 0;
 
                     // start with 100% offensive assets.
                     // if the markets have crashed, replace
@@ -243,9 +243,9 @@ namespace TuringTrader.BooksAndPubsV2
 
         public override List<string> SEL_O { get; set; } = new List<string>
         {
-            ETF.SPY, ETF.IWM, 
-            ETF.VWO, ETF.VEA, 
-            ETF.VNQ, ETF.DBC, 
+            ETF.SPY, ETF.IWM,
+            ETF.VWO, ETF.VEA,
+            ETF.VNQ, ETF.DBC,
             ETF.IEF, ETF.TLT,
         };
     }
@@ -273,9 +273,9 @@ namespace TuringTrader.BooksAndPubsV2
 
         public override List<string> SEL_O { get; set; } = new List<string>
         {
-            ETF.SPY, ETF.QQQ, ETF.IWM, 
-            ETF.VGK, ETF.EWJ, ETF.VWO, 
-            ETF.VNQ, ETF.DBC, ETF.GLD, 
+            ETF.SPY, ETF.QQQ, ETF.IWM,
+            ETF.VGK, ETF.EWJ, ETF.VWO,
+            ETF.VNQ, ETF.DBC, ETF.GLD,
             ETF.IEF, ETF.TLT, ETF.LQD,
         };
     }
@@ -287,9 +287,9 @@ namespace TuringTrader.BooksAndPubsV2
 
         public override List<string> SEL_O { get; set; } = new List<string>
         {
-            ETF.SPY, 
-            ETF.VEA, 
-            ETF.VNQ, 
+            ETF.SPY,
+            ETF.VEA,
+            ETF.VNQ,
             ETF.IEF
         };
     }
