@@ -204,11 +204,17 @@ namespace TuringTrader.Simulator
         }
         #endregion
 
+        /// <summary>
+        /// Semaphore to prevent reentrance to Norgate data.
+        /// This is only explosed as a hack to cope with
+        /// code duplication between the v1 and v2 engines
+        /// </summary>
+        public static object _lockNorgate = new object();
         private class DataSourceNorgate : DataSource
         {
             #region internal data
-            private static object _lockSetName = new object();
-            private static object _lockLoadData = new object();
+            private static object _lockSetName = _lockNorgate; // new object();
+            private static object _lockLoadData = _lockNorgate; // new object();
             #endregion
             #region internal helpers
             private void SetName()

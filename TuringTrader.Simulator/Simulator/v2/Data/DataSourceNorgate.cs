@@ -238,60 +238,61 @@ namespace TuringTrader.SimulatorV2
 
 #if NO_REENTRY
                 lock (_lockReentrance)
+                    lock (Simulator.DataSourceCollection._lockNorgate) // lock v1
 #endif
-                {
-
-                    NDU.OperationResult success;
-                    // get watchlist object
-                    success = NDU.Api.GetWatchlist(_watchlistNames[universe], out _watchlist);
-
-                    // get all securities on that watchlist
-                    var allSecurities = (NDW.SecurityList)null;
-                    success = _watchlist.GetSecurityList(out allSecurities);
-
-                    // get constituency time series
-                    _securityList = new NDW.SecurityList();
-                    foreach (var security in allSecurities)
                     {
-                        var rawTimeSeries = (List<NDU.RecIndicator>)null;
-                        success = NDU.Api.GetIndexConstituentTimeSeries(
-                            security.AssetID, out rawTimeSeries, _universe,
-                            TimeZoneInfo.ConvertTime((DateTime)_algorithm.StartDate - TimeSpan.FromDays(5), _algorithm.TradingCalendar.ExchangeTimeZone).Date,
-                            TimeZoneInfo.ConvertTime((DateTime)_algorithm.EndDate, _algorithm.TradingCalendar.ExchangeTimeZone).Date,
-                            NDU.PaddingType.AllCalendarDays);
 
-                        // NOTE: the constituency time series occupy a lot of memory.
-                        //       we compress the data here by removing unnecessary
-                        //       series and time stamps.
-                        if (rawTimeSeries.Count > 0)
+                        NDU.OperationResult success;
+                        // get watchlist object
+                        success = NDU.Api.GetWatchlist(_watchlistNames[universe], out _watchlist);
+
+                        // get all securities on that watchlist
+                        var allSecurities = (NDW.SecurityList)null;
+                        success = _watchlist.GetSecurityList(out allSecurities);
+
+                        // get constituency time series
+                        _securityList = new NDW.SecurityList();
+                        foreach (var security in allSecurities)
                         {
-                            // NOTE: constituency time series may apruptly end with a '1'.
-                            //       When we evaluate this series later, this leads to the
-                            //       asset being stuck. To prevent this, we add a '0' at
-                            //       the end of the series.
-                            rawTimeSeries.Add(new NDU.RecIndicator
-                            {
-                                Date = rawTimeSeries.Last().Date + TimeSpan.FromDays(1),
-                                value = 0,
-                            });
+                            var rawTimeSeries = (List<NDU.RecIndicator>)null;
+                            success = NDU.Api.GetIndexConstituentTimeSeries(
+                                security.AssetID, out rawTimeSeries, _universe,
+                                TimeZoneInfo.ConvertTime((DateTime)_algorithm.StartDate - TimeSpan.FromDays(5), _algorithm.TradingCalendar.ExchangeTimeZone).Date,
+                                TimeZoneInfo.ConvertTime((DateTime)_algorithm.EndDate, _algorithm.TradingCalendar.ExchangeTimeZone).Date,
+                                NDU.PaddingType.AllCalendarDays);
 
-                            var prevValue = (double?)47.11;
-                            var timeSeries = new List<NDU.RecIndicator>();
-                            foreach (var t in rawTimeSeries)
+                            // NOTE: the constituency time series occupy a lot of memory.
+                            //       we compress the data here by removing unnecessary
+                            //       series and time stamps.
+                            if (rawTimeSeries.Count > 0)
                             {
-                                if (t.value != prevValue)
+                                // NOTE: constituency time series may apruptly end with a '1'.
+                                //       When we evaluate this series later, this leads to the
+                                //       asset being stuck. To prevent this, we add a '0' at
+                                //       the end of the series.
+                                rawTimeSeries.Add(new NDU.RecIndicator
                                 {
-                                    prevValue = t.value;
-                                    timeSeries.Add(t);
+                                    Date = rawTimeSeries.Last().Date + TimeSpan.FromDays(1),
+                                    value = 0,
+                                });
+
+                                var prevValue = (double?)47.11;
+                                var timeSeries = new List<NDU.RecIndicator>();
+                                foreach (var t in rawTimeSeries)
+                                {
+                                    if (t.value != prevValue)
+                                    {
+                                        prevValue = t.value;
+                                        timeSeries.Add(t);
+                                    }
                                 }
+
+                                _constituency[security.AssetID] = timeSeries;
+                                _securityList.Add(security);
+
                             }
-
-                            _constituency[security.AssetID] = timeSeries;
-                            _securityList.Add(security);
-
                         }
                     }
-                }
             }
 
             public HashSet<string> Constituents()
@@ -351,70 +352,71 @@ namespace TuringTrader.SimulatorV2
 
 #if NO_REENTRY
             lock (_lockReentrance)
+                lock (Simulator.DataSourceCollection._lockNorgate) // lock v1
 #endif
-            {
-                if (!NorgateHelpers.isAPIAvaliable)
-                    throw new Exception("Norgate Data Updater not installed");
+                {
+                    if (!NorgateHelpers.isAPIAvaliable)
+                        throw new Exception("Norgate Data Updater not installed");
 
-                //--- Norgate setup
-                NDU.Api.SetAdjustmentType = NDU.AdjustmentType.TotalReturn;
-                NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
+                    //--- Norgate setup
+                    NDU.Api.SetAdjustmentType = NDU.AdjustmentType.TotalReturn;
+                    NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
-                //--- run NDU as required
+                    //--- run NDU as required
 #if false
                 // this should work, but seems broken as of 01/09/2019
                 // confirmed broken 12/25/2022
                 DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
-                var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
-                var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
+                    var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
+                    var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
 
-                List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
-                NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
-                DateTime dbLastQuote = q
-                    .Select(ohlc => ohlc.Date)
-                    .OrderByDescending(d => d)
-                    .First()
-                    .Date + timeOfDay;
+                    List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
+                    NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
+                    DateTime dbLastQuote = q
+                        .Select(ohlc => ohlc.Date)
+                        .OrderByDescending(d => d)
+                        .First()
+                        .Date + timeOfDay;
 
-                var dbTimeStamp = TimeZoneInfo.ConvertTimeToUtc(dbLastQuote, exchangeTimeZone).ToLocalTime();
+                    var dbTimeStamp = TimeZoneInfo.ConvertTimeToUtc(dbLastQuote, exchangeTimeZone).ToLocalTime();
 #endif
 
-                if (endDate > dbTimeStamp)
-                    NorgateHelpers.RunNDU();
+                    if (endDate > dbTimeStamp)
+                        NorgateHelpers.RunNDU();
 
-                //--- retrieve data from Norgate
-                List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                NDU.OperationResult result = NDU.Api.GetData(info[DataSourceParam.symbolNorgate], out norgateData, startDate, endDate);
+                    //--- retrieve data from Norgate
+                    List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
+                    NDU.OperationResult result = NDU.Api.GetData(info[DataSourceParam.symbolNorgate], out norgateData, startDate, endDate);
 
-                if (!result.IsSuccess())
-                    throw new Exception(string.Format("Failed to load data for {0} from Norgate: {1}", info[DataSourceParam.symbolNorgate], result.ErrorMessage));
+                    if (!result.IsSuccess())
+                        throw new Exception(string.Format("Failed to load data for {0} from Norgate: {1}", info[DataSourceParam.symbolNorgate], result.ErrorMessage));
 
-                //--- copy to TuringTrader bars
-                var bars = new List<BarType<OHLCV>>();
-                //var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
-                //var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
+                    //--- copy to TuringTrader bars
+                    var bars = new List<BarType<OHLCV>>();
+                    //var exchangeTimeZone = TimeZoneInfo.FindSystemTimeZoneById(info[DataSourceParam.timezone]);
+                    //var timeOfDay = DateTime.Parse(info[DataSourceParam.time]).TimeOfDay;
 
-                foreach (var ohlcv in norgateData)
-                {
-                    // Norgate bars only have dates, no time.
-                    // We add the time from the data source descriptor,
-                    // and convert it to the local timezone.
-                    var dateTimeAtExchange = ohlcv.Date.Date + timeOfDay;
-                    var dateTimeLocal = TimeZoneInfo.ConvertTimeToUtc(dateTimeAtExchange, exchangeTimeZone).ToLocalTime();
+                    foreach (var ohlcv in norgateData)
+                    {
+                        // Norgate bars only have dates, no time.
+                        // We add the time from the data source descriptor,
+                        // and convert it to the local timezone.
+                        var dateTimeAtExchange = ohlcv.Date.Date + timeOfDay;
+                        var dateTimeLocal = TimeZoneInfo.ConvertTimeToUtc(dateTimeAtExchange, exchangeTimeZone).ToLocalTime();
 
-                    bars.Add(new BarType<OHLCV>(
-                        dateTimeLocal,
-                        new OHLCV(
-                            (double)ohlcv.Open,
-                            (double)ohlcv.High,
-                            (double)ohlcv.Low,
-                            (double)ohlcv.Close,
-                            (double)ohlcv.Volume)));
+                        bars.Add(new BarType<OHLCV>(
+                            dateTimeLocal,
+                            new OHLCV(
+                                (double)ohlcv.Open,
+                                (double)ohlcv.High,
+                                (double)ohlcv.Low,
+                                (double)ohlcv.Close,
+                                (double)ohlcv.Volume)));
+                    }
+
+                    return bars;
                 }
-
-                return bars;
-            }
         }
 
         private static TimeSeriesAsset.MetaType NorgateLoadMeta(Algorithm owner, Dictionary<DataSourceParam, string> info)
@@ -423,18 +425,19 @@ namespace TuringTrader.SimulatorV2
 
 #if NO_REENTRY
             lock (_lockReentrance)
+                lock (Simulator.DataSourceCollection._lockNorgate) // lock v1
 #endif
-            {
-
-                var ticker = info[DataSourceParam.symbolNorgate];
-                var meta = new TimeSeriesAsset.MetaType
                 {
-                    Ticker = ticker,
-                    Description = NDU.Api.GetSecurityName(ticker),
-                };
 
-                return meta;
-            }
+                    var ticker = info[DataSourceParam.symbolNorgate];
+                    var meta = new TimeSeriesAsset.MetaType
+                    {
+                        Ticker = ticker,
+                        Description = NDU.Api.GetSecurityName(ticker),
+                    };
+
+                    return meta;
+                }
         }
 
         private static Tuple<List<BarType<OHLCV>>, TimeSeriesAsset.MetaType> NorgateGetAsset(Algorithm owner, Dictionary<DataSourceParam, string> info)
