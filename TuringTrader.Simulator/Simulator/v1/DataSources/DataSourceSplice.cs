@@ -161,6 +161,8 @@ namespace TuringTrader.Simulator
                             {
                                 // highest priority bar
                                 Bar rawBar = dsEnums[nick].Current;
+                                if (rawBar.Close == 0.0)
+                                    Output.ThrowError("invalid price for {0} while splicing {1}", nick, Info[DataSourceParam.name]);
 
                                 // we might get here, with dsScale not set yet.
                                 // this is the best we can do to fix things
