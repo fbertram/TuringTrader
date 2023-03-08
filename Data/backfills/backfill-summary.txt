@@ -34,7 +34,7 @@ QQQ,"Invesco QQQ Trust Series 1 ETF",03/10/1999,03/10/1999
 DIA,"SPDR Dow Jones Industrial Average Trust ETF",01/20/1998,01/01/1990
 IWM,"iShares Russell 2000 ETF",05/26/2000,01/01/1990
 VONE,"Vanguard Russell 1000 Index ETF",09/22/2010,01/01/1990
-VEA,"Vanguard Developed Markets Index ETF",07/26/2007,08/17/2001
+VEA,"Vanguard FTSE Developed Markets ETF",07/26/2007,08/17/2001
 ACWX,"iShares MSCI ACWI ex US ETF",03/31/2008,01/01/1980
 VEU,"Vanguard FTSE All World ex US ETF",03/08/2007,01/01/1980
 VSS,"Vanguard FTSE All-World ex-US Small-Cap Index ETF",04/06/2009,11/01/1996
