@@ -150,9 +150,8 @@ namespace TuringTrader
             PlotterRenderRMarkdown.Register();
 
 #pragma warning disable CS0436 // Type conflicts with imported type
-            WriteEventHandler(string.Format("TuringTrader Version = {0}\n", GitInfo.Version));
+            WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
 #pragma warning restore CS0436 // Type conflicts with imported type
-            WriteEventHandler(string.Format("Engine Version = {0}\n", SimulatorV2.GlobalSettings.Version));
             WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
             WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
         }
