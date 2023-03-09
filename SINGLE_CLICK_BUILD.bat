@@ -88,6 +88,16 @@ popd
 echo *
 echo *
 echo ***************************************************************************
+echo *** cleanup
+echo ***************************************************************************
+
+pushd TuringTrader
+echo public static class GitInfo { public static string Version = string.Format("unversioned-{0:MM/dd/yyyy}", System.DateTime.Now); } > GitVersion.cs
+popd
+
+echo *
+echo *
+echo ***************************************************************************
 echo *** end of build
 echo ***************************************************************************
 
