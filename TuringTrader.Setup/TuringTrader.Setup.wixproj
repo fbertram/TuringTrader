@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>b6fdc4dc-1d28-4e4f-b358-7d8941f40faf</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>TuringTrader_Setup</OutputName>
+    <OutputName>TuringTrader_Setup-%24%28env.TT_V0%29</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -51,7 +51,7 @@
 	</Target>
 	-->
   <Target Name="BeforeBuild">
-    <HeatDirectory OutputFile="$(ProjectDir)PublishedFiles.wxs" Directory="$(ProjectDir)..\TuringTrader\bin\publish" ComponentGroupName="PublishedFilesComponentGroup" DirectoryRefId="BINFOLDER" AutogenerateGuids="true" PreprocessorVariable="var.SourceDir" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" NoLogo="true" RunAsSeparateProcess="$(RunWixToolsOutOfProc)"/>
+    <HeatDirectory OutputFile="$(ProjectDir)PublishedFiles.wxs" Directory="$(ProjectDir)..\TuringTrader\bin\publish" ComponentGroupName="PublishedFilesComponentGroup" DirectoryRefId="BINFOLDER" AutogenerateGuids="true" PreprocessorVariable="var.SourceDir" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" NoLogo="true" RunAsSeparateProcess="$(RunWixToolsOutOfProc)" />
     <!-- removed below AutogenerateGuids above
     -->
   </Target>
