@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>b6fdc4dc-1d28-4e4f-b358-7d8941f40faf</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>TuringTrader_Setup-%24%28env.TT_V0%29</OutputName>
+    <OutputName>TuringTrader_Setup-$(TT_V0)</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
