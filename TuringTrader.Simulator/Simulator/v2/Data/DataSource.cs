@@ -287,8 +287,18 @@ namespace TuringTrader.SimulatorV2
 
             // set nickname2 and datafeed from nickname
             var idx = nickname.IndexOf(':');
-            info[DataSourceParam.nickName2] = idx >= 0 ? nickname.Substring(idx + 1) : nickname;
-            info[DataSourceParam.dataFeed] = idx >= 0 ? nickname.Substring(0, idx) : Simulator.GlobalSettings.DefaultDataFeed;
+
+            if (idx > 0)
+            {
+                // colon found - includes data source
+                info[DataSourceParam.nickName2] = nickname.Substring(idx + 1);
+                info[DataSourceParam.dataFeed] = nickname.Substring(0, idx);
+            }
+            else
+            {
+                // no colon - need to figure out data source
+                info[DataSourceParam.nickName2] = nickname;
+            }
 
             // load ini file
             if (idx < 0) info = _loadIniFile(info, nickname);
@@ -318,6 +328,9 @@ namespace TuringTrader.SimulatorV2
                 || info.ContainsKey(DataSourceParam.close)
                 || info.ContainsKey(DataSourceParam.volume)
             ) info = _fillInIfMissing(info, DataSourceParam.dataFeed, "csv");
+
+            // if we still don't have a data source, use the default
+            info = _fillInIfMissing(info, DataSourceParam.dataFeed, Simulator.GlobalSettings.DefaultDataFeed);
 
             // fill in default mappings, if source is csv
             if (info[DataSourceParam.dataFeed].ToLower().Contains("csv"))
