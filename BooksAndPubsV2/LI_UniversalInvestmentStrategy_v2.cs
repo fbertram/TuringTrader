@@ -74,11 +74,10 @@ namespace TuringTrader.BooksAndPubsV2
                 .Select(t => assetWeights.Sum(kv => kv.Value * Asset(kv.Key).Close.LogReturn()[t]))
                 .ToList();
 
-            var ret = series.Sum(r => r);
-            var mean = ret / LOOKBACK;
+            var mean = series.Average(r => r);
             var vol = Math.Sqrt(series.Sum(r => Math.Pow(r - mean, 2.0)));
 
-            return (252.0 / LOOKBACK * ret, Math.Sqrt(252.0) * vol); // annualize values
+            return (252.0 * mean, Math.Sqrt(252.0) * vol); // annualize values
         }
         double CalcModifiedSharpe(Dictionary<object, double> assetWeights)
         {
@@ -139,7 +138,6 @@ namespace TuringTrader.BooksAndPubsV2
             return bestWeights;
         }
         #endregion
-
         #region main logic
         public override void Run()
         {
