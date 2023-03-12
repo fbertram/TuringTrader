@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Keller_HAA
+// Name:        Keller_HAA_v2
 // Description: Bold Asset Allocation (BAA) strategy, as published in 
 //              Wouter J. Keller's  and Jan Willem Keyning's paper 
 //              'Dual and Canary Momentum with Rising Yields/Inflation:

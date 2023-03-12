@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Keller_BAA
+// Name:        Keller_BAA_v2
 // Description: Bold Asset Allocation (BAA) strategy, as published in 
 //              Wouter J. Keller's paper 
 //              'Relative and Absolute Momentum in Times of Rising/Low Yields:

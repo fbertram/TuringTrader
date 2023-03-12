@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Clenow_StocksOnTheMove
+// Name:        Clenow_StocksOnTheMove_v2
 // Description: Strategy, as published in Andreas F. Clenow's book
 //              'Stocks on the Move'.
 //              http://www.followingthetrend.com/

@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, algorithms from books & publications
-// Name:        Lazy Portfolios
+// Name:        LazyPortfolios_v2
 // Description: Simple benchmarking portfolios.
 // History:     2019xii04, FUB, created
 //              2023ii09, FUB, refactored for v2 engine
@@ -87,19 +87,6 @@ namespace TuringTrader.BooksAndPubsV2
     }
     #endregion
 
-    /*
-    #region all-cash/ zero-return portfolio
-    public class Benchmark_Zero : LazyPortfolio
-    {
-        public override string Name => "All-Cash/ Zero-Return";
-        public override HashSet<Tuple<object, double>> ALLOCATION { get; set; } = new HashSet<Tuple<object, double>>
-        {
-            new Tuple<object, double>(ETF.BIL, 1e-10),
-        };
-        public override string BENCH => ETF.SPY;
-    }
-    #endregion
-    */
     #region 60/40 benchmark
     public class Benchmark_60_40 : LazyPortfolio
     {
