@@ -83,7 +83,14 @@ namespace TuringTrader.BooksAndPubsV2
         double CalcModifiedSharpe(Dictionary<object, double> assetWeights)
         {
             (var ret, var vol) = CalcReturnAndVolatility(assetWeights);
-            return ret / Math.Pow(vol, VOL_WEIGHT / 100.0);
+
+            // Logical Invest 'normalizes' return and volatility before
+            // calculating the modified Sharpe Ratio. That way, the
+            // ratio can also be calculated for negative returns
+            var retN = 1.0 + ret;
+            var volN = 1.0 + vol;
+
+            return retN / Math.Pow(volN, VOL_WEIGHT / 100.0);
         }
         protected Dictionary<object, double> OptimizeWeights(List<object> topAssets)
         {
