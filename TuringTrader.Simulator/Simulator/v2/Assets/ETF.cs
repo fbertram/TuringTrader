@@ -248,6 +248,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// (since Jan 2007, backfilled to Jul 2002)
         /// </summary>
         public const string SHV = "splice:SHV,csv:backfills/SHV.csv";
+        /// <summary>
+        /// Invesco Ultra Short Duration ETF
+        /// (since Feb 2008)
+        /// </summary>
+        public const string GSY = "GSY";
         #endregion
         #region intermediate-term (3-10yr) treasuries
         /// <summary>
@@ -294,6 +299,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// (since Dec 2003, backfilled to Jun 2000)
         /// </summary>
         public const string TIP = "splice:TIP,csv:backfills/TIP.csv";
+        /// <summary>
+        /// Vanguard Sht-Term Inflation-Protected Sec Idx ETF
+        /// (since Oct 2012)
+        /// </summary>
+        public const string VTIP = "VTIP";
         #endregion
         #region corporate bonds
         /// <summary>
