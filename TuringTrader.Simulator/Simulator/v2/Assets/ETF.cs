@@ -25,7 +25,7 @@ namespace TuringTrader.SimulatorV2.Assets
     /// <summary>
     /// Collection of ETFs.
     /// </summary>
-    public class ETF
+    public partial class ETF
     {
         #region stocks
         #region U.S. stock markets

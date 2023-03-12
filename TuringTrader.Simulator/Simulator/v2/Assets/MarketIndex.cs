@@ -56,7 +56,7 @@ namespace TuringTrader.SimulatorV2.Assets
     /// <summary>
     /// Collection of common market indices.
     /// </summary>
-    public class MarketIndex
+    public partial class MarketIndex
     {
         /// <summary>
         /// Dow Jones Industrial Average Index. Available since

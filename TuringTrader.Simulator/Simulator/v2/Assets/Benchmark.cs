@@ -26,7 +26,7 @@ namespace TuringTrader.SimulatorV2.Assets
     /// <summary>
     /// Collection of common benchmarks.
     /// </summary>
-    public class Benchmark
+    public partial class Benchmark
     {
         /// <summary>
         /// Vanilla 60/40 benchmark, created from 60% SPY and 40% AGG.
