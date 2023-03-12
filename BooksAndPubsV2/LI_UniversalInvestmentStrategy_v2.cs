@@ -43,12 +43,12 @@ namespace TuringTrader.BooksAndPubsV2
         public override string Name => "Logical Invest's Universal Investment Strategy (Core)";
 
         #region inputs
-        public virtual IEnumerable<object> ASSETS { get; set; }
+        public abstract IEnumerable<object> ASSETS { get; set; }
         public virtual int NUM_ASSETS { get => ASSETS.Count(); set { } }
 
         [OptimizerParam(21, 252, 21)]
         public virtual int LOOKBACK { get; set; } = 72;
-        [OptimizerParam(0, 1000, 100)]
+        [OptimizerParam(0, 1000, 50)]
         public virtual int VOL_WEIGHT { get; set; } = 250;
         public virtual int MIN_ALLOC { get; set; } = 0;
         public virtual int MAX_ALLOC { get; set; } = 100;
@@ -87,7 +87,7 @@ namespace TuringTrader.BooksAndPubsV2
             // Logical Invest 'normalizes' return and volatility before
             // calculating the modified Sharpe Ratio. That way, the
             // ratio can also be calculated for negative returns
-            var retN = 1.0 + ret;
+            var retN = Math.Max(0.0, 1.0 + ret);
             var volN = 1.0 + vol;
 
             return retN / Math.Pow(volN, VOL_WEIGHT / 100.0);
@@ -106,8 +106,12 @@ namespace TuringTrader.BooksAndPubsV2
 
                 if (level == topAssets.Count - 1)
                 {
-                    // all weights assigned, calculate fitness
-                    if (weightAvailable < MIN_ALLOC || weightAvailable > MAX_ALLOC) return; // no solutions on this level
+                    // no more free weights, calculate fitness
+
+                    // allocation out of range - skip
+                    if (weightAvailable < MIN_ALLOC
+                        || weightAvailable > MAX_ALLOC)
+                        return;
 
                     currentWeights[topAssets[level]] = weightAvailable;
 
@@ -118,16 +122,18 @@ namespace TuringTrader.BooksAndPubsV2
 
                     if (fitness > bestFitness)
                     {
+                        // memorize best allocation
                         bestFitness = fitness;
                         bestWeights = currentWeights2;
                     }
                 }
                 else
                 {
-                    for (int w = MIN_ALLOC; w <= MAX_ALLOC; w += 10)
+                    // free weights, iterate
+                    for (int w = MIN_ALLOC;
+                        w <= Math.Min(MAX_ALLOC, weightAvailable);
+                        w += ALLOC_STEP)
                     {
-                        if (w > weightAvailable) return; // no more solutions on this level
-
                         currentWeights[topAssets[level]] = w;
                         recursiveOptimizer(level + 1);
                     }
@@ -245,9 +251,7 @@ namespace TuringTrader.BooksAndPubsV2
             ETF.SPY,
             ETF.TLT,
         };
-        [OptimizerParam(21, 252, 21)]
         public override int LOOKBACK { get; set; } = 84;
-        [OptimizerParam(0, 1000, 100)]
         public override int VOL_WEIGHT { get; set; } = 200;
     }
     #endregion
@@ -262,9 +266,7 @@ namespace TuringTrader.BooksAndPubsV2
             ETF.SPXL,
             ETF.TMF,
         };
-        [OptimizerParam(21, 252, 21)]
         public override int LOOKBACK { get; set; } = 63;
-        [OptimizerParam(0, 1000, 100)]
         public override int VOL_WEIGHT { get; set; } = 400;
     }
     #endregion
