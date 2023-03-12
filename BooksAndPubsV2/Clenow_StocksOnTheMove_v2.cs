@@ -36,6 +36,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.GlueV2;
 using TuringTrader.Optimizer;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Indicators;

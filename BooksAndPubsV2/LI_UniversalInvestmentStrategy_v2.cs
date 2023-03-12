@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.GlueV2;
 using TuringTrader.Optimizer;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Assets;
@@ -244,6 +245,10 @@ namespace TuringTrader.BooksAndPubsV2
             ETF.SPY,
             ETF.TLT,
         };
+        [OptimizerParam(21, 252, 21)]
+        public override int LOOKBACK { get; set; } = 84;
+        [OptimizerParam(0, 1000, 100)]
+        public override int VOL_WEIGHT { get; set; } = 200;
     }
     #endregion
     #region 3x Leveraged 'Hell on Fire'
@@ -257,6 +262,10 @@ namespace TuringTrader.BooksAndPubsV2
             ETF.SPXL,
             ETF.TMF,
         };
+        [OptimizerParam(21, 252, 21)]
+        public override int LOOKBACK { get; set; } = 63;
+        [OptimizerParam(0, 1000, 100)]
+        public override int VOL_WEIGHT { get; set; } = 400;
     }
     #endregion
 }

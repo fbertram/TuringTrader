@@ -23,7 +23,7 @@
 
 using System;
 
-namespace TuringTrader.BooksAndPubsV2
+namespace TuringTrader.GlueV2
 {
     public class AlgorithmConstants
     {
