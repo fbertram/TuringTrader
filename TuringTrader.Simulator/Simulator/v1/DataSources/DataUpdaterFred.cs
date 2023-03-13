@@ -120,6 +120,7 @@ namespace TuringTrader.Simulator
 
                 var rawBars = new List<Bar>();
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                 using (var client = new WebClient())
                 {
                     string rawData = client.DownloadString(url);
@@ -150,6 +151,7 @@ namespace TuringTrader.Simulator
                         }
                     }
                 } // using (var client = new WebClient())
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                 // use a simulator instance to align bars w/ S&P 500
                 var alignedBars = new List<Bar>();

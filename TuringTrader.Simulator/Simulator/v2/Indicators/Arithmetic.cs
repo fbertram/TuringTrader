@@ -33,6 +33,12 @@ namespace TuringTrader.SimulatorV2.Indicators
     public static class Arithmetic
     {
         #region Add
+        /// <summary>
+        /// Add two time series
+        /// </summary>
+        /// <param name="summand1"></param>
+        /// <param name="summand2"></param>
+        /// <returns>sum of time series</returns>
         public static TimeSeriesFloat Add(this TimeSeriesFloat summand1, TimeSeriesFloat summand2)
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2.Name);
@@ -61,6 +67,13 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(summand1.Owner, name, data);
                 });
         }
+
+        /// <summary>
+        /// Add constant value to time series.
+        /// </summary>
+        /// <param name="summand1"></param>
+        /// <param name="summand2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Add(this TimeSeriesFloat summand1, double summand2)
         {
             var name = string.Format("{0}.Add({1})", summand1.Name, summand2);
@@ -91,6 +104,12 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region Sub
+        /// <summary>
+        /// Subtract two time series
+        /// </summary>
+        /// <param name="minuend"></param>
+        /// <param name="subtrahend"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Sub(this TimeSeriesFloat minuend, TimeSeriesFloat subtrahend)
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend.Name);
@@ -119,6 +138,13 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(minuend.Owner, name, data);
                 });
         }
+
+        /// <summary>
+        /// Add constant value to time series.
+        /// </summary>
+        /// <param name="minuend"></param>
+        /// <param name="subtrahend"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Sub(this TimeSeriesFloat minuend, double subtrahend)
         {
             var name = string.Format("{0}.Sub({1})", minuend.Name, subtrahend);
@@ -149,6 +175,12 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region Mul
+        /// <summary>
+        /// Multiply two time series.
+        /// </summary>
+        /// <param name="multiplicand1"></param>
+        /// <param name="multiplicand2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Mul(this TimeSeriesFloat multiplicand1, TimeSeriesFloat multiplicand2)
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2.Name);
@@ -177,6 +209,13 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(multiplicand1.Owner, name, data);
                 });
         }
+
+        /// <summary>
+        /// Multiply time series with constant value.
+        /// </summary>
+        /// <param name="multiplicand1"></param>
+        /// <param name="multiplicand2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Mul(this TimeSeriesFloat multiplicand1, double multiplicand2)
         {
             var name = string.Format("{0}.Mul({1})", multiplicand1.Name, multiplicand2);
@@ -277,6 +316,12 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region Min
+        /// <summary>
+        /// Create new time series with minimum values of two series.
+        /// </summary>
+        /// <param name="min1"></param>
+        /// <param name="min2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Min(this TimeSeriesFloat min1, TimeSeriesFloat min2)
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2.Name);
@@ -305,6 +350,13 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(min1.Owner, name, data);
                 });
         }
+
+        /// <summary>
+        /// Calculate minimum of time series and constant value.
+        /// </summary>
+        /// <param name="min1"></param>
+        /// <param name="min2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Min(this TimeSeriesFloat min1, double min2)
         {
             var name = string.Format("{0}.Min({1})", min1.Name, min2);
@@ -335,6 +387,12 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region Max
+        /// <summary>
+        /// Create new time series w/ maximum values of two series.
+        /// </summary>
+        /// <param name="max1"></param>
+        /// <param name="max2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Max(this TimeSeriesFloat max1, TimeSeriesFloat max2)
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2.Name);
@@ -363,6 +421,13 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(max1.Owner, name, data);
                 });
         }
+
+        /// <summary>
+        /// Create new time series w/ maximum of input time series and input value.
+        /// </summary>
+        /// <param name="max1"></param>
+        /// <param name="max2"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat Max(this TimeSeriesFloat max1, double max2)
         {
             var name = string.Format("{0}.Max({1})", max1.Name, max2);

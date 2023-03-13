@@ -1656,7 +1656,7 @@ namespace TuringTrader
                     var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
                     maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // simply ignore
                     // we get here, when there is no break-even point

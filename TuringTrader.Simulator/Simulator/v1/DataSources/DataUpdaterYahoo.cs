@@ -79,6 +79,7 @@ namespace TuringTrader.Simulator
                 string url = string.Format(_urlTemplate,
                     Info[DataSourceParam.symbolYahoo], ToUnixTime(startTime), ToUnixTime(endTime));
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                 using (var client = new WebClient())
                 {
                     string rawData = client.DownloadString(url);
@@ -163,6 +164,7 @@ namespace TuringTrader.Simulator
 
                     yield break;
                 }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
             }
             #endregion
 

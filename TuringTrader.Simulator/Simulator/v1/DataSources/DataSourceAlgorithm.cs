@@ -213,7 +213,7 @@ namespace TuringTrader.Simulator
 
                                 return bars;
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 throw new Exception("DataSourceAlgorithm: failed to run sub-classed v2 algorithm " + algoNick);
                             }

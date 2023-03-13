@@ -33,7 +33,6 @@ namespace TuringTrader.SimulatorV2.Tests
     {
         private class Testbed1 : Algorithm
         {
-            public OrderType OrderType;
             public override void Run()
             {
                 StartDate = DateTime.Parse("2022-12-06T16:00-05:00");
@@ -44,7 +43,6 @@ namespace TuringTrader.SimulatorV2.Tests
         }
         private class Testbed2 : Algorithm
         {
-            public OrderType OrderType;
             public override void Run()
             {
                 StartDate = DateTime.Parse("2022-12-06T16:00-05:00");

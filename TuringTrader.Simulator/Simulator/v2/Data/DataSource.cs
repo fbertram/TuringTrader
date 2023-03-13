@@ -409,6 +409,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="owner">parent algorithm</param>
         /// <param name="src">source data</param>
+        /// <param name="fillPrior"></param>
         /// <returns>resampled data</returns>
         private static List<BarType<OHLCV>> _resampleToTradingCalendar(Algorithm owner, List<BarType<OHLCV>> src, bool fillPrior = true)
         {
@@ -679,7 +680,7 @@ namespace TuringTrader.SimulatorV2
         /// <returns></returns>
         public static TimeSeriesAsset LoadAsset(Algorithm owner, Simulator.IAlgorithm generator)
         {
-            var name = string.Format("{0}-{1:X}", generator.Name, generator.GetHashCode());
+            var name = string.Format("{0}-{1:X}", generator.GetType().Name, generator.GetHashCode());
 
             return owner.ObjectCache.Fetch(
                 name,

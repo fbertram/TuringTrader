@@ -38,6 +38,13 @@ namespace TuringTrader.SimulatorV2
     {
         #region internal stuff
         #region OpenSubKey
+        /// <summary>
+        /// Open registry sub-key under HKCU/TuringTrader or 
+        /// HKCU/{assy-name}.
+        /// </summary>
+        /// <param name="sub">sub key name</param>
+        /// <param name="writable">true, if writable</param>
+        /// <returns>registry key</returns>
         static public RegistryKey OpenSubKey(string sub, bool writable = false)
         {
             var assy = Assembly.GetEntryAssembly();
@@ -60,6 +67,13 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
         #region GetRegistryValue
+        /// <summary>
+        /// Get registry value from HKCU/TuringTrader.
+        /// </summary>
+        /// <param name="sub"></param>
+        /// <param name="valueName"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
         static public object GetRegistryValue(string sub, string valueName, object defaultValue = null)
         {
             using (RegistryKey key = OpenSubKey(sub))
@@ -77,6 +91,12 @@ namespace TuringTrader.SimulatorV2
         }
         #endregion
         #region SetRegistryValue
+        /// <summary>
+        /// Set registry value in HKCU/TuringTrader.
+        /// </summary>
+        /// <param name="sub">sub key</param>
+        /// <param name="valueName">value name</param>
+        /// <param name="value"></param>
         static public void SetRegistryValue(string sub, string valueName, object value)
         {
             using (RegistryKey key = OpenSubKey(sub, true))

@@ -34,7 +34,7 @@ namespace TuringTrader.SimulatorV2.Tests
     {
         private class Testbed : Algorithm
         {
-            public string Universe;
+            public string TestUniverse;
             public int TestResult;
             public override void Run()
             {
@@ -46,7 +46,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    var constituents = Universe(Universe);
+                    var constituents = Universe(TestUniverse);
 
                     foreach (var constituent in constituents)
                         if (Asset(constituent).Close[0] != Asset(constituent).Close[1])
@@ -61,7 +61,7 @@ namespace TuringTrader.SimulatorV2.Tests
         public void Test_DJI()
         {
             var algo = new Testbed();
-            algo.Universe = "tiingo:$DJI";
+            algo.TestUniverse = "tiingo:$DJI";
             algo.Run();
 
             var numMembers = algo.TestResult;

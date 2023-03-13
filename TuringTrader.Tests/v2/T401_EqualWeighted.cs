@@ -35,7 +35,6 @@ namespace TuringTrader.SimulatorV2.Tests
     {
         private class Testbed : Algorithm
         {
-            public List<DateTime> TestResult;
             public override void Run()
             {
                 StartDate = DateTime.Parse("1990-01-01T16:00-05:00");

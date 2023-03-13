@@ -82,7 +82,6 @@ namespace TuringTrader.SimulatorV2.Tests
 
         private class Testbed2 : Algorithm
         {
-            public TimeSeriesAsset TestResult;
             public override void Run()
             {
                 StartDate = DateTime.Parse("1990-01-01T16:00-05:00");

@@ -113,8 +113,10 @@ namespace TuringTrader.Simulator
                             Info[DataSourceParam.symbolFred],
                             _apiKey);
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                         using (var client = new WebClient())
                             rawMeta = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                         jsonMeta = parseMeta(rawMeta);
                         writeToDisk = true;
@@ -217,8 +219,10 @@ namespace TuringTrader.Simulator
                             endTime);
 
                         string tmpData = null;
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                         using (var client = new WebClient())
                             tmpData = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                         jsonData = parseData(tmpData);
 

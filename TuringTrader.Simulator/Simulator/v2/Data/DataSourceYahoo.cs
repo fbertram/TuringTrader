@@ -68,7 +68,7 @@ namespace TuringTrader.SimulatorV2
 
                         return json;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         return null;
                     }

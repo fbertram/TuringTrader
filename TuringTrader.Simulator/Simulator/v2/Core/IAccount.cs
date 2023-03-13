@@ -189,13 +189,14 @@ namespace TuringTrader.SimulatorV2
             public readonly double FrictionAmount;
 
             /// <summary>
-            /// Create order receipt.
+            /// Create new order receipt.
             /// </summary>
-            /// <param name="orderTicket"></param>
-            /// <param name="orderSize"></param>
-            /// <param name="fillPrice"></param>
-            /// <param name="orderAmount"></param>
-            /// <param name="frictionAmount"></param>
+            /// <param name="orderTicket">order ticket</param>
+            /// <param name="execDate">order execution date</param>
+            /// <param name="orderSize">order size as fraction of account value</param>
+            /// <param name="fillPrice">order fill price</param>
+            /// <param name="orderAmount">order amount in currency</param>
+            /// <param name="frictionAmount">order friction in currency</param>
             public OrderReceipt(OrderTicket orderTicket,
                 DateTime execDate,
                 double orderSize,

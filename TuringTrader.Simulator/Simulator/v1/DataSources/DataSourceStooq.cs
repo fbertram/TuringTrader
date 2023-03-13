@@ -95,8 +95,10 @@ namespace TuringTrader.Simulator
                         _metaUrlTemplate,
                         convertSymbol(Info[DataSourceParam.symbolStooq]));
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     writeToDisk = true;
                 }
@@ -219,6 +221,7 @@ namespace TuringTrader.Simulator
                         endTime);
 
                     string tmpPrices = null;
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                     {
                         client.Headers.Add("Referer", _refererUrlTemplate);
@@ -229,6 +232,7 @@ namespace TuringTrader.Simulator
                         client.Headers.Add("Sec-GPC", "1");
                         tmpPrices = client.DownloadString(url);
                     }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     stooqPrices = parsePrices(tmpPrices);
 

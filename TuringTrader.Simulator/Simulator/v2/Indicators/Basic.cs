@@ -33,26 +33,6 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// </summary>
     public static class Basic
     {
-        #region Lambda
-        /// <summary>
-        /// Calculate indicator time series from a lambda expression.
-        /// </summary>
-        /// <param name="algo">parent algorithm</param>
-        /// <param name="name">time series name. This name must be unique and not conflict
-        /// with the names of any asset or indicator time series</param>
-        /// <param name="lambda">lambda expression</param>
-        /// <returns>indicator time series</returns>
-        /*public static TimeSeriesFloat Lambda(this Algorithm algo, string name, Func<List<BarType<double>>> lambda)
-        {
-            var data = algo.Cache(name, lambda);
-
-            return new TimeSeriesFloat(
-                algo,
-                name,
-                data);
-        }*/
-        #endregion
-
         #region Const
         #endregion
         #region Delay

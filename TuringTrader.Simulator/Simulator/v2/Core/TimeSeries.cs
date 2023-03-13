@@ -29,11 +29,26 @@ using System.Threading.Tasks;
 namespace TuringTrader.SimulatorV2
 {
     #region class BarType
+    /// <summary>
+    /// Template class for simulator bars.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class BarType<T>
     {
+        /// <summary>
+        /// Bar date.
+        /// </summary>
         public readonly DateTime Date;
+        /// <summary>
+        /// Bar value.
+        /// </summary>
         public readonly T Value;
 
+        /// <summary>
+        /// Create new bar object.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="value"></param>
         public BarType(DateTime date, T value)
         {
             Date = date;
@@ -242,14 +257,26 @@ namespace TuringTrader.SimulatorV2
         /// Helper class to allow retrieval of the series' timestamp at an
         /// offset relative to the parent algorithm's simulator timestamp.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public class TimeIndexer<T>
+        /// <typeparam name="T2"></typeparam>
+        public class TimeIndexer<T2>
         {
-            private readonly TimeSeries<T> TimeSeries;
-            public TimeIndexer(TimeSeries<T> timeSeries)
+            private readonly TimeSeries<T2> TimeSeries;
+
+            /// <summary>
+            /// Create time indexer object.
+            /// </summary>
+            /// <param name="timeSeries"></param>
+            public TimeIndexer(TimeSeries<T2> timeSeries)
             {
                 TimeSeries = timeSeries;
             }
+
+            /// <summary>
+            /// Indexer to access time series's timestamp at an
+            /// offset relative to the parent algorithm's simulator time.
+            /// </summary>
+            /// <param name="offset"></param>
+            /// <returns></returns>
             public DateTime this[int offset] { get => TimeSeries.GetDate(offset); }
         }
 
@@ -303,6 +330,10 @@ namespace TuringTrader.SimulatorV2
             Volume = v;
         }
 
+        /// <summary>
+        /// Convert to string value.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return string.Format("o={0:C2}, h={1:C2}, l={2:C2}, c={3:C2}, v={4:F0}", Open, High, Low, Close, Volume);
@@ -423,6 +454,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="weight"></param>
         /// <param name="orderType"></param>
+        /// <param name="orderPrice"></param>
         public void Allocate(double weight, OrderType orderType, double orderPrice = 0.0)
         {
             Owner.Account.SubmitOrder(Name, weight, orderType, orderPrice);
@@ -451,17 +483,38 @@ namespace TuringTrader.SimulatorV2
     /// </summary>
     public class TimeSeriesFloat : TimeSeries<double>
     {
+        /// <summary>
+        /// Create and cache new time series.
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="name"></param>
+        /// <param name="retrieve">task to retrieve data</param>
+        /// <param name="extract">function to extract data</param>
         public TimeSeriesFloat(
             Algorithm owner, string name,
             Task<object> retrieve,
             Func<object, List<BarType<double>>> extract)
                 : base(owner, name, retrieve, extract)
         { }
+
+        /// <summary>
+        /// Create and cache new time series.
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="name"></param>
+        /// <param name="retrieve">task to retrieve data</param>
         public TimeSeriesFloat(
             Algorithm owner, string name,
             Task<List<BarType<double>>> retrieve)
             : base(owner, name, retrieve)
         { }
+
+        /// <summary>
+        /// Create and cache new time series.
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="name"></param>
+        /// <param name="data">data for time series</param>
         public TimeSeriesFloat(
             Algorithm owner, string name,
             List<BarType<double>> data)

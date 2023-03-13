@@ -84,6 +84,13 @@ namespace TuringTrader.SimulatorV2
     /// </summary>
     public class DummyCache : ICache
     {
+        /// <summary>
+        /// Fetch data from cache. Will always call miss function.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheId"></param>
+        /// <param name="missFun"></param>
+        /// <returns></returns>
         public T Fetch<T>(string cacheId, Func<T> missFun) => missFun();
     }
 }

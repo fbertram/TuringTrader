@@ -99,10 +99,9 @@ namespace TuringTrader.SimulatorV2
                                     localDate,
                                     new OHLCV(open, high, low, close, volume)));
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 // do nothing here - resampling will fix it gracefully
-                                var x = 5;
                             }
                         }
 

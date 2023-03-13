@@ -172,6 +172,7 @@ namespace TuringTrader.Simulator
 
             private JToken LoadJson(string url)
             {
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                 using (var client = new WebClient())
                 {
                     string rawData = client.DownloadString(url);
@@ -180,6 +181,7 @@ namespace TuringTrader.Simulator
 
                     return jsonData["optionChain"]["result"][0];
                 }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
             }
 
             private IEnumerable<Bar> LoadOptions(JToken options, bool isPut)

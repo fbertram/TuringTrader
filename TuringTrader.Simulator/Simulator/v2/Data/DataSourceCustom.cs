@@ -29,6 +29,13 @@ namespace TuringTrader.SimulatorV2
 {
     public static partial class DataSource
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="nickname"></param>
+        /// <param name="retrieve"></param>
+        /// <returns></returns>
         public static TimeSeriesAsset CustomGetAsset(Algorithm owner, string nickname, Func<List<BarType<OHLCV>>> retrieve)
         {
             var name = string.Format("CustomData({0}-{1:X})", nickname, owner.GetHashCode());

@@ -36,6 +36,11 @@ namespace TuringTrader.SimulatorV2
     public class Plotter : Simulator.Plotter
     {
         private Algorithm Algorithm => (Algorithm)ParentAlgorithm;
+
+        /// <summary>
+        /// Create new plotter object.
+        /// </summary>
+        /// <param name="algorithm">parent algorithm</param>
         public Plotter(Algorithm algorithm) : base(algorithm)
         { }
 
