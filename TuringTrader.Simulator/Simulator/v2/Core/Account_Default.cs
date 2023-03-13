@@ -325,6 +325,16 @@ namespace TuringTrader.SimulatorV2
         public double Cash { get => _cash / CalcNetAssetValue(); }
 
         /// <summary>
+        /// Deposit cash to account.
+        /// </summary>
+        /// <param name="cashPcnt">cash deposited as fraction of NAV</param>
+        public void Deposit(double cashPcnt)
+        {
+            var currency = cashPcnt * CalcNetAssetValue();
+            _cash += currency;
+        }
+
+        /// <summary>
         /// Retrieve trade log. Note that this log only contains trades executed
         /// and not orders that were not executed.
         /// </summary>
