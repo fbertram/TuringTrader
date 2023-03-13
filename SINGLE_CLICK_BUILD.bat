@@ -45,7 +45,7 @@ echo *** VERSION:   %TT_VER%
 echo *** VERSION-0: %TT_V0%
 
 pushd TuringTrader
-echo public static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
+echo internal static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
 popd
 
 echo *

@@ -35,6 +35,55 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T304_Trend
     {
+        #region test Sum
+        private class Testbed_Sum_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.Sum(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.Sum(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_Sum_V2vsV1()
+        {
+            var algo = new Testbed_Sum_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
         #region test EMA
         private class Testbed_EMA : Algorithm
         {
@@ -278,6 +327,394 @@ namespace TuringTrader.SimulatorV2.Tests
             {
                 Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
                 Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region test WMA
+        private class Testbed_WMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.WMA(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.WMA(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_WMA_V2vsV1()
+        {
+            var algo = new Testbed_WMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+
+        #region test DEMA
+        private class Testbed_DEMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.DEMA(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.DEMA(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_DEMA_V2vsV1()
+        {
+            var algo = new Testbed_DEMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region test HMA
+        private class Testbed_HMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.HMA(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.HMA(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_HMA_V2vsV1()
+        {
+            var algo = new Testbed_HMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region test TEMA
+        private class Testbed_TEMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.TEMA(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.TEMA(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_TEMA_V2vsV1()
+        {
+            var algo = new Testbed_TEMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+
+        #region test ZLEMA
+        private class Testbed_ZLEMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.ZLEMA(5)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.ZLEMA(5).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_ZLEMA_V2vsV1()
+        {
+            var algo = new Testbed_ZLEMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region test KAMA
+        private class Testbed_KAMA_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.KAMA()[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.KAMA().Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_KAMA_V2vsV1()
+        {
+            var algo = new Testbed_KAMA_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region test MACD
+        private class Testbed_MACD_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.MACD().MACD[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.MACD().MACD.Data;
+            }
+        }
+        private class Testbed_MACD_Signal_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.MACD().Signal[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.MACD().Signal.Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_MACD_V2vsV1()
+        {
+            var algo = new Testbed_MACD_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+
+            var algo2 = new Testbed_MACD_Signal_V2vsV1();
+            algo2.Run();
+            var v1Result2 = algo.v1Result;
+            var v2Result2 = algo.v2Result;
+
+            Assert.AreEqual(v1Result2.Count, v2Result2.Count);
+
+            for (var i = 0; i < v2Result2.Count; i++)
+            {
+                Assert.AreEqual(v1Result2[i].Date, v2Result2[i].Date);
+                Assert.AreEqual(v1Result2[i].Value, v2Result2[i].Value, 1e-5);
             }
         }
         #endregion

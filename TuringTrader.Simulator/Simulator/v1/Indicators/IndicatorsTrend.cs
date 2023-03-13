@@ -101,7 +101,7 @@ namespace TuringTrader.Indicators
 
             double sum = n / 2.0 * (n + 1.0);
             return IndicatorsBasic.BufferedLambda(
-                (v) => Enumerable.Range(0, n - 1)
+                (v) => Enumerable.Range(0, n)
                         .Sum(t => (n - t) / sum * series[t]),
                 series[0],
                 cacheId);

@@ -7,6 +7,9 @@
   - simulator core
     - implement new v2 simulator engine
     - add forward and backward compatibility features
+    - fix issue w/ Norgate (v1) failing to load data
+  - indicators
+    - fix issue w/ WMA (v1) calculated incorrectly
   - algorithms
     - migrate Livingston's Mama Bear to v2
     - migrate Clenow's Stocks on the Loose to v2
