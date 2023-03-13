@@ -76,7 +76,6 @@
 				<File Id="file.sourceV1.keller.daa" Source="$(var.HomeDir)\BooksAndPubs\Keller_DAA.cs" />
 				<File Id="file.sourceV1.keller.faa" Source="$(var.HomeDir)\BooksAndPubs\Keller_FAA.cs" />
 				<File Id="file.sourceV1.keller.laa" Source="$(var.HomeDir)\BooksAndPubs\Keller_LAA.cs" />
-				<File Id="file.sourceV1.keller.raa" Source="$(var.HomeDir)\BooksAndPubs\Keller_RAA.cs" />
 				<File Id="file.sourceV1.lazy" Source="$(var.HomeDir)\BooksAndPubs\LazyPortfolios.cs" />
 				<File Id="file.sourceV1.logical" Source="$(var.HomeDir)\BooksAndPubs\LI_UniversalInvestmentStrategy.cs" />
 				<File Id="file.sourceV1.livingston" Source="$(var.HomeDir)\BooksAndPubs\Livingston_MuscularPortfolios.cs" />
@@ -97,7 +96,9 @@
 				<File Id="file.sourceV2.clenow" Source="$(var.HomeDir)\BooksAndPubsV2\Clenow_StocksOnTheMove_v2.cs" />
 				<File Id="file.sourceV2.glue" Source="$(var.HomeDir)\BooksAndPubsV2\GlueLogic_v2.cs" />
 				<File Id="file.sourceV2.keller.baa" Source="$(var.HomeDir)\BooksAndPubsV2\Keller_BAA_v2.cs" />
+				<File Id="file.sourceV2.keller.haa" Source="$(var.HomeDir)\BooksAndPubsV2\Keller_HAA_v2.cs" />
 				<File Id="file.sourceV2.lazy" Source="$(var.HomeDir)\BooksAndPubsV2\LazyPortfolios_v2.cs" />
+				<File Id="file.sourceV2.logical" Source="$(var.HomeDir)\BooksAndPubsV2\LI_UniversalInvestmentStrategy_v2.cs" />
 				<File Id="file.sourceV2.livingston" Source="$(var.HomeDir)\BooksAndPubsV2\Livingston_MuscularPortfolios_v2.cs" />
 			</Component>
 
