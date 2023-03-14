@@ -2008,7 +2008,7 @@ namespace TuringTrader
                 double navPast = (double)rowPast[_firstYLabel];
                 double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
 
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = p.Item1;
                 row["Value"] = cagr;
                 retvalue.Add(row);
@@ -2025,12 +2025,12 @@ namespace TuringTrader
                 double change = 100.0 * (navLast / navPast - 1.0);
                 double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
 
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = "cagr-ytd";
                 row["Value"] = cagr;
                 retvalue.Add(row);
 
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = "chg-ytd";
                 row["Value"] = change;
                 retvalue.Add(row);
@@ -2065,7 +2065,7 @@ namespace TuringTrader
 
             foreach (var m in metrics)
             {
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = m.Item1;
                 try
                 {
