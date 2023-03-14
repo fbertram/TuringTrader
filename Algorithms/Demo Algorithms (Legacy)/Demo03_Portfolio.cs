@@ -4,8 +4,8 @@
 // Description: portfolio trading demo
 // History:     2018xii10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2098, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ market simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
