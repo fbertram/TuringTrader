@@ -43,7 +43,7 @@ namespace TuringTrader.BooksAndPubsV2
         public override string Name => "Logical Invest's Universal Investment Strategy (Core)";
 
         #region inputs
-        public abstract IEnumerable<object> ASSETS { get; set; }
+        public virtual IEnumerable<object> ASSETS { get; set; }
         public virtual int NUM_ASSETS { get => ASSETS.Count(); set { } }
 
         [OptimizerParam(21, 252, 21)]
