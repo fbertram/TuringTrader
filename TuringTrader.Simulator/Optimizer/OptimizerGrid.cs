@@ -92,17 +92,27 @@ namespace TuringTrader.Optimizer
             {
                 try
                 {
-#if true
-                    instanceToRun.Run();
-#else
-                    // make sure to enter the extended Run method
-                    // the default implementation will forward
-                    // to the simple Run method, if required
-                    // also, we need to convert the result to a list,
-                    // in order to circumvent lazy execution
-                    var noLazyExec = instanceToRun.Run(_algoStart, _algoEnd)
-                        .ToList();
-#endif
+                    var v1Instance = instanceToRun as Algorithm;
+                    var v2Instance = instanceToRun as SimulatorV2.Algorithm;
+
+                    if (v1Instance != null)
+                    {
+                        // make sure to enter the extended Run method
+                        // the default implementation will forward
+                        // to the simple Run method, if required
+                        // also, we need to convert the result to a list,
+                        // in order to circumvent lazy execution
+                        var noLazyExec = v1Instance.Run(_algoStart, _algoEnd)
+                            .ToList();
+
+                    }
+                    if (v2Instance != null)
+                    {
+                        // launching v2 algorithms is less convoluted
+                        v2Instance.StartDate = _algoStart;
+                        v2Instance.EndDate = _algoEnd;
+                        v2Instance.Run();
+                    }
 
                     result.NetAssetValue = instanceToRun.FitnessReturn;
                     result.MaxDrawdown = instanceToRun.FitnessRisk;

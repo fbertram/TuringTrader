@@ -140,13 +140,13 @@ namespace TuringTrader.SimulatorV2
         /// <summary>
         /// Simulation start date.
         /// </summary>
-        public DateTime? StartDate { get => _startDate; set { _startDate = value; TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
+        public DateTime? StartDate { get => _startDate; set { _startDate = value; if (value != null) TradingCalendar.StartDate = (DateTime)_startDate - WarmupPeriod; } }
 
         private DateTime? _endDate = null;
         /// <summary>
         /// Simulation end date.
         /// </summary>
-        public DateTime? EndDate { get => _endDate; set { _endDate = value; TradingCalendar.EndDate = (DateTime)value + CooldownPeriod; } }
+        public DateTime? EndDate { get => _endDate; set { _endDate = value; if (value != null) TradingCalendar.EndDate = (DateTime)value + CooldownPeriod; } }
 
         private TimeSpan _warmupPeriod = TimeSpan.FromDays(5);
 

@@ -72,8 +72,8 @@ namespace Demos
         #region Run - algorithm core
         public override IEnumerable<Bar> Run(DateTime? startTime, DateTime? endTime)
         {
-            StartTime = startTime != null ? (DateTime)startTime : DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
-            EndTime = endTime != null ? (DateTime)endTime : DateTime.Now - TimeSpan.FromDays(5);
+            StartTime = startTime ?? DateTime.Parse("01/01/2007", CultureInfo.InvariantCulture);
+            EndTime = endTime ?? DateTime.Now - TimeSpan.FromDays(5);
             WarmupStartTime = StartTime - TimeSpan.FromDays(90);
 
             CommissionPerShare = 0.015;
@@ -112,7 +112,7 @@ namespace Demos
 
                     _plotter.SelectChart("Stock Percentage", "Date");
                     _plotter.SetX(SimTime[0]);
-                    _plotter.Plot("Stock Percentage", 100.0 * stocks.Instrument.Position * stocks.Instrument.Close[0] / NetAssetValue[0]);
+                    _plotter.Plot("Stock Percentage", STOCK_PCNT);
                 }
             }
 
@@ -123,10 +123,7 @@ namespace Demos
         }
         #endregion
         #region Report - output chart
-        public override void Report()
-        {
-            _plotter.OpenWith("SimpleReport");
-        }
+        public override void Report() => _plotter.OpenWith("SimpleReport");
         #endregion
     }
     #endregion
