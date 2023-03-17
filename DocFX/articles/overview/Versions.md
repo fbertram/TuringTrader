@@ -1,6 +1,6 @@
 # Version History
 
-- 0.15.223 - March 03, 2023
+- 0.15.283 - March 17, 2023
   - general
     - update Nuget packages
     - update to .net core 6
@@ -11,9 +11,11 @@
   - indicators
     - fix issue w/ WMA (v1) calculated incorrectly
   - algorithms
-    - migrate Livingston's Mama Bear to v2
     - migrate Clenow's Stocks on the Loose to v2
     - implement Keller's BAA for v2
+    - implement Keller's HAA for v2
+    - migrate LI's Universal Investment Strategy to v2
+    - migrate Livingston's Mama Bear to v2
   - data
     - add backfills for many common ETFs
 - 0.15 - September 8, 2022
