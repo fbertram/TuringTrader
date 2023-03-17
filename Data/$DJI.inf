@@ -1,0 +1,4 @@
+name=Dow Jones Industrial Average
+symbolYahoo=^DJI
+symbolTiingo=yahoo:^DJI
+symbolFred=yahoo:^DJI

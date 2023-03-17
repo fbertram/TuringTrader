@@ -285,6 +285,50 @@ namespace TuringTrader.SimulatorV2
                 { DataSourceParam.nickName, nickname },
             };
 
+#if true
+            var idx = nickname.IndexOf(':');
+
+            if (idx < 0)
+            {
+                // no colon: figure out data source
+                info[DataSourceParam.nickName2] = nickname;
+
+                // load .ini file for settings
+                info = _loadIniFile(info, nickname);
+
+                // symbol substitution: start over
+                var field = GlobalSettings.DefaultDataFeed.ToLower() switch
+                {
+                    "yahoo" => DataSourceParam.symbolYahoo,
+                    "tiingo" => DataSourceParam.symbolTiingo,
+                    "fred" => DataSourceParam.symbolFred,
+                    _ => DataSourceParam.error,
+                };
+
+                if (info.ContainsKey(field))
+                {
+                    // NOTE: we could recurse here... but then
+                    //       we would lose the original nickname
+                    // return _getInfo(algo, info[field]);
+
+                    var newSymbol = info[field];
+                    var idx2 = newSymbol.IndexOf(':');
+
+                    if (idx2 > 0)
+                    {
+                        // colon: extract data source
+                        info[DataSourceParam.nickName2] = newSymbol.Substring(idx2 + 1);
+                        info[DataSourceParam.dataFeed] = newSymbol.Substring(0, idx2);
+                    }
+                }
+            }
+            else
+            {
+                // colon: extract data source
+                info[DataSourceParam.nickName2] = nickname.Substring(idx + 1);
+                info[DataSourceParam.dataFeed] = nickname.Substring(0, idx);
+            }
+#else
             // set nickname2 and datafeed from nickname
             var idx = nickname.IndexOf(':');
 
@@ -302,6 +346,7 @@ namespace TuringTrader.SimulatorV2
 
             // load ini file
             if (idx < 0) info = _loadIniFile(info, nickname);
+#endif
 
             //----- fill in default values for any missing settings
 
@@ -330,7 +375,7 @@ namespace TuringTrader.SimulatorV2
             ) info = _fillInIfMissing(info, DataSourceParam.dataFeed, "csv");
 
             // if we still don't have a data source, use the default
-            info = _fillInIfMissing(info, DataSourceParam.dataFeed, Simulator.GlobalSettings.DefaultDataFeed);
+            info = _fillInIfMissing(info, DataSourceParam.dataFeed, GlobalSettings.DefaultDataFeed);
 
             // fill in default mappings, if source is csv
             if (info[DataSourceParam.dataFeed].ToLower().Contains("csv"))

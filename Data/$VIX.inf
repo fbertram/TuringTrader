@@ -1,2 +1,4 @@
 name=CBOE Volatility Index
 symbolYahoo=^VIX
+symbolTiigno=yahoo:^VIX
+symbolFred=yahoo:^VIX

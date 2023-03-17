@@ -25,6 +25,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Linq;
 #endregion
 
 namespace TuringTrader.SimulatorV2.Tests
@@ -32,7 +33,7 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T203_Tiingo
     {
-        private class DataRetrieval : Algorithm
+        private class Testbed_DataRetrieval : Algorithm
         {
             public string Description;
             public double FirstOpen;
@@ -78,7 +79,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
             for (int i = 0; i < 2; i++)
             {
-                var algo = new DataRetrieval();
+                var algo = new Testbed_DataRetrieval();
                 algo.Run();
 
                 Assert.IsTrue(algo.Description.ToLower().Contains("microsoft"));
@@ -86,6 +87,35 @@ namespace TuringTrader.SimulatorV2.Tests
                 Assert.IsTrue(Math.Abs(algo.LastClose / algo.FirstOpen - 98.48418 / 95.37062) < 1e-3);
                 Assert.IsTrue(Math.Abs(algo.HighestHigh / algo.LowestLow - 100.47684 / 93.11927) < 1e-3);
             }
+        }
+
+        private class DummyAlgorithm : Algorithm { }
+
+        [TestMethod]
+        public void Test_TickerSubstitution()
+        {
+            var cachePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "TuringTrader", "Cache", "^GSPC");
+            if (Directory.Exists(cachePath))
+                Directory.Delete(cachePath, true);
+
+            var algo = new DummyAlgorithm();
+            algo.StartDate = DateTime.Parse("2019-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2019-01-12T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(0);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+            var defaultFeed = GlobalSettings.DefaultDataFeed;
+            GlobalSettings.DefaultDataFeed = "Tiingo";
+            var data = algo.Asset("$SPX");
+            GlobalSettings.DefaultDataFeed = defaultFeed;
+
+            Assert.IsTrue(data.Description.ToLower().Contains("s&p"));
+            Assert.AreEqual(data.Data.Count, 8);
+            var max = data.Data.Max(b => b.Value.High);
+            Assert.AreEqual(max, 2597.820068359375, 1e-3);
+            var min = data.Data.Min(b => b.Value.Low);
+            Assert.AreEqual(min, 2443.9599609375, 1e-3);
         }
     }
 }
