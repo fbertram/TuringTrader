@@ -89,8 +89,6 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
 
-        private class DummyAlgorithm : Algorithm { }
-
         [TestMethod]
         public void Test_TickerSubstitution()
         {
@@ -100,7 +98,7 @@ namespace TuringTrader.SimulatorV2.Tests
             if (Directory.Exists(cachePath))
                 Directory.Delete(cachePath, true);
 
-            var algo = new DummyAlgorithm();
+            var algo = new T000_Helpers.DoNothing();
             algo.StartDate = DateTime.Parse("2019-01-01T16:00-05:00");
             algo.EndDate = DateTime.Parse("2019-01-12T16:00-05:00");
             algo.WarmupPeriod = TimeSpan.FromDays(0);
