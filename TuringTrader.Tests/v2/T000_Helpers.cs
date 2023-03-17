@@ -63,6 +63,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
 
+        public class DoNothing : Algorithm { }
     }
 }
 

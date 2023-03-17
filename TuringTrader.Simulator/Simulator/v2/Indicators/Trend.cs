@@ -232,7 +232,6 @@ namespace TuringTrader.SimulatorV2.Indicators
                 .Add(series.EMA(n).EMA(n).EMA(n));
         }
         #endregion
-
         #region ZLEMA
         /// <summary>
         /// Calculate Ehlers' Zero Lag Exponential Moving Average, as described here:
@@ -293,6 +292,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
+
         #region MACD
         /// <summary>
         /// Container for MACD results.
@@ -347,8 +347,125 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new MACDT(macdLine, signalLine);
                 });
         }
+        #endregion
+        #region Supertrend
+        /// <summary>
+        /// Supertrend result container
+        /// </summary>
+        public class SupertrendT
+        {
+            /// <summary>
+            /// signal line
+            /// </summary>
+            public readonly TimeSeriesFloat SignalLine;
+            /// <summary>
+            /// trend direction
+            /// </summary>
+            public readonly TimeSeriesFloat Direction;
+            /// <summary>
+            /// basic upper band
+            /// </summary>
+            public readonly TimeSeriesFloat BasicUpperBand;
+            /// <summary>
+            /// basic lower band
+            /// </summary>
+            public readonly TimeSeriesFloat BasicLowerBand;
+
+            /// <summary>
+            /// Create new supertrend container
+            /// </summary>
+            /// <param name="line"></param>
+            /// <param name="direction"></param>
+            /// <param name="basicUpperBand"></param>
+            /// <param name="basicLowerBand"></param>
+            public SupertrendT(
+                TimeSeriesFloat line, TimeSeriesFloat direction,
+                TimeSeriesFloat basicUpperBand, TimeSeriesFloat basicLowerBand)
+            {
+                SignalLine = line;
+                Direction = direction;
+                BasicLowerBand = basicLowerBand;
+                BasicUpperBand = basicUpperBand;
+            }
+        }
+        /// <summary>
+        /// Supertrend as described here:
+        /// <see href="https://www.tradingview.com/support/solutions/43000634738-supertrend/"/>
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <param name="xAtr"></param>
+        /// <returns>container with Supertrend time series</returns>
+        public static SupertrendT Supertrend(this TimeSeriesAsset series, int n, double xAtr)
+        {
+            var name = string.Format("{0}.Supertrend({1},{2})", series.Name, n, xAtr);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var hl2 = series.High
+                        .Add(series.Low)
+                        .Mul(0.5);
+                    var width = series.AverageTrueRange(n)
+                        .Mul(xAtr);
+                    var basicUpperBand = hl2.Add(width);
+                    var basicLowerBand = hl2.Sub(width);
+
+                    var retrieve = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var basicUpper = basicUpperBand.Data;
+                            var basicLower = basicLowerBand.Data;
+
+                            var line = new List<BarType<double>>();
+                            var signal = new List<BarType<double>>();
+
+                            var trendDirection = -1.0; // initialize w/ downtrend
+                            var upperBand = 0.0;
+                            var lowerBand = 0.0;
+
+                            for (var idx = 0; idx < src.Count; idx++)
+                            {
+                                trendDirection = trendDirection > 0.0
+                                    ? (src[idx].Value.Close < lowerBand ? -1.0 : 1.0)  // uptrend
+                                    : (src[idx].Value.Close > upperBand ? 1.0 : -1.0); // downtrend
+
+                                upperBand = trendDirection < 0.0
+                                    ? Math.Min(upperBand, basicUpper[idx].Value) // downtrend: adjust downwards 
+                                    : basicUpper[idx].Value;                     // uptrend: track
+                                lowerBand = trendDirection > 0.0
+                                    ? Math.Max(lowerBand, basicLower[idx].Value) // uptrend: adjust upwards
+                                    : basicLower[idx].Value;                     // downtrend: track
+
+                                var superTrend = trendDirection > 0.0
+                                    ? lowerBand  // uptrend: lower band
+                                    : upperBand; // downtrend: upper band
+
+                                line.Add(new BarType<double>(src[idx].Date, superTrend));       // line
+                                signal.Add(new BarType<double>(src[idx].Date, trendDirection)); // signal
+                            }
+
+                            return (object)Tuple.Create(line, signal);
+                        }));
+
+                    return new SupertrendT(
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Line",
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>>)retrieve).Item1),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Signal",
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>>)retrieve).Item2),
+                        basicUpperBand,
+                        basicLowerBand);
+                });
+        }
+        #endregion
     }
-    #endregion
 }
 
 //==============================================================================

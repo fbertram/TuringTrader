@@ -527,7 +527,6 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
-
         #region test ZLEMA
         private class Testbed_ZLEMA_V2vsV1 : Algorithm
         {
@@ -626,6 +625,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
+
         #region test MACD
         private class Testbed_MACD_V2vsV1 : Algorithm
         {
@@ -716,6 +716,49 @@ namespace TuringTrader.SimulatorV2.Tests
                 Assert.AreEqual(v1Result2[i].Date, v2Result2[i].Date);
                 Assert.AreEqual(v1Result2[i].Value, v2Result2[i].Value, 1e-5);
             }
+        }
+        #endregion
+        #region test Supertrend
+        [TestMethod]
+        public void Test_Supertrend()
+        {
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("2022-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(90);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+            var asset = algo.Asset("$SPX");
+            var supertrend = asset.Supertrend(10, 10.0);
+
+            var upperBasic = supertrend.BasicUpperBand.Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+            Assert.AreEqual(upperBasic.Count, 20);
+            Assert.AreEqual(5302.502868652344, upperBasic.Average(b => b.Value), 1e-3);
+            Assert.AreEqual(5693.72509765625, upperBasic.Max(b => b.Value), 1e-3);
+            Assert.AreEqual(5110.100341796875, upperBasic.Min(b => b.Value), 1e-3);
+
+            var lowerBasic = supertrend.BasicLowerBand.Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+            Assert.AreEqual(lowerBasic.Count, 20);
+            Assert.AreEqual(3845.1151733398438, lowerBasic.Average(b => b.Value), 1e-3);
+            Assert.AreEqual(4360.843994140625, lowerBasic.Max(b => b.Value), 1e-3);
+            Assert.AreEqual(3186.810302734375, lowerBasic.Min(b => b.Value), 1e-3);
+
+            var signal = supertrend.SignalLine.Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+            Assert.AreEqual(signal.Count, 20);
+            Assert.AreEqual(4695.85205078125, signal.Average(b => b.Value), 1e-3);
+            Assert.AreEqual(5245.968505859375, signal.Max(b => b.Value), 1e-3);
+            Assert.AreEqual(4399.635498046875, signal.Min(b => b.Value), 1e-3);
+
+            var direction = supertrend.Direction.Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+            Assert.AreEqual(20, direction.Count);
+            Assert.AreEqual(0.3, direction.Average(b => b.Value), 1e-3);
         }
         #endregion
     }
