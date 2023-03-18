@@ -18,14 +18,12 @@ Find the TuringTrader documentation at https://www.turingtrader.org/documentatio
 
 ### Prerequisites
 
-see https://dotnet.microsoft.com/download/dotnet-core/6.0
-
 - Microsoft Visual Studio Community 2022
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
 - .NET Core 6 SDK
 - WiX Toolset version 3.11
 - WiX Toolset Visual Studio 2022 Extension
-- DocFX toolset version 2.43.2.0
+- DocFX toolset version 2.62.2
 
 ### Build Steps
 
