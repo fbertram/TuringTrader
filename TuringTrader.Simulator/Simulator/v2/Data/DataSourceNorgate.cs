@@ -379,14 +379,13 @@ namespace TuringTrader.SimulatorV2
                 List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                 result = NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
 
-                if (!result.IsSuccess())
-                    Output.ThrowError("failed to load data for {0}: {1}", "$SPX", result.ErrorMessage);
-
-                DateTime dbLastQuote = q
-                    .Select(ohlc => ohlc.Date)
-                    .OrderByDescending(d => d)
-                    .First()
-                    .Date + timeOfDay;
+                DateTime dbLastQuote = q.Count > 0
+                    ? q
+                        .Select(ohlc => ohlc.Date)
+                        .OrderByDescending(d => d)
+                        .First()
+                        .Date + timeOfDay
+                    : default(DateTime);
 
                 var dbTimeStamp = TimeZoneInfo.ConvertTimeToUtc(dbLastQuote, exchangeTimeZone).ToLocalTime();
 #endif
