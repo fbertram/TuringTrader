@@ -21,8 +21,7 @@ Find the TuringTrader documentation at https://www.turingtrader.org/documentatio
 - Microsoft Visual Studio Community 2022
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
 - .NET Core 6 SDK
-- WiX Toolset version 3.11
-- WiX Toolset Visual Studio 2022 Extension
+- WiX Toolset v4 (FireGiant's HeatWave Community Edition)
 - DocFX toolset version 2.62.2
 
 ### Build Steps

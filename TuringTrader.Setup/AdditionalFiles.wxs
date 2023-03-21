@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   
     <Fragment>
         <DirectoryRef Id="HOMEFOLDER">
@@ -10,7 +9,7 @@
 			
             <Directory Id="dir.datahome" Name="Data">
                 <Directory Id="dir.backfills" Name="backfills" />
-                <Directory Id="dir.data" Name ="Data">
+                <Directory Id="dir.data" Name="Data">
                     <Directory Id="dir.spx.options" Name="$SPX.options" />
                 </Directory>
             </Directory>
@@ -85,7 +84,7 @@
 				<File Id="file.sourceV1.zweig" Source="$(var.HomeDir)\BooksAndPubs\Zweig_WinningWithNewIRAs.cs" />
 			</Component>
 
-			<Component Id="comp.propsV1" Directory="dir.propsV1" Guid="*">
+			<Component Id="comp.propsV1" Directory="dir.propsV1">
 				<File Id="file.sourceV1.launch" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
 			</Component>
 
@@ -102,7 +101,7 @@
 				<File Id="file.sourceV2.livingston" Source="$(var.HomeDir)\BooksAndPubsV2\Livingston_MuscularPortfolios_v2.cs" />
 			</Component>
 
-			<Component Id="comp.propsV2" Directory="dir.propsV2" Guid="*">
+			<Component Id="comp.propsV2" Directory="dir.propsV2">
 				<File Id="file.sourceV2.launch" Source="$(var.HomeDir)\BooksAndPubs\Properties\launchSettings.json" />
 			</Component>
 
@@ -123,7 +122,7 @@
 				<File Id="file.descriptors.6040" Source="$(var.HomeDir)\Data\@60_40.inf" />
 				<File Id="file.descriptors.BRKB" Source="$(var.HomeDir)\Data\BRK.B.inf" />
 			</Component>
-			<Component Id="comp.spx.options" Directory="dir.spx.options" Guid="*">
+			<Component Id="comp.spx.options" Directory="dir.spx.options">
 				<File Id="file.spx.options" Source="$(var.HomeDir)\Data\Data\$SPX.options\SPX_20180102.csv" />
 			</Component>
 
