@@ -39,27 +39,10 @@ namespace TuringTrader.SimulatorV2.Indicators
 
             for (int idx = 0; idx < src.Count; idx++)
             {
-                var current = src[Math.Min(src.Count - 1, idx + offset)].Date;
-                var next = src[Math.Min(src.Count - 1, idx + offset + 1)].Date;
+                var current = src[Math.Min(src.Count - 1, Math.Max(0, idx - offset))].Date;
+                var next = src[Math.Min(src.Count - 1, Math.Max(0, idx - offset + 1))].Date;
 
                 dst.Add(trigger(current, next));
-            }
-
-            if (offset > 0)
-            {
-                for (var i = 0; i < offset; i++)
-                {
-                    dst.Insert(0, false); // this may be incorrect
-                    dst.RemoveAt(dst.Count - 1);
-                }
-            }
-            else
-            {
-                for (var i = offset; i < 0; i++)
-                {
-                    dst.RemoveAt(0);
-                    dst.Add(false); // this may be incorrect
-                }
             }
 
             return dst;
