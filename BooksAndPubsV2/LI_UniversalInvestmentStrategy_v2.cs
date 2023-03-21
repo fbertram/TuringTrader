@@ -202,11 +202,9 @@ namespace TuringTrader.BooksAndPubsV2
                             {
                                 var optWeights = OptimizeWeights(topAssets);
 
-                                if (optWeights == null)
-                                    OptimizeWeights(topAssets);
-
-                                foreach (var kv in optWeights)
-                                    weights[kv.Key] = kv.Value;
+                                if (optWeights != null)
+                                    foreach (var kv in optWeights)
+                                        weights[kv.Key] = kv.Value;
                             }
                             break;
                     }
