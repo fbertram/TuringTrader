@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -139,6 +139,10 @@ namespace TuringTrader
         {
             _dispatcherTimer.Tick -= Initialize_Once;
 
+            WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
+            WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
+            WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
+
             CheckSettings();
             PopulateAlgorithmMenu();
             LoadMostRecentAlgorithm();
@@ -148,10 +152,6 @@ namespace TuringTrader
             PlotterRenderCSharp.Register();
             PlotterRenderR.Register();
             PlotterRenderRMarkdown.Register();
-
-            WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
-            WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
-            WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
         }
         private void CheckSettings()
         {
@@ -175,15 +175,27 @@ namespace TuringTrader
                 MenuEditSettings_Click(null, null);
             }
 
-            // if home directory exists, make sure to copy all required files
-            if (Directory.Exists(GlobalSettings.HomePath))
+            //===== initialize home directory
+
+            // we can only initialize home directory and home template exist
+#if false
+            var homeTemplate = Path.Combine(
+                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                "..",
+                "Home");
+#else
+            var homeTemplate = @"C:\Program Files\TuringTrader\Home";
+#endif
+
+            if (Directory.Exists(GlobalSettings.HomePath) && Directory.Exists(homeTemplate))
             {
                 var codeVersion = GitInfo.Version;
                 var versionFile = Path.Combine(GlobalSettings.HomePath, "home-version.txt");
-                var homeVersion = File.Exists(versionFile) ? File.ReadAllText(versionFile) : "";
+                var homeVersion = File.Exists(versionFile) ? File.ReadAllText(versionFile) : "n/a";
 
                 if (codeVersion != homeVersion)
                 {
+                    WriteEventHandler(string.Format("updating home directory from {0} to {1}\n", homeVersion, codeVersion));
                     File.WriteAllText(versionFile, codeVersion); // write back version
 
                     // --- cleanup phase
@@ -196,34 +208,97 @@ namespace TuringTrader
                     //     (b) they were found missing in step (1)
                     // (3) for each file copied, save version number to list
 
-                    void copyFolderFiles(string srcPath, string dstPath)
+                    var checksumFile = Path.Combine(GlobalSettings.HomePath, "file-checksums.txt");
+                    var fileChecksums = new Dictionary<string, string>();
+                    var doNotCopy = new List<string>();
+
+                    // load checksums
+                    if (File.Exists(checksumFile))
                     {
-                        DirectoryInfo src = new DirectoryInfo(srcPath);
+                        fileChecksums = File.ReadLines(checksumFile)
+                            .ToDictionary(
+                                line => line.Substring(0, line.IndexOf("=")),
+                                line => line.Substring(line.IndexOf("=") + 1));
+                    }
 
-                        FileInfo[] srcFiles = src.GetFiles();
-                        foreach (FileInfo srcFile in srcFiles)
+                    // calculate checksums
+                    string CalculateMD5(string filePath)
+                    {
+                        using (var md5 = MD5.Create())
                         {
-                            var dstFile = Path.Combine(dstPath, srcFile.Name);
-                            if (!File.Exists(dstFile))
-                                File.Copy(srcFile.FullName, dstFile);
-                        }
-
-                        DirectoryInfo[] srcDirs = src.GetDirectories();
-                        foreach (DirectoryInfo srcDir in srcDirs)
-                        {
-                            string dstDir = Path.Combine(dstPath, srcDir.Name);
-                            Directory.CreateDirectory(dstDir);
-                            copyFolderFiles(srcDir.FullName, dstDir);
+                            using (var stream = File.OpenRead(filePath))
+                            {
+                                var hash = md5.ComputeHash(stream);
+                                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                            }
                         }
                     }
 
-                    string homeTemplate = Path.Combine(
-                        Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                        "..",
-                        "Home");
+                    // cleanup phase: delete files with matching checksums
+                    foreach (var keyValue in fileChecksums)
+                    {
+                        var filePath = Path.Combine(GlobalSettings.HomePath, keyValue.Key);
 
-                    if (Directory.Exists(homeTemplate))
-                        copyFolderFiles(homeTemplate, GlobalSettings.HomePath);
+                        if (File.Exists(filePath))
+                        {
+                            var checksum = CalculateMD5(filePath);
+
+                            if (checksum == keyValue.Value)
+                                File.Delete(filePath);
+                            else
+                                WriteEventHandler(string.Format("    keeping modified file {0}\n", filePath));
+                        }
+                        else
+                        {
+                            doNotCopy.Add(keyValue.Key);
+                        }
+                    }
+
+                    //--- update phase: copy files from install folder
+                    void copyFolderFiles(string relPath = null)
+                    {
+                        var srcPath = relPath != null ? Path.Combine(homeTemplate, relPath) : homeTemplate;
+                        var dstPath = relPath != null ? Path.Combine(GlobalSettings.HomePath, relPath) : GlobalSettings.HomePath;
+                        var srcInfo = new DirectoryInfo(srcPath);
+
+                        var srcFiles = srcInfo.GetFiles();
+                        foreach (var src in srcFiles)
+                        {
+                            var relFile = relPath != null ? Path.Combine(relPath, src.Name) : src.Name;
+                            var srcFile = Path.Combine(srcPath, src.Name);
+                            var dstFile = Path.Combine(dstPath, src.Name);
+
+                            if (!File.Exists(dstFile))
+                            {
+                                if (!doNotCopy.Contains(relFile))
+                                {
+                                    if (relPath != null && !Directory.Exists(dstPath))
+                                        Directory.CreateDirectory(dstPath);
+
+                                    File.Copy(srcFile, dstFile);
+                                }
+                                else
+                                    WriteEventHandler(string.Format("    skipping copy to {0}\n", dstFile));
+
+                                // NOTE: it is important we keep a checksum entry for
+                                //       files we skipped, so that they end up on
+                                //       the do-not-copy list next time we upgrade
+                                fileChecksums[relFile] = CalculateMD5(srcFile);
+                            }
+                        }
+
+                        var srcDirs = srcInfo.GetDirectories();
+                        foreach (var src in srcDirs)
+                        {
+                            var nextRelPath = relPath != null ? Path.Combine(relPath, src.Name) : src.Name;
+                            copyFolderFiles(nextRelPath);
+                        }
+                    }
+
+                    fileChecksums.Clear();
+                    copyFolderFiles();
+
+                    File.WriteAllLines(checksumFile, fileChecksums.Select(kv => string.Format("{0}={1}", kv.Key, kv.Value)));
                 }
             }
 
