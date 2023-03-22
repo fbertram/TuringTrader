@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,12 +179,13 @@ namespace TuringTrader
             //===== initialize home directory
 
             // we can only initialize home directory and home template exist
-#if false
+#if true
             var homeTemplate = Path.Combine(
                 Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
                 "..",
                 "Home");
 #else
+            // debugging only
             var homeTemplate = @"C:\Program Files\TuringTrader\Home";
 #endif
 
