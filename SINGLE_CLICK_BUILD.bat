@@ -71,7 +71,7 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
-dotnet build TuringTrader.Setup\TuringTrader.Setup.wixproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
+dotnet build TuringTrader.Setup\TuringTrader.Setup.wixproj -c "Release" /p:Platform=x64 /p:Version=%TT_V0%
 
 echo *
 echo *
