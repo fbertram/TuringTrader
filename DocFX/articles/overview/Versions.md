@@ -6,7 +6,7 @@
     - update to .net core 6
     - update to WiX v4
   - application
-    - improve initialization of home directory
+    - improve init/upgrade of home directory
   - simulator core
     - implement new v2 simulator engine
     - add forward and backward compatibility features
