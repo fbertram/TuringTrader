@@ -63,7 +63,6 @@ echo ***************************************************************************
 echo *** publish project
 echo ***************************************************************************
 
-set TT_VER=15.99
 dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:Version=%TT_VER%
 
 echo *
