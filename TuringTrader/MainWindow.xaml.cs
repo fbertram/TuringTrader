@@ -142,7 +142,7 @@ namespace TuringTrader
 
             WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
             WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
-            WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
+            WriteEventHandler(string.Format("Console Mode = {0}\n\n", GlobalSettings.ConsoleMode));
 
             CheckSettings();
             PopulateAlgorithmMenu();
@@ -448,6 +448,7 @@ namespace TuringTrader
                 ResultsButton.IsEnabled = false;
 
                 Title = "TuringTrader - " + _currentAlgorithm.Name;
+                WriteEventHandler(string.Format("loaded algorithm {0}\n", _currentAlgorithm.Name));
             }
             else
             {
