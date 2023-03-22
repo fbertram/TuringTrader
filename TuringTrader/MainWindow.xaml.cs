@@ -149,9 +149,7 @@ namespace TuringTrader
             PlotterRenderR.Register();
             PlotterRenderRMarkdown.Register();
 
-#pragma warning disable CS0436 // Type conflicts with imported type
             WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
-#pragma warning restore CS0436 // Type conflicts with imported type
             WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
             WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
         }
@@ -180,34 +178,53 @@ namespace TuringTrader
             // if home directory exists, make sure to copy all required files
             if (Directory.Exists(GlobalSettings.HomePath))
             {
-                void copyFolderFiles(string srcPath, string dstPath)
+                var codeVersion = GitInfo.Version;
+                var versionFile = Path.Combine(GlobalSettings.HomePath, "home-version.txt");
+                var homeVersion = File.Exists(versionFile) ? File.ReadAllText(versionFile) : "";
+
+                if (codeVersion != homeVersion)
                 {
-                    DirectoryInfo src = new DirectoryInfo(srcPath);
+                    File.WriteAllText(versionFile, codeVersion); // write back version
 
-                    FileInfo[] srcFiles = src.GetFiles();
-                    foreach (FileInfo srcFile in srcFiles)
+                    // --- cleanup phase
+                    // (1) go through list with file checksums and delete each file unless
+                    //     (a) file checksum different than list
+                    //     (b) file missing
+                    // --- update phase
+                    // (2) copy all files from app, unless
+                    //     (a) they already exist in the destination
+                    //     (b) they were found missing in step (1)
+                    // (3) for each file copied, save version number to list
+
+                    void copyFolderFiles(string srcPath, string dstPath)
                     {
-                        var dstFile = Path.Combine(dstPath, srcFile.Name);
-                        if (!File.Exists(dstFile))
-                            File.Copy(srcFile.FullName, dstFile);
+                        DirectoryInfo src = new DirectoryInfo(srcPath);
+
+                        FileInfo[] srcFiles = src.GetFiles();
+                        foreach (FileInfo srcFile in srcFiles)
+                        {
+                            var dstFile = Path.Combine(dstPath, srcFile.Name);
+                            if (!File.Exists(dstFile))
+                                File.Copy(srcFile.FullName, dstFile);
+                        }
+
+                        DirectoryInfo[] srcDirs = src.GetDirectories();
+                        foreach (DirectoryInfo srcDir in srcDirs)
+                        {
+                            string dstDir = Path.Combine(dstPath, srcDir.Name);
+                            Directory.CreateDirectory(dstDir);
+                            copyFolderFiles(srcDir.FullName, dstDir);
+                        }
                     }
 
-                    DirectoryInfo[] srcDirs = src.GetDirectories();
-                    foreach (DirectoryInfo srcDir in srcDirs)
-                    {
-                        string dstDir = Path.Combine(dstPath, srcDir.Name);
-                        Directory.CreateDirectory(dstDir);
-                        copyFolderFiles(srcDir.FullName, dstDir);
-                    }
+                    string homeTemplate = Path.Combine(
+                        Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                        "..",
+                        "Home");
+
+                    if (Directory.Exists(homeTemplate))
+                        copyFolderFiles(homeTemplate, GlobalSettings.HomePath);
                 }
-
-                string homeTemplate = Path.Combine(
-                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                    "..",
-                    "Home");
-
-                if (Directory.Exists(homeTemplate))
-                    copyFolderFiles(homeTemplate, GlobalSettings.HomePath);
             }
 
             //===== check Tiingo API key
