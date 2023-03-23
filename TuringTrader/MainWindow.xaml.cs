@@ -555,6 +555,10 @@ namespace TuringTrader
         private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
             => OpenWithShell(_currentAlgorithmInfo.SourcePath);
         #endregion
+        #region menu edit/ home directory
+        private void MenuEditHome_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell(GlobalSettings.HomePath);
+        #endregion
         #region menu help/ about
         private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
             => new AboutBox().ShowDialog();
