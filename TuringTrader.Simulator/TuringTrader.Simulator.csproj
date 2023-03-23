@@ -25,6 +25,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Simulator\v2\Core\FloatWrapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\TuringTrader\GitVersion.cs" Link="Simulator\v2\Core\GitVersion.cs" />
   </ItemGroup>
 
