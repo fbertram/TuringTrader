@@ -530,26 +530,11 @@ namespace TuringTrader
         #endregion
 
         //----- menu
-        #region private void MenuFileExit_Click(object sender, RoutedEventArgs e)
+        #region menu file/ exit
         private void MenuFileExit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+            => Application.Current.Shutdown();
         #endregion
-        #region private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
-        private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
-        {
-            var settingsDialog = new Settings();
-            settingsDialog.ShowDialog();
-        }
-        #endregion
-        #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
-        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
-        {
-            OpenWithShell(_currentAlgorithmInfo.SourcePath);
-        }
-        #endregion
-        #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
+        #region menu file/ algorithm/ ...
         private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem)e.OriginalSource;
@@ -566,26 +551,25 @@ namespace TuringTrader
             }
         }
         #endregion
-        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutBox = new AboutBox();
-            aboutBox.ShowDialog();
-        }
+        #region menu edit/ settings
+        private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
+            => new Settings().ShowDialog();
         #endregion
-        #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        #region menu edit/ algorithm source code
+        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell(_currentAlgorithmInfo.SourcePath);
+        #endregion
+        #region menu help/ about
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+            => new AboutBox().ShowDialog();
+        #endregion
+        #region menu help/ check for updates
+        private void MenuHelpUpdate_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell("https://www.turingtrader.org/download/");
+        #endregion
+        #region menu help/ view online help
         private void MenuHelpView_Click(object sender, RoutedEventArgs e)
-        {
-#if false
-            string helpFile = Path.Combine(
-                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                "TuringTrader.chm");
-#else
-            string helpFile = "https://www.turingtrader.org/help/";
-#endif
-
-            OpenWithShell(helpFile);
-        }
+            => OpenWithShell("https://www.turingtrader.org/help/");
         #endregion
 
         //----- buttons

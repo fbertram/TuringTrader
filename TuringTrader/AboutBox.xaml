@@ -57,8 +57,8 @@ along with this program.  If not, see "/>
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://licenses.nuget.org/MIT">
                     <Run Text="MIT License"/></Hyperlink>
                 <LineBreak/>
-            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/NetOffice.Excel/">
-                <Run Text="NetOffice.Excel"/></Hyperlink> - 
+            <Run Text="◦ "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.nuget.org/packages/NetOfficeFW.Excel/">
+                <Run Text="NetOfficeFw.Excel"/></Hyperlink> - 
                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://choosealicense.com/licenses/mit/">
                 <Run Text="MIT License"/></Hyperlink>
                 <LineBreak/>

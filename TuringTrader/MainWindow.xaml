@@ -30,6 +30,7 @@
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_View Online Help" Click="MenuHelpView_Click"/>
+                <MenuItem Header="_Check for Updates" Click="MenuHelpUpdate_Click"/>
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>
