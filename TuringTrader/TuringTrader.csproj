@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Authors>Felix Bertram</Authors>
-    <Company>Bertram Solutions LLC</Company>
-    <Description>Open-source backtesting engine and market simulator</Description>
-    <Copyright>Copyright (c) 2011-2020, Bertram Solutions LLC</Copyright>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
+    <Description>Open-source backtesting engine and trading simulator</Description>
+    <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -18,9 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvalonLibrary" Version="2.4.0" />
-    <PackageReference Include="NetOffice.Excel" Version="1.7.4.11" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2.0.0" />
+    <PackageReference Include="AvalonLibrary" Version="3.0.0" />
+    <PackageReference Include="NetOfficeFw.Core" Version="1.9.3" />
+    <PackageReference Include="NetOfficeFw.Excel" Version="1.9.3" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.1.2" />
   </ItemGroup>
 
   <ItemGroup>

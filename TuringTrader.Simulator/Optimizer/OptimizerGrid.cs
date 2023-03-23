@@ -21,13 +21,18 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// ENABLE_V2_DATA_SHARING: if defined: allow cloned instances to share data.
+//                         otherwise, all data are private.
+#define ENABLE_V2_DATA_SHARING
+
 #region libraries
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Optimizer
 {
 
     /// <summary>
@@ -47,6 +52,7 @@ namespace TuringTrader.Simulator
         private DateTime? _algoStart;
         private DateTime? _algoEnd;
         private bool _verbose;
+        private SimulatorV2.Cache _v2DataCache;
         #endregion
         #region internal helpers
         #region private void RunIteration()
@@ -65,6 +71,15 @@ namespace TuringTrader.Simulator
             // mark this as an optimizer run
             instanceToRun.IsOptimizing = true;
 
+#if ENABLE_V2_DATA_SHARING
+            // use shared data cache (v2 algorithms only)
+            var instanceV2 = (instanceToRun as SimulatorV2.Algorithm);
+            if (instanceV2 != null)
+            {
+                instanceV2.DataCache = _v2DataCache;
+            }
+#endif
+
             // create result entry
             OptimizerResult result = new OptimizerResult();
             foreach (OptimizerParam parameter in MasterInstance.OptimizerParams.Values)
@@ -77,17 +92,27 @@ namespace TuringTrader.Simulator
             {
                 try
                 {
-#if true
-                    instanceToRun.Run();
-#else
-                    // make sure to enter the extended Run method
-                    // the default implementation will forward
-                    // to the simple Run method, if required
-                    // also, we need to convert the result to a list,
-                    // in order to circumvent lazy execution
-                    var noLazyExec = instanceToRun.Run(_algoStart, _algoEnd)
-                        .ToList();
-#endif
+                    var v1Instance = instanceToRun as Algorithm;
+                    var v2Instance = instanceToRun as SimulatorV2.Algorithm;
+
+                    if (v1Instance != null)
+                    {
+                        // make sure to enter the extended Run method
+                        // the default implementation will forward
+                        // to the simple Run method, if required
+                        // also, we need to convert the result to a list,
+                        // in order to circumvent lazy execution
+                        var noLazyExec = v1Instance.Run(_algoStart, _algoEnd)
+                            .ToList();
+
+                    }
+                    if (v2Instance != null)
+                    {
+                        // launching v2 algorithms is less convoluted
+                        v2Instance.StartDate = _algoStart;
+                        v2Instance.EndDate = _algoEnd;
+                        v2Instance.Run();
+                    }
 
                     result.NetAssetValue = instanceToRun.FitnessReturn;
                     result.MaxDrawdown = instanceToRun.FitnessRisk;
@@ -229,6 +254,7 @@ namespace TuringTrader.Simulator
             if (_verbose) Output.WriteLine("GridOptimizer: total of {0} iterations", _numIterationsTotal);
 
             // create and queue iterations
+            _v2DataCache = new SimulatorV2.Cache();
             IterateLevel(0);
 
             // wait for completion

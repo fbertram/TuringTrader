@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Authors>Felix Bertram et al</Authors>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
+    <Product>TuringTrader</Product>
+    <Description>Showcase Algorithms (V2)</Description>
+    <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
+    <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageId>TuringTrader.BooksAndPubsV2</PackageId>
+    <Platforms>x64</Platforms>
+    <RootNamespace>TuringTrader.BooksAndPubsV2</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(TargetPath) ..\Algorithms\$(TargetFileName)" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="TuringTrader.Simulator">
+      <HintPath>C:\Program Files\TuringTrader\Bin\TuringTrader.Simulator.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -4,10 +4,10 @@
 // Description: some glue to help re-using algorithms for other applications
 // History:     2019x02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2020, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -24,7 +24,7 @@
 // USE_NORGATE_UNIVERSE
 // defined: use survivorship-free universe through Norgate Data
 // undefined: use fixed test univese with hefty survivorship bias
-//#define USE_NORGATE_UNIVERSE
+#define USE_NORGATE_UNIVERSE
 
 #region libraries
 using System;
@@ -102,7 +102,7 @@ namespace TuringTrader.Algorithms.Glue
                 "MSFT",  // Microsoft Corporation
                 "AAPL",  // Apple Inc.
                 "AMZN",  // Amazon.com Inc.
-                "FB",    // Facebook Inc. Class A
+                "META",  // Meta Platforms Inc Class A Common
                 "JNJ",   // Johnson & Johnson
                 "GOOG",  // Alphabet Inc. Class C
                 "GOOGL", // Alphabet Inc. Class A

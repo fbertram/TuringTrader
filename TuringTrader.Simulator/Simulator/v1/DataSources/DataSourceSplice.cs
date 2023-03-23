@@ -4,10 +4,10 @@
 // Description: Data source to splice multiple data sources.
 // History:     2019ix26, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -161,6 +161,8 @@ namespace TuringTrader.Simulator
                             {
                                 // highest priority bar
                                 Bar rawBar = dsEnums[nick].Current;
+                                if (rawBar.Close == 0.0)
+                                    Output.ThrowError("invalid price for {0} while splicing {1}", nick, Info[DataSourceParam.name]);
 
                                 // we might get here, with dsScale not set yet.
                                 // this is the best we can do to fix things

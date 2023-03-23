@@ -9,10 +9,10 @@
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1585517
 // History:     2018xii14, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -147,8 +147,10 @@ namespace TuringTrader.BooksAndPubs
                         }
                     }
 
+#if false
                     if (TradingDays > 0 && !IsOptimizing && (EndTime - SimTime[0]).TotalDays < 63)
-                        Output.WriteLine(message);
+                        Output.WriteInfo(message);
+#endif
                 }
 
                 // plotter output

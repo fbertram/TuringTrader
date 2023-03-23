@@ -4,10 +4,10 @@
 // Description: Simulator engine core
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2020, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -52,9 +52,9 @@ namespace TuringTrader.Simulator
         {
 #if PRINT_ORDERS
             if (ticket.Type != OrderType.cash)
-                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2} {3}x {4}", 
+                Output.WriteLine("{0:MM/dd/yyyy}, {1}: {2} ({3}) {4}x {5}", 
                     SimTime[0], Name,
-                    ticket.Quantity > 0 ? "Buy" : "Sell", ticket.Quantity, ticket.Instrument.Symbol);
+                    ticket.Quantity > 0 ? "Buy" : "Sell", ticket.Type.ToString(), Math.Abs(ticket.Quantity), ticket.Instrument.Symbol);
 #endif
 
             if (ticket.Type == OrderType.cash)
@@ -81,6 +81,10 @@ namespace TuringTrader.Simulator
 
             // no trades during warmup phase
             if (SimTime[0] < StartTime)
+                return;
+
+            // no trades on delisted assets
+            if (!Instruments.Contains(ticket.Instrument))
                 return;
 
             // conditional orders: cancel, if condition not met
@@ -183,6 +187,12 @@ namespace TuringTrader.Simulator
                     ? price
                     : FillModel(ticket, execBar, price);
 
+            // calculate target allocation of asset as
+            // achieved by executing the order. This is
+            // required for interaction with v2 hosts
+            var positionValueAfterOrder = ((Positions.ContainsKey(instrument) ? Positions[instrument] : 0) + ticket.Quantity) * price;
+            var positionPercentageAfterOrder = positionValueAfterOrder / _calcNetAssetValue();
+
             // adjust position, unless its the end-of-sim order
             // this is to ensure that the Positions collection can
             // be queried after the simulation finished
@@ -227,6 +237,7 @@ namespace TuringTrader.Simulator
                 BarOfExecution = execBar,
                 FillPrice = fillPrice,
                 Commission = commission,
+                TargetPercentageOfNav = positionPercentageAfterOrder,
             };
             // do not remove instrument here, is required for MFE/ MAE analysis
             //ticket.Instrument = null; // the instrument holds the data source... which consumes lots of memory
@@ -380,16 +391,17 @@ namespace TuringTrader.Simulator
         /// derived class, typically a proprietary algorithm derived from
         /// Algorithm.
         /// </summary>
-        public virtual string Name 
-        { 
-            get 
+        public virtual string Name
+        {
+            get
             {
                 _Name = _Name ?? GetType().Name;
                 return _Name;
             }
             set
-            { _Name = value; 
-            } 
+            {
+                _Name = value;
+            }
         }
         #endregion
 
@@ -601,14 +613,21 @@ namespace TuringTrader.Simulator
                     // handle instrument de-listing
                     if (!IsLastBar)
                     {
-                        IEnumerable<Instrument> instrumentsToDelist = Instruments
-                            .Where(i => !hasData[i.DataSource])
+                        // the main-purpose of instrument de-listing
+                        // is to speed up searching option chains.
+                        // there is no point in being too aggressive here,
+                        // as that might lead to issues elsewhere.
+                        // as an example, we have seen issues with instruments
+                        // being de-listed after short-lived data glitches
+                        var instrumentsToDelist = Instruments
+                            .Where(i => !hasData[i.DataSource]) // instruments with no more data
+                            .Where(i => i.DataSource.CachedData != null) // don't delist in-sync algorithms
+                            .Where(i => (SimTime[0] - i.DataSource.CachedData.Last().Time).TotalDays > 5) // take a few days time
                             .ToList();
 
                         foreach (Instrument instr in instrumentsToDelist)
                             _delistInstrument(instr);
                     }
-
                 }
 
                 //----- attempt to free up resources

@@ -4,10 +4,10 @@
 // Description: Data source for CSV files.
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -117,7 +117,8 @@ namespace TuringTrader.Simulator
                             case DataSourceParam.high: high = ParseDouble(mappedString); hasOHLC = true; break;
                             case DataSourceParam.low: low = ParseDouble(mappedString); hasOHLC = true; break;
                             case DataSourceParam.close: close = ParseDouble(mappedString); hasOHLC = true; break;
-                            case DataSourceParam.volume: volume = long.Parse(mappedString); break;
+                            //case DataSourceParam.volume: volume = long.Parse(mappedString); break; // will throw for float values
+                            case DataSourceParam.volume: volume = (long)Math.Floor(ParseDouble(mappedString)); break; // should accept int and float
 
                             case DataSourceParam.bid: bid = ParseDouble(mappedString); hasBidAsk = true; break;
                             case DataSourceParam.ask: ask = ParseDouble(mappedString); hasBidAsk = true; break;
@@ -473,8 +474,8 @@ namespace TuringTrader.Simulator
 
                 List<Bar> retrievalFunction()
                 {
-                    DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
+                    //DateTime t1 = DateTime.Now;
+                    Output.WriteInfo(string.Format("DataSourceCsv: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                     List<Bar> bars = new List<Bar>();
 
@@ -487,8 +488,8 @@ namespace TuringTrader.Simulator
                     else
                         throw new Exception("DataSourceCsv: data path not found");
 
-                    DateTime t2 = DateTime.Now;
-                    Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    //DateTime t2 = DateTime.Now;
+                    //Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                     if (_lastTime == null
                     || _lastTime < endTime)

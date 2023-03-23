@@ -5,10 +5,10 @@
 //              Tested w/ Norgate Data API 4.1.5.27.
 // History:     2019i06, FUB, created.
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -44,12 +44,11 @@ namespace TuringTrader.Simulator
         {
             private static bool _handleUnresolvedAssemblies = true;
             private static DateTime _lastNDURun = default(DateTime);
-            private static object _lockUnresolved = new object();
-            private static object _lockNDU = new object();
+            private static object _lockNorgate = SimulatorV2.DataSource._lockNorgate;
 
             public static void RunNDU(bool runAlways = false)
             {
-                lock (_lockNDU)
+                lock (_lockNorgate)
                 {
                     if (runAlways || DateTime.Now - _lastNDURun > TimeSpan.FromMinutes(5))
                     {
@@ -66,7 +65,7 @@ namespace TuringTrader.Simulator
             }
             public static void HandleUnresovledAssemblies()
             {
-                lock (_lockUnresolved)
+                lock (_lockNorgate)
                 {
                     if (_handleUnresolvedAssemblies)
                     {
@@ -207,13 +206,12 @@ namespace TuringTrader.Simulator
         private class DataSourceNorgate : DataSource
         {
             #region internal data
-            private static object _lockSetName = new object();
-            private static object _lockLoadData = new object();
+            private static object _lockNorgate = SimulatorV2.DataSource._lockNorgate; // new object();
             #endregion
             #region internal helpers
             private void SetName()
             {
-                lock (_lockSetName)
+                lock (_lockNorgate)
                 {
                     // no proper name given, try to retrieve from Norgate
                     string ticker = Info[DataSourceParam.symbolNorgate];
@@ -237,7 +235,7 @@ namespace TuringTrader.Simulator
             }
             private void LoadData(List<Bar> data, DateTime startTime, DateTime endTime)
             {
-                lock (_lockLoadData)
+                lock (_lockNorgate)
                 {
                     if (!NorgateHelpers.isAPIAvaliable)
                         throw new Exception(string.Format("{0}: Norgate Data Updater not installed", GetType().Name));
@@ -249,16 +247,22 @@ namespace TuringTrader.Simulator
                     NDU.Api.SetPaddingType = NDU.PaddingType.AllMarketDays;
 
                     //--- run NDU as required
-#if true
+                    NDU.OperationResult result;
+#if false
                     // this should work, but seems broken as of 01/09/2019
+                    // confirmed broken as of 02/10/2023
                     DateTime dbTimeStamp = NDU.Api.LastDatabaseUpdateTime;
 #else
-                List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
-                NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
-                DateTime dbTimeStamp = q
-                    .Select(ohlc => ohlc.Date)
-                    .OrderByDescending(d => d)
-                    .First();
+                    List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
+                    result = NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
+
+                    if (!result.IsSuccess())
+                        Output.ThrowError("failed to retrieve data for {0}: {1}", "$SPX", result.ErrorMessage);
+
+                    DateTime dbTimeStamp = q
+                        .Select(ohlc => ohlc.Date)
+                        .OrderByDescending(d => d)
+                        .First();
 #endif
 
                     if (endTime > dbTimeStamp)
@@ -266,7 +270,10 @@ namespace TuringTrader.Simulator
 
                     //--- get data from Norgate
                     List<NDU.RecOHLC> norgateData = new List<NDU.RecOHLC>();
-                    NDU.OperationResult result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
+                    result = NDU.Api.GetData(Info[DataSourceParam.symbolNorgate], out norgateData, startTime, endTime);
+
+                    if (!result.IsSuccess())
+                        Output.ThrowError("failed to retrieve data for {0}: {1}", Info[DataSourceParam.symbolNorgate], result.ErrorMessage);
 
                     //--- copy to TuringTrader bars
                     double priceMultiplier = Info.ContainsKey(DataSourceParam.dataUpdaterPriceMultiplier)
@@ -321,15 +328,15 @@ namespace TuringTrader.Simulator
 
                 List<Bar> retrievalFunction()
                 {
-                    DateTime t1 = DateTime.Now;
-                    Output.Write(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
+                    //DateTime t1 = DateTime.Now;
+                    Output.WriteInfo(string.Format("{0}: loading data for {1}...", GetType().Name, Info[DataSourceParam.nickName2]));
 
                     List<Bar> bars = new List<Bar>();
 
                     LoadData(bars, startTime, endTime);
 
-                    DateTime t2 = DateTime.Now;
-                    Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                    //DateTime t2 = DateTime.Now;
+                    //Output.ShowInfo(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                     return bars;
                 };
@@ -348,7 +355,7 @@ namespace TuringTrader.Simulator
         private class UniverseNorgate : Universe
         {
             #region internal data
-            private static object mutex = new object(); // watchlist functionality not multi-threaded?
+            private static object _lockNorgate = SimulatorV2.DataSource._lockNorgate;
             private static Dictionary<string, string> _watchlistNames = new Dictionary<string, string>()
             {
                 { "$OEX", "S&P 100 Current & Past" },
@@ -384,7 +391,7 @@ namespace TuringTrader.Simulator
                 //       this mutex here avoids issues with GetWatchlist returning
                 //       a null-pointer for the out-parameter watchlist,
                 //       when run in the optimizer.
-                lock (mutex)
+                lock (_lockNorgate)
                 {
                     // this code cannot be in the same method
                     // that calls HandleUnresolvedAssemblies
@@ -423,9 +430,16 @@ namespace TuringTrader.Simulator
 
                     if (_constituents == null)
                     {
-                        NDW.SecurityList constituents1;
-                        var success = watchlist.GetSecurityList(out constituents1);
-                        _constituents = constituents1;
+                        lock (_lockNorgate)
+                        {
+                            NDW.SecurityList constituents1;
+                            var result = watchlist.GetSecurityList(out constituents1);
+
+                            if (!result.IsSuccess())
+                                Output.ThrowError("failed to retrieve securities list for {0}: {1}", _nickname, result.ErrorMessage);
+
+                            _constituents = constituents1;
+                        }
                     }
 
                     NDW.SecurityList constituents = (NDW.SecurityList)_constituents;
@@ -468,13 +482,20 @@ namespace TuringTrader.Simulator
 
                 if (!_constituentsTimeSeries.ContainsKey(security.AssetID))
                 {
-                    List<NDU.RecIndicator> timeSeries1;
-                    var success = NDU.Api.GetIndexConstituentTimeSeries(
-                        security.AssetID, out timeSeries1, _nickname,
-                        DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture),
-                        DateTime.Now.Date,
-                        NDU.PaddingType.None);
-                    _constituentsTimeSeries[security.AssetID] = timeSeries1;
+                    lock (_lockNorgate)
+                    {
+                        List<NDU.RecIndicator> timeSeries1;
+                        var result = NDU.Api.GetIndexConstituentTimeSeries(
+                            security.AssetID, out timeSeries1, _nickname,
+                            DateTime.Parse("01/01/1990", CultureInfo.InvariantCulture),
+                            DateTime.Now.Date,
+                            NDU.PaddingType.None);
+
+                        if (!result.IsSuccess())
+                            Output.ThrowError("failed to retrieve constituent time series for {0}: {1}", security.Symbol, result.ErrorMessage);
+
+                        _constituentsTimeSeries[security.AssetID] = timeSeries1;
+                    }
                 }
                 List<NDU.RecIndicator> timeSeries = (List<NDU.RecIndicator>)_constituentsTimeSeries[security.AssetID];
 
@@ -491,6 +512,9 @@ namespace TuringTrader.Simulator
                 while (index < timeSeries.Count - 1
                 && timeSeries[Math.Min(index + 1, timeSeries.Count - 1)].Date.Date < timestamp.Date)
                     index++;
+
+                // cache this index to speed up next iteration
+                _consituentsTimeSeriesIndex[security.AssetID] = index;
 
                 // reached end of indices
                 // this shouldn't matter, as the simulator core removes stale instruments

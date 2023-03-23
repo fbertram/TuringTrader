@@ -1,5 +1,26 @@
 # Version History
 
+- 15.99.1 - March 21, 2023
+  - general
+    - update Nuget packages
+    - update to .net core 6
+    - update to WiX v4
+  - application
+    - improve init/upgrade of home directory
+  - simulator core
+    - implement new v2 simulator engine
+    - add forward and backward compatibility features
+    - fix issue w/ Norgate (v1) failing to load data
+  - indicators
+    - fix issue w/ WMA (v1) calculated incorrectly
+  - algorithms
+    - migrate Clenow's Stocks on the Loose to v2
+    - implement Keller's BAA for v2
+    - implement Keller's HAA for v2
+    - migrate LI's Universal Investment Strategy to v2
+    - migrate Livingston's Mama Bear to v2
+  - data
+    - add backfills for many common ETFs
 - 0.15 - September 8, 2022
   - data sources
     - fix issue parsing dates containing colons from time

@@ -45,7 +45,7 @@ echo *** VERSION:   %TT_VER%
 echo *** VERSION-0: %TT_V0%
 
 pushd TuringTrader
-echo public static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
+echo internal static class GitInfo { public static string Version = "%TT_GIT%"; } > GitVersion.cs
 popd
 
 echo *
@@ -71,9 +71,7 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
-rem * uses TT_V0 environment variable
-rem * 'dotnet build' cannot build WiX project
-devenv TuringTrader.sln /Build "Release|x64" /Project TuringTrader.Setup
+dotnet build TuringTrader.Setup\TuringTrader.Setup.wixproj -c "Release" /p:Platform=x64 /p:Version=%TT_V0%
 
 echo *
 echo *
@@ -88,8 +86,16 @@ popd
 echo *
 echo *
 echo ***************************************************************************
+echo *** cleanup
+echo ***************************************************************************
+
+git restore TuringTrader/GitVersion.cs
+
+echo *
+echo *
+echo ***************************************************************************
 echo *** end of build
 echo ***************************************************************************
 
-start TuringTrader.Setup\bin\Release
+start TuringTrader.Setup\bin\x64\Release
 pause

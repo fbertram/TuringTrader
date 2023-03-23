@@ -24,7 +24,7 @@
       {
         "files": [
           "api/**.yml",
-          "api/index.md",
+          "api/index.md"
         ]
       },
       {
@@ -33,9 +33,15 @@
           "articles/**/toc.yml",
           "articles/overview/**.md",
           "articles/overview/**/toc.yml",
+          "articles/qsg/**.md",
+          "articles/qsg/**/toc.yml",
+          "articles/qsg/v1/**.md",
+          "articles/qsg/v1/**/toc.yml",
+          "articles/qsg/v2/**.md",
+          "articles/qsg/v2/**/toc.yml",
           "toc.yml",
           "*.md",
-	  "index.html"
+	        "index.html"
         ]
       },
       {

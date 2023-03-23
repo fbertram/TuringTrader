@@ -2,13 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Platforms>x64</Platforms>
+	<TargetFramework>net6.0-windows</TargetFramework>
+	<Platforms>x64</Platforms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\Algorithms\Demo Algorithms\Demo01_Indicators.cs" Link="Demo01_Indicators.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="TuringTrader.Simulator">

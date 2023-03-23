@@ -4,11 +4,10 @@
 // Description: support for dynamic loading of algorithms
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
-//              TuringTrader is free software: you can redistribute it and/or 
+//              engine/ trading simulator.
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
 //              version 3 of the License, or (at your option) any later version.
@@ -24,7 +23,7 @@
 // LOAD_ALGOS_V2_DLL: with this switch turned on, the algorithm loader
 // looks for Algos.v2.dll in the same folder as the TuringTrader binary.
 // This is used for convenient testing of the v2 sim core.
-#define LOAD_ALGOS_V2_DLL
+//#define LOAD_ALGOS_V2_DLL
 
 #region Libraries
 using System;
@@ -70,6 +69,10 @@ namespace TuringTrader.Simulator
         /// Algorithm source path, in case algorithm is contained in C# source file
         /// </summary>
         public string SourcePath;
+        /// <summary>
+        /// Simulation engine version, true for V2 algorithms
+        /// </summary>
+        public bool IsV2Algorithm;
     }
 
     /// <summary>
@@ -91,7 +94,7 @@ namespace TuringTrader.Simulator
             {
                 types = assembly.GetTypes();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // can't load types: ignore
                 // NOTE: no error message here, as we might look at many DLLs
@@ -127,6 +130,7 @@ namespace TuringTrader.Simulator
                         DllType = type,
                         DllPath = assembly.Location,
                         DisplayPath = new List<string>() { title },
+                        IsV2Algorithm = type.IsSubclassOf(typeof(SimulatorV2.Algorithm))
                     };
                 }
             }
@@ -262,11 +266,9 @@ namespace TuringTrader.Simulator
                     .ToList();
             }
 
-            return publicOnly
-                ? allAlgorithms
-                    .Where(t => t.IsPublic == true)
-                    .ToList()
-                : allAlgorithms;
+            return allAlgorithms
+                    .Where(t => t.IsPublic == true || publicOnly == false)
+                    .ToList();
         }
         #endregion
         #region public static Algorithm InstantiateAlgorithm(string algorithmName)

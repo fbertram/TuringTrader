@@ -2,7 +2,7 @@
 
 ![GNU Affero General Public License](https://www.gnu.org/graphics/agplv3-155x51.png)
 
-An open-source backtesting engine/ market simulator, licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0).
+An open-source backtesting engine/ trading simulator, licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0).
 
 For news, updates, and  more information about the project, please visit our website at https://www.turingtrader.org/.
 
@@ -18,15 +18,11 @@ Find the TuringTrader documentation at https://www.turingtrader.org/documentatio
 
 ### Prerequisites
 
-see https://dotnet.microsoft.com/download/dotnet-core/3.1
-
-- Microsoft Visual Studio Community 2019
-    - due to using .NET Core 3, we need at least version 16.2.0 Preview 3
+- Microsoft Visual Studio Community 2022
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
-- .NET Core 3.1 SDK
-- WiX Toolset version 3.11
-- WiX Toolset Visual Studio 2019 Extension
-- DocFX toolset version 2.43.2.0
+- .NET 6.0 SDK
+- DocFX toolset version 2.62.2
+- WiX Toolset v4 (FireGiant's HeatWave Community Edition)
 
 ### Build Steps
 
@@ -36,7 +32,7 @@ Here are the individual steps to build TuringTrader from source:
 - Open TuringTrader solution in Visual Studio
 - Build release version of TuringTrader project
 - Publish TuringTrader application
-- Build BooksAndPubs project (will link against the binary version installed)
+- Build BooksAndPubs project (linked against the binary version installed)
 - Build setup project
 - Build documentation
 

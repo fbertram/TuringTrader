@@ -7,10 +7,10 @@
 //              https://research.stlouisfed.org/docs/api/fred/
 // History:     2019v15, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -104,7 +104,7 @@ namespace TuringTrader.Simulator
                     //--- 2) if failed, try to retrieve from web
                     if (jsonMeta == null)
                     {
-                        Output.WriteLine("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
+                        Output.WriteInfo("DataSourceFred: retrieving meta for {0}", Info[DataSourceParam.nickName]);
 
                         string url = string.Format(
                             "https://api.stlouisfed.org/fred/series"
@@ -113,8 +113,10 @@ namespace TuringTrader.Simulator
                             Info[DataSourceParam.symbolFred],
                             _apiKey);
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                         using (var client = new WebClient())
                             rawMeta = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                         jsonMeta = parseMeta(rawMeta);
                         writeToDisk = true;
@@ -217,8 +219,10 @@ namespace TuringTrader.Simulator
                             endTime);
 
                         string tmpData = null;
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                         using (var client = new WebClient())
                             tmpData = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                         jsonData = parseData(tmpData);
 
@@ -316,8 +320,8 @@ namespace TuringTrader.Simulator
 
                     List<Bar> retrievalFunction()
                     {
-                        DateTime t1 = DateTime.Now;
-                        Output.Write(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
+                        //DateTime t1 = DateTime.Now;
+                        Output.WriteInfo(string.Format("DataSourceFred: loading data for {0}...", Info[DataSourceParam.nickName]));
 
                         List<Bar> rawBars = new List<Bar>();
 
@@ -359,8 +363,8 @@ namespace TuringTrader.Simulator
 
                         List<Bar> alignedBars = DataSourceHelper.AlignWithMarket(rawBars, startTime, endTime);
 
-                        DateTime t2 = DateTime.Now;
-                        Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                        //DateTime t2 = DateTime.Now;
+                        //Output.WriteLine(string.Format(" finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
                         return alignedBars;
                     };

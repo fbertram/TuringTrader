@@ -4,10 +4,10 @@
 // Description: log entry
 // History:     2018ix11, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -89,6 +89,13 @@ namespace TuringTrader.Simulator
         /// is cleared from the OrderTicket to save memory.
         /// </summary>
         public LogEntryInstrument InstrumentType;
+
+        /// <summary>
+        /// Asset's percentage of NAV after the order is executed.
+        /// This value is only an estimate and serves the sole purpose 
+        /// of allowing use of v1 algorithms in v2 hosts.
+        /// </summary>
+        public double TargetPercentageOfNav;
     }
 }
 

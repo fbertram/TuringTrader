@@ -4,10 +4,10 @@
 // Description: Data source, derived from an algorithm.
 // History:     2019iii13, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -34,7 +34,7 @@ namespace TuringTrader.Simulator
         private class DataSourceAlgorithm : DataSource
         {
             #region internal data
-            private readonly Algorithm _algo;
+            private readonly IAlgorithm _algo;
             #endregion
 
             //---------- API
@@ -52,13 +52,18 @@ namespace TuringTrader.Simulator
                 var algoName = items[0];
                 var algoParam = items.Count > 1 ? items[1] : null;
 
-                _algo = (Algorithm)AlgorithmLoader.InstantiateAlgorithm(algoName);
+                _algo = AlgorithmLoader.InstantiateAlgorithm(algoName);
 
                 if (_algo == null)
                     throw new Exception(string.Format("DataSourceAlgorithm: failed to instantiate algorithm {0}", info[DataSourceParam.nickName2]));
 
-                _algo.SubclassedParam = algoParam;
                 Info[DataSourceParam.name] = _algo.Name;
+
+                var algoV1 = _algo as Algorithm;
+                if (algoV1 != null)
+                {
+                    algoV1.SubclassedParam = algoParam;
+                }
 
                 // by default, we run the data source through the cache,
                 // if it was instantiated from an info dictionary
@@ -94,10 +99,11 @@ namespace TuringTrader.Simulator
             /// <returns>bars created from sub-classed algo</returns>
             public override IEnumerable<Bar> LoadData(DateTime startTime, DateTime endTime)
             {
-#if true
                 _algo.IsDataSource = true;
+                var algoV1 = _algo as Algorithm;
+                var algoV2 = _algo as SimulatorV2.Algorithm;
 
-                if (_algo.CanRunAsChild && Info.ContainsKey(DataSourceParam.allowSync))
+                if (algoV1 != null && algoV1.CanRunAsChild && Info.ContainsKey(DataSourceParam.allowSync))
                 {
                     // for child algorithms, we bypass the cache and run the
                     // child bar-for-bar and in sync with its parent
@@ -106,7 +112,7 @@ namespace TuringTrader.Simulator
                     // therefore, we replace the bar symbol with the algorithm's hash
                     var algoHashHex = string.Format("{0:X}", _algo.Name, _algo.GetHashCode());
 
-                    foreach (var bar in _algo.Run(startTime, endTime))
+                    foreach (var bar in algoV1.Run(startTime, endTime))
                     {
                         var bar2 = new Bar(
                             algoHashHex,
@@ -117,7 +123,7 @@ namespace TuringTrader.Simulator
 
                         yield return bar2;
 
-                        if (!_algo.IsLastBar)
+                        if (!algoV1.IsLastBar)
                         {
                             // the simulator core needs to know the next bar's
                             // timestamp. at the same time, we want to avoid
@@ -126,7 +132,7 @@ namespace TuringTrader.Simulator
                             // a dummy bar, announcing the next timestamp.
 
                             var dummy = Bar.NewValue(
-                                null, _algo.NextSimTime, 0.0);
+                                null, algoV1.NextSimTime, 0.0);
 
                             yield return dummy;
                         }
@@ -148,24 +154,72 @@ namespace TuringTrader.Simulator
 
                     List<Bar> retrievalFunction()
                     {
-                        try
+                        if (algoV1 != null)
                         {
-                            DateTime t1 = DateTime.Now;
-                            Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
+                            // execute 'native' v1 algorithms
+                            try
+                            {
+                                //DateTime t1 = DateTime.Now;
+                                Output.WriteInfo(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
 
-                            var bars = _algo.Run(startTime, endTime)
-                                .ToList();
+                                var bars = algoV1.Run(startTime, endTime)
+                                    .ToList();
 
-                            DateTime t2 = DateTime.Now;
-                            Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
+                                //DateTime t2 = DateTime.Now;
+                                //Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
 
-                            return bars;
+                                return bars;
+                            }
+
+                            catch
+                            {
+                                throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
+                            }
+                        }
+                        if (algoV2 != null)
+                        {
+                            // execute 'alien' v2 algorithms
+                            // NOTE: this code has limitations and is only meant to simplify
+                            //       the transition from v1 to v2 algorithms
+                            try
+                            {
+                                // V1 algorithms run in the exchange's time zone
+                                // while V2 algorithms run in the local time zone
+                                // BUGBUG: this code assumes trading at US stock
+                                //         exchanges with the closing bell at 4pm
+                                var timeZoneNewYork = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                                DateTime convertTimeToV2(DateTime v1Time)
+                                    => TimeZoneInfo.ConvertTimeToUtc(
+                                        new DateTime(v1Time.Year, v1Time.Month, v1Time.Day, 16, 0, 0, DateTimeKind.Unspecified),
+                                        timeZoneNewYork)
+                                        .ToLocalTime();
+
+                                DateTime convertTimeFromV2(DateTime v2Time)
+                                    => TimeZoneInfo.ConvertTime(v2Time, timeZoneNewYork);
+
+                                //DateTime t1 = DateTime.Now;
+                                Output.WriteInfo(string.Format("DataSourceAlgorithm: generating data for v2 algorithm {0}...", Info[DataSourceParam.nickName]));
+
+                                algoV2.StartDate = convertTimeToV2(startTime);
+                                algoV2.EndDate = convertTimeToV2(endTime);
+                                algoV2.Run();
+
+                                var bars = new List<Bar>();
+                                foreach (var barV2 in algoV2.EquityCurve)
+                                    bars.Add(Bar.NewOHLC(
+                                        algoV2.Name, convertTimeFromV2(barV2.Date),
+                                        barV2.Value.Open, barV2.Value.High, barV2.Value.Low, barV2.Value.Close,
+                                        (long)barV2.Value.Volume));
+
+                                return bars;
+                            }
+                            catch (Exception)
+                            {
+                                throw new Exception("DataSourceAlgorithm: failed to run sub-classed v2 algorithm " + algoNick);
+                            }
                         }
 
-                        catch
-                        {
-                            throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
-                        }
+                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
                     }
 
                     List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
@@ -177,48 +231,6 @@ namespace TuringTrader.Simulator
                     foreach (var bar in data)
                         yield return bar;
                 }
-#else
-                var algoNick = Info[DataSourceParam.nickName];
-
-                var cacheKey = new CacheId(null, "", 0,
-                    algoNick.GetHashCode(), // _algoName.GetHashCode(),
-                    startTime.GetHashCode(),
-                    endTime.GetHashCode());
-
-                List<Bar> retrievalFunction()
-                {
-                    try
-                    {
-                        DateTime t1 = DateTime.Now;
-                        Output.WriteLine(string.Format("DataSourceAlgorithm: generating data for {0}...", Info[DataSourceParam.nickName]));
-
-                        _algo.StartTime = startTime;
-                        _algo.EndTime = endTime;
-                        _algo.ParentDataSource = this;
-
-                        _algo.SubclassedData = new List<Bar>(); ;
-
-                        _algo.Run();
-
-                        DateTime t2 = DateTime.Now;
-                        Output.WriteLine(string.Format("DataSourceAlgorithm: finished after {0:F1} seconds", (t2 - t1).TotalSeconds));
-
-                        return _algo.SubclassedData;
-                    }
-
-                    catch
-                    {
-                        throw new Exception("DataSourceAlgorithm: failed to run sub-classed algorithm " + algoNick);
-                    }
-                }
-
-                List<Bar> data = Cache<List<Bar>>.GetData(cacheKey, retrievalFunction, true);
-
-                if (data.Count == 0)
-                    throw new Exception(string.Format("DataSourceAlgorithm: no data for {0}", Info[DataSourceParam.nickName]));
-
-                Data = data;
-#endif
             }
             #endregion
 
@@ -226,7 +238,7 @@ namespace TuringTrader.Simulator
             public override bool IsAlgorithm => true;
             #endregion
             #region public Algorithm Algorithm
-            public override Algorithm Algorithm => _algo;
+            public override Algorithm Algorithm => _algo as Algorithm;
             #endregion
         }
     }

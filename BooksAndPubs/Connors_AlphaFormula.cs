@@ -5,7 +5,21 @@
 //              'The Alpha Formula'.
 // History:     2019xii12, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2020, Bertram Enterprises LLC
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
+// License:     This file is part of TuringTrader, an open-source backtesting
+//              engine/ trading simulator.
+//              TuringTrader is free software: you can redistribute it and/or 
+//              modify it under the terms of the GNU Affero General Public 
+//              License as published by the Free Software Foundation, either 
+//              version 3 of the License, or (at your option) any later version.
+//              TuringTrader is distributed in the hope that it will be useful,
+//              but WITHOUT ANY WARRANTY; without even the implied warranty of
+//              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+//              GNU Affero General Public License for more details.
+//              You should have received a copy of the GNU Affero General Public
+//              License along with TuringTrader. If not, see 
+//              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
 // USE_BOOK_RANGE: if defined, restrict backtest to range from book

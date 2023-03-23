@@ -4,10 +4,10 @@
 // Description: base class for instrument data
 // History:     2018ix10, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -354,6 +354,14 @@ namespace TuringTrader.Simulator
             }
 
             //--- fill in nickname w/o source, as required
+#if true
+            // new 2023ii14
+            if (!nickName2.Contains("/") && !nickName2.Contains(Path.DirectorySeparatorChar))
+                defaultInfo[DataSourceParam.dataPath] = "Data" + Path.DirectorySeparatorChar + nickName2;
+            else
+                defaultInfo[DataSourceParam.dataPath] = nickName2.Replace('/', Path.DirectorySeparatorChar);
+#else
+            // retired 2023ii14
             List<DataSourceParam> updateWithNickname2 = new List<DataSourceParam>
             {
                 DataSourceParam.dataPath,
@@ -363,6 +371,7 @@ namespace TuringTrader.Simulator
             {
                 defaultInfo[field] = string.Format(_defaultInfo[field], nickName2);
             }
+#endif
 
             //--- fill in ticker, as required
             List<DataSourceParam> updateWithTicker = new List<DataSourceParam>

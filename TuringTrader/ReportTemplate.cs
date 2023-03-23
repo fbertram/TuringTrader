@@ -4,10 +4,10 @@
 // Description: Base class for C# report templates.
 // History:     2019v28, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2020, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -24,6 +24,7 @@
 #region libraries
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
@@ -106,6 +107,7 @@ namespace TuringTrader
         /// NAV as an area, and the following columns/ benchmarks as lines.
         /// </summary>
         protected virtual bool CFG_IS_AREA(string label) => label == _firstYLabel && _numYLabels <= 2;
+        protected virtual int CFG_SCATTER_SIZE => 2;
         #endregion
 
         #region internal data
@@ -762,11 +764,12 @@ namespace TuringTrader
         protected bool IsScatter(string selectedChart)
         {
             var chartData = PlotData[selectedChart];
+            var pointsPerSeries = new Dictionary<string, int>();
 
             object prevX = null;
-
             foreach (var row in chartData)
             {
+                //--- criterion #1: if the x-value goes backwards, it's a scatter
                 object curX = row.First().Value;
                 prevX = prevX ?? curX;
 
@@ -784,9 +787,18 @@ namespace TuringTrader
                 }
 
                 prevX = curX;
+
+                //--- criterion #2: if there is only one datapoint per series, it's a scatter
+                foreach (var col in row.Keys.Skip(1))
+                {
+                    if (!pointsPerSeries.ContainsKey(col))
+                        pointsPerSeries[col] = 1;
+                    else
+                        pointsPerSeries[col]++;
+                }
             }
 
-            return false;
+            return pointsPerSeries.Max(kv => kv.Value) <= 1 ? true : false;
         }
         #endregion
 
@@ -824,7 +836,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -912,7 +924,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -956,7 +968,7 @@ namespace TuringTrader
                         newSeries.XAxisKey = "x";
                         newSeries.YAxisKey = "y";
                         newSeries.MarkerType = MarkerType.Circle;
-                        newSeries.MarkerSize = 2;
+                        newSeries.MarkerSize = CFG_SCATTER_SIZE;
                         newSeries.MarkerStroke = CFG_COLORS[allSeries.Count % CFG_COLORS.Count()];
                         newSeries.MarkerFill = newSeries.MarkerStroke;
                         allSeries[yLabel] = newSeries;
@@ -987,7 +999,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = PlotData.Keys.First();
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new DateTimeAxis();
@@ -1163,7 +1175,8 @@ namespace TuringTrader
             row[METRIC_LABEL] = "Stdev of Returns (Monthly, Annualized)";
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}",
-                    Math.Sqrt(12.0) * _stdMonthlyReturn(label));
+                    Math.Sqrt(12.0) * _stdMonthlyReturn(label)); // likely incorrect as we are using log-returns
+                    //(Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(label)) - 1.0)); // is this better? code cuplicated in RenderComps!
             retvalue.Add(row);
 
 
@@ -1276,7 +1289,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = Plotter.SheetNames.ANNUAL_BARS;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             var xAxis = new CategoryAxis();
@@ -1305,21 +1318,21 @@ namespace TuringTrader
                 // TODO: use CFG_IS_AREA here? 
                 // Note that logic for NUM_Y_LABELS is inverted!
                 var colSeries = (yLabel == _firstYLabel || _numYLabels > 2)
-                    ? new ColumnSeries
+                    ? new BarSeries
                     {
                         Title = yLabel,
                         IsVisible = true,
-                        XAxisKey = "x",
-                        YAxisKey = "y",
+                        XAxisKey = "y", // we transpose!
+                        YAxisKey = "x",
                         StrokeColor = color,
                         FillColor = i == 0 ? CFG_COLOR0_FILL : color,
                     }
-                    : new ColumnSeries
+                    : new BarSeries
                     {
                         Title = yLabel,
                         IsVisible = true,
-                        XAxisKey = "x",
-                        YAxisKey = "y",
+                        XAxisKey = "y", // we transpose!
+                        YAxisKey = "x",
                         StrokeColor = color,
                         StrokeThickness = 1,
                         FillColor = OxyColors.White,
@@ -1333,7 +1346,7 @@ namespace TuringTrader
                         ? yearlyBars[y][yLabel]
                         : 0.0;
 
-                    colSeries.Items.Add(new ColumnItem(pnl));
+                    colSeries.Items.Add(new BarItem(pnl));
                 }
             }
 
@@ -1351,7 +1364,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = Plotter.SheetNames.RETURN_DISTRIBUTION;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1473,7 +1486,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = "Monte-Carlo Analysis of Returns and Drawdowns";
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1633,13 +1646,21 @@ namespace TuringTrader
                 cagrsLeft[yLabel] = cagrLeft;
                 cagrsRight[yLabel] = cagrRight;
 
-                var yearsToBreakEven = cagrLeft
-                    .OrderBy(kv => kv.Key)
-                    .Where(kv => kv.Value > 0.0)
-                    .First().Key;
+                try
+                {
+                    var yearsToBreakEven = cagrLeft
+                        .OrderBy(kv => kv.Key)
+                        .Where(kv => kv.Value > 0.0)
+                        .First().Key;
 
-                var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
-                maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
+                    var maxCagrAtBreakeven = cagrRight[yearsToBreakEven];
+                    maxCagrToChart = Math.Max(maxCagrToChart, maxCagrAtBreakeven);
+                }
+                catch (Exception)
+                {
+                    // simply ignore
+                    // we get here, when there is no break-even point
+                }
             }
 
             //===== get DDs
@@ -1654,7 +1675,7 @@ namespace TuringTrader
             //===== plot results
             PlotModel plotModel = new PlotModel();
             plotModel.Title = String.Format("Monte Carlo Analysis of Expected Returns and Drawdowns", LEFT_TAIL, RIGHT_TAIL);
-            plotModel.LegendPosition = LegendPosition.RightBottom;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.RightBottom });
             plotModel.Axes.Clear();
 
             Axis xAxis = new LinearAxis();
@@ -1803,7 +1824,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)
@@ -1987,16 +2008,39 @@ namespace TuringTrader
                 double navPast = (double)rowPast[_firstYLabel];
                 double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
 
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = p.Item1;
                 row["Value"] = cagr;
+                retvalue.Add(row);
+            }
+            //--- year-to-date
+            {
+                DateTime datePastTarget = dateLast - TimeSpan.FromDays(dateLast.DayOfYear);
+                Dictionary<string, object> rowPast = _firstChart
+                    .OrderBy(r => Math.Abs((datePastTarget - (DateTime)r[_xLabel]).TotalSeconds))
+                    .First();
+                DateTime datePast = (DateTime)rowPast[_xLabel];
+                double years = (dateLast - datePast).TotalDays / 365.25;
+                double navPast = (double)rowPast[_firstYLabel];
+                double change = 100.0 * (navLast / navPast - 1.0);
+                double cagr = 100.0 * (Math.Pow(navLast / navPast, 1.0 / years) - 1.0);
+
+                row = new Dictionary<string, object>();
+                row[METRIC_LABEL] = "cagr-ytd";
+                row["Value"] = cagr;
+                retvalue.Add(row);
+
+                row = new Dictionary<string, object>();
+                row[METRIC_LABEL] = "chg-ytd";
+                row["Value"] = change;
                 retvalue.Add(row);
             }
 
             //--- other metrics
             var metrics = new List<Tuple<string, Func<object>>>
             {
-                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                //Tuple.Create<string, Func<object>>("stdev", () => 100.0 * (Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)) - 1.0)),
+                Tuple.Create<string, Func<object>>("stdev", () => 100.0 * Math.Sqrt(12.0) * _stdMonthlyReturn(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("mdd", () => 100.0 * _mdd(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("ulcer", () => 100.0 * _ulcerIndex(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("sharpe", () => _sharpeRatio(_firstYLabel)),
@@ -2021,7 +2065,7 @@ namespace TuringTrader
 
             foreach (var m in metrics)
             {
-                row = new Dictionary<String, object>();
+                row = new Dictionary<string, object>();
                 row[METRIC_LABEL] = m.Item1;
                 try
                 {
@@ -2047,7 +2091,7 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = string.Format("{0}-Year Rolling Returns & Tracking to Benchmark", ROLLING_YEARS);
-            plotModel.LegendPosition = LegendPosition.LeftTop;
+            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = new DateTimeAxis();
@@ -2437,8 +2481,8 @@ namespace TuringTrader
 #else
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
-                width, height,
-                OxyColors.White);
+                width, height);
+                //OxyColors.White);
                 //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
 #endif
         }
@@ -2543,6 +2587,56 @@ namespace TuringTrader
             }
         }
         #endregion
+        #region public void SaveAsHtml(string chartToSave, string csvFilePath)
+        /// <summary>
+        /// save table as Html
+        /// </summary>
+        /// <param name="chartToSave">chart to save</param>
+        /// <param name="csvFilePath">path to Html</param>
+        public void SaveAsHtml(string chartToSave, string csvFilePath)
+        {
+            using (StreamWriter sw = new StreamWriter(csvFilePath))
+            {
+
+                List<Dictionary<string, object>> tableModel = (List<Dictionary<string, object>>)GetModel(chartToSave);
+
+                List<string> columns = tableModel
+                    .SelectMany(row => row.Keys)
+                    .Distinct()
+                    .ToList();
+
+                sw.WriteLine("<html lang=\"en-us\"><head><link rel=\"stylesheet\" href=\"styles.css\"/><title>{0}</title></head><body><table>", chartToSave);
+
+                //----- header row
+                sw.Write("<thead><tr>");
+                for (var col = 0; col < columns.Count; col++)
+                {
+                    sw.Write("<th>{0}</th>", columns[col]);
+                }
+                sw.WriteLine("</tr></thead>");
+
+                //----- data rows
+                sw.Write("<tbody>");
+                for (var row = 0; row < tableModel.Count; row++)
+                {
+                    sw.Write("<tr>");
+                    for (var col = 0; col < columns.Count; col++)
+                    {
+                        sw.Write("<td>{0}</td>",
+                            tableModel[row].ContainsKey(columns[col])
+                                ? tableModel[row][columns[col]]
+                                : "");
+                    }
+                    sw.WriteLine("</tr>");
+                }
+                sw.WriteLine("</tbody>");
+
+                //----- close
+                sw.WriteLine("</table></body></html>");
+            }
+        }
+        #endregion
+
         #region public void SaveAs(string chartToSave, string filePathWithoutExtension)
         public void SaveAs(string chartToSave, string filePathWithoutExtension)
         {
@@ -2565,6 +2659,10 @@ namespace TuringTrader
 #if true
                 string jsonFilePath = Path.ChangeExtension(filePathWithoutExtension, ".json");
                 SaveAsJson(chartToSave, jsonFilePath);
+#endif
+#if false
+                string htmlFilePath = Path.ChangeExtension(filePathWithoutExtension, ".html");
+                SaveAsHtml(chartToSave, htmlFilePath);
 #endif
             }
         }
@@ -2683,6 +2781,13 @@ namespace TuringTrader
             if (retvalue.GetType() == typeof(PlotModel))
             {
                 retvalue = _addLogo((PlotModel)retvalue);
+
+#if true
+                // NOTE: we need to make sure the background is white
+                // without doing so, the background is black
+                // when exported as bitmap
+                ((PlotModel)retvalue).Background = OxyColors.White;
+#endif
             }
 
             return retvalue;

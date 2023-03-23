@@ -4,10 +4,10 @@
 // Description: logging class to connect w/ CSV Files, Excel, R, C#
 // History:     2017xii08, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -51,7 +51,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Parent algorithm of plotter object, may be null.
         /// </summary>
-        public Algorithm ParentAlgorithm { get; private set; }
+        public IAlgorithm ParentAlgorithm { get; private set; }
         #endregion
         #region internal helpers
         private string AddQuotesAsRequired(string value)
@@ -95,7 +95,7 @@ namespace TuringTrader.Simulator
         /// <summary>
         /// Create and initialize logger object.
         /// </summary>
-        public Plotter(Algorithm parentAlgorithm = null)
+        public Plotter(IAlgorithm parentAlgorithm = null)
         {
             ParentAlgorithm = parentAlgorithm;
         }

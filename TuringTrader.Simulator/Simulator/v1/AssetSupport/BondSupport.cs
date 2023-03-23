@@ -4,10 +4,10 @@
 // Description: bond support functionality
 // History:     2019v19, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -147,6 +147,7 @@ namespace TuringTrader.Support
 
             // periodic payment of coupon
             double couponPayment = faceValue * couponPerPeriod;
+            // BUGBUG: this does not work with non-integer numPeriods
             for (int t = 1; t <= numPeriods; t++)
                 presentValue += PresentValue(couponPayment, yieldPerPeriod, t);
 

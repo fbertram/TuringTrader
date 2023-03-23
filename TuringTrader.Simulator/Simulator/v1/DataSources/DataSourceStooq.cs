@@ -4,10 +4,10 @@
 // Description: Data source for Stooq EOD Data.
 // History:     2021v17, FUB, created (w/ input from Rafal Jonca)
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2021, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -95,8 +95,10 @@ namespace TuringTrader.Simulator
                         _metaUrlTemplate,
                         convertSymbol(Info[DataSourceParam.symbolStooq]));
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     writeToDisk = true;
                 }
@@ -219,6 +221,7 @@ namespace TuringTrader.Simulator
                         endTime);
 
                     string tmpPrices = null;
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                     {
                         client.Headers.Add("Referer", _refererUrlTemplate);
@@ -229,6 +232,7 @@ namespace TuringTrader.Simulator
                         client.Headers.Add("Sec-GPC", "1");
                         tmpPrices = client.DownloadString(url);
                     }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     stooqPrices = parsePrices(tmpPrices);
 

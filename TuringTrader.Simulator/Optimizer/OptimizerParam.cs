@@ -26,9 +26,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TuringTrader.Simulator;
 #endregion
 
-namespace TuringTrader.Simulator
+namespace TuringTrader.Optimizer
 {
     /// <summary>
     /// Container holding optimizer parameter information, collected from

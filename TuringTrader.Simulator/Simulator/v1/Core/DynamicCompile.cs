@@ -4,10 +4,10 @@
 // Description: support for dynamic compilation
 // History:     2019v28, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -64,6 +64,7 @@ namespace TuringTrader.Simulator
                 //--- these can't be created any other way
                 //    https://stackoverflow.com/questions/23907305/roslyn-has-no-reference-to-system-runtime
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "mscorlib.dll")),
+                MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "netstandard.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Core.dll")),
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Data.dll")),
@@ -71,7 +72,6 @@ namespace TuringTrader.Simulator
                 MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")),
 
                 //--- these are referenced by a type we need
-                //MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(TuringTrader.Simulator.Algorithm).GetTypeInfo().Assembly.Location),

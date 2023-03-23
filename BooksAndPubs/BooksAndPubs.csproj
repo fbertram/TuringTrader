@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Authors>Felix Bertram et al</Authors>
-    <Company>Bertram Solutions LLC</Company>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
     <Product>TuringTrader</Product>
-    <Description>Showcase Algorithms</Description>
+    <Description>Showcase Algorithms (Legacy)</Description>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2021, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageId>TuringTrader.BooksAndPubs</PackageId>
     <Platforms>x64</Platforms>

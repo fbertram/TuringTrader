@@ -4,10 +4,10 @@
 // Description: Trading calendar interface.
 // History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -23,9 +23,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace TuringTrader.Simulator.v2
+namespace TuringTrader.SimulatorV2
 {
     /// <summary>
     /// Trading calendar class to convert a date range to
@@ -44,9 +43,20 @@ namespace TuringTrader.Simulator.v2
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Enumerable of trading days between start and end dates.
+        /// List of trading days between start and end dates,
+        /// in the local time zone.
         /// </summary>
-        public IEnumerable<DateTime> TradingDays { get; }
+        public List<DateTime> TradingDays { get; }
+
+        /// <summary>
+        /// Time zone info for exchange.
+        /// </summary>
+        public TimeZoneInfo ExchangeTimeZone { get; }
+
+        /// <summary>
+        /// Time of close, in exchange's time zone.
+        /// </summary>
+        public TimeOnly TimeOfClose { get; }
     }
 }
 

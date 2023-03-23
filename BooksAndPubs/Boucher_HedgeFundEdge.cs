@@ -5,10 +5,10 @@
 //              'The Hedge Fund Edge'.
 // History:     2022i20, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2022, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TuringTrader.Algorithms.Glue;
 using TuringTrader.Indicators;
+using TuringTrader.Optimizer;
 using TuringTrader.Simulator;
 using TuringTrader.Support;
 #endregion
@@ -332,14 +333,14 @@ namespace TuringTrader.BooksAndPubs
         {
             //========== initialization ==========
 
-#if true
+#if FULL_RANGE
             //WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = DateTime.Parse("01/01/1965");
-            EndTime = DateTime.Parse("01/16/2022");
+            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
 #else
             WarmupStartTime = Globals.WARMUP_START_TIME;
             StartTime = Globals.START_TIME;
-            EndTime = Globals.END_TIME - TimeSpan.FromDays(5);
+            EndTime = Globals.END_TIME;
 #endif
 
             Deposit(Globals.INITIAL_CAPITAL);
@@ -380,10 +381,12 @@ namespace TuringTrader.BooksAndPubs
                     var bondWeight = holdBonds ? 1.0 : 0.0;
                     var bondShares = (int)Math.Floor(bondWeight * NetAssetValue[0] / bondAsset.Instrument.Close[0]);
                     bondAsset.Instrument.Trade(bondShares - bondAsset.Instrument.Position);
+                    Alloc.Allocation[bondAsset.Instrument] = bondWeight;
 
                     var safeWeight = 1.0 - bondWeight;
                     var safeShares = (int)Math.Floor(safeWeight * NetAssetValue[0] / safeAsset.Instrument.Close[0]);
                     safeAsset.Instrument.Trade(safeShares - safeAsset.Instrument.Position);
+                    Alloc.Allocation[safeAsset.Instrument] = safeWeight;
                 }
 
                 // plotter output
@@ -391,8 +394,8 @@ namespace TuringTrader.BooksAndPubs
                 {
                     _plotter.AddNavAndBenchmark(this, benchmark.Instrument);
                     //_plotter.AddStrategyHoldings(this, universe.Select(ds => ds.Instrument));
-                    //if (Alloc.LastUpdate == SimTime[0])
-                    //    _plotter.AddTargetAllocationRow(Alloc);
+                    if (Alloc.LastUpdate == SimTime[0])
+                        _plotter.AddTargetAllocationRow(Alloc);
 
                     _plotter.SelectChart("Bond LT Yield", "Date");
                     _plotter.SetX(SimTime[0]);

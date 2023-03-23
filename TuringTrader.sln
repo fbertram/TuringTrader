@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29006.145
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader", "TuringTrader\TuringTrader.csproj", "{A49636EA-6181-428F-BF50-C3BA8DAC2679}"
 EndProject
@@ -24,7 +24,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TuringTrader.CustomApp", "M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "More", "More", "{0594F683-F733-4BBF-821F-B5EC1EE5385E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algos.v2", "Algos.v2\Algos.v2.csproj", "{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BooksAndPubsV2", "BooksAndPubsV2\BooksAndPubsV2.csproj", "{FEA0D82C-2AEB-4CEA-B2B7-4FA6B465B4A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,9 +55,10 @@ Global
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Debug|x64.Build.0 = Debug|x64
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.ActiveCfg = Release|x64
 		{5209DD87-E725-4971-AA21-0D3BB2441A4B}.Release|x64.Build.0 = Release|x64
-		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Debug|x64.ActiveCfg = Debug|x64
-		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Debug|x64.Build.0 = Debug|x64
-		{6C1D5BF2-3B9E-49F0-9AA0-4E425596F4B9}.Release|x64.ActiveCfg = Release|x64
+		{FEA0D82C-2AEB-4CEA-B2B7-4FA6B465B4A1}.Debug|x64.ActiveCfg = Debug|x64
+		{FEA0D82C-2AEB-4CEA-B2B7-4FA6B465B4A1}.Debug|x64.Build.0 = Debug|x64
+		{FEA0D82C-2AEB-4CEA-B2B7-4FA6B465B4A1}.Release|x64.ActiveCfg = Release|x64
+		{FEA0D82C-2AEB-4CEA-B2B7-4FA6B465B4A1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

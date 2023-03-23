@@ -4,10 +4,10 @@
 // Description: Data source for Yahoo EOD Data.
 // History:     2019vi02, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2019, Bertram Solutions LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -156,8 +156,10 @@ namespace TuringTrader.Simulator
                         toUnixTime(endTime));
 
                     string tmpPrices = null;
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                         tmpPrices = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     jsonPrices = parsePrices(tmpPrices);
 
@@ -245,8 +247,10 @@ namespace TuringTrader.Simulator
                         + "{0}",
                         convertSymbol(Info[DataSourceParam.symbolYahoo]));
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     using (var client = new WebClient())
                         rawMeta = client.DownloadString(url);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
 
                     writeToDisk = true;
                 }
@@ -265,7 +269,7 @@ namespace TuringTrader.Simulator
 
                 return rawMeta;
             }
-#endregion
+            #endregion
 
             //---------- API
             #region public DataSourceYahoo(Dictionary<DataSourceValue, string> info)

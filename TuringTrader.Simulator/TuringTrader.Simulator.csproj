@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-<!--<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">-->
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Authors>Felix Bertram</Authors>
-    <Company>Bertram Solutions LLC</Company>
+    <Company>Bertram Enterprises LLC dba TuringTrader.com</Company>
     <Product>TuringTrader</Product>
-    <Description>Open-source backtesting engine and simulator</Description>
+    <Description>Open-source backtesting engine and trading simulator</Description>
     <PackageProjectUrl>https://www.turingtrader.org/</PackageProjectUrl>
-    <Copyright>Copyright (c) 2011-2020, Bertram Solutions LLC</Copyright>
+    <Copyright>Copyright (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.com</Copyright>
     <RepositoryUrl>https://github.com/fbertram/TuringTrader/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64</Platforms>
+    <RootNamespace>TuringTrader</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -25,10 +25,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics" Version="4.12.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.1.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <Compile Remove="Simulator\v2\Core\FloatWrapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\TuringTrader\GitVersion.cs" Link="Simulator\v2\Core\GitVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Simulator\v2\Core\FloatWrapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,10 +4,10 @@
 // Description: Interface between the TuringTrader application and algorithms.
 // History:     2021iv23, FUB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2021, Bertram Enterprises LLC
-//              https://www.bertram.solutions
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
-//              engine/ market simulator.
+//              engine/ trading simulator.
 //              TuringTrader is free software: you can redistribute it and/or 
 //              modify it under the terms of the GNU Affero General Public 
 //              License as published by the Free Software Foundation, either 
@@ -22,9 +22,8 @@
 //==============================================================================
 
 #region libraries
-using System;
 using System.Collections.Generic;
-using System.Text;
+using TuringTrader.Optimizer;
 #endregion
 
 namespace TuringTrader.Simulator
@@ -98,6 +97,14 @@ namespace TuringTrader.Simulator
         /// and conserve memory.
         /// </summary>
         public bool IsOptimizing { set; }
+
+        /// <summary>
+        /// Field indicating if this algorithm instance is used
+        /// as a data source. Algorithms should use this to reduce
+        /// unnecessary calculations and output, to speed up calculation
+        /// and conserve memory.
+        /// </summary>
+        public bool IsDataSource { set; }
 
         /// <summary>
         /// Custom fitness value representing the return-aspect of the algorithm.

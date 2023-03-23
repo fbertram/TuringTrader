@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BooksAndPubs": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\TuringTrader\\Bin\\TuringTrader.exe"
+    }
+  }
+}
