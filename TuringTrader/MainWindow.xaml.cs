@@ -212,7 +212,7 @@ namespace TuringTrader
 
                     var checksumFile = Path.Combine(GlobalSettings.HomePath, "file-checksums.txt");
                     var fileChecksums = new Dictionary<string, string>();
-                    var fileDeted = new List<string>();
+                    var fileDeleted = new List<string>();
 
                     // load checksums
                     if (File.Exists(checksumFile))
@@ -253,7 +253,7 @@ namespace TuringTrader
                         else
                         {
                             WriteEventHandler(string.Format("    skipping deleted file {0}\n", filePath));
-                            fileDeted.Add(keyValue.Key);
+                            fileDeleted.Add(keyValue.Key);
                         }
                     }
 
@@ -271,19 +271,18 @@ namespace TuringTrader
                             var srcFile = Path.Combine(srcPath, src.Name);
                             var dstFile = Path.Combine(dstPath, src.Name);
 
-                            if (!File.Exists(dstFile) && !fileDeted.Contains(relFile))
+                            // NOTE: it is important we keep a checksum entry for
+                            //       each file that should be there, so that we may
+                            //       reset any modifications we made at some point
+                            fileChecksums[relFile] = CalculateMD5(srcFile);
+
+                            if (!File.Exists(dstFile) && !fileDeleted.Contains(relFile))
                             {
                                 if (relPath != null && !Directory.Exists(dstPath))
                                     Directory.CreateDirectory(dstPath);
 
                                 File.Copy(srcFile, dstFile);
                             }
-
-                            // NOTE: it is important we keep a checksum entry for
-                            //       files we skipped, so that we have a chance to
-                            //       replace them with their original versions at
-                            //       some point
-                            fileChecksums[relFile] = CalculateMD5(srcFile);
                         }
 
                         var srcDirs = srcInfo.GetDirectories();
