@@ -29,6 +29,11 @@
     <Fragment>
 	    <ComponentGroup Id="AdditionalFilesComponentGroup">
 
+			<!-- ===== root files ======================================== -->
+			<Component Id="comp.root" Directory="HOMEFOLDER">
+				<File Id="file.root.default" Source="$(var.HomeDir)\default-files.lnk" />
+			</Component>
+
 			<!-- ===== demo algorithms V1 ======================================== -->
 			<Component Id="comp.demoV1" Directory="dir.demoV1" Guid="22F75F53-3488-495A-817C-5B74FA966B66">
 				<File Id="file.demoV1.demo01" Source="$(var.HomeDir)\Algorithms\Demo Algorithms (Legacy)\Demo01_Indicators.cs" />

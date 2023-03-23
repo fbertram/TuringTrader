@@ -1,9 +1,12 @@
 # Version History
 
-- 15.99.1 - March 21, 2023
+- 16.xxx - work in progress
+  - simulator core
+    - add more indicators
+- 16.0 - March 23, 2023
   - general
     - update Nuget packages
-    - update to .net core 6
+    - update to .NET 6.0
     - update to WiX v4
   - application
     - improve init/upgrade of home directory
