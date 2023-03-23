@@ -212,7 +212,7 @@ namespace TuringTrader
 
                     var checksumFile = Path.Combine(GlobalSettings.HomePath, "file-checksums.txt");
                     var fileChecksums = new Dictionary<string, string>();
-                    var doNotCopy = new List<string>();
+                    var fileDeted = new List<string>();
 
                     // load checksums
                     if (File.Exists(checksumFile))
@@ -252,7 +252,8 @@ namespace TuringTrader
                         }
                         else
                         {
-                            doNotCopy.Add(keyValue.Key);
+                            WriteEventHandler(string.Format("    skipping deleted file {0}\n", filePath));
+                            fileDeted.Add(keyValue.Key);
                         }
                     }
 
@@ -270,23 +271,19 @@ namespace TuringTrader
                             var srcFile = Path.Combine(srcPath, src.Name);
                             var dstFile = Path.Combine(dstPath, src.Name);
 
-                            if (!File.Exists(dstFile))
+                            if (!File.Exists(dstFile) && !fileDeted.Contains(relFile))
                             {
-                                if (!doNotCopy.Contains(relFile))
-                                {
-                                    if (relPath != null && !Directory.Exists(dstPath))
-                                        Directory.CreateDirectory(dstPath);
+                                if (relPath != null && !Directory.Exists(dstPath))
+                                    Directory.CreateDirectory(dstPath);
 
-                                    File.Copy(srcFile, dstFile);
-                                }
-                                else
-                                    WriteEventHandler(string.Format("    skipping copy to {0}\n", dstFile));
-
-                                // NOTE: it is important we keep a checksum entry for
-                                //       files we skipped, so that they end up on
-                                //       the do-not-copy list next time we upgrade
-                                fileChecksums[relFile] = CalculateMD5(srcFile);
+                                File.Copy(srcFile, dstFile);
                             }
+
+                            // NOTE: it is important we keep a checksum entry for
+                            //       files we skipped, so that we have a chance to
+                            //       replace them with their original versions at
+                            //       some point
+                            fileChecksums[relFile] = CalculateMD5(srcFile);
                         }
 
                         var srcDirs = srcInfo.GetDirectories();
