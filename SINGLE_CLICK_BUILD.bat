@@ -56,6 +56,7 @@ echo ***************************************************************************
 
 dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
 dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
+dotnet build BooksAndPubs/BooksAndPubsV2.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
 
 echo *
 echo *
