@@ -1,6 +1,9 @@
 # Version History
 
 - 16.xxx - work in progress
+  - general
+    - removed language resources other than English
+    - removed installer project from MSVC solution
   - simulator core
     - add more indicators
 - 16.0 - March 23, 2023

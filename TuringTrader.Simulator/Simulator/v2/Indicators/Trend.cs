@@ -308,6 +308,11 @@ namespace TuringTrader.SimulatorV2.Indicators
             /// </summary>
             public readonly TimeSeriesFloat Signal;
 
+            /// <summary>
+            /// Create MACD container.
+            /// </summary>
+            /// <param name="macd"></param>
+            /// <param name="signal"></param>
             public MACDT(TimeSeriesFloat macd, TimeSeriesFloat signal)
             {
                 MACD = macd;

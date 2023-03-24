@@ -16,6 +16,8 @@ rd /s /q TuringTrader.Simulator\bin
 rd /s /q TuringTrader.Simulator\obj
 rd /s /q BooksAndPubs\bin
 rd /s /q BooksAndPubs\obj
+rd /s /q BooksAndPubsV2\bin
+rd /s /q BooksAndPubsV2\obj
 rd /s /q TuringTrader.Setup\bin
 rd /s /q TuringTrader.Setup\obj
 
@@ -72,6 +74,10 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
+rd /s /q BooksAndPubs\bin
+rd /s /q BooksAndPubs\obj
+rd /s /q BooksAndPubsV2\bin
+rd /s /q BooksAndPubsV2\obj
 dotnet build TuringTrader.Setup\TuringTrader.Setup.wixproj -c "Release" /p:Platform=x64 /p:Version=%TT_V0%
 
 echo *

@@ -17,12 +17,17 @@
         <ui:WixUI Id="WixUI_Minimal" />
         <WixVariable Id="WixUILicenseRtf" Value="EULA.rtf" />
     
-        <Feature Id="PublishedFilesFeature" Title="Published Files" Level="1">
-          <ComponentGroupRef Id="PublishedFilesComponentGroup" />
+        <Feature Id="BinaryFilesFeature" Title="Binary Files" Level="1">
+          <ComponentGroupRef Id="PublishFilesComponents" />
         </Feature>
 
-        <Feature Id="AdditionalFilesFeature" Title="Additional Files" Level="1">
-          <ComponentGroupRef Id="AdditionalFilesComponentGroup" />
+        <Feature Id="HomeFilesFeature" Title="Home Directory Files" Level="1">
+			<ComponentGroupRef Id="AlgorithmsComponents" />
+			<ComponentGroupRef Id="BooksAndPubsComponents" />
+			<ComponentGroupRef Id="BooksAndPubsV2Components" />
+			<ComponentGroupRef Id="DataComponents" />
+			<ComponentGroupRef Id="TemplatesComponents" />
+			<ComponentGroupRef Id="AdditionalFilesComponents" />
         </Feature>
 
         <Feature Id="ProductFeature" Title="TuringTrader.Setup" Level="1">
@@ -38,10 +43,16 @@
         <StandardDirectory Id="ProgramFiles64Folder">
             <Directory Id="INSTALLFOLDER" Name="TuringTrader">
                 <Directory Id="BINFOLDER" Name="Bin">
-                    <Directory Id="PublishFilesComponentGroup" />
+                    <Directory Id="PublishFilesComponents" />
                 </Directory>
-                <Directory Id="HOMEFOLDER" Name="Home" />
-                <Directory Id="AdditionalFilesComponentGroup" />
+				<Directory Id="HOMEFOLDER" Name="Home">
+					<Directory Id="AlgorithmsComponents" />
+					<Directory Id="BooksAndPubsComponents" />
+					<Directory Id="BooksAndPubsV2Components" />
+					<Directory Id="DataComponents" />
+					<Directory Id="TemplatesComponents" />
+				</Directory>
+                <Directory Id="AdditionalFilesComponents" />
             </Directory>
         </StandardDirectory>
 

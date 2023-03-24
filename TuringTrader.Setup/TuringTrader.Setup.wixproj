@@ -1,18 +1,73 @@
 ﻿<Project Sdk="WixToolset.Sdk/4.0.0-rc.4">
-  <PropertyGroup>
-    <OutputName>TuringTrader_Setup-$(Version)</OutputName>
-    <DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\bin\publish;HomeDir=$(ProjectDir)..;Eula=$(ProjectDir)..\COPYING.txt;Version=$(Version)</DefineConstants>
-    <WixVariables>
-    </WixVariables>
-    <CompilerAdditionalOptions>
-    </CompilerAdditionalOptions>
-    <Platforms>x64</Platforms>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.0-rc.4" />
-    <PackageReference Include="WixToolset.Heat" Version="4.0.0-rc.4" />
-  </ItemGroup>
-  <Target Name="BeforeBuild">
-    <HeatDirectory OutputFile="$(ProjectDir)PublishedFiles.wxs" Directory="$(ProjectDir)..\TuringTrader\bin\publish" ComponentGroupName="PublishedFilesComponentGroup" DirectoryRefId="BINFOLDER" AutogenerateGuids="true" PreprocessorVariable="var.SourceDir" SuppressRegistry="true" SuppressRootDirectory="true" ToolPath="$(WixToolPath)" NoLogo="true" />
-  </Target>
+	<PropertyGroup>
+		<OutputName>TuringTrader_Setup-$(Version)</OutputName>
+		<DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\bin\publish;HomeDir=$(ProjectDir)..;Eula=$(ProjectDir)..\COPYING.txt;Version=$(Version)</DefineConstants>
+		<WixVariables>
+		</WixVariables>
+		<CompilerAdditionalOptions>
+		</CompilerAdditionalOptions>
+		<Platforms>x64</Platforms>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WixToolset.UI.wixext" Version="4.0.0-rc.4" />
+		<PackageReference Include="WixToolset.Heat" Version="4.0.0-rc.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\TuringTrader\bin\publish">
+			<ComponentGroupName>PublishFilesComponents</ComponentGroupName>
+			<DirectoryRefId>BINFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>true</SuppressRootDirectory>
+			<SuppressRegistry>true</SuppressRegistry>
+			<PreprocessorVariable>var.SourceDir</PreprocessorVariable>
+		</HarvestDirectory>
+		<!-- BindPath Include="FilesDir" /-->
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\Algorithms">
+			<ComponentGroupName>AlgorithmsComponents</ComponentGroupName>
+			<DirectoryRefId>HOMEFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>false</SuppressRootDirectory>
+		</HarvestDirectory>
+		<BindPath Include="$(ProjectDir)..\Algorithms"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\BooksAndPubs">
+			<ComponentGroupName>BooksAndPubsComponents</ComponentGroupName>
+			<DirectoryRefId>HOMEFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>false</SuppressRootDirectory>
+		</HarvestDirectory>
+		<BindPath Include="$(ProjectDir)..\BooksAndPubs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\BooksAndPubsV2">
+			<ComponentGroupName>BooksAndPubsV2Components</ComponentGroupName>
+			<DirectoryRefId>HOMEFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>false</SuppressRootDirectory>
+		</HarvestDirectory>
+		<BindPath Include="$(ProjectDir)..\BooksAndPubsV2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\Data">
+			<ComponentGroupName>DataComponents</ComponentGroupName>
+			<DirectoryRefId>HOMEFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>false</SuppressRootDirectory>
+		</HarvestDirectory>
+		<BindPath Include="$(ProjectDir)..\Data" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="$(ProjectDir)..\Templates">
+			<ComponentGroupName>TemplatesComponents</ComponentGroupName>
+			<DirectoryRefId>HOMEFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>false</SuppressRootDirectory>
+		</HarvestDirectory>
+		<BindPath Include="$(ProjectDir)..\Templates" />
+	</ItemGroup>
+
 </Project>
