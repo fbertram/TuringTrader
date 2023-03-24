@@ -140,11 +140,13 @@ namespace TuringTrader
         {
             _dispatcherTimer.Tick -= Initialize_Once;
 
+            CheckSettings();
+
             WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
             WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
             WriteEventHandler(string.Format("Console Mode = {0}\n\n", GlobalSettings.ConsoleMode));
 
-            CheckSettings();
+            UpdateHomeDir();
             PopulateAlgorithmMenu();
             LoadMostRecentAlgorithm();
 
@@ -154,28 +156,9 @@ namespace TuringTrader
             PlotterRenderR.Register();
             PlotterRenderRMarkdown.Register();
         }
-        private void CheckSettings()
+
+        private void UpdateHomeDir()
         {
-            //===== check home path
-
-            // on first launch, create home directory in default location
-            if (GlobalSettings.HomePath.Length == 0)
-            {
-                GlobalSettings.HomePath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    "TuringTrader");
-
-                if (!Directory.Exists(GlobalSettings.HomePath))
-                    Directory.CreateDirectory(GlobalSettings.HomePath);
-            }
-
-            // if home directory doesn't exist, ask user to set new one
-            if (!Directory.Exists(GlobalSettings.HomePath))
-            {
-                MessageBox.Show("Please set TuringTrader's home folder");
-                MenuEditSettings_Click(null, null);
-            }
-
             //===== initialize home directory
 
             // we can only initialize home directory and home template exist
@@ -298,6 +281,28 @@ namespace TuringTrader
 
                     File.WriteAllLines(checksumFile, fileChecksums.Select(kv => string.Format("{0}={1}", kv.Key, kv.Value)));
                 }
+            }
+        }
+        private void CheckSettings()
+        {
+            //===== check home path
+
+            // on first launch, create home directory in default location
+            if (GlobalSettings.HomePath.Length == 0)
+            {
+                GlobalSettings.HomePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    "TuringTrader");
+
+                if (!Directory.Exists(GlobalSettings.HomePath))
+                    Directory.CreateDirectory(GlobalSettings.HomePath);
+            }
+
+            // if home directory doesn't exist, ask user to set new one
+            if (!Directory.Exists(GlobalSettings.HomePath))
+            {
+                MessageBox.Show("Please set TuringTrader's home folder");
+                MenuEditSettings_Click(null, null);
             }
 
             //===== check Tiingo API key
