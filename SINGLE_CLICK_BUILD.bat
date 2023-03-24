@@ -1,6 +1,6 @@
 @echo off
 
-rem * TODO: there should be a better way to find the path to MSVC
+rem TODO: there should be a better way to find the path to MSVC
 PATH=%PATH%;"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE"
 
 echo *
@@ -9,7 +9,7 @@ echo ***************************************************************************
 echo *** clean project
 echo ***************************************************************************
 
-rem * we'd like to clean a bit more aggressively than 'dotnet clean'
+rem we'd like to clean a bit more aggressively than 'dotnet clean'
 rd /s /q TuringTrader\bin
 rd /s /q TuringTrader\obj
 rd /s /q TuringTrader.Simulator\bin
@@ -20,6 +20,7 @@ rd /s /q BooksAndPubsV2\bin
 rd /s /q BooksAndPubsV2\obj
 rd /s /q TuringTrader.Setup\bin
 rd /s /q TuringTrader.Setup\obj
+rd /s /q DocFX/_site
 
 echo *
 echo *
@@ -74,6 +75,7 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
+rem we delete bin and obj folders to prevent WiX from harvesting these
 rd /s /q BooksAndPubs\bin
 rd /s /q BooksAndPubs\obj
 rd /s /q BooksAndPubsV2\bin
@@ -96,6 +98,7 @@ echo ***************************************************************************
 echo *** cleanup
 echo ***************************************************************************
 
+rem fall back to the original file w/o version info
 git restore TuringTrader/GitVersion.cs
 
 echo *
