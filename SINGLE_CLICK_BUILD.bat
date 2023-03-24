@@ -9,7 +9,7 @@ echo ***************************************************************************
 echo *** clean project
 echo ***************************************************************************
 
-rem we'd like to clean a bit more aggressively than 'dotnet clean'
+rem * we'd like to clean more aggressively than 'dotnet clean'
 rd /s /q TuringTrader\bin
 rd /s /q TuringTrader\obj
 rd /s /q TuringTrader.Simulator\bin
@@ -28,7 +28,7 @@ echo ***************************************************************************
 echo *** version info
 echo ***************************************************************************
 
-rem example: git tag = 0.13
+rem * example: git tag = 0.13
 rem          git describe = 0.13-14-g87a9f97
 rem          TT_GIT = 0.13-14-g87a9f97
 rem          TT_VER = 0.13.14-g87a9f97
@@ -54,20 +54,32 @@ popd
 echo *
 echo *
 echo ***************************************************************************
-echo *** build project
+echo *** build TuringTrader
 echo ***************************************************************************
 
 dotnet build TuringTrader/TuringTrader.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
+dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:Version=%TT_VER%
+
+rem * we can delete these after publishing
+rd /s /q TuringTrader\bin
+rd /s /q TuringTrader\obj
+rd /s /q TuringTrader.Simulator\bin
+rd /s /q TuringTrader.Simulator\obj
+
+echo *
+echo *
+echo ***************************************************************************
+echo *** build Books & Pubs
+echo ***************************************************************************
+
 dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
 dotnet build BooksAndPubsV2/BooksAndPubsV2.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
 
-echo *
-echo *
-echo ***************************************************************************
-echo *** publish project
-echo ***************************************************************************
-
-dotnet publish TuringTrader\TuringTrader.csproj -c "Release" /p:Platform=x64 /p:PublishProfile=FolderProfile /p:Version=%TT_VER%
+rem * we can delete these, because the DLLs have been copied to Algorithms
+rd /s /q BooksAndPubs\bin
+rd /s /q BooksAndPubs\obj
+rd /s /q BooksAndPubsV2\bin
+rd /s /q BooksAndPubsV2\obj
 
 echo *
 echo *
@@ -75,12 +87,14 @@ echo ***************************************************************************
 echo *** build setup file
 echo ***************************************************************************
 
-rem we delete bin and obj folders to prevent WiX from harvesting these
-rd /s /q BooksAndPubs\bin
-rd /s /q BooksAndPubs\obj
-rd /s /q BooksAndPubsV2\bin
-rd /s /q BooksAndPubsV2\obj
+rem * it is important that the books and pubs folders have their bin and obj
+rem * cleaned so that WiX won't harvest these
+
 dotnet build TuringTrader.Setup\TuringTrader.Setup.wixproj -c "Release" /p:Platform=x64 /p:Version=%TT_V0%
+
+rem * we won't need these anymore
+rd /s /q TuringTrader.Setup\obj
+rd /s /q TuringTrader/publish
 
 echo *
 echo *
@@ -98,7 +112,7 @@ echo ***************************************************************************
 echo *** cleanup
 echo ***************************************************************************
 
-rem fall back to the original file w/o version info
+rem * fall back to the original file w/o version info
 git restore TuringTrader/GitVersion.cs
 
 echo *

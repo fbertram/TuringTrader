@@ -1,7 +1,7 @@
 ﻿<Project Sdk="WixToolset.Sdk/4.0.0-rc.4">
 	<PropertyGroup>
 		<OutputName>TuringTrader_Setup-$(Version)</OutputName>
-		<DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\bin\publish;HomeDir=$(ProjectDir)..;Eula=$(ProjectDir)..\COPYING.txt;Version=$(Version)</DefineConstants>
+		<DefineConstants>SourceDir=$(ProjectDir)..\TuringTrader\publish;HomeDir=$(ProjectDir)..;Eula=$(ProjectDir)..\COPYING.txt;Version=$(Version)</DefineConstants>
 		<WixVariables>
 		</WixVariables>
 		<CompilerAdditionalOptions>
@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<HarvestDirectory Include="$(ProjectDir)..\TuringTrader\bin\publish">
+		<HarvestDirectory Include="$(ProjectDir)..\TuringTrader\publish">
 			<ComponentGroupName>PublishFilesComponents</ComponentGroupName>
 			<DirectoryRefId>BINFOLDER</DirectoryRefId>
 			<SuppressRootDirectory>true</SuppressRootDirectory>
