@@ -66,7 +66,7 @@ namespace TuringTrader.BooksAndPubsV2
                 }
 
                 // plotter output
-                if (!IsOptimizing && SimDate >= StartDate)
+                if (!IsOptimizing && !IsDataSource)
                 {
                     Plotter.SelectChart(Name, "Date");
                     Plotter.SetX(SimDate);
