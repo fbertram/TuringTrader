@@ -4,7 +4,7 @@ In this article, we demonstrate the following key concepts:
 * Account setup
 * Placing orders
 * Querying the account status
-* Adding trade logs
+* Using the SimpleReport template
 
 ## Account Setup
 
@@ -72,9 +72,23 @@ This code makes use of the algorithm's [Positions](xref:TuringTrader.SimulatorV2
 var currentPosition = Asset("MSFT").Position;
 ```
 
-## Adding Trade Logs
+## Using the SimpleReport template
 
-TuringTrader has a built-in function that can add the final asset allocation to the Plotter object. This code, placed after the `SimLoop`, will do just that:
+When evaluating the performance of a trading system, most people are not only interested in the equity curve, and trade logs, but also in:
+* strategy metrics
+* annual returns
+* rolling returns
+* Monte Carlo simulations
+
+Creating these manually for each trading strategy would be a lot of repetitive work. Luckily, we won't have to do that. Instead, TuringTrader's `SimpleReport` template creates all these for us, directly from the equity curve we charted with the code above. To use this template, we could do the following:
+
+```C#
+public override void Report() => Plotter.OpenWith("SimpleReport");
+```
+
+But we don't even have to do that. If we don't override `Report`, the default implementation of the `Report` method will do that for us.
+
+When using a strategy for live trading, we need to know the target asset allocation on the last day of the simulation. TuringTrader has a built-in function that can add that final allocation to the `Plotter`. This code, placed after the `SimLoop`, will do just that:
 
 ```C#
 Plotter.AddTargetAllocation();
@@ -87,18 +101,6 @@ Plotter.AddHistoricalAllocations();
 Plotter.AddTradeLog();
 ```
 
-When evaluating the performance of a trading system, most people are not only interested in the equity curve, and trade logs, but also in:
-* strategy metrics
-* annual returns
-* rolling returns
-* Monte Carlo simulations
+To learn more about TuringTrader's charting and reporting, we encourage you to check the separate article about the features of the [SimpleReport template](../SimpleReport.md).
 
-Creating these manually for each trading strategy would be a lot of repetitive work. Luckily, we won't have to do that. Instead, TuringTrader's `SimpleReport` template creates all these from the equity curve. To use this template, we could do the following:
-
-```C#
-public override void Report() => Plotter.OpenWith("SimpleReport");
-```
-
-But we don't even have to do that. If we don't override `Report`, the default implementation of the `Report` method will do that for us.
-
-We encourage you to check the separate article about the features of the [SimpleReport template](../SimpleReport.md).
+This concludes this TuringTrader demo. Please find the [full code for this demo in our repository](https://github.com/fbertram/TuringTrader/blob/develop/Algorithms/Demo%20Algorithms%20(V2)/Demo02_SingleAssets.cs).

@@ -185,6 +185,6 @@ Here is how the plot will look like using the native C# template:
 
 ![](~/images/qsg-v2/demo01/demo01Chart.jpg)
 
-This brings us to the end of our first TuringTrader demo. Please find the [full code for this demo in our repository](https://github.com/fbertram/TuringTrader/blob/develop/Algorithms/Demo%20Algorithms%20(V2)/Demo01_Indicators.cs).
-
 There are virtually no limits to the customized reports and plots we can create. The repository contains simple templates, most importantly our [SimpleReport template](../SimpleReport.md). If that's not enough, you are welcome to create your own, fancier, or more elegant ones. Read [this topic](../CustomTemplates.md) to learn more.
+
+This brings us to the end of our first TuringTrader demo. Please find the [full code for this demo in our repository](https://github.com/fbertram/TuringTrader/blob/develop/Algorithms/Demo%20Algorithms%20(V2)/Demo01_Indicators.cs).
