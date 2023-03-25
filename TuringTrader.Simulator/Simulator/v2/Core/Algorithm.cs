@@ -423,15 +423,18 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public IAccount Account { get; set; } = null; // instantiated in constructor
         /// <summary>
-        /// Positions currently held by algorithm.
+        /// Positions currently held by algorithm. Returns a dictionary keyed
+        /// with the nickname of the assets, and a value representing the fraction
+        /// of the accounts NAV held.
         /// </summary>
         public Dictionary<string, double> Positions { get => Account.Positions; }
         /// <summary>
-        /// Algorithm's current net asset value.
+        /// Algorithm's current net asset value. Expressed in currency.
         /// </summary>
         public double NetAssetValue { get => Account.NetAssetValue; }
         /// <summary>
-        /// Algorithm's current cash holdings.
+        /// Algorithm's current cash holdings. Expressed as a fraction of the
+        /// account's NAV.
         /// </summary>
         public double Cash { get => Account.Cash; }
         #endregion

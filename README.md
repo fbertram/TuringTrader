@@ -36,7 +36,7 @@ Here are the individual steps to build TuringTrader from source:
 - Build setup project
 - Build documentation
 
-The project also contains a script for a single-click build. See SINGLE_CLICK_BUILD.bat at the repository root!
+The project also contains a script for a single-click build of the installer. See [SINGLE_CLICK_BUILD.bat](https://github.com/fbertram/TuringTrader/blob/develop/SINGLE_CLICK_BUILD.bat) at the repository root!
 
 
 

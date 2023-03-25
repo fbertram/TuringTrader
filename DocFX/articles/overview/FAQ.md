@@ -6,13 +6,15 @@ On this page, we have collected answers to frequently asked questions about Turi
 
 ### Is TuringTrader production quality?
 
-Pretty much. We have used TuringTrader to develop and test more than 100 algorithms, covering many different styles. We are using TuringTrader in production at [Bertram Solutions](http://www.bertram.solutions) and [TuringTrader.com](http://www.turingtrader.com). We have done consulting for a local hedge fund and simulated strategies for them, and we are working with other interested people around the world. Most important of all, we are fully committed to keep this going for the foreseeable future.
+Yes. We have used TuringTrader to develop and test more than 300 algorithms, covering many different styles. We are using TuringTrader in production at [Bertram Solutions](http://www.bertram.solutions) and [TuringTrader.com](http://www.turingtrader.com), where we trade tactical portfolios day in and day out. Further, we have consulted for other financial professionals, researching investment solutions for them. But most important of all, we are fully committed to keep this going for the foreseeable future.
 
 ## Features
 
 ### Can TuringTrader run on intraday bars?
 
-TuringTrader does not know about bar length. It can therefore run on any defined time frame, but not ticks. However, any orders in TuringTrader are only valid for one bar, which might be a bit tedious. As we don’t use intraday bars for our own purposes, we can’t promise when that’s going to change.
+Ultimately, TuringTrader does not know about bar length. In general, it can run on any defined time frame, but not ticks. However, any orders in TuringTrader are only valid for on ebar, which makes trading on shorter bars tediuous - and there are no plans to change that. In fact, we doubled down on the end-of-day concept with the v2 engine.
+
+If you need to simulate intraday bars, this is most likely easier with the v1 engine, which will remain included in the TuringTrader package.
 
 ### Can TuringTrader perform live trading?
 
@@ -20,7 +22,7 @@ Yes. We actually use TuringTrader at [Bertram Solutions](http://www.bertram.solu
 
 ### Does TuringTrader run on Linux or Mac?
 
-We coded TuringTrader in C#, using [ .NET Core](https://docs.microsoft.com/en-us/dotnet/core/), which potentially runs on Linux or Mac. However, TuringTrader is a WPF application using the Windows Desktop SDK, which is not available on other platforms. We currently don't have the resources to work on changing that. If you'd like to help, [please reach out](https://www.turingtrader.org/about/)!
+We coded TuringTrader in C#, using [.NET Core](https://docs.microsoft.com/en-us/dotnet/core/), which potentially runs on Linux or Mac. However, TuringTrader is a WPF application using the Windows Desktop SDK, which is not available on other platforms. We currently don't have the resources to work on changing that. If you'd like to help, [please reach out](https://www.turingtrader.org/about/)!
 
 ### Will there be an interactive charting front-end for TuringTrader?
 
@@ -28,7 +30,7 @@ No, we are not planning to do that, as we are quite happy with the way TuringTra
 
 ### Is there a binary version?
 
-Yes, there is. Did you check the download section?
+Yes, there is. Did you check the [download section](https://www.turingtrader.org/download/)?
 
 ### Can you add feature XYZ?
 
