@@ -7,24 +7,31 @@ In this article, we demonstrate the following key concepts:
 
 ## Setting a Rebalancing Schedule
 
-Most trading schedules follow a predefined rebalancing schedule. For simpler strategies, this is often monthly, but any other schedule is possible. Following such a schedule is often a bit trickier than expected. For example, you might want to trade on the last day of the week. This will typically be Fridays, but in the Thanksgiving week, it is a Wednesday.
+Most trading schedules follow a predefined rebalancing schedule. For simpler strategies, this is often monthly, but any other schedule is possible. Following such a schedule is often a bit trickier than expected. For example, you might want to trade on the last day of the week. This will typically be Fridays, but during the Thanksgiving week, it is a Wednesday.
 
 TuringTrader makes it easy to do this, by using [SimDate](xref:TuringTrader.SimulatorV2.Algorithm#TuringTrader_SimulatorV2_Algorithm_SimDate), [NextSimDate](xref:TuringTrader.SimulatorV2.Algorithm#TuringTrader_SimulatorV2_Algorithm_NextSimDate), and the [TradingCalendar](xref:TuringTrader.SimulatorV2.Algorithm#TuringTrader_SimulatorV2_Algorithm_TradingCalendar). Here is an example for setting a weekly schedule:
 
 ```C#
-    SimLoop(() => {
-        // common prerequisites
+SimLoop(() => {
+    // common prerequisites
 
-        if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
-        {
-            // rebalancing code
-        }
+    if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
+    {
+        // rebalancing code
+    }
 
-        // reporting code
-    })
+    // reporting code
+})
 ```
 
 If the next simulator timestamp has a lower day of week than the current timestamp, this must be the last trading day of the week. When you put this in your code, be mindful that you probably still want to have daily reports. As a consequence, your reporting code should be outside of that conditional block.
+
+Similarly, you could trade on the last day of the month with this code:
+
+```C#
+if (SimDate.Month != NextSimDate.Month)
+    // rebalancing code
+```
 
 ## Using Universes
 
@@ -41,6 +48,12 @@ SimLoop(() => {
 When called inside the `SimLoop`, [Universe](xref:TuringTrader.SimulatorV2.Algorithm#TuringTrader_SimulatorV2_Algorithm_Universe_System_String_) returns the current constituents of the index.
 
 `Universe` will also work for data feeds that do not provide dynamic constituents. However, TuringTrader will simply return a static list then. This poses two issues. For once, that list may be outdated, as TuringTrader's release schedule is not influenced by index reconstitution. Further, the static list will introduce survivorship bias into your simulation. Nonetheless, this will help you get started.
+
+TuringTrader supports the following universes:
+* $SPX - the S&P 500
+* $OEX - the S&P 100
+* $NDX - the Nasdaq-100
+* $DJI - the Dow Jones Industrial Index
 
 ## Ranking and Selecting Assets
 
