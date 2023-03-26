@@ -6,7 +6,7 @@ In this article, we demonstrate the following key concepts:
 * Combining existing indicators to create new ones
 * Using lambda functions to create indicators
 
-## Combining existing indicators to create new ones
+## Combining Existing Indicators to Create New Ones
 
 TuringTrader's 'automagic' indicators allow for a fluid way of creating chains of indicators. This is the ideal basis for creating new indicators by writing them as a combination of existing ones. All that nees to be done, is to wrap that chain of indicators into a new extension method:
 
@@ -19,7 +19,7 @@ public static TimeSeriesFloat MyVolatility(this TimeSeriesFloat series, int peri
 }
 ```
 
-## Using lambda functions to create indicators
+## Using Lambda Functions to Create Indicators
 
 The previous method has its limitations, and there are indicators that cannot be expressed through a chain of TuringTrader's built-in indicators. This is where TuringTrader's [Lambda](xref:TuringTrader.SimulatorV2.Algorithm#TuringTrader_SimulatorV2_Algorithm_Lambda_System_String_System_Func_System_Double__) function comes in.
 

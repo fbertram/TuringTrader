@@ -65,7 +65,7 @@ namespace Demos
                         return bars;
                     });
 
-                // optionally, we can keep the built-in data sources alive
+                // it's a good idea to keep the built-in data sources alive
                 default:
                     return base.Asset(name);
             }
@@ -83,9 +83,9 @@ namespace Demos
 
                 // custom data behave just like built-in data
                 // they have OHLCV bars, and they are cached
-                Plotter.Plot("custom data #1", Asset("ernie").Close[0]);
-                Plotter.Plot("custom data #2", Asset("bert").Close[0]);
-                Plotter.Plot("regular data", Asset("SPY").Close[0] / 350.0 - 1.0);
+                Plotter.Plot("custom data ernie", Asset("ernie").Close[0]);
+                Plotter.Plot("custom data bert", Asset("bert").Close[0]);
+                Plotter.Plot("built-in data", Asset("SPY").Close[0] / 350.0 - 1.0);
             });
         }
 
