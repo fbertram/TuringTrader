@@ -22,26 +22,39 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region libraries
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Indicators;
 using TuringTrader.SimulatorV2.Assets;
-#endregion
 
 namespace Demos
 {
     static class Demo09_Extensions
     {
-        public static TimeSeriesFloat CustomEMA(this TimeSeriesFloat series, int period)
+        public static TimeSeriesFloat MyVolatility(this TimeSeriesFloat series, int period)
+        {
+            var returns = series.LogReturn();
+            var mean = returns.SMA(period);
+            return returns.Sub(mean).Square().Sum(period).Div(period - 1).Sqrt();
+        }
+
+        public static TimeSeriesFloat MySMA(this TimeSeriesFloat series, int period)
         {
             // indicator instances must have a unique name
-            var name = string.Format("{0}.CustomEMA({1})", series.Name, period);
+            var name = string.Format("{0}.MySMA({1})", series.Name, period);
+
+            // use a lambda to calculate the non-recursive SMA
+            return series.Owner.Lambda(
+                name,
+                () => Enumerable.Range(0, period).Average(t => series[t]));
+        }
+
+        public static TimeSeriesFloat MyEMA(this TimeSeriesFloat series, int period)
+        {
+            // indicator instances must have a unique name
+            var name = string.Format("{0}.MyEMA({1})", series.Name, period);
 
             // use a lambda to calculate the recursive EMA
             // note how we initialize the series on IsFirstBar
@@ -53,17 +66,6 @@ namespace Demos
                     ? series[0]
                     : prevEMA + alpha * (series[0] - prevEMA),
                 -999.99);
-        }
-
-        public static TimeSeriesFloat CustomSMA(this TimeSeriesFloat series, int period)
-        {
-            // indicator instances must have a unique name
-            var name = string.Format("{0}.CustomSMA({1})", series.Name, period);
-
-            // use a lambda to calculate the non-recursive SMA
-            return series.Owner.Lambda(
-                name,
-                () => Enumerable.Range(0, period).Average(t => series[t]));
         }
     }
 
@@ -85,14 +87,16 @@ namespace Demos
 
                 // our custom indicators can be used exactly the same way
                 // as any of TuringTrader's built-in indicators
-                var custom1 = input.CustomEMA(200);
-                var custom2 = input.CustomSMA(200);
+                var custom1 = input.MyVolatility(10);
+                var custom2 = input.MySMA(200);
+                var custom3 = input.MyEMA(200);
 
                 Plotter.SelectChart("custom indicators", "date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot(input.Name, input[0]);
-                Plotter.Plot(custom1.Name, custom1[0]);
-                Plotter.Plot(custom2.Name, custom2[0]);
+                Plotter.Plot(input.Name, input[0] / 40.0);
+                Plotter.Plot(custom1.Name, 100.0 * Math.Sqrt(252.0) * custom1[0]);
+                Plotter.Plot(custom2.Name, custom2[0] / 40.0);
+                Plotter.Plot(custom3.Name, custom3[0] / 40.0);
             });
         }
 
