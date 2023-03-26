@@ -38,4 +38,6 @@ The data returned by this code are, like TuringTrader's built-in data sources, s
 
 As we are overloading the `Asset` method, the strategy code remains agnostic to the new custom data source. To retain the built-in functionality, it is crucial to default to the base class's implementation of `Asset` for all requests we don't handle in our code.
 
+It is worth noting that custom data could also be brought into TuringTrader through a child algorithm. We have written a [separate article](Demo07_ChildAlgos.md) about that.
+
 This brings us to the end of our first TuringTrader demo. Please find the [full code for this demo in our repository](https://github.com/fbertram/TuringTrader/blob/develop/Algorithms/Demo%20Algorithms%20(V2)/Demo08_CustomData.cs).
