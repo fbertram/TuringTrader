@@ -34,6 +34,48 @@ namespace TuringTrader.SimulatorV2.Indicators
     public static class Basic
     {
         #region Const
+        /// <summary>
+        /// Create time series with constant value.
+        /// </summary>
+        /// <param name="series">parent series</param>
+        /// <param name="value">value</param>
+        /// <returns>time series</returns>
+        public static TimeSeriesFloat Const(this TimeSeriesFloat series, double value)
+            => series.Owner.Const(value);
+
+        /// <summary>
+        /// Create time series with constant value.
+        /// </summary>
+        /// <param name="algo">parent algorithm</param>
+        /// <param name="value">value</param>
+        /// <returns>time series</returns>
+        public static TimeSeriesFloat Const(this Algorithm algo, double value)
+        {
+            var name = string.Format("Const({0})", value);
+
+            return algo.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = algo.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var dst = new List<BarType<double>>();
+
+                            foreach (var t in algo.TradingCalendar.TradingDays)
+                            {
+                                dst.Add(new BarType<double>(
+                                    t,
+                                    value));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(algo, name, data);
+                });
+        }
         #endregion
         #region Delay
         /// <summary>
