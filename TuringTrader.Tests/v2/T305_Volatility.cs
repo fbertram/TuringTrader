@@ -35,7 +35,7 @@ namespace TuringTrader.SimulatorV2.Tests
     [TestClass]
     public class T305_Volatility
     {
-        #region test StandardDeviation
+        #region StandardDeviation
         [TestMethod]
         public void Test_StandardDeviation()
         {
@@ -102,7 +102,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
-        #region test Volatility
+        #region Volatility
         [TestMethod]
         public void Test_Volatility()
         {
@@ -122,7 +122,7 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.AreEqual(0.008334928184057918, vol.Min(b => b.Value), 1e-5);
         }
         #endregion
-        #region test TrueRange
+        #region TrueRange
         private class Testbed_Volatility_V2vsV1 : Algorithm
         {
             public List<BarType<double>> v1Result;
@@ -171,7 +171,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
-        #region test AverageTrueRange
+        #region AverageTrueRange
         private class Testbed_AverageTrueRange_V2vsV1 : Algorithm
         {
             public List<BarType<double>> v1Result;
@@ -220,7 +220,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
-        #region test BollingerBands
+        #region BollingerBands
         [TestMethod]
         public void Test_BollingerBands()
         {
@@ -350,7 +350,7 @@ namespace TuringTrader.SimulatorV2.Tests
             }
         }
         #endregion
-        #region test ValueAtRisk
+        #region ValueAtRisk
         [TestMethod]
         public void Test_ValueAtRisk()
         {
@@ -367,6 +367,104 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.AreEqual(0.010204094182301643, var.Average(b => b.Value), 1e-5);
             Assert.AreEqual(0.012947836531692403, var.Max(b => b.Value), 1e-5);
             Assert.AreEqual(0.00650605717196906, var.Min(b => b.Value), 1e-5);
+        }
+        #endregion
+        #region Drawdown
+        private class Testbed_Drawdown_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.Drawdown(10)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(20);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.Drawdown(10).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_Drawdown_V2vsV1()
+        {
+            var algo = new Testbed_Drawdown_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
+        }
+        #endregion
+        #region UlcerIndex
+        private class Testbed_UlcerIndex_V2vsV1 : Algorithm
+        {
+            public List<BarType<double>> v1Result;
+            public List<BarType<double>> v2Result;
+            private class Testbed_v1 : Simulator.Algorithm
+            {
+                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
+                {
+                    StartTime = (DateTime)startTime;
+                    EndTime = (DateTime)endTime;
+                    AddDataSource("$SPX");
+
+                    foreach (var st in SimTimes)
+                        yield return Simulator.Bar.NewValue(
+                            GetType().Name,
+                            SimTime[0],
+                            Instruments.First().Close.UlcerIndex(10)[0]);
+                }
+            }
+            public override void Run()
+            {
+                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(20);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                v1Result = Asset(new Testbed_v1()).Close.Data;
+                v2Result = Asset("$SPX").Close.UlcerIndex(10).Data;
+            }
+        }
+
+        [TestMethod]
+        public void Test_UlcerIndex_V2vsV1()
+        {
+            var algo = new Testbed_UlcerIndex_V2vsV1();
+            algo.Run();
+            var v1Result = algo.v1Result;
+            var v2Result = algo.v2Result;
+
+            Assert.AreEqual(v1Result.Count, v2Result.Count);
+
+            for (var i = 0; i < v2Result.Count; i++)
+            {
+                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
+                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
+            }
         }
         #endregion
     }

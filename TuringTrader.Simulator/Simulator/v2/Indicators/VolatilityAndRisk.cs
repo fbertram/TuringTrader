@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Indicators/Volatility
-// Description: Volatility indicators.
+// Name:        VolatilityAndRisk
+// Description: Volatility and risk indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -31,7 +31,7 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// <summary>
     /// Collection of volatility-related indictors.
     /// </summary>
-    public static class Volatility_
+    public static class VolatilityAndRisk
     {
         #region StandardDeviation
         /// <summary>
@@ -76,8 +76,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
-        #region SemiDeviation
-        #endregion
+        // SemiDeviation
         #region Volatility
         /// <summary>
         /// Calculate historical volatility, based on log-returns.
@@ -136,12 +135,51 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
 
         #region Drawdown
+        /// <summary>
+        /// Calculate current drawdown from  highest high in period.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="period">period for highest high</param>
+        /// <returns>drawdown time series</returns>
+        public static TimeSeriesFloat Drawdown(this TimeSeriesFloat series, int period)
+        {
+            var name = string.Format("{0}.Drawdown({1})", series.Name, period);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                var highestHigh = Enumerable.Range(0, period)
+                                    .Max(t => src[Math.Max(0, idx - t)].Value);
+
+                                dst.Add(new BarType<double>(src[idx].Date, 1.0 - src[idx].Value / highestHigh));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
         #endregion
         #region UlcerIndex
         /// <summary>
-        /// Calculate Ulcer Index.
+        /// Calculate Ulcer Index over period.
         /// </summary>
-        // => series.Drawdown(n).Square().SMA(n).Sqrt();
+        /// <param name="series">input series</param>
+        /// <param name="period">period for highest high</param>
+        /// <returns>ulcer index time series</returns>
+        public static TimeSeriesFloat UlcerIndex(this TimeSeriesFloat series, int period)
+            => series.Drawdown(period).Square().SMA(period).Sqrt();
         #endregion
 
         #region BollingerBands
