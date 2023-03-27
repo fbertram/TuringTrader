@@ -1,6 +1,7 @@
 # Version History
 
-- 16.xxx - work in progress
+- 16.x.x - work in progress
+- 16.0.24 - March 27, 2023
   - general
     - removed language resources other than English
     - removed installer project from MSVC solution
