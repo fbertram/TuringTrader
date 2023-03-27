@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TuringTrader.SimulatorV2.Indicators;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
@@ -39,14 +40,261 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
 
         #region CCI
+        /// <summary>
+        /// Calculate Commodity Channel Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>CCI time series</returns>
+        public static TimeSeriesFloat CCI(this TimeSeriesAsset series, int n = 20)
+            => series
+                .TypicalPrice()
+                .CCI(n);
+
+        /// <summary>
+        /// Calculate Commodity Channel Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Commodity_channel_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">averaging length</param>
+        /// <returns>CCI time series</returns>
+        public static TimeSeriesFloat CCI(this TimeSeriesFloat series, int n = 20)
+        {
+            var name = string.Format("{0}.CCI({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    /*var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            ...
+                            return dst;
+                        }));
+                        return new TimeSeriesFloat(series.Ownder, name, data);*/
+
+                    var delta = series
+                        .Sub(series.SMA(n));
+
+                    var meanDeviation = delta
+                        .AbsValue()
+                        .SMA(n);
+
+                    return delta
+                        .Div(meanDeviation.Mul(0.015).Max(1e-10));
+                });
+        }
         #endregion
         #region TSI
+        /// <summary>
+        /// Calculate True Strength Index of input time series, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/True_strength_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="r">smoothing period for momentum</param>
+        /// <param name="s">smoothing period for smoothed momentum</param>
+        /// <returns>TSI time series</returns>
+        public static TimeSeriesFloat TSI(this TimeSeriesFloat series, int r = 25, int s = 13)
+        {
+            var name = string.Format("{0}.TSI({1},{2})", series.Name, r, s);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    /*var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            ...
+                            return dst;
+                        }));
+                        return new TimeSeriesFloat(series.Ownder, name, data);*/
+
+                    var momentum = series.AbsReturn();
+                    var numerator = momentum.EMA(r).EMA(s);
+                    var denominator = momentum.AbsValue().EMA(r).EMA(s);
+
+                    return numerator.Mul(100.0)
+                        .Div(denominator.Max(1e-10));
+                });
+        }
         #endregion
         #region RSI
+        /// <summary>
+        /// Calculate Relative Strength Index, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Relative_strength_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">smoothing period</param>
+        /// <returns>RSI time series</returns>
+        public static TimeSeriesFloat RSI(this TimeSeriesFloat series, int n = 14)
+        {
+            var returns = series.AbsReturn();
+
+            var avgUp = returns
+                .Max(0.0)
+                .EMA(n);
+
+            var avgDown = returns
+                .Min(0.0)
+                .EMA(n)
+                .Mul(-1.0);
+
+            var rs = avgUp
+                .Div(avgDown.Max(1e-10));
+
+            return series.Const(100.0)
+                .Sub(series.Const(100.0).Div(rs.Add(1.0)));
+        }
         #endregion
         #region WilliamsPercentR
+        /// <summary>
+        /// Calculate Williams %R, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Williams_%25R"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">period</param>
+        /// <returns>Williams %R as time series</returns>
+        public static TimeSeriesFloat WilliamsPercentR(this TimeSeriesAsset series, int n = 10)
+        {
+            var hh = series.High.Highest(n);
+            var ll = series.Low.Lowest(n);
+            var price = series.Close;
+
+            return hh.Sub(price)
+                .Div(hh.Sub(ll).Max(1e-10))
+                .Mul(-100.0);
+        }
+        /// <summary>
+        /// Calculate Williams %R, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Williams_%25R"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">period</param>
+        /// <returns>Williams %R as time series</returns>
+        public static TimeSeriesFloat WilliamsPercentR(this TimeSeriesFloat series, int n = 10)
+        {
+            var hh = series.Highest(n);
+            var ll = series.Lowest(n);
+            var price = series;
+
+            return hh.Sub(price)
+                .Div(hh.Sub(ll).Max(1e-10))
+                .Mul(-100.0);
+        }
         #endregion
         #region StochasticOscillator
+        /// <summary>
+        /// Container type for result of StochasticOscillator
+        /// </summary>
+        public class StochasticOscillatorT
+        {
+            /// <summary>
+            /// %K line
+            /// </summary>
+            public readonly TimeSeriesFloat PercentK;
+            /// <summary>
+            /// %D line
+            /// </summary>
+            public readonly TimeSeriesFloat PercentD;
+
+            /// <summary>
+            /// Create new container
+            /// </summary>
+            /// <param name="percentK">%K line</param>
+            /// <param name="percentD">%D line</param>
+            public StochasticOscillatorT(TimeSeriesFloat percentK, TimeSeriesFloat percentD)
+            {
+                PercentK = percentK;
+                PercentD = percentD;
+            }
+        }
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series (OHLC)</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorT StochasticOscillator(this TimeSeriesAsset series, int n = 14)
+        {
+            var name = string.Format("{0}.StochasticOscillator({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    /*var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            ...
+                            return dst;
+                        }));
+                        return new TimeSeriesFloat(series.Ownder, name, data);*/
+
+                    var hh = series.High.Highest(n);
+                    var ll = series.Low.Lowest(n);
+                    var price = series.Close;
+
+                    var percentK = price.Sub(ll)
+                        .Div(hh.Sub(ll).Max(1e-10))
+                        .Mul(100.0);
+
+                    var percentD = percentK.SMA(3);
+
+                    return new StochasticOscillatorT(percentK, percentD);
+                });
+        }
+        /// <summary>
+        /// Calculate Stochastic Oscillator, as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Stochastic_oscillator"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">oscillator period</param>
+        /// <returns>Stochastic Oscillator as time series</returns>
+        public static StochasticOscillatorT StochasticOscillator(this TimeSeriesFloat series, int n = 14)
+        {
+            var name = string.Format("{0}.StochasticOscillator({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    /*var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            ...
+                            return dst;
+                        }));
+                        return new TimeSeriesFloat(series.Ownder, name, data);*/
+
+                    var hh = series.Highest(n);
+                    var ll = series.Lowest(n);
+                    var price = series;
+
+                    var percentK = price.Sub(ll)
+                        .Div(hh.Sub(ll).Max(1e-10))
+                        .Mul(100.0);
+
+                    var percentD = percentK.SMA(3);
+
+                    return new StochasticOscillatorT(percentK, percentD);
+                });
+        }
         #endregion
         #region LinRegression
         /// <summary>
@@ -191,6 +439,38 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region ADX
+        /// <summary>
+        /// Calculate Average Directional Movement Index.
+        /// <see href="https://en.wikipedia.org/wiki/Average_directional_movement_index"/>
+        /// </summary>
+        /// <param name="series">input OHLC time series</param>
+        /// <param name="n">smoothing length</param>
+        /// <returns>ADX time series</returns>
+        public static TimeSeriesFloat ADX(this TimeSeriesAsset series, int n = 14)
+        {
+            var name = string.Format("{0}.ADX({1})", series, n);
+
+            var upMove = series.High.Sub(series.High.Delay(1)).Max(0.0);
+            var downMove = series.Low.Delay(1).Sub(series.Low).Max(0.0);
+
+            var plusDM = series.Owner.Lambda(
+                name + ".+DM",
+                () => upMove[0] > downMove[0] ? upMove[0] : 0.0);
+
+            var minusDM = series.Owner.Lambda(
+                name + ".-DM",
+                () => downMove[0] > upMove[0] ? downMove[0] : 0.0);
+
+            var plusDI = plusDM.EMA(n);
+            var minusDI = minusDM.EMA(n);
+
+            var DX = plusDI.Sub(minusDI)
+                .Div(plusDI.Add(minusDI).Max(1e-99))
+                .AbsValue()
+                .Mul(100.0);
+
+            return DX.EMA(n);
+        }
         #endregion
     }
 }
