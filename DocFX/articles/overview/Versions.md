@@ -3,6 +3,9 @@
 - 16.x.x - work in progress
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
+  - simulator core v2
+    - make SimDate, NextSimDate, IsFirstBar, and IsLastBar ThreadStatic,
+      to avoid corruption when using Lambda
 - 16.0.24 - March 27, 2023
   - general
     - removed language resources other than English
