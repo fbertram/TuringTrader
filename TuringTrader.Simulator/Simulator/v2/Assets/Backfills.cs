@@ -2,7 +2,7 @@
 // Name:        Backfills
 // Description: Backfills for common ETFs and indices.
 //              - file created automatically -
-// History:     2023/03/23, FUB, created
+// History:     2023/03/28, FUB, created
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 
@@ -51,7 +51,7 @@ namespace TuringTrader.SimulatorV2.Assets
     {
         /// <summary>
         /// SPDR S&amp;P 500 Trust ETF
-        /// (since Jun 1997, backfilled to Jan 1990
+        /// (since Jun 1997, backfilled to Jan 1970
         /// </summary>
         public const string SPY = "splice:SPY,csv:backfills/SPY.csv";
         /// <summary>
@@ -266,7 +266,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string IEI = "splice:IEI,csv:backfills/IEI.csv";
         /// <summary>
         /// Vanguard Intermediate-Term Treasury Index ETF
-        /// (since Nov 2009, backfilled to Jul 2002
+        /// (since Nov 2009, backfilled to Jan 1970
         /// </summary>
         public const string VGIT = "splice:VGIT,csv:backfills/VGIT.csv";
         /// <summary>
@@ -276,7 +276,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string SHY = "splice:SHY,csv:backfills/SHY.csv";
         /// <summary>
         /// iShares Short Treasury Bond ETF
-        /// (since Jan 2007, backfilled to Jul 2002
+        /// (since Jan 2007, backfilled to Jan 1970
         /// </summary>
         public const string SHV = "splice:SHV,csv:backfills/SHV.csv";
         /// <summary>
@@ -286,7 +286,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string BIL = "splice:BIL,csv:backfills/BIL.csv";
         /// <summary>
         /// Invesco Ultra Short Duration ETF
-        /// (since Feb 2008, backfilled to Feb 2008
+        /// (since Feb 2008, backfilled to Jan 1970
         /// </summary>
         public const string GSY = "splice:GSY,csv:backfills/GSY.csv";
         /// <summary>
@@ -351,27 +351,27 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string BNDX = "splice:BNDX,csv:backfills/BNDX.csv";
         /// <summary>
         /// SPDR Gold Shares ETF
-        /// (since Nov 2004, backfilled to Jul 1982
+        /// (since Nov 2004, backfilled to Jan 1970
         /// </summary>
         public const string GLD = "splice:GLD,csv:backfills/GLD.csv";
         /// <summary>
         /// iShares Gold Trust ETF
-        /// (since Jan 2005, backfilled to Jul 1982
+        /// (since Jan 2005, backfilled to Jan 1970
         /// </summary>
         public const string IAU = "splice:IAU,csv:backfills/IAU.csv";
         /// <summary>
         /// Invesco DB Commodity Index Tracking ETF
-        /// (since Feb 2006, backfilled to Jul 2002
+        /// (since Feb 2006, backfilled to Jan 1991
         /// </summary>
         public const string DBC = "splice:DBC,csv:backfills/DBC.csv";
         /// <summary>
         /// Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF
-        /// (since Nov 2014, backfilled to Jul 2002
+        /// (since Nov 2014, backfilled to Jan 1991
         /// </summary>
         public const string PDBC = "splice:PDBC,csv:backfills/PDBC.csv";
         /// <summary>
         /// Vanguard Real Estate Index ETF
-        /// (since Sep 2004, backfilled to Sep 2004
+        /// (since Sep 2004, backfilled to Oct 2001
         /// </summary>
         public const string VNQ = "splice:VNQ,csv:backfills/VNQ.csv";
         /// <summary>
