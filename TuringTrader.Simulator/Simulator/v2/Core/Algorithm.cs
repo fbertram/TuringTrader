@@ -192,6 +192,13 @@ namespace TuringTrader.SimulatorV2
 
         private List<BarType<OHLCV>> _simLoop(Func<double, OHLCV> innerBarFun, double init = 0.0)
         {
+            // FIXME: this is not thread-safe and will
+            //        lead to issues when using Lambda
+            //        alongside SimLoop
+            //        the required fix is to make this
+            //        a critical section and to save
+            //        and restore all global variables
+
             var tradingDays = TradingCalendar.TradingDays;
             IsFirstBar = true;
             IsLastBar = false;
