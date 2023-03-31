@@ -171,6 +171,8 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
+        // Max Drawdown
+        // Runup
         #region UlcerIndex
         /// <summary>
         /// Calculate Ulcer Index over period.

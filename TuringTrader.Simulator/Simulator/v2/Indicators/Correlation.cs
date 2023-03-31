@@ -1,0 +1,141 @@
+﻿//==============================================================================
+// Project:     TuringTrader, simulator core v2
+// Name:        Indicators/Correlation
+// Description: Correlation indicators.
+// History:     2023iii31, FUB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+//              https://www.turingtrader.org
+// License:     This file is part of TuringTrader, an open-source backtesting
+//              engine/ trading simulator.
+//              TuringTrader is free software: you can redistribute it and/or 
+//              modify it under the terms of the GNU Affero General Public 
+//              License as published by the Free Software Foundation, either 
+//              version 3 of the License, or (at your option) any later version.
+//              TuringTrader is distributed in the hope that it will be useful,
+//              but WITHOUT ANY WARRANTY; without even the implied warranty of
+//              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+//              GNU Affero General Public License for more details.
+//              You should have received a copy of the GNU Affero General Public
+//              License along with TuringTrader. If not, see 
+//              https://www.gnu.org/licenses/agpl-3.0.
+//==============================================================================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TuringTrader.Indicators;
+
+namespace TuringTrader.SimulatorV2.Indicators
+{
+    /// <summary>
+    /// Collection of correlation indicators
+    /// </summary>
+    public static class Correlation_
+    {
+        #region Correlation
+        /// <summary>
+        /// Calculate Pearson Correlation Coefficient.
+        /// <see href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient"/>
+        /// </summary>
+        /// <param name="series">this time series</param>
+        /// <param name="other">other time series</param>
+        /// <param name="n">number of bars</param>
+        /// <returns>correlation coefficient time series</returns>
+        public static TimeSeriesFloat Correlation(this TimeSeriesFloat series, TimeSeriesFloat other, int n)
+        {
+            var name = string.Format("{0}.Correlation({1},{2})", series.Name, other.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var x = series.Data;
+                            var y = other.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < x.Count; idx++)
+                            {
+                                var avgX = Enumerable.Range(0, n)
+                                    .Average(t => x[Math.Max(0, idx - t)].Value);
+                                var avgY = Enumerable.Range(0, n)
+                                    .Average(t => y[Math.Max(0, idx - t)].Value);
+                                var covXY = Enumerable.Range(0, n)
+                                    .Sum(t => (x[Math.Max(0, idx - t)].Value - avgX)
+                                        * (y[Math.Max(0, idx - t)].Value - avgY)) / n;
+                                var varX = Enumerable.Range(0, n)
+                                    .Sum(t => Math.Pow(
+                                        x[Math.Max(0, idx - t)].Value - avgX, 2.0)) / n;
+                                var varY = Enumerable.Range(0, n)
+                                    .Sum(t => Math.Pow(
+                                        y[Math.Max(0, idx - t)].Value - avgY, 2.0)) / n;
+                                var corr = covXY
+                                    / Math.Max(1e-99, Math.Sqrt(varX) * Math.Sqrt(varY));
+
+                                dst.Add(new BarType<double>(x[idx].Date, corr));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region Covariance
+        /// <summary>
+        /// Calculate Covariance.
+        /// <see href="https://en.wikipedia.org/wiki/Covariance"/>
+        /// </summary>
+        /// <param name="series">this time series</param>
+        /// <param name="other">other time series</param>
+        /// <param name="n">number of bars</param>
+        /// <param name="subSample">distance between bars</param>
+        /// <returns>covariance time series</returns>
+        public static TimeSeriesFloat Covariance(this TimeSeriesFloat series, TimeSeriesFloat other, int n, int subSample = 1)
+        {
+            var name = string.Format("{0}.Covariance({1},{2})", series.Name, other.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var x = series.Data;
+                            var y = other.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < x.Count; idx++)
+                            {
+                                var avgX = Enumerable.Range(0, n)
+                                    .Average(t => x[Math.Max(0, idx - t)].Value);
+                                var avgY = Enumerable.Range(0, n)
+                                    .Average(t => y[Math.Max(0, idx - t)].Value);
+                                var covXY = Enumerable.Range(0, n)
+                                    .Sum(t => (x[Math.Max(0, idx - t)].Value - avgX)
+                                    * (y[Math.Max(0, idx - t)].Value - avgY))
+                                    / (n - 1.0);
+
+                                dst.Add(new BarType<double>(x[idx].Date, covXY));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+    }
+}
+
+//==============================================================================
+// end of file
