@@ -197,9 +197,6 @@ namespace TuringTrader.BooksAndPubsV2
             var Trend = seriesManager.NewSeries(0);
             var DaysInTrend = seriesManager.NewSeries(0);
 
-            // TuringTrader's order model is different from TradeStation
-            var Position = seriesManager.NewSeries(0);
-
             // TradeStation uses degrees, while C# uses radian
             double Sine(double angle) => Math.Sin(Math.PI / 180.0 * angle);
             double Cosine(double angle) => Math.Cos(Math.PI / 180.0 * angle);
@@ -356,10 +353,11 @@ namespace TuringTrader.BooksAndPubsV2
                 //     if SmoothPrice crosses over Trendline then buy;
                 //     if SmoothPrice crosses under Trendline then sell;
                 // end;
+                double targetAllocation;
                 if (Trend[0] == 1.0 && TRADE_TREND != 0)
-                {
-                    Position.Value = SmoothPrice[0] > Trendline[0] ? 1.0 : -1.0;
-                }
+                    targetAllocation = SmoothPrice[0] > Trendline[0]
+                        ? (ALLOW_LONG != 0 ? 1.0 : 0.0)
+                        : (ALLOW_SHORT != 0 ? -1.0 : 0.0);
 
                 //--- trade cycle mode
                 // if Trend = 0 then begin
@@ -367,65 +365,58 @@ namespace TuringTrader.BooksAndPubsV2
                 //     if LeadSine crosses under DCSinde then sell;
                 // end;
                 else if (Trend[0] == 0.0 && TRADE_CYCLE != 0)
-                {
-                    Position.Value = LeadSine[0] > DCSine[0] ? 1.0 : 0.0;
-                }
+                    targetAllocation = LeadSine[0] > DCSine[0]
+                        ? (ALLOW_LONG != 0 ? 1.0 : 0.0)
+                        : (ALLOW_SHORT != 0 ? -1.0 : 0.0);
+
+                //--- fallback when long or short side are disabled
                 else
-                {
-                    // fallback when long or short side are disabled
-                    Position.Value = 0.0;
-                }
+                    targetAllocation = 0.0;
 
-                if (Position[0] != Position[1])
-                {
-                    if (Position[0] > 0.0)
-                        asset.Allocate(ALLOW_LONG != 0 ? 1.0 : 0.0, OrderType.openNextBar);
-
-                    if (Position[0] < 0.0)
-                        asset.Allocate(ALLOW_SHORT != 0 ? -1.0 : 0.0, OrderType.openNextBar);
-
-                    if (Position[0] == 0.0)
-                        asset.Allocate(0.0, OrderType.openNextBar);
-                }
+                if (Math.Abs(asset.Position - targetAllocation) > 0.10)
+                    asset.Allocate(targetAllocation, OrderType.openNextBar);
 
                 //--- main chart
-                Plotter.SelectChart(Name, "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot(Name, NetAssetValue);
-                Plotter.Plot("buy & hold", asset.Close[0]);
+                if (!IsOptimizing && !IsDataSource)
+                {
+                    Plotter.SelectChart(Name, "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot(Name, NetAssetValue);
+                    Plotter.Plot("buy & hold", asset.Close[0]);
 
 #if true
-                // optional charts of internal signals
-                Plotter.SelectChart("Dominant Cycle", "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("DC Period", DCPeriod[0]);
+                    // optional charts of internal signals
+                    Plotter.SelectChart("Dominant Cycle", "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("DC Period", DCPeriod[0]);
 
-                Plotter.SelectChart("Market Mode", "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
-                Plotter.Plot("Days in Trend", Math.Min(50.0, DaysInTrend[0]));
+                    Plotter.SelectChart("Market Mode", "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
+                    Plotter.Plot("Days in Trend", Math.Min(50.0, DaysInTrend[0]));
 
-                Plotter.SelectChart("Trend Trading", "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("Smoothed Price", 25.0 * Math.Log(SmoothPrice[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("Trendline", 25.0 * Math.Log(Trendline[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
+                    Plotter.SelectChart("Trend Trading", "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("Smoothed Price", 25.0 * Math.Log(SmoothPrice[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("Trendline", 25.0 * Math.Log(Trendline[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
 
-                Plotter.SelectChart("Cycle Trading", "Date");
-                Plotter.SetX(SimDate);
-                Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
-                Plotter.Plot("DC Sine", 10.0 * DCSine[0]);
-                Plotter.Plot("Lead Sine", 10.0 * LeadSine[0]);
-                Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
+                    Plotter.SelectChart("Cycle Trading", "Date");
+                    Plotter.SetX(SimDate);
+                    Plotter.Plot("Price", 25.0 * Math.Log(Price[0] / Price[(DateTime)StartDate]));
+                    Plotter.Plot("DC Sine", 10.0 * DCSine[0]);
+                    Plotter.Plot("Lead Sine", 10.0 * LeadSine[0]);
+                    Plotter.Plot("Trending", Trend[0] != 0.0 ? 25.0 : 0.0);
 #endif
+                }
             });
 
             //========== post processing ==========
 
-            if (!IsOptimizing)
+            if (!IsOptimizing && !IsDataSource)
             {
                 Plotter.AddTargetAllocation();
                 Plotter.AddHistoricalAllocations();
