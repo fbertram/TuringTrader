@@ -303,6 +303,14 @@ namespace TuringTrader.SimulatorV2
         /// <returns>output time series</returns>
         public TimeSeriesFloat Lambda(string cacheId, Func<double, double> barFun, double init)
         {
+            // NOTE: we are assuming Lambda results to be private
+            //       to the algorithm instance, because users might
+            //       not be mindful about truly unique names.
+            //       This has two implications:
+            //       (1) we use the algorithm's hash code as part
+            //           of the name
+            //       (2) we do not store the results in DataCache
+
             var name = string.Format("Lambda({0}-{1:X})", cacheId, this.GetHashCode());
 
             return ObjectCache.Fetch(
