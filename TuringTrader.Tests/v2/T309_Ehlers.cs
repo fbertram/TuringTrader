@@ -84,6 +84,26 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.AreEqual(40.13115260537523, dcperiod2.Min(b => b.Value), 1e-5);
         }
         #endregion
+        #region SignalToNoiseRatio
+        [TestMethod]
+        public void Test_SignalToNoiseRatio()
+        {
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("2021-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(90);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+
+            var asset = algo.Asset("$SPXTR");
+            var snr = asset.SignalToNoiseRatio().Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+
+            Assert.AreEqual(10.73415700283082, snr.Average(b => b.Value), 1e-5);
+            Assert.AreEqual(19.018848272021053, snr.Max(b => b.Value), 1e-5);
+            Assert.AreEqual(2.093363051370056, snr.Min(b => b.Value), 1e-5);
+        }
+        #endregion
     }
 }
 

@@ -206,7 +206,21 @@ namespace TuringTrader.SimulatorV2.Tests
         [TestMethod]
         public void Test_ZScore()
         {
-            throw new NotImplementedException();
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("2021-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(90);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+
+            var asset = algo.Asset("$SPXTR");
+            var z = asset.Close.ZScore(21).Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+
+            Assert.AreEqual(252, z.Count);
+            Assert.AreEqual(0.7279812127562796, z.Average(b => b.Value), 1e-5);
+            Assert.AreEqual(2.6775366551310253, z.Max(b => b.Value), 1e-5);
+            Assert.AreEqual(-2.975802196796978, z.Min(b => b.Value), 1e-5);
         }
         #endregion
     }

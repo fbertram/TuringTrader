@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TuringTrader.SimulatorV2.Indicators
@@ -80,8 +81,8 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 Price.Value = src[idx].Value;
 
-                                // this code is taken verbatim from Ehlers's book,
-                                // see fig 7.2., page 68ff.
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 7.2., page 68ff.
 
                                 Smooth.Value = (4.0 * Price + 3.0 * Price[1]
                                     + 2.0 * Price[2] + Price[3])
@@ -134,6 +135,84 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, SmoothPeriod[0]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region SignalToNoiseRatio
+        /// <summary>
+        /// Calculate the signal-to-noise ratio. The method is based
+        /// on John F. Ehler's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">length of calculation window</param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat SignalToNoiseRatio(this TimeSeriesAsset series)
+        {
+            var name = string.Format("{0}.SignalToNoiseRatio()", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            var typ = series.TypicalPrice().Data; // Ehlers is using (H+L)/2 instead
+                            var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
+
+                            var lookback = new LookbackManager();
+                            var Price = lookback.NewLookback(0);
+                            var Smooth = lookback.NewLookback(0);
+                            var SmoothPeriod = lookback.NewLookback(0);
+                            var Q3 = lookback.NewLookback(0);
+                            var I3 = lookback.NewLookback(0);
+                            var Signal = lookback.NewLookback(0);
+                            var Noise = lookback.NewLookback(0);
+                            var SNR = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                // advance all lookbacks
+                                lookback.Advance();
+
+                                var H = src[idx].Value.High;
+                                var L = src[idx].Value.Low;
+                                Price.Value = typ[idx].Value;
+                                Smooth.Value = (4 * Price + 3 * Price[1] + 2 * Price[2] + Price[3]) / 10;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                SmoothPeriod.Value = dcp[idx].Value;
+
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 8.5., page 87ff.
+
+                                Q3.Value = 0.5 * (Smooth - Smooth[2])
+                                    * (0.1759 * SmoothPeriod + 0.4607);
+
+                                var smoothPeriod_2 = (int)Math.Floor(SmoothPeriod / 2);
+                                I3.Value = Enumerable.Range(0, smoothPeriod_2)
+                                    .Sum(t => Q3[t])
+                                    * 1.57 / Math.Max(1, smoothPeriod_2);
+
+                                Signal.Value = I3 * I3 + Q3 * Q3;
+                                Noise.Value = 0.1 * (H - L) * (H - L) * 0.25 + 0.9 * Noise[1];
+
+                                if (Noise != 0 && Signal != 0)
+                                    SNR.Value = 0.33 * (10 * Math.Log(Signal / Noise) / Math.Log(10))
+                                        + 0.67 * SNR[1];
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, SNR[0]));
                             }
 
                             return dst;
