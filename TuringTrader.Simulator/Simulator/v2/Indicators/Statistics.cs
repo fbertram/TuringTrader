@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Indicators/Correlation
-// Description: Correlation indicators.
+// Name:        Indicators/Statistics
+// Description: Statistical indicators.
 // History:     2023iii31, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -30,10 +30,63 @@ using TuringTrader.Indicators;
 namespace TuringTrader.SimulatorV2.Indicators
 {
     /// <summary>
-    /// Collection of correlation indicators
+    /// Collection of statistical indicators
     /// </summary>
-    public static class Correlation_
+    public static class Statistics
     {
+        #region Variance
+        /// <summary>
+        /// Calculate historical variance deviation.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">length of calculation window</param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat Variance(this TimeSeriesFloat series, int n = 10)
+        {
+            var name = string.Format("{0}.Variance({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+
+                                var sum = Enumerable.Range(0, n)
+                                    .Sum(t => src[Math.Max(0, idx - t)].Value);
+                                var sum2 = Enumerable.Range(0, n)
+                                    .Sum(t => Math.Pow(src[Math.Max(0, idx - t)].Value, 2.0));
+                                var var = (sum2 - sum * sum / n) / (n - 1);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, var));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region StandardDeviation
+        /// <summary>
+        /// Calculate historical standard deviation.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">length of calculation window</param>
+        /// <returns>standard deviation time series</returns>
+        public static TimeSeriesFloat StandardDeviation(this TimeSeriesFloat series, int n = 10)
+            => series.Variance(n).Sqrt();
+        #endregion
         #region Correlation
         /// <summary>
         /// Calculate Pearson Correlation Coefficient.
@@ -97,7 +150,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <param name="n">number of bars</param>
         /// <param name="subSample">distance between bars</param>
         /// <returns>covariance time series</returns>
-        public static TimeSeriesFloat Covariance(this TimeSeriesFloat series, TimeSeriesFloat other, int n, int subSample = 1)
+        public static TimeSeriesFloat Covariance(this TimeSeriesFloat series, TimeSeriesFloat other, int n)
         {
             var name = string.Format("{0}.Covariance({1},{2})", series.Name, other.Name, n);
 
@@ -132,6 +185,23 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                     return new TimeSeriesFloat(series.Owner, name, data);
                 });
+        }
+        #endregion
+        #region ZScore
+        /// <summary>
+        /// Calculate z-score of time series.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="period">period for statistics</param>
+        /// <returns>z-score time series</returns>
+        public static TimeSeriesFloat ZScore(this TimeSeriesFloat series, int period)
+        {
+            var mean = series.SMA(period);
+            var stdev = series.StandardDeviation(period);
+
+            return series
+                .Sub(mean)
+                .Div(stdev);
         }
         #endregion
     }

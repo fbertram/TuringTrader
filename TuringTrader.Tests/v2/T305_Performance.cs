@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader: SimulatorEngine.Tests
-// Name:        T305_Volatility
-// Description: Unit test for volatility indicators.
+// Name:        T305_Performance
+// Description: Unit test performance-related indicators.
 // History:     2023ii11, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -33,75 +33,8 @@ using TuringTrader.SimulatorV2.Indicators;
 namespace TuringTrader.SimulatorV2.Tests
 {
     [TestClass]
-    public class T305_Volatility
+    public class T305_Performance
     {
-        #region StandardDeviation
-        [TestMethod]
-        public void Test_StandardDeviation()
-        {
-            var algo = new T000_Helpers.DoNothing();
-            algo.StartDate = DateTime.Parse("2022-01-01T16:00-05:00");
-            algo.EndDate = DateTime.Parse("2022-01-31T16:00-05:00");
-            algo.WarmupPeriod = TimeSpan.FromDays(90);
-            algo.CooldownPeriod = TimeSpan.FromDays(0);
-            var asset = algo.Asset("$SPX");
-            var std = asset.Close.StandardDeviation(21).Data
-                .Where(b => b.Date >= algo.StartDate)
-                .ToList();
-
-            Assert.AreEqual(std.Count, 20);
-            Assert.AreEqual(95.5827468751985, std.Average(b => b.Value), 1e-5);
-            Assert.AreEqual(162.52062970246257, std.Max(b => b.Value), 1e-5);
-            Assert.AreEqual(63.713300800076084, std.Min(b => b.Value), 1e-5);
-        }
-        private class Testbed_StandardDeviation_V2vsV1 : Algorithm
-        {
-            public List<BarType<double>> v1Result;
-            public List<BarType<double>> v2Result;
-            private class Testbed_v1 : Simulator.Algorithm
-            {
-                public override IEnumerable<Simulator.Bar> Run(DateTime? startTime, DateTime? endTime)
-                {
-                    StartTime = (DateTime)startTime;
-                    EndTime = (DateTime)endTime;
-                    AddDataSource("$SPX");
-
-                    foreach (var st in SimTimes)
-                        yield return Simulator.Bar.NewValue(
-                            GetType().Name,
-                            SimTime[0],
-                            Instruments.First().Close.StandardDeviation(10)[0]);
-                }
-            }
-            public override void Run()
-            {
-                StartDate = DateTime.Parse("2022-01-03T16:00-05:00");
-                EndDate = DateTime.Parse("2022-03-01T16:00-05:00");
-                WarmupPeriod = TimeSpan.FromDays(20);
-                CooldownPeriod = TimeSpan.FromDays(0);
-
-                v1Result = Asset(new Testbed_v1()).Close.Data;
-                v2Result = Asset("$SPX").Close.StandardDeviation(10).Data;
-            }
-        }
-
-        [TestMethod]
-        public void Test_StandardDeviation_V2vsV1()
-        {
-            var algo = new Testbed_StandardDeviation_V2vsV1();
-            algo.Run();
-            var v1Result = algo.v1Result;
-            var v2Result = algo.v2Result;
-
-            Assert.AreEqual(v1Result.Count, v2Result.Count);
-
-            for (var i = 0; i < v2Result.Count; i++)
-            {
-                Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
-                Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
-            }
-        }
-        #endregion
         #region Volatility
         [TestMethod]
         public void Test_Volatility()
@@ -465,6 +398,44 @@ namespace TuringTrader.SimulatorV2.Tests
                 Assert.AreEqual(v1Result[i].Date, v2Result[i].Date);
                 Assert.AreEqual(v1Result[i].Value, v2Result[i].Value, 1e-5);
             }
+        }
+        #endregion
+        #region Beta
+        private class Testbed_Beta : Algorithm
+        {
+            public override void Run()
+            {
+                StartDate = StartDate ?? DateTime.Parse("2022-01-03T16:00-05:00");
+                EndDate = EndDate ?? DateTime.Parse("2022-03-01T16:00-05:00");
+                WarmupPeriod = TimeSpan.FromDays(0);
+                CooldownPeriod = TimeSpan.FromDays(0);
+
+                SimLoop(() =>
+                {
+                    if (IsFirstBar)
+                    {
+                        Asset("SPY").Allocate(0.6, OrderType.openNextBar);
+                        Asset("AGG").Allocate(0.4, OrderType.openNextBar);
+                    }
+                });
+            }
+        }
+        [TestMethod]
+        public void Test_Beta()
+        {
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("2021-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2021-12-31T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(90);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+            var asset = algo.Asset(new Testbed_Beta());
+            var beta = asset.Close.Beta(algo.Asset("$SPX").Close, 21).Data
+                .Where(b => b.Date >= algo.StartDate)
+                .ToList();
+            Assert.AreEqual(beta.Count, 252);
+            Assert.AreEqual(0.6490117767987502, beta.Average(b => b.Value), 1e-5);
+            Assert.AreEqual(0.7565672893327311, beta.Max(b => b.Value), 1e-5);
+            Assert.AreEqual(0.5622623501993051, beta.Min(b => b.Value), 1e-5);
         }
         #endregion
     }
