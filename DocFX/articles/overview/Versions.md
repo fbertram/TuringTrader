@@ -7,7 +7,8 @@
     - make SimDate, NextSimDate, IsFirstBar, and IsLastBar ThreadStatic,
       to avoid corruption when using Lambda
   - indicators
-    - add correlation indicators
+    - add Correlation, Covariance, Beta, and ZScore indicators
+    - add Ehlers's DominantCyclePeriod indicator
   - algorithms
     - implement Ehlers's SineTrend strategy
 - 16.0.24 - March 27, 2023
