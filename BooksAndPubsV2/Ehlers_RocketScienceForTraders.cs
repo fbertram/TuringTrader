@@ -22,6 +22,12 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+// NOTE: this code looks very different from typical TuringTrader code
+//       because we ported it verbatim from John F Ehlers's code written
+//       for TradeStation/ EasyLanguage.
+//       this way, we can be sure our implementation is true to 
+//       the original publication.
+
 // USE_EHLERS_RANGE
 // if defined, set simulation range to match charts in Ehlers's book
 //#define USE_EHLERS_RANGE
@@ -34,44 +40,16 @@ using TuringTrader.Optimizer;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Assets;
 using TuringTrader.SimulatorV2.Indicators;
+using TuringTrader.SimulatorV2.Porting;
 #endregion
 
-namespace TuringTrader.BooksAndPubsV2
+namespace TuringTrader.SimulatorV2.Porting
 {
-    #region SineTrend strategy
-    public class Ehlers_RocketScienceForTraders_SineTrend_Core : Algorithm
+    #region helpers to port from TradeStation EasyLanguage
+    public class TradeStation
     {
-        public override string Name => "Ehlers' SineTrend";
-
-        #region inputs
-        //public virtual object ASSET { get; set; } = ETF.SPY;
-        public virtual object ASSET { get; set; } = ETF.TLT;
-        //public virtual object ASSET { get; set; } = "EURUSD";
-        //public virtual object ASSET { get; set; } = "&ES";
-        //public virtual object ASSET { get; set; } = ETF.VXX;
-        /// <summary>
-        /// Ehler's CycPart parameter
-        /// </summary>
-        [OptimizerParam(65, 150, 5)]
-        public virtual int CYC_PART { get; set; } = 90;
-        /// <summary>
-        /// Maximum cycle amplitude, before forcing trend mode.
-        /// Measured in bps, default 150 = 1.5%
-        /// </summary>
-        [OptimizerParam(150, 1000, 50)]
-        public virtual int MAX_CYC_AMP { get; set; } = 150;
-
-        [OptimizerParam(0, 1, 1)]
-        public virtual int TRADE_TREND { get; set; } = 1;
-        [OptimizerParam(0, 1, 1)]
-        public virtual int TRADE_CYCLE { get; set; } = 1;
-        [OptimizerParam(0, 1, 1)]
-        public virtual int ALLOW_LONG { get; set; } = 1;
-        [OptimizerParam(0, 1, 1)]
-        public virtual int ALLOW_SHORT { get; set; } = 1;
-        #endregion
-        #region EasyLanguage porting helper
-        private class FloatSeriesManager
+        #region time series
+        public class FloatSeriesManager
         {
             private List<FloatSeries> _instances = new List<FloatSeries>();
             public interface IFloatSeries
@@ -123,6 +101,54 @@ namespace TuringTrader.BooksAndPubsV2
             }
         }
         #endregion
+        #region trigonometry
+        public static double Sine(double angle) => Math.Sin(Math.PI / 180.0 * angle);
+        public static double Cosine(double angle) => Math.Cos(Math.PI / 180.0 * angle);
+        public static double ArcTangent(double f)
+            // Ehlers' code expects ArcTangent to return angles between
+            // 0 and 180 degrees. In contrast, Math.Atan returns angles
+            // between -Pi/2 and +Pi/2.
+            => 180.0 / Math.PI * Math.Atan(f) + (f < 0.0 ? 180.0 : 0.0);
+            //=> 180.0 / Math.PI * Math.Atan(f);
+        #endregion
+    }
+    #endregion
+}
+
+namespace TuringTrader.BooksAndPubsV2
+{
+    #region SineTrend strategy
+    public class Ehlers_RocketScienceForTraders_SineTrend : Algorithm
+    {
+        public override string Name => "Ehlers' SineTrend";
+
+        #region inputs
+        //public virtual object ASSET { get; set; } = ETF.SPY;
+        public virtual object ASSET { get; set; } = ETF.TLT;
+        //public virtual object ASSET { get; set; } = "EURUSD";
+        //public virtual object ASSET { get; set; } = "&ES";
+        //public virtual object ASSET { get; set; } = ETF.VXX;
+        /// <summary>
+        /// Ehler's CycPart parameter
+        /// </summary>
+        [OptimizerParam(65, 150, 5)]
+        public virtual int CYC_PART { get; set; } = 90;
+        /// <summary>
+        /// Maximum cycle amplitude, before forcing trend mode.
+        /// Measured in bps, default 150 = 1.5%
+        /// </summary>
+        [OptimizerParam(150, 1000, 50)]
+        public virtual int MAX_CYC_AMP { get; set; } = 150;
+
+        [OptimizerParam(0, 1, 1)]
+        public virtual int TRADE_TREND { get; set; } = 1;
+        [OptimizerParam(0, 1, 1)]
+        public virtual int TRADE_CYCLE { get; set; } = 1;
+        [OptimizerParam(0, 1, 1)]
+        public virtual int ALLOW_LONG { get; set; } = 1;
+        [OptimizerParam(0, 1, 1)]
+        public virtual int ALLOW_SHORT { get; set; } = 1;
+        #endregion
         #region strategy logic
         public override void Run()
         {
@@ -168,7 +194,7 @@ namespace TuringTrader.BooksAndPubsV2
                 .Add(asset.Low)
                 .Div(2.0);
 
-            var seriesManager = new FloatSeriesManager();
+            var seriesManager = new TradeStation.FloatSeriesManager();
 
             // the code is taken from the book almost verbatim,
             // including the variable names.
@@ -197,25 +223,16 @@ namespace TuringTrader.BooksAndPubsV2
             var Trend = seriesManager.NewSeries(0);
             var DaysInTrend = seriesManager.NewSeries(0);
 
-            // TradeStation uses degrees, while C# uses radian
-            double Sine(double angle) => Math.Sin(Math.PI / 180.0 * angle);
-            double Cosine(double angle) => Math.Cos(Math.PI / 180.0 * angle);
-            double ArcTangent(double f)
-                // Ehlers' code expects ArcTangent to return angles between
-                // 0 and 180 degrees. In contrast, Math.Atan returns angles
-                // between -Pi/2 and +Pi/2.
-                => 180.0 / Math.PI * Math.Atan(f) + (f < 0.0 ? 180.0 : 0.0);
-
             //========== simulation loop ==========
 
             SimLoop(() =>
             {
-                // note that these calculations cannot be expressed
-                // with TuringTrader's built-in indicators, because
-                // of the complicated feedback through period.
-
                 // advance all series
                 seriesManager.Advance();
+
+                // note the complicated feedback through the
+                // period value, which makes porting to 
+                // TuringTrader's indicators tricky
 
                 Smooth.Value = (4.0 * Price[0] + 3.0 * Price[1]
                     + 2.0 * Price[2] + Price[3])
@@ -256,7 +273,7 @@ namespace TuringTrader.BooksAndPubsV2
                 Re.Value = 0.2 * Re[0] + 0.8 * Re[1];
                 Im.Value = 0.2 * Im[0] + 0.8 * Im[1];
 
-                if (Im[0] != 0.0 && Re[0] != 0.0) Period.Value = 360.0 / ArcTangent(Im[0] / Re[0]);
+                if (Im[0] != 0.0 && Re[0] != 0.0) Period.Value = 360.0 / TradeStation.ArcTangent(Im[0] / Re[0]);
                 if (Period[0] > 1.5 * Period[1]) Period.Value = 1.5 * Period[1];
                 if (Period[0] < 0.67 * Period[1]) Period.Value = 0.67 * Period[1];
                 if (Period[0] < 6.0) Period.Value = 6.0;
@@ -276,12 +293,12 @@ namespace TuringTrader.BooksAndPubsV2
                 for (var count = 0; count < DCPeriod[0]; count++)
                 {
                     RealPart.Value = RealPart[0]
-                        + Cosine(360.0 * count / DCPeriod[0]) * SmoothPrice[count];
+                        + TradeStation.Cosine(360.0 * count / DCPeriod[0]) * SmoothPrice[count];
                     ImagPart.Value = ImagPart[0]
-                        + Sine(360.0 * count / DCPeriod[0]) * SmoothPrice[count];
+                        + TradeStation.Sine(360.0 * count / DCPeriod[0]) * SmoothPrice[count];
                 }
 
-                if (Math.Abs(RealPart[0]) > 0.0) DCPhase.Value = ArcTangent(ImagPart[0] / RealPart[0]);
+                if (Math.Abs(RealPart[0]) > 0.0) DCPhase.Value = TradeStation.ArcTangent(ImagPart[0] / RealPart[0]);
                 if (Math.Abs(RealPart[0]) <= 0.001) DCPhase.Value = 90.0 * Math.Sign(ImagPart[0]);
                 DCPhase.Value = DCPhase[0] + 90.0;
                 var phase1 = DCPhase[0];
@@ -295,8 +312,8 @@ namespace TuringTrader.BooksAndPubsV2
                 var phase3 = DCPhase[0];
 
                 //--- compute the Sine and LeadSine indicators
-                DCSine.Value = Sine(DCPhase[0]);
-                LeadSine.Value = Sine(DCPhase[0] + 45.0);
+                DCSine.Value = TradeStation.Sine(DCPhase[0]);
+                LeadSine.Value = TradeStation.Sine(DCPhase[0] + 45.0);
 
                 //--- compute trendline as simple average over the measured dominant cycle period
                 ITrend.Value = 0.0;
