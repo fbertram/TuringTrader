@@ -25,15 +25,115 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static TuringTrader.SimulatorV2.Indicators.Trend;
 
 namespace TuringTrader.SimulatorV2.Indicators
 {
+    /// <summary>
+    /// Collection of indicators by John F. Ehlers.
+    /// </summary>
     public static class Ehlers_RocketScienceForTraders
     {
+        #region Detrend
+        /// <summary>
+        /// Detrend input signal with a Hilbert Transformer, according
+        /// to John F. Ehlers's book 'Rocket Science for Traders'. 
+        /// Note that the detrender's frequency response is not flat. 
+        /// To remedy this, Ehlers typically corrects the output by a 
+        /// factor of 0.075 * Period + 0.54.
+        /// </summary>
+        /// <param name="series"></param>
+        /// <returns></returns>
+        public static TimeSeriesFloat Detrend(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.Detrend", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lookback = new LookbackManager();
+                            var input = lookback.NewLookback(0.0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+                                input.Value = src[idx].Value;
+
+                                var detrender = (0.0962 * input + 0.5769 * input[2]
+                                    - 0.5769 * input[4] - 0.0962 * input[6])
+                                    * (0.075 * input[1] + 0.54);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, detrender));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region Distance
+        /// <summary>
+        /// Distance indicator, according to John F. Ehlers's 
+        /// book 'Rocket Science for Traders'. Ehlers uses this
+        /// indicator as coefficients for an Ehlers Filter.
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static TimeSeriesFloat Distance(this TimeSeriesFloat series, int n)
+        {
+            var name = string.Format("{0}.Distance({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lookback = new LookbackManager();
+                            var input = lookback.NewLookback(0.0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+                                input.Value = src[idx].Value;
+
+                                // this logic taken from
+                                // Ehlers's book, see fig 18.6., page 193.
+                                var distance = Enumerable.Range(1, n - 1)
+                                    .Sum(t => Math.Pow(input[0] - input[t], 2.0));
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, distance));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
         #region DominantCyclePeriod
         /// <summary>
         /// Calculate the dominant cycle period. The method is based
-        /// on John F. Ehler's book 'Rocket Science for Traders' and
+        /// on John F. Ehlers's book 'Rocket Science for Traders' and
         /// uses complex arithmetic and a homodyne discriminator.
         /// </summary>
         /// <param name="series">input series</param>
@@ -147,7 +247,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         #region SignalToNoiseRatio
         /// <summary>
         /// Calculate the signal-to-noise ratio. The method is based
-        /// on John F. Ehler's book 'Rocket Science for Traders'.
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="n">length of calculation window</param>
@@ -181,7 +281,6 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                             for (int idx = 0; idx < src.Count; idx++)
                             {
-                                // advance all lookbacks
                                 lookback.Advance();
 
                                 var H = src[idx].Value.High;
@@ -213,6 +312,419 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, SNR[0]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region SinewaveIndicator
+        #endregion
+        #region InstantaneousTrendline
+        #endregion
+        #region EhlersFilter
+        /// <summary>
+        /// Calculate Ehlers Filter, as described in
+        /// John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">source series</param>
+        /// <param name="coefficients">coefficient series</param>
+        /// <param name="n">filter length</param>
+        /// <returns>Ehlers Filter time series</returns>
+        public static TimeSeriesFloat EhlersFilter(this TimeSeriesFloat series, TimeSeriesFloat coefficients, int n)
+        {
+            var name = string.Format("{0}.EhlersFilter({1},{2})", series.Name, coefficients.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var flt = coefficients.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lookback = new LookbackManager();
+                            var input = lookback.NewLookback(src[0].Value);
+                            var filter = lookback.NewLookback(flt[0].Value);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                input.Value = src[idx].Value;
+                                filter.Value = flt[idx].Value;
+
+                                var output = Enumerable.Range(0, n)
+                                    .Sum(t => input[t] * filter[t])
+                                    / Enumerable.Range(0, n)
+                                    .Sum(t => filter[t]);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, output));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+
+        }
+        #endregion
+        #region DistanceCoefficientEhlersFilter
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static TimeSeriesFloat DistanceCoefficientEhlersFilter(this TimeSeriesFloat series, int n)
+            // see Ehlers's book, see fig 18.6., page 193.
+            => series.EhlersFilter(series.Distance(n), n);
+        #endregion
+        #region OptimumPredictor
+        /// <summary>
+        /// Calculate Optimum Predictor, as described in
+        /// John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">source series</param>
+        /// <returns>Optimum Predictor time series</returns>
+        public static OptimumPredictorT OptimumPredictor(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.OptimumPredictor", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dcp = series.DominantCyclePeriod().Data;
+                            var predict = new List<BarType<double>>();
+                            var signal = new List<BarType<double>>();
+
+                            var lookback = new LookbackManager();
+                            var Price = lookback.NewLookback(0);
+                            var Smooth = lookback.NewLookback(0);
+                            var SmoothPeriod = lookback.NewLookback(0);
+                            var Detrender2 = lookback.NewLookback(0);
+                            var Smooth2 = lookback.NewLookback(0);
+                            var DetrendEMA = lookback.NewLookback(0);
+                            var Predict = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Price.Value = src[idx].Value;
+                                Smooth.Value = (4 * Price + 3 * Price[1] + 2 * Price[2] + Price[3]) / 10;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                SmoothPeriod.Value = dcp[idx].Value;
+
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 20.2., page 209ff.
+
+                                //--- optimum predictor
+                                Detrender2.Value = 0.5 * Smooth - 0.5 * Smooth[2];
+                                Smooth2.Value = (4 * Detrender2 + 3 * Detrender2[1]
+                                    + 2 * Detrender2[2] + Detrender2[3]) / 10;
+
+                                // FIXME: Ehlers uses Period here, which is hidden
+                                //        inside the DominantCyclePeriod indicator.
+                                //        This will likely introduce some lag.
+                                var alpha = 1 - Math.Exp(-6.28 / SmoothPeriod);
+
+                                DetrendEMA.Value = alpha * Smooth2
+                                    + (1 - alpha) * DetrendEMA[1];
+
+                                Predict.Value = 1.4 * (Smooth2 - DetrendEMA);
+
+                                predict.Add(new BarType<double>(
+                                    src[idx].Date, Predict));
+
+                                signal.Add(new BarType<double>(
+                                    src[idx].Date, Smooth2));
+                            }
+
+                            return (object)Tuple.Create(predict, signal);
+                        }));
+
+                    return new OptimumPredictorT(
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Predict",
+                            data,
+                            (data) => ((Tuple<List<BarType<double>>, List<BarType<double>>>)data).Item1),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Signal",
+                            data,
+                            (data) => ((Tuple<List<BarType<double>>, List<BarType<double>>>)data).Item2));
+                });
+
+        }
+
+        /// <summary>
+        /// Container for Optimum Predictor indicator
+        /// </summary>
+        public class OptimumPredictorT
+        {
+            /// <summary>
+            /// Optimum predictor output
+            /// </summary>
+            public TimeSeriesFloat Predict;
+            /// <summary>
+            /// Optimum predictor signal line
+            /// </summary>
+            public TimeSeriesFloat Signal;
+
+            /// <summary>
+            /// Create Optimum Predictor container.
+            /// </summary>
+            /// <param name="predict"></param>
+            /// <param name="signal"></param>
+            public OptimumPredictorT(TimeSeriesFloat predict, TimeSeriesFloat signal)
+            {
+                Predict = predict;
+                Signal = signal;
+            }
+        };
+        #endregion
+        #region PredictiveMovingAverage
+        /// <summary>
+        /// Calculate predictive moving average as described in
+        /// John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static PredictiveMovingAverageT PredictiveMovingAverage(this TimeSeriesFloat series, int n = 7)
+        {
+            var name = string.Format("{0}.PredictiveMovingAverage({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    // see Ehlers's book, see fig 20.4., page 212ff.
+                    var wma1 = series.WMA(7);
+                    var wma2 = wma1.WMA(7);
+                    var predict = wma1.Mul(2).Sub(wma2);
+                    var trigger = predict.WMA(4);
+
+                    return new PredictiveMovingAverageT(predict, trigger);
+                });
+        }
+        public class PredictiveMovingAverageT
+        {
+            public TimeSeriesFloat Trigger;
+            public TimeSeriesFloat Predict;
+
+            public PredictiveMovingAverageT(TimeSeriesFloat predict, TimeSeriesFloat trigger)
+            {
+                Trigger = trigger;
+                Predict = predict;
+            }
+        }
+        #endregion
+        #region AdaptiveRSI
+        /// <summary>
+        /// Calculate adaptive RSI. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="CycPart"></param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat AdaptiveRSI(this TimeSeriesFloat series, double CycPart = 0.5)
+        {
+            var name = string.Format("{0}.AdaptiveRSI({1})", series.Name, CycPart);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            var dcp = series.DominantCyclePeriod().Data;
+
+                            var lookback = new LookbackManager();
+                            var Close = lookback.NewLookback(0);
+                            var RSI = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Close.Value = src[idx].Value;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                var SmoothPeriod = dcp[idx].Value;
+
+                                // this code is adapted from
+                                // Ehlers's book, see fig 22.1., page 230ff.
+
+                                var CU = Enumerable.Range(0, (int)Math.Floor(CycPart * SmoothPeriod))
+                                    .Sum(t => Math.Max(0.0, Close[t] - Close[t + 1]));
+
+                                var CD = Enumerable.Range(0, (int)Math.Floor(CycPart * SmoothPeriod))
+                                    .Sum(t => Math.Max(0.0, Close[t + 1] - Close[t]));
+
+                                if (CU + CD != 0) RSI.Value = 100 * CU / (CU + CD);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, RSI[0]));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region AdaptiveStochastic
+        /// <summary>
+        /// Calculate adaptive Stochastic. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="CycPart"></param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat AdaptiveStochastic(this TimeSeriesAsset series, double CycPart = 0.5)
+        {
+            var name = string.Format("{0}.AdaptiveStochastic({1})", series.Name, CycPart);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
+
+                            var lookback = new LookbackManager();
+                            var Close = lookback.NewLookback(0);
+                            var H = lookback.NewLookback(0);
+                            var L = lookback.NewLookback(0);
+                            var HH = lookback.NewLookback(0);
+                            var LL = lookback.NewLookback(0);
+                            var Stochastic = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Close.Value = src[idx].Value.Close;
+                                H.Value = src[idx].Value.High;
+                                L.Value = src[idx].Value.Low;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                var SmoothPeriod = dcp[idx].Value;
+
+                                // this code is adapted from
+                                // Ehlers's book, see fig 22.2., page 233ff.
+
+                                var r = (int)Math.Floor(CycPart * SmoothPeriod);
+
+                                if (r > 0)
+                                {
+                                    HH.Value = Enumerable.Range(0, r).Max(t => H[t]);
+                                    LL.Value = Enumerable.Range(0, r).Min(t => L[t]);
+                                }
+
+                                if (HH - LL != 0) Stochastic.Value = (Close - LL) / (HH - LL);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, 100 * Stochastic));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region AdaptiveCCI
+        /// <summary>
+        /// Calculate adaptive CCI. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="CycPart"></param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat AdaptiveCCI(this TimeSeriesAsset series, double CycPart = 1.0)
+        {
+            var name = string.Format("{0}.AdaptiveCCI({1})", series.Name, CycPart);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.TypicalPrice().Data;
+                            var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lookback = new LookbackManager();
+                            var MedianPrice = lookback.NewLookback(0);
+                            var Avg = lookback.NewLookback(0);
+                            var MD = lookback.NewLookback(0);
+                            var CCI = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                MedianPrice.Value = src[idx].Value;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                var SmoothPeriod = dcp[idx].Value;
+
+                                // this code is adapted from
+                                // Ehlers's book, see fig 22.2., page 233ff.
+
+                                // FIXME: Ehlers is using Period here, which is
+                                //        hidden inside DominantCyclePeriod
+                                var Length = (int)Math.Floor(CycPart * SmoothPeriod);
+
+                                if (Length > 0)
+                                {
+                                    Avg.Value = Enumerable.Range(0, Length)
+                                        .Average(t => MedianPrice[t]);
+
+                                    MD.Value = Enumerable.Range(0, Length)
+                                        .Average(t => Math.Abs(MedianPrice[t] - Avg));
+                                }
+
+                                if (MD != 0) CCI.Value = (MedianPrice - Avg) / (0.015 * MD);
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, CCI));
                             }
 
                             return dst;
