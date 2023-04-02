@@ -59,7 +59,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var src = series.Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var input = lookback.NewLookback(0.0);
 
                             for (int idx = 0; idx < src.Count; idx++)
@@ -106,7 +106,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var src = series.Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var input = lookback.NewLookback(0.0);
 
                             for (int idx = 0; idx < src.Count; idx++)
@@ -154,7 +154,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var src = series.Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
 
                             var Price = lookback.NewLookback(src[0].Value);
                             var Smooth = lookback.NewLookback(src[0].Value);
@@ -269,7 +269,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var typ = series.TypicalPrice().Data; // Ehlers is using (H+L)/2 instead
                             var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var Price = lookback.NewLookback(0);
                             var Smooth = lookback.NewLookback(0);
                             var SmoothPeriod = lookback.NewLookback(0);
@@ -321,7 +321,137 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
-        #region xxx SinewaveIndicator
+        #region SinewaveIndicator
+        /// <summary>
+        /// Calculate the Sinewave Indicator. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>Sinewave indicator container</returns>
+        public static SinewaveIndicatorT SinewaveIndicator(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.SinewaveIndicator()", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dcp = series.DominantCyclePeriod().Data;
+                            var dstPhase = new List<BarType<double>>();
+                            var dstSine = new List<BarType<double>>();
+                            var dstLead = new List<BarType<double>>();
+
+                            var lookback = new LookbackGroup();
+                            var Price = lookback.NewLookback(0);
+                            var SmoothPeriod = lookback.NewLookback(0);
+                            var SmoothPrice = lookback.NewLookback(0);
+                            var RealPart = lookback.NewLookback();
+                            var ImagPart = lookback.NewLookback();
+                            var DCPhase = lookback.NewLookback();
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Price.Value = src[idx].Value;
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                SmoothPeriod.Value = dcp[idx].Value;
+
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 9.3., page 101ff.
+
+                                //--- compute dominant cycle phase
+                                SmoothPrice.Value = (4 * Price + 3 * Price[1]
+                                    + 2 * Price[2] + Price[3]) / 10;
+
+                                var DCPeriod = (int)Math.Floor(SmoothPeriod + 0.5);
+
+                                RealPart.Value = Enumerable.Range(0, DCPeriod)
+                                    .Sum(t => Math.Cos(2 * Math.PI / DCPeriod * t) * SmoothPrice[t]);
+
+                                ImagPart.Value = Enumerable.Range(0, DCPeriod)
+                                    .Sum(t => Math.Sin(2 * Math.PI / DCPeriod * t) * SmoothPrice[t]);
+
+                                DCPhase.Value = 180 / Math.PI * Math.Atan2(ImagPart, RealPart) + 90;
+
+                                //--- compensate for one bar lag of the weighted moving average
+                                DCPhase.Value = DCPhase + 360 / SmoothPeriod;
+
+                                // coerce phase between -45 and +315 degrees
+                                if (DCPhase.Value < -45) DCPhase.Value = DCPhase + 360;
+                                if (DCPhase.Value > 315) DCPhase.Value = DCPhase - 360;
+
+                                var sine = Math.Sin(Math.PI / 180 * DCPhase);
+                                var lead = Math.Sin(Math.PI / 180 * (DCPhase + 45));
+
+                                dstPhase.Add(new BarType<double>(
+                                    src[idx].Date, DCPhase));
+
+                                dstSine.Add(new BarType<double>(
+                                    src[idx].Date, sine));
+
+                                dstLead.Add(new BarType<double>(
+                                    src[idx].Date, lead));
+                            }
+
+                            return (object)Tuple.Create(dstPhase, dstSine, dstLead);
+                        }));
+
+                    return new SinewaveIndicatorT(
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Phase",
+                            data,
+                            (data) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)data).Item1),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Sine",
+                            data,
+                            (data) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)data).Item2),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".LeadSine",
+                            data,
+                            (data) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)data).Item3));
+                });
+        }
+
+        /// <summary>
+        /// Container for Sinewave indicator result.
+        /// </summary>
+        public class SinewaveIndicatorT
+        {
+            /// <summary>
+            /// Dominant cycle phase. Will hover near 0 in downtrends and
+            /// near 180 degrees in uptrends
+            /// </summary>
+            public TimeSeriesFloat Phase;
+            /// <summary>
+            /// Dominant cycle's sine wave output.
+            /// </summary>
+            public TimeSeriesFloat Sine;
+            /// <summary>
+            /// Dominant cycle's leading sine wave output.
+            /// </summary>
+            public TimeSeriesFloat LeadSine;
+
+            /// <summary>
+            /// Create new container.
+            /// </summary>
+            /// <param name="phase"></param>
+            /// <param name="sine"></param>
+            /// <param name="leadsine"></param>
+            public SinewaveIndicatorT(TimeSeriesFloat phase, TimeSeriesFloat sine, TimeSeriesFloat leadsine)
+            {
+                Phase = phase;
+                Sine = sine;
+                LeadSine = leadsine;
+            }
+        }
+
         #endregion
         #region InstantaneousTrendline
         /// <summary>
@@ -347,7 +477,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var dst = new List<BarType<double>>();
                             var dcp = series.DominantCyclePeriod().Data;
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var Price = lookback.NewLookback(0);
                             var Smooth = lookback.NewLookback(0);
                             var SmoothPeriod = lookback.NewLookback(0);
@@ -414,7 +544,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var flt = coefficients.Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var input = lookback.NewLookback(src[0].Value);
                             var filter = lookback.NewLookback(flt[0].Value);
 
@@ -477,7 +607,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var predict = new List<BarType<double>>();
                             var signal = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var Price = lookback.NewLookback(0);
                             var Smooth = lookback.NewLookback(0);
                             var SmoothPeriod = lookback.NewLookback(0);
@@ -625,7 +755,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var dst = new List<BarType<double>>();
                             var dcp = series.DominantCyclePeriod().Data;
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var Close = lookback.NewLookback(0);
                             var RSI = lookback.NewLookback(0);
 
@@ -685,7 +815,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var dst = new List<BarType<double>>();
                             var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var Close = lookback.NewLookback(0);
                             var H = lookback.NewLookback(0);
                             var L = lookback.NewLookback(0);
@@ -753,7 +883,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             var dcp = series.TypicalPrice().DominantCyclePeriod().Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackManager();
+                            var lookback = new LookbackGroup();
                             var MedianPrice = lookback.NewLookback(0);
                             var Avg = lookback.NewLookback(0);
                             var MD = lookback.NewLookback(0);

@@ -30,7 +30,7 @@ namespace TuringTrader.SimulatorV2
     /// <summary>
     /// Manager class for lookback series.
     /// </summary>
-    public class LookbackManager
+    public class LookbackGroup
     {
         private List<_lookback> _instances = new List<_lookback>();
 
@@ -96,7 +96,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         /// <param name="init">initial value</param>
         /// <returns>newly created lookback</returns>
-        public Lookback NewLookback(double init)
+        public Lookback NewLookback(double init = 0.0)
         {
             var i = new _lookback(init);
             _instances.Add(i);
