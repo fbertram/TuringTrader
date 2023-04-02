@@ -321,9 +321,73 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
-        #region SinewaveIndicator
+        #region xxx SinewaveIndicator
         #endregion
         #region InstantaneousTrendline
+        /// <summary>
+        /// Calculate the Instantaneous Trendline. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">length of calculation window</param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat InstantaneousTrendline(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.InstantaneousTrendline()", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+                            var dcp = series.DominantCyclePeriod().Data;
+
+                            var lookback = new LookbackManager();
+                            var Price = lookback.NewLookback(0);
+                            var Smooth = lookback.NewLookback(0);
+                            var SmoothPeriod = lookback.NewLookback(0);
+                            var ITrend = lookback.NewLookback(0);
+                            var Trendline = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Price.Value = src[idx].Value;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                SmoothPeriod.Value = dcp[idx].Value;
+
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 10.1., page 109ff.
+
+                                //--- compute trendline as a simple average over
+                                //    the measured dominant cycle period
+                                var DCPeriod = (int)Math.Floor(SmoothPeriod + 0.5);
+
+                                if (DCPeriod > 0)
+                                    ITrend.Value = Enumerable.Range(0, DCPeriod)
+                                        .Average(t => Price[t]);
+
+                                Trendline.Value = (4 * ITrend + 3 * ITrend[1]
+                                    + 2 * ITrend[2] + ITrend[3]) / 10;
+
+                                dst.Add(new BarType<double>(
+                                    src[idx].Date, Trendline));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
         #endregion
         #region EhlersFilter
         /// <summary>
