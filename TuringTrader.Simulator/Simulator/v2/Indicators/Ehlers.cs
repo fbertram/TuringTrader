@@ -137,7 +137,6 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// uses complex arithmetic and a homodyne discriminator.
         /// </summary>
         /// <param name="series">input series</param>
-        /// <param name="n">length of calculation window</param>
         /// <returns>variance time series</returns>
         public static TimeSeriesFloat DominantCyclePeriod(this TimeSeriesFloat series)
         {
@@ -250,7 +249,6 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// on John F. Ehlers's book 'Rocket Science for Traders'.
         /// </summary>
         /// <param name="series">input series</param>
-        /// <param name="n">length of calculation window</param>
         /// <returns>variance time series</returns>
         public static TimeSeriesFloat SignalToNoiseRatio(this TimeSeriesAsset series)
         {
@@ -459,7 +457,6 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// on John F. Ehlers's book 'Rocket Science for Traders'.
         /// </summary>
         /// <param name="series">input series</param>
-        /// <param name="n">length of calculation window</param>
         /// <returns>variance time series</returns>
         public static TimeSeriesFloat InstantaneousTrendline(this TimeSeriesFloat series)
         {
@@ -510,6 +507,62 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, Trendline));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region xxx MarketMode
+        /// <summary>
+        /// Calculate the market mode. The method is based
+        /// on John F. Ehlers's book 'Rocket Science for Traders'.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <returns>variance time series</returns>
+        public static TimeSeriesFloat MarketMode(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.MarketMode()", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dcp = series.DominantCyclePeriod().Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lookback = new LookbackGroup();
+                            var Price = lookback.NewLookback(0);
+                            var Smooth = lookback.NewLookback(0);
+                            var SmoothPeriod = lookback.NewLookback(0);
+                            var ITrend = lookback.NewLookback(0);
+                            var Trendline = lookback.NewLookback(0);
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                lookback.Advance();
+
+                                Price.Value = src[idx].Value;
+
+                                // a lot of code removed here, using
+                                // DominantCyclePeriod indicator instead
+                                SmoothPeriod.Value = dcp[idx].Value;
+
+                                // this code is taken (almost) verbatim from
+                                // Ehlers's book, see fig 11.1., page 14ff.
+
+                                throw new NotImplementedException();
+
+                                //dst.Add(new BarType<double>(
+                                //    src[idx].Date, Trendline));
                             }
 
                             return dst;
