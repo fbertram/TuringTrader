@@ -1060,6 +1060,92 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
+        #region InverseFisherTransform
+        /// <summary>
+        /// Calculate Inverse Fisher Transformation, as proposed by
+        /// John F. Ehlers in his paper 'The Inverse Fisher Transform'
+        /// see <href="https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf"/>
+        /// </summary>
+        /// <param name="series">input series, range should be between -5 and +5</param>
+        /// <returns></returns>
+        public static TimeSeriesFloat InverseFisherTransform(this TimeSeriesFloat series)
+        {
+            var name = string.Format("{0}.InverseFisherTransform()", series.Name);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            foreach (var it in src)
+                            {
+                                // see Ehlers's paper, fig 4.
+                                var inverseFisher = (Math.Exp(2 * it.Value) - 1)
+                                    / (Math.Exp(2 * it.Value) + 1);
+
+                                dst.Add(new BarType<double>(it.Date, inverseFisher));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region CyberCycle
+        // see https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf
+        public static TimeSeriesFloat CyberCycle(this TimeSeriesFloat series, double alpha = 0.07)
+        {
+            var name = string.Format("{0}.CyberCycle({1})", series.Name, alpha);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lbg = new LookbackGroup();
+                            var Price = lbg.NewLookback(src[0].Value);
+                            var Smooth = lbg.NewLookback(src[0].Value);
+                            var Cycle = lbg.NewLookback();
+
+                            foreach (var it in src)
+                            {
+                                lbg.Advance();
+                                Price.Value = it.Value;
+
+                                // this code is taken (almost) verbatim
+                                // from Ehlers's paper, fig 4.
+                                Smooth.Value = (Price + 2 * Price[1] + 2 * Price[2] + Price[3]) / 6;
+
+                                Cycle.Value = (1 - 0.5 * alpha) * (1 - 0.5 * alpha)
+                                    * (Smooth - 2 * Smooth[1] + Smooth[2])
+                                    + 2 * (1 - alpha) * Cycle[1]
+                                    - (1 - alpha) * (1 - alpha) * Cycle[2];
+
+                                dst.Add(new BarType<double>(it.Date, Cycle));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data)
+                        .InverseFisherTransform();
+                });
+        }
+        #endregion
     }
 }
 
