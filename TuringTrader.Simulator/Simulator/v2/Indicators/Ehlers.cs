@@ -30,7 +30,8 @@ using static TuringTrader.SimulatorV2.Indicators.Trend;
 namespace TuringTrader.SimulatorV2.Indicators
 {
     /// <summary>
-    /// Collection of indicators by John F. Ehlers.
+    /// Collection of indicators from John F. Ehlers's
+    /// book 'Rocket Science for Traders.'
     /// </summary>
     public static class Ehlers_RocketScienceForTraders
     {
@@ -972,6 +973,84 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, CCI));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+    }
+    public static class Ehlers_TechnicalPapers
+    {
+        #region NoiseEliminationTechnology
+        // see https://www.mesasoftware.com/papers/Noise%20Elimination%20Technology.pdf
+        // and https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
+        #endregion
+        #region ErrorCorrectedEMA
+        /// <summary>
+        /// Calculate Error-Corrected Exponential Moving Average, as 
+        /// proposed by John F. Ehlers and Ric Way in their paper
+        /// 'Zero Lag (well, almost).'
+        /// see <href="https://www.mesasoftware.com/papers/ZeroLag.pdf"/>
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="length">filter length</param>
+        /// <param name="gainLimit">max gain for error term, scaled by 10x</param>
+        /// <returns>Error-Corrected EMA series</returns>
+        public static TimeSeriesFloat ErrorCorrectedEMA(this TimeSeriesFloat series, int length = 20, int gainLimit = 50)
+        {
+            var name = string.Format("{0}.ErrorCorrectedEMA({1},{2})", series.Name, length, gainLimit);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lbg = new LookbackGroup();
+                            var EMA = lbg.NewLookback(src[0].Value);
+                            var EC = lbg.NewLookback(src[0].Value);
+
+                            var alpha = 2.0 / (1.0 + length);
+
+                            foreach (var it in src)
+                            {
+                                lbg.Advance();
+                                var Close = it.Value;
+
+                                // this code is taken (almost) verbatim
+                                // from Ehlers paper, fig 5.
+
+                                EMA.Value = alpha * Close + (1 - alpha) * EMA[1];
+
+                                var LeastError = 1e99;
+                                var BestGain = 0.0;
+                                for (var gain10x = -gainLimit; gain10x <= gainLimit; gain10x++)
+                                {
+                                    var Gain = gain10x / 10.0;
+                                    EC.Value = alpha * (EMA + Gain * (Close - EC[1]))
+                                        + (1 - alpha) * EC[1];
+                                    var Error = Math.Abs(Close - EC);
+
+                                    if (Error < LeastError)
+                                    {
+                                        LeastError = Error;
+                                        BestGain = Gain;
+                                    }
+                                }
+
+                                EC.Value = alpha * (EMA + BestGain * (Close - EC[1]))
+                                    + (1 - alpha) * EC[1];
+
+                                dst.Add(new BarType<double>(it.Date, EC));
                             }
 
                             return dst;
