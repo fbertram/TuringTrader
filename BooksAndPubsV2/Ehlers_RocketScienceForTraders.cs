@@ -55,16 +55,15 @@ namespace TuringTrader.BooksAndPubsV2
         //public virtual object ASSET { get; set; } = "&ES";
         //public virtual object ASSET { get; set; } = ETF.VXX;
         /// <summary>
-        /// Ehler's CycPart parameter
+        /// InstantaneousTrendline: Ehler's CycPart parameter
         /// </summary>
         [OptimizerParam(65, 150, 5)]
-        public virtual int CYC_PART { get; set; } = 90;
+        public virtual int CYCLE_ADJUST { get; set; } = 90;
         /// <summary>
-        /// Maximum cycle amplitude, before forcing trend mode.
-        /// Measured in bps, default 150 = 1.5%
+        /// MarketMode: price deviation from trend line to break cycle. default = 150 = 1.5%
         /// </summary>
-        [OptimizerParam(150, 1000, 50)]
-        public virtual int MAX_CYC_AMP { get; set; } = 150;
+        [OptimizerParam(50, 500, 50)]
+        public virtual int BREAK_CYCLE {get;set;} = 150;
 
         [OptimizerParam(0, 1, 1)]
         public virtual int TRADE_TREND { get; set; } = 1;
@@ -128,10 +127,10 @@ namespace TuringTrader.BooksAndPubsV2
 
                 // all of Ehlers's complex calculations are provided
                 // through a family of easy-to-use indicators
+                var Trend = Price.MarketMode(BREAK_CYCLE / 100.0);
                 var Sine = Price.SinewaveIndicator().Sine;
                 var LeadSine = Price.SinewaveIndicator().LeadSine;
-                var Trendline = Price.InstantaneousTrendline();
-                var Trend = Price.MarketMode();
+                var Trendline = Price.InstantaneousTrendline(CYCLE_ADJUST / 100.0);
 
                 //--- trade trend mode
                 double targetAllocation;

@@ -458,10 +458,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// on John F. Ehlers's book 'Rocket Science for Traders'.
         /// </summary>
         /// <param name="series">input series</param>
+        /// <param name="cycPart">cycle period adjustment, default = 1.0</param>
         /// <returns>variance time series</returns>
-        public static TimeSeriesFloat InstantaneousTrendline(this TimeSeriesFloat series)
+        public static TimeSeriesFloat InstantaneousTrendline(this TimeSeriesFloat series, double cycPart = 1.0)
         {
-            var name = string.Format("{0}.InstantaneousTrendline()", series.Name);
+            var name = string.Format("{0}.InstantaneousTrendline({1})", series.Name, cycPart);
 
             return series.Owner.ObjectCache.Fetch(
                 name,
@@ -497,7 +498,7 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 //--- compute trendline as a simple average over
                                 //    the measured dominant cycle period
-                                var DCPeriod = (int)Math.Floor(SmoothPeriod + 0.5);
+                                var DCPeriod = (int)Math.Floor(cycPart * SmoothPeriod + 0.5);
 
                                 if (DCPeriod > 0)
                                     ITrend.Value = Enumerable.Range(0, DCPeriod)
@@ -523,10 +524,11 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// on John F. Ehlers's book 'Rocket Science for Traders'.
         /// </summary>
         /// <param name="series">input series</param>
+        /// <param name="breakCycle">price deviation from trend line to break cycle mode (default = 0.015 = 1.5%)</param>
         /// <returns>variance time series</returns>
-        public static TimeSeriesFloat MarketMode(this TimeSeriesFloat series)
+        public static TimeSeriesFloat MarketMode(this TimeSeriesFloat series, double breakCycle = 0.015)
         {
-            var name = string.Format("{0}.MarketMode()", series.Name);
+            var name = string.Format("{0}.MarketMode({1})", series.Name, breakCycle);
 
             return series.Owner.ObjectCache.Fetch(
                 name,
@@ -606,7 +608,7 @@ namespace TuringTrader.SimulatorV2.Indicators
 
                                 //--- trend mode if prices are widely separated
                                 //    from the trend line
-                                if (Math.Abs((SmoothPrice - Trendline) / Trendline) > 0.015)
+                                if (Math.Abs((SmoothPrice - Trendline) / Trendline) > breakCycle)
                                     Trend.Value = 1;
 
                                 dst.Add(new BarType<double>(
