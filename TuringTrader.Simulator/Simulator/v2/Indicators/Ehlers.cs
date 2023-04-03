@@ -517,7 +517,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
-        #region xxx MarketMode
+        #region MarketMode
         /// <summary>
         /// Calculate the market mode. The method is based
         /// on John F. Ehlers's book 'Rocket Science for Traders'.
@@ -536,34 +536,81 @@ namespace TuringTrader.SimulatorV2.Indicators
                         name,
                         () => Task.Run(() =>
                         {
-                            var src = series.Data;
-                            var dcp = series.DominantCyclePeriod().Data;
+                            var srcSeries = series.Data;
+                            var srcPeriod = series.DominantCyclePeriod().Data;
+                            var srcPhase = series.SinewaveIndicator().Phase.Data;
+                            var srcSine = series.SinewaveIndicator().Sine.Data;
+                            var srcLeadSine = series.SinewaveIndicator().LeadSine.Data;
+                            var srcTrendline = series.InstantaneousTrendline().Data;
                             var dst = new List<BarType<double>>();
 
-                            var lookback = new LookbackGroup();
-                            var Price = lookback.NewLookback(0);
-                            var Smooth = lookback.NewLookback(0);
-                            var SmoothPeriod = lookback.NewLookback(0);
-                            var ITrend = lookback.NewLookback(0);
-                            var Trendline = lookback.NewLookback(0);
+                            var lbg = new LookbackGroup();
+                            var Price = lbg.NewLookback(0);
+                            var SmoothPrice = lbg.NewLookback(0);
+                            var SmoothPeriod = lbg.NewLookback(0);
+                            var ITrend = lbg.NewLookback(0);
+                            var Trendline = lbg.NewLookback(0);
+                            var Trend = lbg.NewLookback();
+                            var DaysInTrend = lbg.NewLookback();
+                            var DCPhase = lbg.NewLookback();
+                            var Sine = lbg.NewLookback();
+                            var LeadSine = lbg.NewLookback();
 
-                            for (int idx = 0; idx < src.Count; idx++)
+                            for (int idx = 0; idx < srcSeries.Count; idx++)
                             {
-                                lookback.Advance();
+                                lbg.Advance();
 
-                                Price.Value = src[idx].Value;
+                                Price.Value = srcSeries[idx].Value;
 
                                 // a lot of code removed here, using
                                 // DominantCyclePeriod indicator instead
-                                SmoothPeriod.Value = dcp[idx].Value;
+                                SmoothPeriod.Value = srcPeriod[idx].Value;
+
+                                // code removed here, using
+                                // Sinewave indicator instead
+                                SmoothPrice.Value = (4 * Price + 3 * Price[1]
+                                    + 2 * Price[2] + Price[3]) / 10;
+
+                                DCPhase.Value = srcPhase[idx].Value;
+                                Sine.Value = srcSine[idx].Value;
+                                LeadSine.Value = srcLeadSine[idx].Value;
+
+                                // more code removed here, using 
+                                // InstantaneousTrendline indicator instead
+                                Trendline.Value = srcTrendline[idx].Value;
 
                                 // this code is taken (almost) verbatim from
-                                // Ehlers's book, see fig 11.1., page 14ff.
+                                // Ehlers's book, see fig 11.1., page 114ff.
 
-                                throw new NotImplementedException();
+                                //--- assume trend mode
+                                Trend.Value = 1;
 
-                                //dst.Add(new BarType<double>(
-                                //    src[idx].Date, Trendline));
+                                //--- measure days in trend from last crossing of the
+                                //    sinewave indicator lines
+
+                                if ((Sine > LeadSine && Sine[1] <= LeadSine[1])
+                                    || (Sine < LeadSine && Sine[1] >= LeadSine[1]))
+                                {
+                                    DaysInTrend.Value = 0;
+                                    Trend.Value = 0;
+                                }
+                                DaysInTrend.Value = DaysInTrend + 1;
+                                if (DaysInTrend < 0.5 * SmoothPeriod) Trend.Value = 0;
+
+                                //--- cycle mode if delta phase is +/- 50% of
+                                //    dominant cycle change of phase
+                                if (SmoothPeriod != 0
+                                    && DCPhase - DCPhase[1] > 0.67 * 360 / SmoothPeriod
+                                    && DCPhase - DCPhase[1] < 1.5 * 360 / SmoothPeriod)
+                                    Trend.Value = 0;
+
+                                //--- trend mode if prices are widely separated
+                                //    from the trend line
+                                if (Math.Abs((SmoothPrice - Trendline) / Trendline) > 0.015)
+                                    Trend.Value = 1;
+
+                                dst.Add(new BarType<double>(
+                                    srcSeries[idx].Date, Trend));
                             }
 
                             return dst;
@@ -983,11 +1030,76 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
     }
+
+    /// <summary>
+    /// Collection of indicators from John F. Ehlers's
+    /// website, see
+    /// <href="https://www.mesasoftware.com/papers/"/>
+    /// and
+    /// <href="https://www.mesasoftware.com/TechnicalArticles.htm"/>
+    /// </summary>
     public static class Ehlers_TechnicalPapers
     {
         #region NoiseEliminationTechnology
-        // see https://www.mesasoftware.com/papers/Noise%20Elimination%20Technology.pdf
-        // and https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
+        /// <summary>
+        /// Calculate Noise Elimination Techology (NET) as proposed by
+        /// John F. Ehlers in his paper 'NET - Noise Eliminating Technolgy,
+        /// Clarify Your Indicators using Kendall Correlation.'
+        /// see <href="https://www.mesasoftware.com/papers/Noise%20Elimination%20Technology.pdf"/>
+        /// and <href="https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient"/>
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="n">NET length</param>
+        /// <returns>noise-reduced time series, ranging between -1 and +1</returns>
+        public static TimeSeriesFloat NoiseEliminationTechnology(this TimeSeriesFloat series, int n = 14)
+        {
+            var name = string.Format("{0}.NoiseEliminationTechnology({1})", series.Name, n);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            var lbg = new LookbackGroup();
+                            var x = lbg.NewLookback(src[0].Value);
+
+                            foreach (var it in src)
+                            {
+                                lbg.Advance();
+                                x.Value = it.Value;
+
+#if false
+                                var num = Enumerable.Range(2, n - 1)
+                                    .Sum(j => Enumerable.Range(1, j - 1)
+                                        .Sum(i => Math.Sign(x[i] - x[j])));
+#else
+
+                                // code taken (almost) verbatim
+                                // from Ehlers's paper
+                                var num = 0.0;
+                                for (var count = 2; count <= n; count++)
+                                    for (var k = 1; k <= count - 1; k++)
+                                        num = num - Math.Sign(x[count] - x[k]);
+#endif
+                                var denom = 0.5 * n * (n - 1);
+
+                                var net = num / denom;
+
+                                dst.Add(new BarType<double>(it.Date, net));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
         #endregion
         #region ErrorCorrectedEMA
         /// <summary>
@@ -1145,6 +1257,12 @@ namespace TuringTrader.SimulatorV2.Indicators
                         .InverseFisherTransform();
                 });
         }
+        #endregion
+        #region xxx CGOscillator
+        // see https://www.mesasoftware.com/papers/TheCGOscillator.pdf
+        #endregion
+        #region xxx DMH
+        // see https://www.mesasoftware.com/papers/DMH.pdf
         #endregion
     }
 }
