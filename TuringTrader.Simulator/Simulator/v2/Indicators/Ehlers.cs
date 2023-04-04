@@ -231,7 +231,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                                 if (Period > 50.0) Period.Value = 50.0;
 
                                 Period.Value = 0.2 * Period + 0.8 * Period[1];
-                                SmoothPeriod.Value = 0.33 * Period + 0.67 * SmoothPeriod[1];
+                                SmoothPeriod.Value = 0.33 * Period + 0.67 * SmoothPeriod[1]; // 0.33 = 2/(5 + 1) = EMA(5)
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, SmoothPeriod[0]));
@@ -822,11 +822,26 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new PredictiveMovingAverageT(predict, trigger);
                 });
         }
+
+        /// <summary>
+        /// Container class for result of PredictiveMovingAverage
+        /// </summary>
         public class PredictiveMovingAverageT
         {
+            /// <summary>
+            /// Trigger line.
+            /// </summary>
             public TimeSeriesFloat Trigger;
+            /// <summary>
+            /// Predictive moving average.
+            /// </summary>
             public TimeSeriesFloat Predict;
 
+            /// <summary>
+            /// Create new container.
+            /// </summary>
+            /// <param name="predict"></param>
+            /// <param name="trigger"></param>
             public PredictiveMovingAverageT(TimeSeriesFloat predict, TimeSeriesFloat trigger)
             {
                 Trigger = trigger;
@@ -1036,9 +1051,9 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// <summary>
     /// Collection of indicators from John F. Ehlers's
     /// website, see
-    /// <href="https://www.mesasoftware.com/papers/"/>
+    /// <see href="https://www.mesasoftware.com/papers/"/>
     /// and
-    /// <href="https://www.mesasoftware.com/TechnicalArticles.htm"/>
+    /// <see href="https://www.mesasoftware.com/TechnicalArticles.htm"/>
     /// </summary>
     public static class Ehlers_TechnicalPapers
     {
@@ -1047,8 +1062,8 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// Calculate Noise Elimination Techology (NET) as proposed by
         /// John F. Ehlers in his paper 'NET - Noise Eliminating Technolgy,
         /// Clarify Your Indicators using Kendall Correlation.'
-        /// see <href="https://www.mesasoftware.com/papers/Noise%20Elimination%20Technology.pdf"/>
-        /// and <href="https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient"/>
+        /// <see href="https://www.mesasoftware.com/papers/Noise%20Elimination%20Technology.pdf"/>
+        /// <see href="https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient"/>
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="n">NET length</param>
@@ -1108,7 +1123,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// Calculate Error-Corrected Exponential Moving Average, as 
         /// proposed by John F. Ehlers and Ric Way in their paper
         /// 'Zero Lag (well, almost).'
-        /// see <href="https://www.mesasoftware.com/papers/ZeroLag.pdf"/>
+        /// <see href="https://www.mesasoftware.com/papers/ZeroLag.pdf"/>
         /// </summary>
         /// <param name="series">input series</param>
         /// <param name="length">filter length</param>
@@ -1178,7 +1193,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <summary>
         /// Calculate Inverse Fisher Transformation, as proposed by
         /// John F. Ehlers in his paper 'The Inverse Fisher Transform'
-        /// see <href="https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf"/>
+        /// <see href="https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf"/>
         /// </summary>
         /// <param name="series">input series, range should be between -5 and +5</param>
         /// <returns></returns>
@@ -1214,7 +1229,14 @@ namespace TuringTrader.SimulatorV2.Indicators
         }
         #endregion
         #region CyberCycle
-        // see https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf
+        /// <summary>
+        /// Cycle indicator, as suggested by John F. Ehlers in his paper
+        /// 'The Inverse Fisher Transform.'
+        /// <see href="https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf"/>
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="alpha"></param>
+        /// <returns></returns>
         public static TimeSeriesFloat CyberCycle(this TimeSeriesFloat series, double alpha = 0.07)
         {
             var name = string.Format("{0}.CyberCycle({1})", series.Name, alpha);
@@ -1265,6 +1287,9 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
         #region xxx DMH
         // see https://www.mesasoftware.com/papers/DMH.pdf
+        #endregion
+        #region xxx AM & FM demodulation
+        // see https://www.mesasoftware.com/papers/AMFM.pdf
         #endregion
     }
 }
