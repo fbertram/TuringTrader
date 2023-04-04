@@ -30,7 +30,7 @@
 
 // USE_EHLERS_RANGE
 // if defined, set simulation range to match charts in Ehlers's book
-//#define USE_EHLERS_RANGE
+#define USE_EHLERS_RANGE
 
 #region libraries
 using System;
@@ -43,36 +43,53 @@ using TuringTrader.SimulatorV2.Indicators;
 
 namespace TuringTrader.BooksAndPubsV2
 {
-    #region SineTrend strategy
-    public class Ehlers_RocketScienceForTraders_SineTrend : Algorithm
+    #region SineTrend core
+    public abstract class Ehlers_RocketScienceForTraders_SineTrend : Algorithm
     {
         public override string Name => "Ehlers' SineTrend";
 
         #region inputs
-        //public virtual object ASSET { get; set; } = ETF.SPY;
-        public virtual object ASSET { get; set; } = ETF.TLT;
-        //public virtual object ASSET { get; set; } = "EURUSD";
-        //public virtual object ASSET { get; set; } = "&ES";
-        //public virtual object ASSET { get; set; } = ETF.VXX;
+        public abstract object ASSET { get; set; }
         /// <summary>
-        /// InstantaneousTrendline: Ehler's CycPart parameter
+        /// InstantaneousTrendline: Ehler's CycPart parameter. default = 100 = 100%
         /// </summary>
         [OptimizerParam(65, 150, 5)]
-        public virtual int CYCLE_ADJUST { get; set; } = 90;
+        public virtual int CYCLE_ADJUST { get; set; } = 100;
         /// <summary>
         /// MarketMode: price deviation from trend line to break cycle. default = 150 = 1.5%
         /// </summary>
-        [OptimizerParam(50, 500, 50)]
-        public virtual int BREAK_CYCLE {get;set;} = 150;
+        [OptimizerParam(0, 500, 50)]
+        public virtual int BREAK_CYCLE { get; set; } = 150;
 
+        /// <summary>
+        /// Enable trading in trend mode.
+        /// </summary>
         [OptimizerParam(0, 1, 1)]
         public virtual int TRADE_TREND { get; set; } = 1;
+
+        /// <summary>
+        /// Enable trading in cycle mode.
+        /// </summary>
         [OptimizerParam(0, 1, 1)]
         public virtual int TRADE_CYCLE { get; set; } = 1;
+
+        /// <summary>
+        /// Enable long trades.
+        /// </summary>
         [OptimizerParam(0, 1, 1)]
         public virtual int ALLOW_LONG { get; set; } = 1;
+
+        /// <summary>
+        /// Enable short trades.
+        /// </summary>
         [OptimizerParam(0, 1, 1)]
         public virtual int ALLOW_SHORT { get; set; } = 1;
+
+        //[OptimizerParam(1, 5, 1)]
+        public int NUM_FLT = -1;
+        //[OptimizerParam(2, 10, 1)]
+        public int FLT_PERIOD = -1;
+
         #endregion
         #region strategy logic
         public override void Run()
@@ -90,31 +107,7 @@ namespace TuringTrader.BooksAndPubsV2
             WarmupPeriod = TimeSpan.FromDays(365);
             ((Account_Default)Account).Friction = AlgorithmConstants.FRICTION;
 
-#if true
             var asset = Asset(ASSET);
-#else
-            // synthetic data for testing
-            var asset = Asset("synth", () =>
-            {
-                var bars = new List<BarType<OHLCV>>();
-
-                int barNumber = 0;
-                double accumulatedPhase = 0.0;
-                foreach (var t in TradingCalendar.TradingDays)
-                {
-                    var T = barNumber % 1000 < 500 ? 10.0 : 25.0;
-                    var p = 100.0 + 1.5 * Math.Sin(accumulatedPhase);
-
-                    bars.Add(new BarType<OHLCV>(
-                        t,
-                        new OHLCV(p, p, p, p, 0.0)));
-
-                    barNumber += 1;
-                    accumulatedPhase += 2.0 * Math.PI / T;
-                }
-                return bars;
-            });
-#endif
 
             //========== simulation loop ==========
 
@@ -123,11 +116,12 @@ namespace TuringTrader.BooksAndPubsV2
                 var Price = asset.High
                     .Add(asset.Low)
                     .Div(2.0);
+
                 var SmoothPrice = Price.WMA(4);
 
                 // all of Ehlers's complex calculations are provided
                 // through a family of easy-to-use indicators
-                var Trend = Price.MarketMode(BREAK_CYCLE / 100.0);
+                var Trend = Price.MarketMode(BREAK_CYCLE / 10000.0);
                 var Sine = Price.SinewaveIndicator().Sine;
                 var LeadSine = Price.SinewaveIndicator().LeadSine;
                 var Trendline = Price.InstantaneousTrendline(CYCLE_ADJUST / 100.0);
@@ -189,6 +183,19 @@ namespace TuringTrader.BooksAndPubsV2
             }
         }
         #endregion
+    }
+    #endregion
+    #region SineTrend - TLT
+    public class Ehlers_RocketScienceForTraders_SineTrend_TLT : Ehlers_RocketScienceForTraders_SineTrend
+    {
+        public override string Name => "Ehlers' SineTrend (TLT)";
+
+        public override object ASSET { get; set; } = ETF.TLT;
+
+        [OptimizerParam(65, 150, 5)]
+        public override int CYCLE_ADJUST { get; set; } = 70;
+        [OptimizerParam(0, 500, 50)]
+        public override int BREAK_CYCLE { get; set; } = 50;
     }
     #endregion
 }
