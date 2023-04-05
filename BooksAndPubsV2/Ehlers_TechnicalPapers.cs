@@ -183,6 +183,7 @@ namespace TuringTrader.BooksAndPubsV2
 
         #region inputs
         public virtual object ASSET { get; set; } = ETF.SPY;
+        public virtual object SAFE { get; set; } = null;
         [OptimizerParam(0, 1, 1)]
         public virtual int ALLOW_LONG { get; set; } = 1;
         [OptimizerParam(0, 1, 1)]
@@ -211,6 +212,7 @@ namespace TuringTrader.BooksAndPubsV2
             ((Account_Default)Account).Friction = AlgorithmConstants.FRICTION;
 
             var asset = Asset(ASSET);
+            var safe = SAFE != null ? Asset(SAFE) : null;
 
             var lbg = new LookbackGroup();
             var Signal = lbg.NewLookback(0);
@@ -325,7 +327,12 @@ namespace TuringTrader.BooksAndPubsV2
                     : 0.0;
 
                 if (Math.Abs(asset.Position - targetAlloc) > 0.10)
+                {
                     asset.Allocate(targetAlloc, OrderType.openNextBar);
+
+                    if (safe != null)
+                        safe.Allocate(Math.Max(0.0, 1.0 - targetAlloc), OrderType.openNextBar);
+                }
 
                 if (!IsOptimizing && !IsDataSource)
                 {
@@ -467,7 +474,7 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.SetX(SimDate);
                     Plotter.Plot("Price", 100.0 * Math.Log(asset.Close[0] / asset.Close[(DateTime)StartDate]));
                     Plotter.Plot("EC-EMA", 100.0 * Math.Log(fast[0] / asset.Close[(DateTime)StartDate]));
-                    Plotter.Plot("EMA", 100.0 *Math.Log(slow[0] / asset.Close[(DateTime)StartDate]));
+                    Plotter.Plot("EMA", 100.0 * Math.Log(slow[0] / asset.Close[(DateTime)StartDate]));
                     Plotter.Plot("Error bps", 10000.0 * relError.EMA(63)[0]);
                     Plotter.Plot("Allocation", 10.0 * allocation);
 #endif
@@ -587,7 +594,6 @@ namespace TuringTrader.BooksAndPubsV2
         }
     }
     #endregion
-
 }
 
 //==============================================================================
