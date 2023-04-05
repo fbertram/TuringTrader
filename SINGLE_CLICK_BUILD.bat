@@ -21,6 +21,7 @@ rd /s /q BooksAndPubsV2\obj
 rd /s /q TuringTrader.Setup\bin
 rd /s /q TuringTrader.Setup\obj
 rd /s /q DocFX/_site
+git stash -u
 
 echo *
 echo *
@@ -69,7 +70,7 @@ rd /s /q TuringTrader.Simulator\obj
 echo *
 echo *
 echo ***************************************************************************
-echo *** build Books & Pubs
+echo *** build Books and Pubs
 echo ***************************************************************************
 
 dotnet build BooksAndPubs/BooksAndPubs.csproj -c "Release" /p:Platform=x64 /p:Version=%TT_VER%
@@ -114,6 +115,7 @@ echo ***************************************************************************
 
 rem * fall back to the original file w/o version info
 git restore TuringTrader/GitVersion.cs
+git stash pop
 
 echo *
 echo *
