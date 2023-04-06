@@ -626,6 +626,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <summary>
         /// Calculate Ehlers Filter, as described in
         /// John F. Ehlers's book 'Rocket Science for Traders'.
+        /// Also see <see href="https://mesasoftware.com/papers/EhlersFilters.pdf"/>
         /// </summary>
         /// <param name="series">source series</param>
         /// <param name="coefficients">coefficient series</param>
