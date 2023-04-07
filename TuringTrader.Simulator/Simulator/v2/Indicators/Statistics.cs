@@ -195,14 +195,9 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <param name="period">period for statistics</param>
         /// <returns>z-score time series</returns>
         public static TimeSeriesFloat ZScore(this TimeSeriesFloat series, int period)
-        {
-            var mean = series.SMA(period);
-            var stdev = series.StandardDeviation(period);
-
-            return series
-                .Sub(mean)
-                .Div(stdev);
-        }
+            => series
+                .Sub(series.SMA(period))
+                .Div(series.StandardDeviation(period).Max(1e-99));
         #endregion
     }
 }
