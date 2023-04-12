@@ -20,7 +20,7 @@ rd /s /q BooksAndPubsV2\bin
 rd /s /q BooksAndPubsV2\obj
 rd /s /q TuringTrader.Setup\bin
 rd /s /q TuringTrader.Setup\obj
-rd /s /q DocFX/_site
+rd /s /q DocFX\_site
 git stash -u
 
 echo *
