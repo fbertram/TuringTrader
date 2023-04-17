@@ -1,6 +1,6 @@
 # Version History
 
-- 16.x.x - work in progress
+- 16.0.56 - April 17, 2023
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
   - simulator core v2
@@ -8,7 +8,7 @@
       to avoid corruption when using Lambda
   - indicators
     - add Correlation, Covariance, Beta, and ZScore indicators
-    - add Ehlers's DominantCyclePeriod indicator
+    - add family of indicators by John F. Ehlers
   - algorithms
     - implement Ehlers's SineTrend strategy
 - 16.0.24 - March 27, 2023
