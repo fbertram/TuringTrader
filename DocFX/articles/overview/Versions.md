@@ -1,5 +1,8 @@
 # Version History
 
+- 16.0.xxx
+  - indicators
+    - fix issue w/ variance turning negative and standard deviation returning NaN
 - 16.0.57 - April 17, 2023
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
