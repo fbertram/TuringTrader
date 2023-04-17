@@ -21,7 +21,9 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#if true
+#if false
+
+// doesn't work as of 2023iv17. Most likely, the download URL has changed
 
 using System;
 using System.Collections.Generic;

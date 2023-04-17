@@ -93,8 +93,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                             for (int idx = 0; idx < src.Count; idx++)
                             {
                                 var sma = Enumerable.Range(0, n)
-                                    .Sum(t => src[Math.Max(0, idx - t)].Value / n);
-
+                                    .Sum(t => src[Math.Max(0, idx - t)].Value) / n;
                                 dst.Add(new BarType<double>(src[idx].Date, sma));
                             }
 

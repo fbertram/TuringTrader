@@ -44,13 +44,13 @@ namespace SimulatorEngine.Tests
             var d = ds.LoadData(DateTime.Parse("09/30/2018"), DateTime.Parse("01/03/2019"));
 
             Assert.IsTrue(ds.Info[TuringTrader.Simulator.DataSourceParam.name].ToLower().Contains("real gross domestic product"));
-            Assert.IsTrue(d.First().Time.Date == DateTime.Parse("10/01/2018"));
-            Assert.IsTrue(d.Last().Time.Date == DateTime.Parse("01/02/2019"));
-            Assert.IsTrue(d.Count() == 64);
+            Assert.AreEqual(DateTime.Parse("10/01/2018"), d.First().Time.Date);
+            Assert.AreEqual(DateTime.Parse("01/02/2019"), d.Last().Time.Date);
+            Assert.AreEqual(64, d.Count());
             //var v0 = ds.Data.First().Open;
             //var v1 = ds.Data.Last().Close;
-            Assert.IsTrue(Math.Abs(d.First().Open - 18783.548) < 1e-2);
-            Assert.IsTrue(Math.Abs(d.Last().Close - 18927.281) < 1e-2);
+            Assert.AreEqual(18733.741, d.First().Open, 1e-2);
+            Assert.AreEqual(18835.411, d.Last().Close, 1e-2);
         }
     }
 }

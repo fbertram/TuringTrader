@@ -64,7 +64,7 @@ namespace TuringTrader.SimulatorV2.Indicators
                                     .Sum(t => src[Math.Max(0, idx - t)].Value);
                                 var sum2 = Enumerable.Range(0, n)
                                     .Sum(t => Math.Pow(src[Math.Max(0, idx - t)].Value, 2.0));
-                                var var = (sum2 - sum * sum / n) / (n - 1);
+                                var var = Math.Max(0.0, (sum2 - sum * sum / n) / (n - 1));
 
                                 dst.Add(new BarType<double>(
                                     src[idx].Date, var));

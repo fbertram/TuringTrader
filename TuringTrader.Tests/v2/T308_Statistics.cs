@@ -222,6 +222,32 @@ namespace TuringTrader.SimulatorV2.Tests
             Assert.AreEqual(2.6775366551310253, z.Max(b => b.Value), 1e-5);
             Assert.AreEqual(-2.975802196796978, z.Min(b => b.Value), 1e-5);
         }
+        [TestMethod]
+        public void Test_ZScore_Bug000()
+        {
+            // reproduce bug in 16.0.57 w/ ZLEMA returning NaN
+            // this bug turned out to be caused by Variance
+            // returning a negative value and Sqrt for
+            // StandardDeviation failing
+            // fixed this issue by introducing a Max(0.0, ...)
+            // in Variance calculation
+
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("1993-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("1993-12-31T16:00-05:00");
+            algo.WarmupPeriod = TimeSpan.FromDays(3 * 252);
+            algo.CooldownPeriod = TimeSpan.FromDays(0);
+            var vix = algo.Asset("$VIX");
+            var zlema = vix.Close.ZScore(3 * 252);
+
+            var first = zlema.Data.First();
+            Assert.AreEqual(DateTime.Parse("1990-12-07T16:00-05:00"), first.Date);
+            Assert.AreEqual(0.0, first.Value, 1e-5);
+
+            var last = zlema.Data.Last();
+            Assert.AreEqual(DateTime.Parse("1993-12-31T16:00-05:00"), last.Date);
+            Assert.AreEqual(-1.1270145110378169, last.Value, 1e-5);
+        }
         #endregion
     }
 }
