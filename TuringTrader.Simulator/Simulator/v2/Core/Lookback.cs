@@ -113,24 +113,6 @@ namespace TuringTrader.SimulatorV2
                 i.Advance();
         }
     }
-    #region helpers to port from TradeStation/ EasyLanguage
-    /// <summary>
-    /// Helper class to port strategies from TradeStation/ EasyLanguage
-    /// </summary>
-    public class TradeStation
-    {
-        #region trigonometry
-        public static double Sine(double angle) => Math.Sin(Math.PI / 180.0 * angle);
-        public static double Cosine(double angle) => Math.Cos(Math.PI / 180.0 * angle);
-        public static double ArcTangent(double f)
-            // Ehlers' code expects ArcTangent to return angles between
-            // 0 and 180 degrees. In contrast, Math.Atan returns angles
-            // between -Pi/2 and +Pi/2.
-            => 180.0 / Math.PI * Math.Atan(f) + (f < 0.0 ? 180.0 : 0.0);
-        //=> 180.0 / Math.PI * Math.Atan(f);
-        #endregion
-    }
-    #endregion
 }
 
 //==============================================================================

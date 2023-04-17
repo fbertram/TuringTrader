@@ -148,7 +148,6 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <param name="series">this time series</param>
         /// <param name="other">other time series</param>
         /// <param name="n">number of bars</param>
-        /// <param name="subSample">distance between bars</param>
         /// <returns>covariance time series</returns>
         public static TimeSeriesFloat Covariance(this TimeSeriesFloat series, TimeSeriesFloat other, int n)
         {

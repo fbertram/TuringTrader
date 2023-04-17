@@ -1,6 +1,6 @@
 # Version History
 
-- 16.0.56 - April 17, 2023
+- 16.0.57 - April 17, 2023
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
   - simulator core v2

@@ -143,6 +143,9 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
 
         #region BollingerBands
+        /// <summary>
+        /// Container for Bollinger Band results
+        /// </summary>
         public class BollingerT
         {
             /// <summary>
