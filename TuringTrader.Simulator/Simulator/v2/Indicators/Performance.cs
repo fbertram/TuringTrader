@@ -284,7 +284,7 @@ namespace TuringTrader.SimulatorV2.Indicators
         //=> asset.Covariance(market, n).Div(market.Variance(n));
         => asset.LogReturn().Correlation(market.LogReturn(), n)
                 .Mul(asset.Volatility(n))
-                .Div(market.Volatility(n));
+                .Div(market.Volatility(n).Max(1e-99));
         #endregion
     }
 }
