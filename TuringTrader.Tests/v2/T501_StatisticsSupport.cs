@@ -22,7 +22,9 @@
 //==============================================================================
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using TuringTrader.SimulatorV2.Support;
 
 namespace TuringTrader.SimulatorV2.Tests
@@ -33,6 +35,40 @@ namespace TuringTrader.SimulatorV2.Tests
         [TestMethod]
         public void Test_TTest()
         {
+            {
+                // single-value two-tailed t-test
+                // see https://www.youtube.com/watch?v=xuItoKmd7iQ
+                var newbornBirthWeights = new List<double>
+                {
+                    2.6,
+                    2.7,
+                    3.2,
+                    2.9,
+                    3.0,
+                    3.3,
+                    5.2,
+                    2.3,
+                    4.1,
+                    3.7,
+                };
+
+                var tValue = StatisticsSupport.StudentT.TValue(newbornBirthWeights, 3.5);
+                Assert.AreEqual(-0.7430661069271054, tValue, 1e-5);
+
+                var tCritical = StatisticsSupport.StudentT.CriticalValue(newbornBirthWeights, 0.05);
+                Assert.AreEqual(2.262, tCritical, 1e-5);
+
+                var rejectionRegionLower = newbornBirthWeights.Average()
+                    - tCritical * newbornBirthWeights.StandardDeviation() / Math.Sqrt(newbornBirthWeights.Count);
+                var rejectionRegionUpper = newbornBirthWeights.Average()
+                    + tCritical * newbornBirthWeights.StandardDeviation() / Math.Sqrt(newbornBirthWeights.Count);
+                Assert.AreEqual(2.6911712621762995, rejectionRegionLower, 1e-5);
+                Assert.AreEqual(3.9088287378237, rejectionRegionUpper, 1e-5);
+                Assert.AreEqual(true, 3.5 > rejectionRegionLower && 3.5 < rejectionRegionUpper);
+
+                var tTest = StatisticsSupport.StudentT.TestH0(newbornBirthWeights, 3.5, 0.05);
+                Assert.AreEqual(true, tTest);
+            }
             {
                 // single-value two-tailed t-test
                 // see https://www.youtube.com/watch?v=vEG_MOnyMdE
@@ -60,29 +96,29 @@ namespace TuringTrader.SimulatorV2.Tests
                     128,
                 };
 
-                var tValue = StatisticsSupport.StudentsT.TTestTValue(systolicBP, 120);
+                var tValue = StatisticsSupport.StudentT.TValue(systolicBP, 120);
                 Assert.AreEqual(4.5124036593367167, tValue, 1e-5);
 
-                var tCritical = StatisticsSupport.StudentsT.TTestCriticalValue(systolicBP, 0.05);
+                var tCritical = StatisticsSupport.StudentT.CriticalValue(systolicBP, 0.05);
                 Assert.AreEqual(2.093, tCritical, 1e-5);
 
 
-                var tTest = StatisticsSupport.StudentsT.TTestH0(systolicBP, 120, 0.05);
+                var tTest = StatisticsSupport.StudentT.TestH0(systolicBP, 120, 0.05);
                 Assert.AreEqual(false, tTest);
             }
             {
                 // single-value two-tailed t-test
                 // see https://www.youtube.com/watch?v=VPd8DOL13Iw
 
-                var tCritical = StatisticsSupport.StudentsT.TTestCriticalValue(30, 1, 0.05);
+                var tCritical = StatisticsSupport.StudentT.CriticalValue(30, 1, 0.05);
                 Assert.AreEqual(2.045, tCritical, 1e-5);
 
-                var tValue = StatisticsSupport.StudentsT.TTestTValue(
+                var tValue = StatisticsSupport.StudentT.TValue(
                     140, 20, 30,
                     100);
                 Assert.AreEqual(10.954451150103322, tValue, 1e-5);
 
-                var tTest = StatisticsSupport.StudentsT.TTestNullHypothesis(
+                var tTest = StatisticsSupport.StudentT.TestH0(
                     140, 20, 30,
                     100,
                     0.05);
@@ -131,13 +167,13 @@ namespace TuringTrader.SimulatorV2.Tests
                     15.9,
                 };
 
-                var tCritical = StatisticsSupport.StudentsT.CriticalValue(field1, field2, 0.05);
+                var tCritical = StatisticsSupport.StudentT.CriticalValue(field1, field2, 0.05);
                 Assert.AreEqual(2.042, tCritical, 1e-5);
 
-                var tValue = StatisticsSupport.StudentsT.TValue(field1, field2);
-                Assert.AreEqual(2.3388213848187487, tValue, 1e-5);
+                var tValue = StatisticsSupport.StudentT.TValue(field1, field2);
+                Assert.AreEqual(-2.3388213848187491, tValue, 1e-5);
 
-                var tTest = StatisticsSupport.StudentsT.TestH0(field1, field2, 0.05);
+                var tTest = StatisticsSupport.StudentT.TestH0(field1, field2, 0.05);
                 Assert.AreEqual(false, tTest);
             }
         }

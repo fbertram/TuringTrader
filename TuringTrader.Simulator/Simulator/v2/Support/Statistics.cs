@@ -29,40 +29,96 @@ namespace TuringTrader.SimulatorV2.Support
 {
     public static class StatisticsSupport
     {
-        #region Student's T-Test
-        public static class StudentsT
+        #region variance & standard deviation
+        //public static double Average(this IEnumerable<double> values)
+        //    => values.Sum(x => x) / values.Count();
+
+        /// <summary>
+        /// Calculate statistical variance.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static double Variance(this IEnumerable<double> values)
         {
-            // see https://www.youtube.com/watch?v=ijeEYFnS2v4
+            var avg = values.Average();
+            return values.Sum(x => Math.Pow(x - avg, 2.0)) / Math.Max(1, values.Count() - 1);
+        }
+
+        /// <summary>
+        /// Calculate standard deviation.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static double StandardDeviation(this IEnumerable<double> values)
+            => Math.Sqrt(Variance(values));
+        #endregion
+
+        #region Student's T-Test
+        /// <summary>
+        /// Helper class to perform Student's T-Test
+        /// </summary>
+        public static class StudentT
+        {
             #region T-Value
-            public static double TTestTValue(
+            /// <summary>
+            /// Calculate T-Value
+            /// </summary>
+            /// <param name="mean1"></param>
+            /// <param name="stdev1"></param>
+            /// <param name="n1"></param>
+            /// <param name="mean2"></param>
+            /// <param name="stdev2"></param>
+            /// <param name="n2"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            /// <exception cref="NotImplementedException"></exception>
+            public static double TValue(
                 double mean1, double stdev1, int n1,
                 double mean2, double stdev2 = 0.0, int n2 = 1,
                 bool twoTailed = true, bool independent = true)
             {
                 if (!twoTailed || !independent) throw new NotImplementedException();
 
-                return Math.Abs(mean1 - mean2)
+                return (mean1 - mean2)
                     / Math.Sqrt(stdev1 * stdev1 / n1 + stdev2 * stdev2 / n2);
             }
+
+            /// <summary>
+            /// Calculate T-Value
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="samples2"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
             public static double TValue(
-                List<double> samples1, List<double> samples2,
+                IEnumerable<double> samples1, IEnumerable<double> samples2,
                 bool twoTailed = true, bool independent = true)
             {
-                var n1 = samples1.Count;
-                var n2 = samples2.Count;
-                var avg1 = samples1.Sum(x => x) / n1;
-                var avg2 = samples2.Sum(x => x) / n2;
-                var std1 = Math.Sqrt(samples1.Sum(x => Math.Pow(x - avg1, 2.0) / (n1 - 1)));
-                var std2 = n2 > 1 ? Math.Sqrt(samples2.Sum(x => Math.Pow(x - avg2, 2.0) / (n2 - 1))) : 0.0;
+                var n1 = samples1.Count();
+                var n2 = samples2.Count();
+                var avg1 = samples1.Average();
+                var avg2 = samples2.Average();
+                var std1 = samples1.StandardDeviation();
+                var std2 = samples2.StandardDeviation();
 
-                return TTestTValue(
+                return TValue(
                     avg1, std1, n1,
                     avg2, std2, n2,
                     twoTailed, independent);
             }
 
-            public static double TTestTValue(
-                List<double> samples1, double mean2,
+            /// <summary>
+            /// Calculate T-Value
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="mean2"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            public static double TValue(
+                IEnumerable<double> samples1, double mean2,
                 bool twoTailed = true, bool independent = true)
                 => TValue(samples1, new List<double> { mean2 }, twoTailed, independent);
             #endregion
@@ -185,7 +241,7 @@ namespace TuringTrader.SimulatorV2.Support
             {10000, new List<double>{ .674, .841, 1.036, 1.282, 1.645, 1.960, 2.054, 2.326, 2.576, 2.807, 3.091, 3.291}},
         };
 
-            private static double _TTestCriticalValue(double alpha, int df)
+            private static double _criticalValue(double alpha, int df)
             {
                 var alpha2 = 0.5 * alpha; // table is single-tailed
 
@@ -203,7 +259,17 @@ namespace TuringTrader.SimulatorV2.Support
 #endif
             #endregion
 
-            public static double TTestCriticalValue(
+            /// <summary>
+            /// Calculate critical value.
+            /// </summary>
+            /// <param name="n1"></param>
+            /// <param name="n2"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            /// <exception cref="NotImplementedException"></exception>
+            public static double CriticalValue(
                 int n1, int n2 = 1, double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
             {
@@ -211,59 +277,109 @@ namespace TuringTrader.SimulatorV2.Support
 
                 var df = n1 + n2 - 2;
 
-                return _TTestCriticalValue(alpha, df);
+                return _criticalValue(alpha, df);
             }
 
+            /// <summary>
+            /// Calculate critical value.
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="samples2"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
             public static double CriticalValue(
-                List<double> samples1, List<double> samples2, double alpha = 0.05,
+                IEnumerable<double> samples1, IEnumerable<double> samples2, double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
-                => TTestCriticalValue(samples1.Count, samples2.Count, alpha, twoTailed, independent);
+                => CriticalValue(samples1.Count(), samples2.Count(), alpha, twoTailed, independent);
 
-            public static double TTestCriticalValue(
-                List<double> samples1, double alpha = 0.05,
+            /// <summary>
+            /// Calculate critical value.
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            public static double CriticalValue(
+                IEnumerable<double> samples1, double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
-                => TTestCriticalValue(samples1.Count, 1, alpha, twoTailed, independent);
+                => CriticalValue(samples1.Count(), 1, alpha, twoTailed, independent);
             #endregion
             #region Test H0
-            public static bool TTestNullHypothesis(
+            /// <summary>
+            /// Test Null-Hypothesis.
+            /// </summary>
+            /// <param name="mean1"></param>
+            /// <param name="stdev1"></param>
+            /// <param name="n1"></param>
+            /// <param name="mean2"></param>
+            /// <param name="stdev2"></param>
+            /// <param name="n2"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            public static bool TestH0(
                 double mean1, double stdev1, int n1,
                 double mean2, double stdev2 = 0.0, int n2 = 1,
                 double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
             {
-                var tValue = TTestTValue(
+                if (!twoTailed || !independent) throw new NotImplementedException();
+
+                var tValue = TValue(
                     mean1, stdev1, n1,
                     mean2, stdev2, n2,
                     twoTailed, independent);
 
-                var criticalValue = TTestCriticalValue(
+                var criticalValue = CriticalValue(
                     n1, n2, alpha,
                     twoTailed, independent);
 
-                return Math.Abs(tValue) < Math.Abs(criticalValue);
+                return Math.Abs(tValue) < criticalValue;
             }
 
+            /// <summary>
+            /// Test Null-Hypothesis.
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="samples2"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
             public static bool TestH0(
-                List<double> samples1, List<double> samples2,
+                IEnumerable<double> samples1, IEnumerable<double> samples2,
                 double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
             {
-                var n1 = samples1.Count;
-                var n2 = samples2.Count;
-                var avg1 = samples1.Sum(x => x) / n1;
-                var avg2 = samples2.Sum(x => x) / n2;
-                var std1 = Math.Sqrt(samples1.Sum(x => Math.Pow(x - avg1, 2.0) / (n1 - 1)));
-                var std2 = Math.Sqrt(samples2.Sum(x => Math.Pow(x - avg2, 2.0) / (n2 - 1)));
+                var n1 = samples1.Count();
+                var n2 = samples2.Count();
+                var avg1 = samples1.Average();
+                var avg2 = samples2.Average();
+                var std1 = samples1.StandardDeviation();
+                var std2 = samples2.StandardDeviation();
 
-                return TTestNullHypothesis(
+                return TestH0(
                     avg1, std1, n1,
                     avg2, std2, n2,
                     alpha,
                     twoTailed, independent);
             }
 
-            public static bool TTestH0(
-                List<double> samples1, double mean2,
+            /// <summary>
+            /// Test Null-Hypothesis.
+            /// </summary>
+            /// <param name="samples1"></param>
+            /// <param name="mean2"></param>
+            /// <param name="alpha"></param>
+            /// <param name="twoTailed"></param>
+            /// <param name="independent"></param>
+            /// <returns></returns>
+            public static bool TestH0(
+                IEnumerable<double> samples1, double mean2,
                 double alpha = 0.05,
                 bool twoTailed = true, bool independent = true)
                 => TestH0(samples1, new List<double> { mean2 }, alpha, twoTailed, independent);
