@@ -254,6 +254,16 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
+        /// Retrieve last n values.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns>List of values</returns>
+        public List<T> Take(int n)
+            => Enumerable.Range(0, n)
+                .Select(t => this[t])
+                .ToList();
+
+        /// <summary>
         /// Helper class to allow retrieval of the series' timestamp at an
         /// offset relative to the parent algorithm's simulator timestamp.
         /// </summary>

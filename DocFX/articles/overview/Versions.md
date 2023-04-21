@@ -1,8 +1,12 @@
 # Version History
 
 - 16.0.xxx
+  - core
+    - add Take method to time series
   - indicators
     - fix issue w/ variance turning negative and standard deviation returning NaN
+  - support library
+    - add Student's T-Test
 - 16.0.57 - April 17, 2023
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
