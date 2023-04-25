@@ -51,6 +51,9 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddTradeLog()
         {
+            if (Algorithm.Account.TradeLog.Count == 0)
+                return;
+
             // TODO: rewrite to support RESOLVE_CHILD_HOLDINGS???
             SelectChart("Trade Log", "submitted");
             foreach (var trade in Algorithm.Account.TradeLog)
@@ -76,6 +79,9 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddTargetAllocation()
         {
+            if (Algorithm.Positions.Count == 0)
+                return;
+
             var holdings = new Dictionary<string, double>();
             var names = new Dictionary<string, string>();
             var prices = new Dictionary<string, double>();
@@ -137,6 +143,9 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddHistoricalAllocations()
         {
+            if (Algorithm.Account.TradeLog.Count == 0)
+                return;
+
             var allEodAllocations = new Dictionary<Algorithm, List<Tuple<DateTime, Dictionary<string, double>>>>();
             var allTradeDates = new HashSet<DateTime>();
 
