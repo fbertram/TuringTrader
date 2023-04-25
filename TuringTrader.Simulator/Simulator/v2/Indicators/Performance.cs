@@ -21,7 +21,6 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,8 +128,6 @@ namespace TuringTrader.SimulatorV2.Indicators
                 });
         }
         #endregion
-        // Max Drawdown
-        // Runup
         #region UlcerIndex
         /// <summary>
         /// Calculate Ulcer Index over period.
@@ -140,6 +137,54 @@ namespace TuringTrader.SimulatorV2.Indicators
         /// <returns>ulcer index time series</returns>
         public static TimeSeriesFloat UlcerIndex(this TimeSeriesFloat series, int period)
             => series.Drawdown(period).Square().SMA(period).Sqrt();
+        #endregion
+        #region Runup
+        /// <summary>
+        /// Calculate runup from lowest low in period.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="period">period for lowest low</param>
+        /// <returns>runup time series</returns>
+        public static TimeSeriesFloat Runup(this TimeSeriesFloat series, int period)
+        {
+            var name = string.Format("{0}.Runup({1})", series.Name, period);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                var lowestLow = Enumerable.Range(0, period)
+                                    .Min(t => src[Math.Max(0, idx - t)].Value);
+
+                                dst.Add(new BarType<double>(src[idx].Date, src[idx].Value / lowestLow - 1.0));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
+        #endregion
+        #region GreedIndex
+        /// <summary>
+        /// Calculate Greed Index, which is a proprietary opposite
+        /// to the Ulcer index.
+        /// </summary>
+        /// <param name="series">input time seres</param>
+        /// <param name="period">greed index</param>
+        /// <returns></returns>
+        public static TimeSeriesFloat GreedIndex(this TimeSeriesFloat series, int period)
+            => series.Runup(period).Square().SMA(period).Sqrt();
         #endregion
 
         #region BollingerBands

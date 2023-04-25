@@ -24,10 +24,7 @@
 #region libraries
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
-using TuringTrader.Indicators;
 using TuringTrader.SimulatorV2.Assets;
 using TuringTrader.SimulatorV2.Indicators;
 #endregion

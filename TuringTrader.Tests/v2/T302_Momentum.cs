@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TuringTrader.Indicators;
+using TuringTrader.SimulatorV2.Assets;
 using TuringTrader.SimulatorV2.Indicators;
 #endregion
 
@@ -181,6 +182,53 @@ namespace TuringTrader.SimulatorV2.Tests
                 Assert.AreEqual(algo.v1R2[i].Date, algo.v2R2[i].Date);
                 Assert.AreEqual(algo.v1R2[i].Value, algo.v2R2[i].Value, 1e-5);
             }
+        }
+        #endregion
+        #region Regression
+        [TestMethod]
+        public void Test_Regression()
+        {
+            var algo = new T000_Helpers.DoNothing();
+            algo.StartDate = DateTime.Parse("1970-01-01T16:00-05:00");
+            algo.EndDate = DateTime.Parse("2023-03-01");
+            ((Account_Default)algo.Account).Friction = 0.005;
+
+            var asset = algo.Asset(MarketIndex.SPXTR);
+            var anchor = asset.Close.LinRegression(21).Intercept;
+
+            var zAvg = algo.Lambda("z-cone", () =>
+            {
+                var zAvg = 0.0;
+                for (var t = 5; t < 126; t++)
+                {
+                    var vol = asset.Close.Volatility(t)[0];
+                    var std = (Math.Exp(Math.Sqrt(t) * vol) - 1.0) * anchor[0];
+                    var zScore = -(asset.Close[t] - anchor[0]) / Math.Max(1e-99, std);
+                    zAvg += zScore / (5 - 126);
+                }
+                return zAvg;
+            });
+
+            var returns = asset.Close.LogReturn();
+            var regr = returns.Regression(zAvg, 21);// regression seems to return NaN
+            var intercept = regr.Intercept;
+            var slope = regr.Slope;
+            var r2 = regr.R2;
+
+            Assert.AreEqual(13413, intercept.Data.Count);
+            Assert.AreEqual(0.0004008361667103951, intercept.Data.Average(b => b.Value));
+            Assert.AreEqual(-0.01837332316570307, intercept.Data.Min(b => b.Value));
+            Assert.AreEqual(0.010602806675019514, intercept.Data.Max(b => b.Value));
+
+            Assert.AreEqual(13413, intercept.Data.Count);
+            Assert.AreEqual(-5.381165720368713E-89, slope.Data.Average(b => b.Value));
+            Assert.AreEqual(-1.4243845454612035E-87, slope.Data.Min(b => b.Value));
+            Assert.AreEqual(2.4682782934871896E-87, slope.Data.Max(b => b.Value));
+
+            Assert.AreEqual(13413, intercept.Data.Count);
+            Assert.AreEqual(0.0027804981759415245, r2.Data.Average(b => b.Value));
+            Assert.AreEqual(0.0, r2.Data.Min(b => b.Value));
+            Assert.AreEqual(0.03920682704508874, r2.Data.Max(b => b.Value));
         }
         #endregion
 

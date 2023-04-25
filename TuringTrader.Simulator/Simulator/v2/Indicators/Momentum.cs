@@ -438,6 +438,113 @@ namespace TuringTrader.SimulatorV2.Indicators
             return series.Log().LinRegression(n);
         }
         #endregion
+        #region Regression
+        /// <summary>
+        /// Calculate regression against independent time series.
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="indep">independent time series</param>
+        /// <param name="n">observation window</param>
+        /// <returns>regression time series</returns>
+        public static RegressionT Regression(this TimeSeriesFloat series, TimeSeriesFloat indep, int n)
+        {
+            var name = string.Format("{0}.Regression({1},{2})", series.Name, indep.Name, n);
+
+            Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>> calcRegression()
+            {
+                var src = series.Data;
+                var slope = new List<BarType<double>>();
+                var intercept = new List<BarType<double>>();
+                var r2 = new List<BarType<double>>();
+
+                var windowX = new List<double>();
+                var windowY = new List<double>();
+
+                for (var i = 0; i < n; i++)
+                {
+                    windowX.Insert(0, indep[src[0].Date]);
+                    windowY.Insert(0, src[0].Value);
+                }
+
+                for (int idx = 0; idx < src.Count; idx++)
+                {
+                    windowX.Insert(0, indep[src[idx].Date]);
+                    windowX.RemoveAt(n - 1);
+
+                    windowY.Insert(0, src[idx].Value);
+                    windowY.RemoveAt(n - 1);
+
+                    // simple linear regression
+                    // https://en.wikipedia.org/wiki/Simple_linear_regression
+                    // b = sum((x - avg(x)) * (y - avg(y)) / sum((x - avg(x))^2)
+                    // a = avg(y) - b * avg(x)
+
+                    double avgX = windowX.Average();
+                    double avgY = windowY.Average();
+                    double sumXx = windowX.Sum(v => v * v);
+                    double sumXy = Enumerable.Range(0, n)
+                        .Sum(i => (windowX[i] - avgX) * (windowY[i] - avgY));
+                    double b = sumXy / Math.Max(1e-99, sumXx);
+                    double a = avgY - b * avgX;
+
+                    slope.Add(new BarType<double>(src[idx].Date, b));
+                    intercept.Add(new BarType<double>(src[idx].Date, a));
+
+#if true
+                    // coefficient of determination
+                    // https://en.wikipedia.org/wiki/Coefficient_of_determination
+                    // f = a + b * x
+                    // SStot = sum((y - avg(y))^2)
+                    // SSreg = sum((f - avg(y))^2)
+                    // SSres = sum((y - f)^2)
+                    // R2 = 1 - SSres / SStot
+                    //    = SSreg / SStot
+
+                    double totalSumOfSquares = Enumerable.Range(0, n)
+                        .Sum(i => Math.Pow(windowY[i] - avgY, 2));
+                    double regressionSumOfSquares = Enumerable.Range(0, n)
+                        .Sum(i => Math.Pow(a + b * windowX[i] - avgY, 2));
+                    double residualSumOfSquares = Enumerable.Range(0, n)
+                        .Sum(i => Math.Pow(windowY[i] - a - b * windowX[i], 2));
+
+                    // NOTE: this is debatable. we are returning r2 = 0.0, 
+                    //       when it is actually NaN
+                    double rr = totalSumOfSquares != 0.0
+                        //? 1.0 - residualSumOfSquares / totalSumOfSquares
+                        ? regressionSumOfSquares / totalSumOfSquares
+                        : 0.0;
+
+                    r2.Add(new BarType<double>(src[idx].Date, rr));
+#endif
+                }
+
+                return Tuple.Create(slope, intercept, r2);
+            }
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var retrieve = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() => (object)calcRegression()));
+
+                    return new RegressionT(
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Slope",
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item1),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".Intercept",
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item2),
+                        new TimeSeriesFloat(
+                            series.Owner, name + ".R2",
+                            retrieve,
+                            (retrieve) => ((Tuple<List<BarType<double>>, List<BarType<double>>, List<BarType<double>>>)retrieve).Item3));
+                });
+        }
+        #endregion
         #region ADX
         /// <summary>
         /// Calculate Average Directional Movement Index.
