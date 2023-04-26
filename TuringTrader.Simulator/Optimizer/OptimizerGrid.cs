@@ -140,7 +140,7 @@ namespace TuringTrader.Optimizer
                             (_numIterationsTotal - _numIterationsCompleted)
                             * t.TotalSeconds / _numIterationsCompleted);
 
-                        if (result.Fitness != null)
+                        if (result.Fitness != null && double.IsFinite((double)result.Fitness))
                             _maxFitness = _maxFitness != null
                                 ? Math.Max((double)_maxFitness, (double)result.Fitness)
                                 : (double)result.Fitness;
