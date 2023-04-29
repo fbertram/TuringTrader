@@ -167,6 +167,14 @@ namespace TuringTrader.SimulatorV2
                 instanceV2.StartDate = startDate;
                 instanceV2.EndDate = endDate;
                 instanceV2.IsDataSource = true;
+
+#if true
+                // new 2023iv29 - share data w/ child algos
+                // because the owner's data cache is typically
+                // a bypass, this only kicks in while optimizing
+                instanceV2.DataCache = owner.DataCache;
+#endif
+
                 instanceV2.Run();
 
                 return Tuple.Create(
