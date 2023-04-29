@@ -5,7 +5,7 @@ $NDX,"Nasdaq-100 Index",01/31/1985,01/31/1985
 $NDXTR,"Nasdaq-100 Total Return Index",03/04/1999,03/04/1999
 $DJI,"Dow Jones Industrial Average",01/02/1970,01/02/1970
 $DJITR,"Dow Jones Industrial Average Total Return",09/30/1987,01/02/1970
-SPY,"SPDR S&P 500 Trust ETF",06/30/1997,01/01/1990
+SPY,"SPDR S&P 500 Trust ETF",06/30/1997,01/30/1970
 SPYG,"SPDR Portfolio S&P 500 Growth ETF",09/29/2000,09/29/2000
 SPYV,"SPDR Portfolio S&P 500 Value ETF",09/29/2000,09/29/2000
 MDY,"SPDR S&P MidCap 400 ETF",05/04/1995,07/01/1991
@@ -42,32 +42,34 @@ VGK,"Vanguard European Stock Index ETF",03/10/2005,03/10/2005
 EWJ,"iShares MSCI Japan ETF",03/18/1996,03/18/1996
 VWO,"Vanguard Emerging Markets Stock Index ETF",03/10/2005,03/10/2005
 VT,"Vanguard Total World Stock Index ETF",06/26/2008,06/26/2008
-TLT,"iShares 20 Plus Year Treasury Bond ETF",07/26/2002,02/01/1962
-VGLT,"Vanguard Long-Term Treasury Index ETF",11/24/2009,02/01/1962
-EDV,"Vanguard Extended Duration ETF",12/19/2007,02/01/1962
-TLH,"iShares 10-20 Year Treasury Bond ETF",01/11/2007,02/01/1962
-IEF,"iShares 7-10 Year Treasury Bond ETF",07/26/2002,01/02/1962
-IEI,"iShares 3-7 Year Treasury Bond ETF",01/11/2007,01/02/1962
-VGIT,"Vanguard Intermediate-Term Treasury Index ETF",11/23/2009,07/26/2002
-SHY,"iShares 1-3 Year Treasury Bond ETF",07/26/2002,01/02/1962
-SHV,"iShares Short Treasury Bond ETF",01/11/2007,07/26/2002
-BIL,"SPDR Bloomberg 1-3 Month T-Bill ETF",05/30/2007,01/04/1954
+TLT,"iShares 20 Plus Year Treasury Bond ETF",07/26/2002,01/01/1970
+VGLT,"Vanguard Long-Term Treasury Index ETF",11/24/2009,01/01/1970
+EDV,"Vanguard Extended Duration ETF",12/19/2007,01/01/1970
+TLH,"iShares 10-20 Year Treasury Bond ETF",01/11/2007,01/01/1970
+IEF,"iShares 7-10 Year Treasury Bond ETF",07/26/2002,01/01/1970
+IEI,"iShares 3-7 Year Treasury Bond ETF",01/11/2007,01/01/1970
+VGIT,"Vanguard Intermediate-Term Treasury Index ETF",11/23/2009,01/01/1970
+SHY,"iShares 1-3 Year Treasury Bond ETF",07/26/2002,01/01/1970
+SHV,"iShares Short Treasury Bond ETF",01/11/2007,01/01/1970
+BIL,"SPDR Bloomberg 1-3 Month T-Bill ETF",05/30/2007,01/01/1970
+GSY,"Invesco Ultra Short Duration ETF",02/12/2008,01/01/1970
 TIP,"iShares TIPS Bond ETF",12/19/2007,06/26/2000
-LQD,"iShares iBoxx $ Investment Grade Corporate Bond ETF",07/26/2002,02/01/1962
-IGIB,"iShares 5-10 Yr Investment Grade Corporate Bond ETF",01/11/2007,02/01/1962
-VCLT,"Vanguard Long-Term Corporate Bond Index ETF",11/23/2009,02/01/1962
+VTIP,"Vanguard Sht-Term Inflation-Protected Sec Idx ETF",10/16/2012,10/16/2012
+LQD,"iShares iBoxx $ Investment Grade Corporate Bond ETF",07/26/2002,01/01/1970
+IGIB,"iShares 5-10 Yr Investment Grade Corporate Bond ETF",01/11/2007,01/01/1970
+VCLT,"Vanguard Long-Term Corporate Bond Index ETF",11/23/2009,01/01/1970
 HYG,"iShares iBoxx $ High Yield Corporate Bond ETF",04/11/2007,01/01/1980
 JNK,"SPDR Bloomberg High Yield Bond ETF",04/11/2007,01/01/1980
 CWB,"SPDR Bloomberg Convertible Securities ETF",04/16/2009,06/16/1986
-AGG,"iShares Core US Aggregate Bond ETF",09/26/2003,02/01/1962
-BND,"Vanguard Total Bond Market Index ETF",04/10/2007,02/01/1962
+AGG,"iShares Core US Aggregate Bond ETF",09/26/2003,01/01/1970
+BND,"Vanguard Total Bond Market Index ETF",04/10/2007,01/01/1970
 BWX,"SPDR Bloomberg International Treasury Bond ETF",10/05/2007,10/05/2007
 BNDX,"Vanguard Total International Bond Index ETF",06/04/2013,01/04/1993
-GLD,"SPDR Gold Shares ETF",11/18/2004,07/01/1982
-IAU,"iShares Gold Trust ETF",01/28/2005,07/01/1982
-DBC,"Invesco DB Commodity Index Tracking ETF",02/03/2006,07/01/2002
-PDBC,"Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",11/07/2014,07/01/2002
-VNQ,"Vanguard Real Estate Index ETF",09/29/2004,09/29/2004
+GLD,"SPDR Gold Shares ETF",11/18/2004,01/01/1970
+IAU,"iShares Gold Trust ETF",01/28/2005,01/01/1970
+DBC,"Invesco DB Commodity Index Tracking ETF",02/03/2006,01/02/1991
+PDBC,"Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",11/07/2014,01/02/1991
+VNQ,"Vanguard Real Estate Index ETF",09/29/2004,10/09/2001
 SPUU,"Direxion Daily S&P 500 Bull 2X Shares ETF",05/28/2014,06/01/1976
 SSO,"ProShares Ultra S&P500 ETF",06/21/2006,06/01/1976
 SPXL,"Direxion Daily S&P 500 Bull 3X Shares ETF",11/05/2008,06/01/1976
@@ -82,10 +84,10 @@ QLD,"ProShares Ultra QQQ ETF",06/21/2006,03/04/1999
 TQQQ,"ProShares UltraPro QQQ ETF",02/11/2010,03/04/1999
 UDOW,"ProShares UltraPro Dow30 ETF",02/11/2010,06/01/1976
 URTY,"ProShares UltraPro Russell2000 ETF",02/11/2010,12/29/1978
-UBT,"ProShares Ultra 20+ Year Treasury ETF",01/21/2010,02/01/1962
-TMF,"Direxion Daily 20+ Year Treasury Bull 3X Shares ETF",04/16/2009,02/01/1962
-UST,"ProShares Ultra 7-10 Year Treasury ETF",01/21/2010,02/01/1962
-TYD,"Direxion Daily 7-10 Year Treasury Bull 3X Shares ETF",04/16/2009,02/01/1962
+UBT,"ProShares Ultra 20+ Year Treasury ETF",01/21/2010,01/01/1970
+TMF,"Direxion Daily 20+ Year Treasury Bull 3X Shares ETF",04/16/2009,01/01/1970
+UST,"ProShares Ultra 7-10 Year Treasury ETF",01/21/2010,01/01/1970
+TYD,"Direxion Daily 7-10 Year Treasury Bull 3X Shares ETF",04/16/2009,01/01/1970
 UGL,"ProShares Ultra Gold ETF",02/11/2010,07/01/1982
 UGLDF,"Credit Suisse VelocityShares 3x Long Gold SP GSCI Gold Index ER ETN",10/17/2011,07/01/1982
 VXX,"Barclays iPath Series B S&P 500 VIX Short-Term Futures ETN",01/18/2018,01/02/2008

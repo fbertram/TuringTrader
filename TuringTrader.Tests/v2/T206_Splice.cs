@@ -48,7 +48,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    var a = Asset("splice:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+                    var a = Asset("splice:csv:test/splice-b.csv,csv:test/splice-a.csv");
 
                     if (IsFirstBar)
                     {
@@ -96,7 +96,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    var a = Asset("splice:csv:../TestData/splice-b.csv,csv:does-not-exist");
+                    var a = Asset("splice:csv:test/splice-b.csv,csv:does-not-exist");
 
                     if (IsFirstBar)
                     {
@@ -150,7 +150,7 @@ namespace TuringTrader.SimulatorV2.Tests
 
                 SimLoop(() =>
                 {
-                    var a = Asset("join:csv:../TestData/splice-b.csv,csv:../TestData/splice-a.csv");
+                    var a = Asset("join:csv:test/splice-b.csv,csv:test/splice-a.csv");
 
                     if (IsFirstBar)
                     {

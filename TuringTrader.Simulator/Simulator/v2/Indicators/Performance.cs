@@ -1,7 +1,7 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, simulator core v2
-// Name:        Indicators/Volatility
-// Description: Volatility indicators.
+// Name:        Performance
+// Description: Performance-related indicators.
 // History:     2022xi02, FUB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
@@ -21,6 +21,7 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,53 +32,9 @@ namespace TuringTrader.SimulatorV2.Indicators
     /// <summary>
     /// Collection of volatility-related indictors.
     /// </summary>
-    public static class Volatility_
+    public static class Performance
     {
-        #region StandardDeviation
-        /// <summary>
-        /// Calculate historical standard deviation.
-        /// </summary>
-        /// <param name="series">input series</param>
-        /// <param name="n">length of calculation window</param>
-        /// <returns>standard deviation time series</returns>
-        public static TimeSeriesFloat StandardDeviation(this TimeSeriesFloat series, int n = 10)
-        {
-            var name = string.Format("{0}.StandardDeviation({1})", series.Name, n);
-
-            return series.Owner.ObjectCache.Fetch(
-                name,
-                () =>
-                {
-                    var data = series.Owner.DataCache.Fetch(
-                        name,
-                        () => Task.Run(() =>
-                        {
-                            var src = series.Data;
-                            var dst = new List<BarType<double>>();
-
-                            for (int idx = 0; idx < src.Count; idx++)
-                            {
-                                // see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-
-                                var sum = Enumerable.Range(0, n)
-                                    .Sum(t => src[Math.Max(0, idx - t)].Value);
-                                var sum2 = Enumerable.Range(0, n)
-                                    .Sum(t => Math.Pow(src[Math.Max(0, idx - t)].Value, 2.0));
-                                var var = (sum2 - sum * sum / n) / (n - 1);
-
-                                dst.Add(new BarType<double>(
-                                    src[idx].Date, Math.Sqrt(var)));
-                            }
-
-                            return dst;
-                        }));
-
-                    return new TimeSeriesFloat(series.Owner, name, data);
-                });
-        }
-        #endregion
-        #region SemiDeviation
-        #endregion
+        // SemiDeviation
         #region Volatility
         /// <summary>
         /// Calculate historical volatility, based on log-returns.
@@ -136,15 +93,59 @@ namespace TuringTrader.SimulatorV2.Indicators
         #endregion
 
         #region Drawdown
+        /// <summary>
+        /// Calculate current drawdown from  highest high in period.
+        /// </summary>
+        /// <param name="series">input series</param>
+        /// <param name="period">period for highest high</param>
+        /// <returns>drawdown time series</returns>
+        public static TimeSeriesFloat Drawdown(this TimeSeriesFloat series, int period)
+        {
+            var name = string.Format("{0}.Drawdown({1})", series.Name, period);
+
+            return series.Owner.ObjectCache.Fetch(
+                name,
+                () =>
+                {
+                    var data = series.Owner.DataCache.Fetch(
+                        name,
+                        () => Task.Run(() =>
+                        {
+                            var src = series.Data;
+                            var dst = new List<BarType<double>>();
+
+                            for (int idx = 0; idx < src.Count; idx++)
+                            {
+                                var highestHigh = Enumerable.Range(0, period)
+                                    .Max(t => src[Math.Max(0, idx - t)].Value);
+
+                                dst.Add(new BarType<double>(src[idx].Date, 1.0 - src[idx].Value / highestHigh));
+                            }
+
+                            return dst;
+                        }));
+
+                    return new TimeSeriesFloat(series.Owner, name, data);
+                });
+        }
         #endregion
+        // Max Drawdown
+        // Runup
         #region UlcerIndex
         /// <summary>
-        /// Calculate Ulcer Index.
+        /// Calculate Ulcer Index over period.
         /// </summary>
-        // => series.Drawdown(n).Square().SMA(n).Sqrt();
+        /// <param name="series">input series</param>
+        /// <param name="period">period for highest high</param>
+        /// <returns>ulcer index time series</returns>
+        public static TimeSeriesFloat UlcerIndex(this TimeSeriesFloat series, int period)
+            => series.Drawdown(period).Square().SMA(period).Sqrt();
         #endregion
 
         #region BollingerBands
+        /// <summary>
+        /// Container for Bollinger Band results
+        /// </summary>
         public class BollingerT
         {
             /// <summary>
@@ -269,6 +270,21 @@ namespace TuringTrader.SimulatorV2.Indicators
                     return new TimeSeriesFloat(series.Owner, name, data);
                 });
         }
+        #endregion
+
+        #region Beta
+        /// <summary>
+        /// Calculate beta of time series to benchmark.
+        /// </summary>
+        /// <param name="asset">primary time series</param>
+        /// <param name="market">benchmark time series</param>
+        /// <param name="n">period</param>
+        /// <returns>beta time series</returns>
+        public static TimeSeriesFloat Beta(this TimeSeriesFloat asset, TimeSeriesFloat market, int n)
+        //=> asset.Covariance(market, n).Div(market.Variance(n));
+        => asset.LogReturn().Correlation(market.LogReturn(), n)
+                .Mul(asset.Volatility(n))
+                .Div(market.Volatility(n).Max(1e-99));
         #endregion
     }
 }

@@ -27,9 +27,11 @@
             <MenuItem Header="_Edit">
                 <MenuItem Header="Settings..." Click="MenuEditSettings_Click"/>
                 <MenuItem x:Name="MenuEditAlgorithm" Header="Algorithm Source..." Click="MenuEditAlgorithm_Click"/>
+                <MenuItem Header="Home Directory..." Click="MenuEditHome_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_View Online Help" Click="MenuHelpView_Click"/>
+                <MenuItem Header="_Check for Updates" Click="MenuHelpUpdate_Click"/>
                 <MenuItem Header="_About" Click="MenuHelpAbout_Click"/>
             </MenuItem>
         </Menu>

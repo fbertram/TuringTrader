@@ -55,8 +55,8 @@ namespace SimulatorEngine.Tests
         {
             var universe = Universe.New("$SPX");
             var constituents = universe.Constituents;
-            var isConstituent1 = universe.IsConstituent("FB", DateTime.Parse("01/01/2013"));
-            var isConstituent2 = universe.IsConstituent("FB", DateTime.Parse("01/01/2014"));
+            var isConstituent1 = universe.IsConstituent("META", DateTime.Parse("01/01/2013"));
+            var isConstituent2 = universe.IsConstituent("META", DateTime.Parse("01/01/2014"));
 
             Assert.IsTrue(constituents.Count() > 1100);
             Assert.IsTrue(isConstituent1 == false);

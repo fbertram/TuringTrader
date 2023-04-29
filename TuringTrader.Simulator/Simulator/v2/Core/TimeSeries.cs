@@ -156,12 +156,12 @@ namespace TuringTrader.SimulatorV2
 
         /// <summary>
         /// Create new time series. The retrieval function is untyped, requiring
-        /// an extraction function to unpack the data.
+        /// an additional extraction function to unpack the data.
         /// </summary>
         /// <param name="owner">parent algorithm</param>
         /// <param name="name">time series name</param>
         /// <param name="retrieve">data retrieval task</param>
-        /// <param name="extract">data extraction function</param>
+        /// <param name="extract">data extraction function, typically a cast and member access</param>
         public TimeSeries(Algorithm owner, string name, Task<object> retrieve, Func<object, List<BarType<T>>> extract)
         {
             Owner = owner;
@@ -186,7 +186,7 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
-        /// Create new time series
+        /// Create new time series.
         /// </summary>
         /// <param name="owner">parent/ owning algorithm</param>
         /// <param name="name">time series name</param>
@@ -254,6 +254,16 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
+        /// Retrieve last n values.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns>List of values</returns>
+        public List<T> Take(int n)
+            => Enumerable.Range(0, n)
+                .Select(t => this[t])
+                .ToList();
+
+        /// <summary>
         /// Helper class to allow retrieval of the series' timestamp at an
         /// offset relative to the parent algorithm's simulator timestamp.
         /// </summary>
@@ -281,9 +291,14 @@ namespace TuringTrader.SimulatorV2
         }
 
         /// <summary>
-        /// Time series indexer to return timestamp at offset.
+        /// Time series indexer to return timestamp at offset. Same as Date property.
         /// </summary>
         public TimeIndexer<T> Time = null; // instantiated in constructor
+
+        /// <summary>
+        /// Time series indexer to return timestamp at offset. Same as Time property.
+        /// </summary>
+        public TimeIndexer<T> Date => Time;
     }
     #endregion
     #region class OHLCV

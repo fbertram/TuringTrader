@@ -15,12 +15,17 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64</Platforms>
     <StartupObject>TuringTrader.App</StartupObject>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AvalonLibrary" Version="3.0.0" />
-    <PackageReference Include="NetOfficeFw.Core" Version="1.9.3" />
-    <PackageReference Include="NetOfficeFw.Excel" Version="1.9.3" />
+    <PackageReference Include="NetOfficeFw.Core" Version="1.9.3">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
+    <PackageReference Include="NetOfficeFw.Excel" Version="1.9.3">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="OxyPlot.Wpf" Version="2.1.2" />
   </ItemGroup>
 

@@ -28,6 +28,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -140,6 +141,12 @@ namespace TuringTrader
             _dispatcherTimer.Tick -= Initialize_Once;
 
             CheckSettings();
+
+            WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
+            WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
+            WriteEventHandler(string.Format("Console Mode = {0}\n\n", GlobalSettings.ConsoleMode));
+
+            UpdateHomeDir();
             PopulateAlgorithmMenu();
             LoadMostRecentAlgorithm();
 
@@ -148,12 +155,133 @@ namespace TuringTrader
             PlotterRenderCSharp.Register();
             PlotterRenderR.Register();
             PlotterRenderRMarkdown.Register();
+        }
 
-#pragma warning disable CS0436 // Type conflicts with imported type
-            WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
-#pragma warning restore CS0436 // Type conflicts with imported type
-            WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
-            WriteEventHandler(string.Format("Console Mode = {0}\n", GlobalSettings.ConsoleMode));
+        private void UpdateHomeDir()
+        {
+            //===== initialize home directory
+
+            // we can only initialize home directory and home template exist
+#if true
+            var homeTemplate = Path.Combine(
+                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
+                "..",
+                "Home");
+#else
+            // debugging only
+            var homeTemplate = @"C:\Program Files\TuringTrader\Home";
+#endif
+
+            if (Directory.Exists(GlobalSettings.HomePath) && Directory.Exists(homeTemplate))
+            {
+                var codeVersion = GitInfo.Version;
+                var versionFile = Path.Combine(GlobalSettings.HomePath, "home-version.txt");
+                var homeVersion = File.Exists(versionFile) ? File.ReadAllText(versionFile) : "n/a";
+
+                if (codeVersion != homeVersion)
+                {
+                    WriteEventHandler(string.Format("updating home directory from {0} to {1}\n", homeVersion, codeVersion));
+                    File.WriteAllText(versionFile, codeVersion); // write back version
+
+                    // --- cleanup phase
+                    // (1) go through list with file checksums and delete each file unless
+                    //     (a) file checksum different than list
+                    //     (b) file missing
+                    // --- update phase
+                    // (2) copy all files from app, unless
+                    //     (a) they already exist in the destination
+                    //     (b) they were found missing in step (1)
+                    // (3) for each file copied, save version number to list
+
+                    var checksumFile = Path.Combine(GlobalSettings.HomePath, "file-checksums.txt");
+                    var fileChecksums = new Dictionary<string, string>();
+                    var fileDeleted = new List<string>();
+
+                    // load checksums
+                    if (File.Exists(checksumFile))
+                    {
+                        fileChecksums = File.ReadLines(checksumFile)
+                            .ToDictionary(
+                                line => line.Substring(0, line.IndexOf("=")),
+                                line => line.Substring(line.IndexOf("=") + 1));
+                    }
+
+                    // calculate checksums
+                    string CalculateMD5(string filePath)
+                    {
+                        using (var md5 = MD5.Create())
+                        {
+                            using (var stream = File.OpenRead(filePath))
+                            {
+                                var hash = md5.ComputeHash(stream);
+                                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                            }
+                        }
+                    }
+
+                    // cleanup phase: delete files with matching checksums
+                    foreach (var keyValue in fileChecksums)
+                    {
+                        var filePath = Path.Combine(GlobalSettings.HomePath, keyValue.Key);
+
+                        if (File.Exists(filePath))
+                        {
+                            var checksum = CalculateMD5(filePath);
+
+                            if (checksum == keyValue.Value)
+                                File.Delete(filePath);
+                            else
+                                WriteEventHandler(string.Format("    keeping modified file {0}\n", filePath));
+                        }
+                        else
+                        {
+                            WriteEventHandler(string.Format("    skipping deleted file {0}\n", filePath));
+                            fileDeleted.Add(keyValue.Key);
+                        }
+                    }
+
+                    //--- update phase: copy files from install folder
+                    void copyFolderFiles(string relPath = null)
+                    {
+                        var srcPath = relPath != null ? Path.Combine(homeTemplate, relPath) : homeTemplate;
+                        var dstPath = relPath != null ? Path.Combine(GlobalSettings.HomePath, relPath) : GlobalSettings.HomePath;
+                        var srcInfo = new DirectoryInfo(srcPath);
+
+                        var srcFiles = srcInfo.GetFiles();
+                        foreach (var src in srcFiles)
+                        {
+                            var relFile = relPath != null ? Path.Combine(relPath, src.Name) : src.Name;
+                            var srcFile = Path.Combine(srcPath, src.Name);
+                            var dstFile = Path.Combine(dstPath, src.Name);
+
+                            // NOTE: it is important we keep a checksum entry for
+                            //       each file that should be there, so that we may
+                            //       reset any modifications we made at some point
+                            fileChecksums[relFile] = CalculateMD5(srcFile);
+
+                            if (!File.Exists(dstFile) && !fileDeleted.Contains(relFile))
+                            {
+                                if (relPath != null && !Directory.Exists(dstPath))
+                                    Directory.CreateDirectory(dstPath);
+
+                                File.Copy(srcFile, dstFile);
+                            }
+                        }
+
+                        var srcDirs = srcInfo.GetDirectories();
+                        foreach (var src in srcDirs)
+                        {
+                            var nextRelPath = relPath != null ? Path.Combine(relPath, src.Name) : src.Name;
+                            copyFolderFiles(nextRelPath);
+                        }
+                    }
+
+                    fileChecksums.Clear();
+                    copyFolderFiles();
+
+                    File.WriteAllLines(checksumFile, fileChecksums.Select(kv => string.Format("{0}={1}", kv.Key, kv.Value)));
+                }
+            }
         }
         private void CheckSettings()
         {
@@ -175,39 +303,6 @@ namespace TuringTrader
             {
                 MessageBox.Show("Please set TuringTrader's home folder");
                 MenuEditSettings_Click(null, null);
-            }
-
-            // if home directory exists, make sure to copy all required files
-            if (Directory.Exists(GlobalSettings.HomePath))
-            {
-                void copyFolderFiles(string srcPath, string dstPath)
-                {
-                    DirectoryInfo src = new DirectoryInfo(srcPath);
-
-                    FileInfo[] srcFiles = src.GetFiles();
-                    foreach (FileInfo srcFile in srcFiles)
-                    {
-                        var dstFile = Path.Combine(dstPath, srcFile.Name);
-                        if (!File.Exists(dstFile))
-                            File.Copy(srcFile.FullName, dstFile);
-                    }
-
-                    DirectoryInfo[] srcDirs = src.GetDirectories();
-                    foreach (DirectoryInfo srcDir in srcDirs)
-                    {
-                        string dstDir = Path.Combine(dstPath, srcDir.Name);
-                        Directory.CreateDirectory(dstDir);
-                        copyFolderFiles(srcDir.FullName, dstDir);
-                    }
-                }
-
-                string homeTemplate = Path.Combine(
-                    Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                    "..",
-                    "Home");
-
-                if (Directory.Exists(homeTemplate))
-                    copyFolderFiles(homeTemplate, GlobalSettings.HomePath);
             }
 
             //===== check Tiingo API key
@@ -354,6 +449,7 @@ namespace TuringTrader
                 ResultsButton.IsEnabled = false;
 
                 Title = "TuringTrader - " + _currentAlgorithm.Name;
+                WriteEventHandler(string.Format("loaded algorithm {0}\n", _currentAlgorithm.Name));
             }
             else
             {
@@ -435,26 +531,11 @@ namespace TuringTrader
         #endregion
 
         //----- menu
-        #region private void MenuFileExit_Click(object sender, RoutedEventArgs e)
+        #region menu file/ exit
         private void MenuFileExit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+            => Application.Current.Shutdown();
         #endregion
-        #region private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
-        private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
-        {
-            var settingsDialog = new Settings();
-            settingsDialog.ShowDialog();
-        }
-        #endregion
-        #region private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
-        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
-        {
-            OpenWithShell(_currentAlgorithmInfo.SourcePath);
-        }
-        #endregion
-        #region private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
+        #region menu file/ algorithm/ ...
         private void MenuAlgorithm_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem)e.OriginalSource;
@@ -471,26 +552,29 @@ namespace TuringTrader
             }
         }
         #endregion
-        #region private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutBox = new AboutBox();
-            aboutBox.ShowDialog();
-        }
+        #region menu edit/ settings
+        private void MenuEditSettings_Click(object sender, RoutedEventArgs e)
+            => new Settings().ShowDialog();
         #endregion
-        #region private void MenuHelpView_Click(object sender, RoutedEventArgs e)
+        #region menu edit/ algorithm source code
+        private void MenuEditAlgorithm_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell(_currentAlgorithmInfo.SourcePath);
+        #endregion
+        #region menu edit/ home directory
+        private void MenuEditHome_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell(GlobalSettings.HomePath);
+        #endregion
+        #region menu help/ about
+        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
+            => new AboutBox().ShowDialog();
+        #endregion
+        #region menu help/ check for updates
+        private void MenuHelpUpdate_Click(object sender, RoutedEventArgs e)
+            => OpenWithShell("https://www.turingtrader.org/download/");
+        #endregion
+        #region menu help/ view online help
         private void MenuHelpView_Click(object sender, RoutedEventArgs e)
-        {
-#if false
-            string helpFile = Path.Combine(
-                Directory.GetParent(Assembly.GetEntryAssembly().Location).FullName,
-                "TuringTrader.chm");
-#else
-            string helpFile = "https://www.turingtrader.org/help/";
-#endif
-
-            OpenWithShell(helpFile);
-        }
+            => OpenWithShell("https://www.turingtrader.org/help/");
         #endregion
 
         //----- buttons

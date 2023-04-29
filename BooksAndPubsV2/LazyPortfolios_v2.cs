@@ -38,7 +38,7 @@ namespace TuringTrader.BooksAndPubsV2
     {
         #region inputs
         public virtual HashSet<Tuple<object, double>> ALLOCATION { get; set; }
-        public virtual string BENCH => Benchmark.PORTFOLIO_60_40;
+        public virtual object BENCH { get; set; } = Benchmark.PORTFOLIO_60_40;
         public virtual bool IsTradingDay => IsFirstBar || SimDate.Month != NextSimDate.Month; // end of month
         #endregion
         #region strategy logic
@@ -66,7 +66,7 @@ namespace TuringTrader.BooksAndPubsV2
                 }
 
                 // plotter output
-                if (!IsOptimizing && SimDate >= StartDate)
+                if (!IsOptimizing && !IsDataSource)
                 {
                     Plotter.SelectChart(Name, "Date");
                     Plotter.SetX(SimDate);

@@ -1,9 +1,36 @@
 # Version History
 
-- 0.15.283 - March 17, 2023
+- 16.0.xxx
+  - core
+    - add Take method to time series
+  - indicators
+    - fix issue w/ variance turning negative and standard deviation returning NaN
+  - support library
+    - add Student's T-Test
+- 16.0.57 - April 17, 2023
+  - data
+    - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
+  - simulator core v2
+    - make SimDate, NextSimDate, IsFirstBar, and IsLastBar ThreadStatic,
+      to avoid corruption when using Lambda
+  - indicators
+    - add Correlation, Covariance, Beta, and ZScore indicators
+    - add family of indicators by John F. Ehlers
+  - algorithms
+    - implement Ehlers's SineTrend strategy
+- 16.0.24 - March 27, 2023
+  - general
+    - removed language resources other than English
+    - removed installer project from MSVC solution
+  - simulator core
+    - add more indicators
+- 16.0 - March 23, 2023
   - general
     - update Nuget packages
-    - update to .net core 6
+    - update to .NET 6.0
+    - update to WiX v4
+  - application
+    - improve init/upgrade of home directory
   - simulator core
     - implement new v2 simulator engine
     - add forward and backward compatibility features

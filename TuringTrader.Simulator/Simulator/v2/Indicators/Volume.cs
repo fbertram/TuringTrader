@@ -21,12 +21,6 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace TuringTrader.SimulatorV2.Indicators
 {
     /// <summary>
@@ -35,13 +29,87 @@ namespace TuringTrader.SimulatorV2.Indicators
     public static class Volume
     {
         #region AccumulationDistributionIndex
+        /// <summary>
+        /// Accumulation/ distribution index as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>accumulation/ distribution index as time series</returns>
+        public static TimeSeriesFloat AccumulationDistributionIndex(this TimeSeriesAsset series)
+        {
+            var name = string.Format("{0}.AccumulationDistributionIndex", series.Name);
+
+            return series.Owner.Lambda(
+                name,
+                (prev) => prev + series.Volume[0] * series.CLV()[0],
+                0.0);
+        }
         #endregion
         #region ChaikinOscillator
+        /// <summary>
+        /// Chaikin oscillator as described here:
+        /// <see href="https://en.wikipedia.org/wiki/Accumulation/distribution_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>accumulation/ distribution index as time series</returns>
+        public static TimeSeriesFloat ChaikinOscillator(this TimeSeriesAsset series)
+        {
+            var adl = series.AccumulationDistributionIndex();
+
+            return adl.EMA(3)
+                .Sub(adl.EMA(10));
+        }
         #endregion
         #region OnBalanceVolume
+        /// <summary>
+        /// Calculate On-Balance Volume indicator.
+        /// <see href="https://en.wikipedia.org/wiki/On-balance_volume"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <returns>OBV time series</returns>
+        public static TimeSeriesFloat OnBalanceVolume(this TimeSeriesAsset series)
+        {
+            var name = string.Format("{0}.OnBalanceVolume", series.Name);
+
+            return series.Owner.Lambda(
+                name,
+                (prev) => series.Close[0] > series.Close[1]
+                    ? prev + series.Volume[0]
+                    : prev - series.Volume[0],
+                0.0);
+        }
         #endregion
         #region MoneyFlowIndex
+        /// <summary>
+        /// Calculate Money Flow Index indicator
+        /// <see href="https://en.wikipedia.org/wiki/Money_flow_index"/>
+        /// </summary>
+        /// <param name="series">input time series</param>
+        /// <param name="n">calculation period</param>
+        /// <returns>MFI time series</returns>
+        public static TimeSeriesFloat MoneyFlowIndex(this TimeSeriesAsset series, int n)
+        {
+            var name = string.Format("{0}.MoneyFlowIndex({1})", series.Name, n);
+
+            var typicalPrice = series.TypicalPrice();
+
+            var postiveMoneyFlow = series.Owner.Lambda(
+                name + ".+MF",
+                prev => typicalPrice[0] > typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
+                0.0);
+
+            var negativeMoneyFlow = series.Owner.Lambda(
+                name + ".-MF",
+                prev => typicalPrice[0] < typicalPrice[1] ? typicalPrice[0] * series.Volume[0] : 0.0,
+                0.0);
+
+            return postiveMoneyFlow.SMA(n)
+                .Div(postiveMoneyFlow.SMA(n).Add(negativeMoneyFlow.SMA(n)).Max(1e-99))
+                .Mul(100.0);
+        }
         #endregion
+
+        // - Volume Rate of Change
     }
 }
 

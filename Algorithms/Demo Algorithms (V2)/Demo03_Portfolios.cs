@@ -1,6 +1,6 @@
 ﻿//==============================================================================
 // Project:     TuringTrader, demo algorithms
-// Name:        Demo03_Portfolio
+// Name:        Demo03_Portfolios
 // Description: portfolio trading demo
 // History:     2018xii10, FUB, created
 //              2023iii02, FUB, updated for v2 engine
@@ -22,22 +22,19 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
-#region libraries
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TuringTrader.SimulatorV2;
 using TuringTrader.SimulatorV2.Indicators;
 using TuringTrader.SimulatorV2.Assets;
-#endregion
 
 namespace TuringTrader.Demos
 {
-    public class Demo03_Portfolio: Algorithm
+    public class Demo03_Portfolios: Algorithm
     {
+        override public string Name => "Simple Asset Rotation";
+
         override public void Run()
         {
             //---------- initialization
@@ -45,44 +42,86 @@ namespace TuringTrader.Demos
             // set simulation time frame
             // note that our simulation starts long before inception 
             // of the ETFs thanks to TuringTrader's backfills
-            StartDate = DateTime.Parse("1990-01-01T16:00-05:00");
-            EndDate = DateTime.Parse("2022-12-31T16:00-05:00");
+            StartDate = DateTime.Parse("2007-01-01T16:00-05:00");
+            EndDate = DateTime.Now;
             WarmupPeriod = TimeSpan.FromDays(365);
-
-            // setup the trading universe. note that we are 
-            // not using strings here, but TuringTrader's pre-defined 
-            // constants giving us access to backfills spanning many years
-            var universe = new List<string>{
-                ETF.XLY, ETF.XLV, ETF.XLK,
-                ETF.XLP, ETF.XLE, ETF.XLI,
-                ETF.XLF, ETF.XLU, ETF.XLB,
-            };
 
             //---------- simulation
 
             SimLoop(() =>
             {
-                // this algorithm trades only once per week
+#if true
+                // retrieve the constituents of the Dow-30
+                // the consituents will change over time,
+                // if your data feed supports it
+                var universe = Universe("$DJI");
+                var benchmark = Asset("$DJI");
+#else
+                // alternatively, we can use a static list
+                // note that this introduces survivorship bias
+                var universe = new List<string>{
+                    "UNH",   // 1   UnitedHealth Group Incorporated
+                    "GS",    // 2   Goldman Sachs Group Inc.
+                    "HD",    // 3   Home Depot Inc.
+                    "AMGN",  // 4   Amgen Inc.
+                    "MCD",   // 5   McDonald's Corporation
+                    "MSFT",  // 6   Microsoft Corporation
+                    "CAT",   // 7   Caterpillar Inc.
+                    "HON",   // 8   Honeywell International Inc.
+                    "V",     // 9   Visa Inc. Class A
+                    "TRV",   // 10  Travelers Companies Inc.
+                    "CVX",   // 11  Chevron Corporation
+                    "BA",    // 12  Boeing Company
+                    "JNJ",   // 13  Johnson & Johnson
+                    "CRM",   // 14  Salesforce Inc.
+                    "AXP",   // 15  American Express Company
+                    "WMT",   // 16  Walmart Inc.
+                    "PG",    // 17  Procter & Gamble Company
+                    "IBM",   // 18  International Business Machines Corporation
+                    "AAPL",  // 19  Apple Inc.
+                    "JPM",   // 20  JPMorgan Chase & Co.
+                    "MMM",   // 21  3M Company
+                    "MRK",   // 22  Merck & Co. Inc.
+                    "NKE",   // 23  NIKE Inc. Class B
+                    "DIS",   // 24  Walt Disney Company
+                    "KO",    // 25  Coca-Cola Company
+                    "DOW",   // 26  Dow Inc.
+                    "CSCO",  // 27  Cisco Systems Inc.
+                    "WBA",   // 28  Walgreens Boots Alliance Inc.
+                    "VZ",    // 29  Verizon Communications Inc.
+                    "INTC",  // 30  Intel Corporation
+                };
+                var benchmark = Asset("$DJI");
+#endif
+
+                // this strategy trades only once per week
                 if (SimDate.DayOfWeek > NextSimDate.DayOfWeek)
                 {
-                    // pick the top 3 assets with the highest 1-year momentum
+                    // pick the top 33%  of assets with the highest 6-month momentum
                     var topAssets = universe
-                        .OrderByDescending(name => Asset(name).Close[0] / Asset(name).Close[252])
-                        .Take(3);
+                        .OrderByDescending(name => Asset(name).Close.LogReturn().EMA(126)[0])
+                        .Take((int)Math.Round(universe.Count * 0.33));
 
-                    // hold only the top-ranking assets, flatten all others
-                    foreach (var name in universe)
+                    // we need to create a list of all assets, as
+                    // constituents of the universe can change over time
+                    var allAssets = universe
+                        .Concat(Positions.Keys)
+                        .Distinct()
+                        .ToList();
+
+                    // hold only the top-ranking assets, flatten all other positions
+                    foreach (var name in allAssets)
                         Asset(name).Allocate(
                             topAssets.Contains(name) ? 1.0 / topAssets.Count() : 0.0,
                             OrderType.openNextBar);
                 }
 
                 // create a simple report comparing the
-                // trading strategy to the S&P 500
-                Plotter.SelectChart("simple sector rotation", "date");
+                // trading strategy to its benchmark
+                Plotter.SelectChart("simple asset rotation", "date");
                 Plotter.SetX(SimDate);
-                Plotter.Plot("trading strategy", NetAssetValue);
-                Plotter.Plot("s&P 500", Asset(MarketIndex.SPX).Close[0]);
+                Plotter.Plot(Name, NetAssetValue);
+                Plotter.Plot(benchmark.Description, benchmark.Close[0]);
             });
 
             //---------- post-processing

@@ -836,7 +836,8 @@ namespace TuringTrader
             //===== initialize plot model
             PlotModel plotModel = new PlotModel();
             plotModel.Title = selectedChart;
-            plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
+            if (chartData.First().Count < 25)
+                plotModel.Legends.Add(new Legend() { LegendPosition = LegendPosition.TopLeft });
             plotModel.Axes.Clear();
 
             Axis xAxis = xValue.GetType() == typeof(DateTime)

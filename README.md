@@ -20,10 +20,9 @@ Find the TuringTrader documentation at https://www.turingtrader.org/documentatio
 
 - Microsoft Visual Studio Community 2022
     - installation must include Workloads for .NET desktop development and Universal Windows Platform development
-- .NET Core 6 SDK
-- WiX Toolset version 3.11
-- WiX Toolset Visual Studio 2022 Extension
+- .NET 6.0 SDK
 - DocFX toolset version 2.62.2
+- WiX Toolset v4 (FireGiant's HeatWave Community Edition)
 
 ### Build Steps
 
@@ -33,11 +32,11 @@ Here are the individual steps to build TuringTrader from source:
 - Open TuringTrader solution in Visual Studio
 - Build release version of TuringTrader project
 - Publish TuringTrader application
-- Build BooksAndPubs project (will link against the binary version installed)
+- Build BooksAndPubs project (linked against the binary version installed)
 - Build setup project
 - Build documentation
 
-The project also contains a script for a single-click build. See SINGLE_CLICK_BUILD.bat at the repository root!
+The project also contains a script for a single-click build of the installer. See [SINGLE_CLICK_BUILD.bat](https://github.com/fbertram/TuringTrader/blob/develop/SINGLE_CLICK_BUILD.bat) at the repository root!
 
 
 
