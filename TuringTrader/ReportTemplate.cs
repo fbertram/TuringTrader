@@ -336,9 +336,9 @@ namespace TuringTrader
 
             //===== create swarm of price pathes
             // * each path starts with a drawdown
-            // * one the drawdown is recovered, each path is pegged to zero
+            // * once the drawdown is recovered, each path is pegged to zero
 
-            var TRIALS = 100 * 100 / LEFT_TAIL * 100 / LEFT_TAIL;
+            var TRIALS = 250 * 100 / LEFT_TAIL * 100 / LEFT_TAIL;
             var YEARS = 25;
 
             Random rnd = new Random();
@@ -369,16 +369,16 @@ namespace TuringTrader
 
             //===== pick the worst drawdowns
             var worstPathes = pathes
-                .OrderBy(path => path.Min()) // deepest drawdowns
-                //.OrderByDescending(path => path.Sum(dd => Math.Pow(dd, 2.0))) // Ulcer Index
+                //.OrderBy(path => path.Min()) // deepest drawdowns
+                .OrderByDescending(path => path.Sum(dd => Math.Pow(dd, 2.0))) // Ulcer Index
                 .Take((int)Math.Round(pathes.Count * LEFT_TAIL / 100.0))
                 .ToList();
 
             //===== create envelope
-            var envelope = Enumerable.Range(0, worstPathes.First().Count)
+            var envelope = Enumerable.Range(0, 12 * YEARS)
                 .ToDictionary(
                     t => t / 12.0,
-                    t => pathes
+                    t => worstPathes
                         .Select(path => path[t])
                         .OrderBy(dd => dd)
                         .Take((int)Math.Round(worstPathes.Count * LEFT_TAIL / 100.0))
@@ -1066,7 +1066,7 @@ namespace TuringTrader
                         XAxisKey = "x",
                         YAxisKey = "y",
                         Color = color,
-                        Fill = i == 0? CFG_COLOR0_FILL : color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
                         ConstantY2 = 1.0,
                     }
                     : new LineSeries
@@ -1177,7 +1177,7 @@ namespace TuringTrader
             foreach (var label in _yLabels)
                 row[_xamlLabel(label)] = string.Format("{0:P2}",
                     Math.Sqrt(12.0) * _stdMonthlyReturn(label)); // likely incorrect as we are using log-returns
-                    //(Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(label)) - 1.0)); // is this better? code cuplicated in RenderComps!
+                                                                 //(Math.Exp(Math.Sqrt(12.0) * _stdMonthlyReturn(label)) - 1.0)); // is this better? code cuplicated in RenderComps!
             retvalue.Add(row);
 
 
@@ -2048,11 +2048,11 @@ namespace TuringTrader
                 Tuple.Create<string, Func<object>>("martin", () => _ulcerPerformanceIndex(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("nav-end", ()  => 1000.0 * _endValue(_firstYLabel) / _startValue(_firstYLabel)),
                 Tuple.Create<string, Func<object>>("cagr-5th", () => "[" + _leftTailReturns(_firstYLabel, 0.05)
-                    .Where(kv => kv.Key > 0.0 && kv.Key < 25.1 
+                    .Where(kv => kv.Key > 0.0 && kv.Key < 25.1
                         && Math.Abs(kv.Key - Math.Round(kv.Key)) < 1.0 / 24.0)
                     .Select(kv => kv.Value)
-                    .Aggregate("", (agg, item) => agg 
-                        + (agg.Length > 0 ? "," : "") 
+                    .Aggregate("", (agg, item) => agg
+                        + (agg.Length > 0 ? "," : "")
                         + string.Format("{0:F2}", 100.0 * item)) + "]"),
                 Tuple.Create<string, Func<object>>("mdd-5th", () =>
                 {
@@ -2483,8 +2483,8 @@ namespace TuringTrader
             OxyPlot.Wpf.PngExporter.Export(model,
                 pngFilePath,
                 width, height);
-                //OxyColors.White);
-                //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
+            //OxyColors.White);
+            //OxyColor.FromArgb(0, 0, 0, 0)); // transparent
 #endif
         }
         #endregion
