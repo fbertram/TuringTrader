@@ -275,7 +275,7 @@ namespace TuringTrader
             var TRIALS = 500 * 100 / LEFT_TAIL;
             var YEARS = 25;
 
-            Random rnd = new Random();
+            Random rnd = new Random(0);
             var pathes = new List<List<double>>();
 
             for (var trials = 0; trials < TRIALS; trials++)
@@ -284,14 +284,14 @@ namespace TuringTrader
                 var nav = 1.0;
                 path.Add(nav); // FIXME: do all pathes need to start at 1.0?
 
-                pathes.Add(path);
-
                 for (var months = 0; months < 12 * YEARS; months++)
                 {
                     var monthlyRet = Math.Exp(monthlyDistribution[rnd.Next(monthlyDistribution.Count)]);
                     nav *= monthlyRet;
                     path.Add(nav);
                 }
+
+                pathes.Add(path);
             }
 
             //===== create 5-th percentile envelopes
@@ -336,12 +336,12 @@ namespace TuringTrader
 
             //===== create swarm of price pathes
             // * each path starts with a drawdown
-            // * once the drawdown is recovered, each path is pegged to zero
+            // * once the drawdown is recovered, it is pegged to zero
 
             var TRIALS = 250 * 100 / LEFT_TAIL * 100 / LEFT_TAIL;
             var YEARS = 25;
 
-            Random rnd = new Random();
+            Random rnd = new Random(0);
             var pathes = new List<List<double>>();
 
             for (var trials = 0; trials < TRIALS; trials++)
@@ -350,8 +350,6 @@ namespace TuringTrader
                 var nav = 1.0;
                 path.Add(0.0);
                 var isDrawdown = true;
-
-                pathes.Add(path);
 
                 for (var months = 0; months < 12 * YEARS; months++)
                 {
@@ -365,6 +363,8 @@ namespace TuringTrader
 
                     path.Add(isDrawdown ? nav - 1.0 : 0.0);
                 }
+
+                pathes.Add(path);
             }
 
             //===== pick the worst drawdowns
@@ -384,7 +384,6 @@ namespace TuringTrader
                         .Take((int)Math.Round(worstPathes.Count * LEFT_TAIL / 100.0))
                         .Last());
 
-            //===== create 5-th percentile envelopes
             return envelope;
         }
         protected Dictionary<double, double> _leftTailReturns(string label, double LEFT_TAIL, out Dictionary<double, double> mdd)
