@@ -39,6 +39,7 @@ namespace TuringTrader.BooksAndPubsV2
         #region inputs
         public virtual HashSet<Tuple<object, double>> ALLOCATION { get; set; }
         public virtual object BENCH { get; set; } = Benchmark.PORTFOLIO_60_40;
+        public virtual List<object> BENCHES { get; set; } = null;
         public virtual bool IsTradingDay => IsFirstBar || SimDate.Month != NextSimDate.Month; // end of month
         #endregion
         #region strategy logic
@@ -71,7 +72,11 @@ namespace TuringTrader.BooksAndPubsV2
                     Plotter.SelectChart(Name, "Date");
                     Plotter.SetX(SimDate);
                     Plotter.Plot(Name, NetAssetValue);
-                    Plotter.Plot(Asset(BENCH).Description, Asset(BENCH).Close[0]);
+                    if (BENCHES == null)
+                        Plotter.Plot(Asset(BENCH).Description, Asset(BENCH).Close[0]);
+                    else
+                        foreach (var bench in BENCHES)
+                            Plotter.Plot(Asset(bench).Description, Asset(bench).Close[0]);
                 }
             });
 
