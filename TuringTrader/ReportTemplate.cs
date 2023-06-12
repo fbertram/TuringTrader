@@ -60,6 +60,13 @@ namespace TuringTrader
         /// </summary>
         protected virtual bool CFG_HAS_LEGEND => true;
         /// <summary>
+        /// Configure tracking chart. If this property is set to true,
+        /// the chart will calculate all tracking graphs against the
+        /// last series as the benchmark. Otherwise, it will chart
+        /// the first series against all others as benchmarks.
+        /// </summary>
+        protected virtual bool CFG_TRACKING_TO_LAST => true;
+        /// <summary>
         /// Configure calculation of beta. If this property is set to false,
         /// beta is calculated vs the benchmark. If this property is set to true,
         /// beta is calculated vs the S&P 500.
@@ -2179,16 +2186,19 @@ namespace TuringTrader
             #region plotTracking
             void plotTracking(int i)
             {
-                if (i >= _numYLabels - 1)
-                    return;
+                if (CFG_TRACKING_TO_LAST)
+                {
+                    // until 2023vi12 - benchmark all against last
+                    if (i >= _numYLabels - 1)
+                        return;
 
-                var benchSeries = _getSeries(_benchYLabel);
+                    var benchSeries = _getSeries(_benchYLabel);
 
-                string yLabel = _yLabels[i];
-                var series = _getSeries(yLabel);
-                var color = CFG_COLORS[i % CFG_COLORS.Count()];
+                    string yLabel = _yLabels[i];
+                    var series = _getSeries(yLabel);
+                    var color = CFG_COLORS[i % CFG_COLORS.Count()];
 
-                var trkSeries = /*CFG_IS_AREA(yLabel)
+                    var trkSeries = /*CFG_IS_AREA(yLabel)
                     ? new AreaSeries
                     {
                         Title = yLabel,
@@ -2208,31 +2218,92 @@ namespace TuringTrader
                             Color = color,
                         };
 
-                plotModel.Series.Add(trkSeries);
+                    plotModel.Series.Add(trkSeries);
 
-                var navFiltered = (double?)null;
-                var benchFiltered = (double?)null;
-                var scale = (double?)null;
-                foreach (var point in series)
+                    var navFiltered = (double?)null;
+                    var benchFiltered = (double?)null;
+                    var scale = (double?)null;
+                    foreach (var point in series)
+                    {
+                        var dateCurrent = point.Key;
+                        var navCurrent = point.Value;
+                        var benchCurrent = benchSeries[dateCurrent];
+
+                        const double ALPHA = 2.0 / (40.0 + 1.0);
+                        navFiltered = navFiltered == null
+                            ? navCurrent
+                            : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                        benchFiltered = benchFiltered == null
+                            ? benchCurrent
+                            : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                        scale = scale ?? benchCurrent / navCurrent;
+
+                        var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                        trkSeries.Points.Add(new DataPoint(
+                            DateTimeAxis.ToDouble(dateCurrent),
+                            tracking));
+                    }
+                }
+                else
                 {
-                    var dateCurrent = point.Key;
-                    var navCurrent = point.Value;
-                    var benchCurrent = benchSeries[dateCurrent];
+                    // since 2023vi12 - benchmark first against all others
+                    if (i == 0)
+                        return;
 
-                    const double ALPHA = 2.0 / (40.0 + 1.0);
-                    navFiltered = navFiltered == null
-                        ? navCurrent
-                        : ALPHA * (navCurrent - navFiltered) + navFiltered;
-                    benchFiltered = benchFiltered == null
-                        ? benchCurrent
-                        : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
-                    scale = scale ?? benchCurrent / navCurrent;
+                    var series = _getSeries(_firstYLabel);
 
-                    var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+                    string yLabel = _yLabels[i];
+                    var benchSeries = _getSeries(yLabel);
 
-                    trkSeries.Points.Add(new DataPoint(
-                        DateTimeAxis.ToDouble(dateCurrent),
-                        tracking));
+                    var color = CFG_COLORS[i % CFG_COLORS.Count()];
+
+                    var trkSeries = /*CFG_IS_AREA(yLabel)
+                    ? new AreaSeries
+                    {
+                        Title = yLabel,
+                        IsVisible = true,
+                        XAxisKey = "x",
+                        YAxisKey = "y",
+                        Color = color,
+                        Fill = i == 0 ? CFG_COLOR0_FILL : color,
+                        ConstantY2 = 1.0,
+                    }
+                    :*/ new LineSeries
+                        {
+                            //Title = yLabel + " vs " + _benchYLabel,
+                            IsVisible = true,
+                            XAxisKey = "x",
+                            YAxisKey = "trk",
+                            Color = color,
+                        };
+
+                    plotModel.Series.Add(trkSeries);
+
+                    var navFiltered = (double?)null;
+                    var benchFiltered = (double?)null;
+                    var scale = (double?)null;
+                    foreach (var point in series)
+                    {
+                        var dateCurrent = point.Key;
+                        var navCurrent = point.Value;
+                        var benchCurrent = benchSeries[dateCurrent];
+
+                        const double ALPHA = 2.0 / (40.0 + 1.0);
+                        navFiltered = navFiltered == null
+                            ? navCurrent
+                            : ALPHA * (navCurrent - navFiltered) + navFiltered;
+                        benchFiltered = benchFiltered == null
+                            ? benchCurrent
+                            : ALPHA * (benchCurrent - benchFiltered) + benchFiltered;
+                        scale = scale ?? benchCurrent / navCurrent;
+
+                        var tracking = 100.0 * ((double)(scale * navFiltered / benchFiltered) - 1.0);
+
+                        trkSeries.Points.Add(new DataPoint(
+                            DateTimeAxis.ToDouble(dateCurrent),
+                            tracking));
+                    }
                 }
             }
             #endregion
