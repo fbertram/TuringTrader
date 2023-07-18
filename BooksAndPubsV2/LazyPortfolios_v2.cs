@@ -77,6 +77,14 @@ namespace TuringTrader.BooksAndPubsV2
                     else
                         foreach (var bench in BENCHES)
                             Plotter.Plot(Asset(bench).Description, Asset(bench).Close[0]);
+
+                    Plotter.SelectChart("Asset 12-Months Rolling Returns", "Date");
+                    Plotter.SetX(SimDate);
+                    foreach (var alloc in ALLOCATION)
+                    {
+                        var asset = Asset(alloc.Item1);
+                        Plotter.Plot(asset.Description, 100.0 * (asset.Close[0] / asset.Close[252] - 1.0));
+                    }
                 }
             });
 

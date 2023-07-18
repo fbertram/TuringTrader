@@ -111,6 +111,14 @@ namespace TuringTrader.BooksAndPubs
                     if (Alloc.LastUpdate == SimTime[0])
                         _plotter.AddTargetAllocationRow(Alloc);
                     _plotter.AddStrategyHoldings(this, allocation.Select(a => a.Item1.Instrument));
+
+                    _plotter.SelectChart("Asset 12-Months Rolling Returns", "Date");
+                    _plotter.SetX(SimTime[0]);
+                    foreach (var alloc in allocation)
+                    {
+                        var instrument = alloc.Item1.Instrument;
+                        _plotter.Plot(instrument.Name, 100.0 * (instrument.Close[0] / instrument.Close[252] - 1.0));
+                    }
                 }
             }
 
