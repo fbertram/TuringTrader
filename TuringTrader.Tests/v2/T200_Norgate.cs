@@ -111,10 +111,10 @@ namespace TuringTrader.SimulatorV2.Tests
             var result = algo.EquityCurve;
 
             var avgTickers = result.Average(b => b.Value.Open);
-            Assert.IsTrue(Math.Abs(avgTickers - 500.93551587301585) < 1e-3);
+            Assert.AreEqual(500.93551587301585, avgTickers, 1e-3);
 
             var totTickers = result.Max(b => b.Value.High);
-            Assert.IsTrue(Math.Abs(totTickers - 1232.0) < 1e-3);
+            Assert.AreEqual(1231, totTickers);
         }
     }
 }
