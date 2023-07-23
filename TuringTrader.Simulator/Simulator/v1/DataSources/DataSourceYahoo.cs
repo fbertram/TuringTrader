@@ -42,7 +42,10 @@ namespace TuringTrader.Simulator
             #region internal helpers
             private static object _lockCache = new object();
             private static readonly DateTime _epochOrigin
-                = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                // it is important that the epoch here is DateTimeKind.Unspecified
+                // so that the v2 engine can convert this properly to the local timezone
+                //= new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc); // retired 2023vii23
+                = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Unspecified); // new 2023vii23
 
             private static DateTime fromUnixTime(long unixTime)
             {
