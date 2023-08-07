@@ -3,8 +3,12 @@
 - 16.0.xxx
   - core
     - add Take method to time series
+    - fix issue w/ simloop reentrance
   - indicators
     - fix issue w/ variance turning negative and standard deviation returning NaN
+  - data
+    - fix issue w/ timestamp conversion when running v1 algos inside v2 hosts with Yahoo data
+    - extend backfills for DBC and PDBC
   - support library
     - add Student's T-Test
 - 16.0.57 - April 17, 2023

@@ -67,8 +67,8 @@ BWX,"SPDR Bloomberg International Treasury Bond ETF",10/05/2007,10/05/2007
 BNDX,"Vanguard Total International Bond Index ETF",06/04/2013,01/04/1993
 GLD,"SPDR Gold Shares ETF",11/18/2004,01/01/1970
 IAU,"iShares Gold Trust ETF",01/28/2005,01/01/1970
-DBC,"Invesco DB Commodity Index Tracking ETF",02/03/2006,01/02/1991
-PDBC,"Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",11/07/2014,01/02/1991
+DBC,"Invesco DB Commodity Index Tracking ETF",02/03/2006,01/02/1970
+PDBC,"Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",11/07/2014,01/02/1970
 VNQ,"Vanguard Real Estate Index ETF",09/29/2004,10/09/2001
 SPUU,"Direxion Daily S&P 500 Bull 2X Shares ETF",05/28/2014,06/01/1976
 SSO,"ProShares Ultra S&P500 ETF",06/21/2006,06/01/1976

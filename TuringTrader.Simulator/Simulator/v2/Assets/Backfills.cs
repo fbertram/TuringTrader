@@ -2,7 +2,7 @@
 // Name:        Backfills
 // Description: Backfills for common ETFs and indices.
 //              - file created automatically -
-// History:     2023/03/28, FUB, created
+// History:     2023/08/07, FUB, created
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 
@@ -361,12 +361,12 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string IAU = "splice:IAU,csv:backfills/IAU.csv";
         /// <summary>
         /// Invesco DB Commodity Index Tracking ETF
-        /// (since Feb 2006, backfilled to Jan 1991
+        /// (since Feb 2006, backfilled to Jan 1970
         /// </summary>
         public const string DBC = "splice:DBC,csv:backfills/DBC.csv";
         /// <summary>
         /// Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF
-        /// (since Nov 2014, backfilled to Jan 1991
+        /// (since Nov 2014, backfilled to Jan 1970
         /// </summary>
         public const string PDBC = "splice:PDBC,csv:backfills/PDBC.csv";
         /// <summary>
