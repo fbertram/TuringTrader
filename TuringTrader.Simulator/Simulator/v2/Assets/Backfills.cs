@@ -86,7 +86,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string SLY = "splice:SLY,csv:backfills/SLY.csv";
         /// <summary>
         /// Vanguard S&amp;P Small-Cap 600 Index ETF
-        /// (since Sep 2010, backfilled to Dec 1994
+        /// (since Sep 2010, backfilled to Dec 1978
         /// </summary>
         public const string VIOO = "splice:VIOO,csv:backfills/VIOO.csv";
         /// <summary>
@@ -191,7 +191,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string IWM = "splice:IWM,csv:backfills/IWM.csv";
         /// <summary>
         /// Vanguard Russell 1000 Index ETF
-        /// (since Sep 2010, backfilled to Jan 1990
+        /// (since Sep 2010, backfilled to Dec 1978
         /// </summary>
         public const string VONE = "splice:VONE,csv:backfills/VONE.csv";
         /// <summary>
@@ -226,7 +226,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string EWJ = "splice:EWJ,csv:backfills/EWJ.csv";
         /// <summary>
         /// Vanguard Emerging Markets Stock Index ETF
-        /// (since Mar 2005, backfilled to Mar 2005
+        /// (since Mar 2005, backfilled to Jan 1990
         /// </summary>
         public const string VWO = "splice:VWO,csv:backfills/VWO.csv";
         /// <summary>

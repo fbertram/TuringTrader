@@ -12,7 +12,7 @@ MDY,"SPDR S&P MidCap 400 ETF",05/04/1995,07/01/1991
 MDYG,"SPDR S&P 400 Mid Cap Growth ETF",11/15/2005,06/08/2004
 MDYV,"SPDR S&P 400 Mid Cap Value ETF",11/15/2005,06/08/2004
 SLY,"SPDR S&P 600 Small Cap ETF",11/15/2005,12/30/1994
-VIOO,"Vanguard S&P Small-Cap 600 Index ETF",09/09/2010,12/30/1994
+VIOO,"Vanguard S&P Small-Cap 600 Index ETF",09/09/2010,12/29/1978
 SLYG,"SPDR S&P 600 Small Cap Growth ETF",09/29/2000,09/29/2000
 VIOG,"Vanguard S&P Small-Cap 600 Growth Index ETF",09/09/2010,07/28/2000
 SLYV,"SPDR S&P 600 Small Cap Value ETF",09/29/2000,09/29/2000
@@ -33,14 +33,14 @@ XLY,"Consumer Discretionary Select Sector SPDR ETF",12/22/1998,09/11/1989
 QQQ,"Invesco QQQ Trust Series 1 ETF",03/10/1999,03/10/1999
 DIA,"SPDR Dow Jones Industrial Average Trust ETF",01/20/1998,01/01/1990
 IWM,"iShares Russell 2000 ETF",05/26/2000,01/01/1990
-VONE,"Vanguard Russell 1000 Index ETF",09/22/2010,01/01/1990
+VONE,"Vanguard Russell 1000 Index ETF",09/22/2010,12/29/1978
 VEA,"Vanguard Tax Managed FTSE Developed Markets ETF",07/26/2007,08/17/2001
 ACWX,"iShares MSCI ACWI ex US ETF",03/31/2008,01/01/1980
 VEU,"Vanguard FTSE All World ex US ETF",03/08/2007,01/01/1980
 VSS,"Vanguard FTSE All-World ex-US Small-Cap Index ETF",04/06/2009,11/01/1996
 VGK,"Vanguard European Stock Index ETF",03/10/2005,03/10/2005
 EWJ,"iShares MSCI Japan ETF",03/18/1996,03/18/1996
-VWO,"Vanguard Emerging Markets Stock Index ETF",03/10/2005,03/10/2005
+VWO,"Vanguard Emerging Markets Stock Index ETF",03/10/2005,01/03/1990
 VT,"Vanguard Total World Stock Index ETF",06/26/2008,06/26/2008
 TLT,"iShares 20 Plus Year Treasury Bond ETF",07/26/2002,01/01/1970
 VGLT,"Vanguard Long-Term Treasury Index ETF",11/24/2009,01/01/1970
