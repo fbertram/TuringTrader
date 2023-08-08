@@ -6,6 +6,8 @@
     - fix simulator state corruption w/ simloop reentrance (Lambda)
   - indicators
     - fix issue w/ variance turning negative and standard deviation returning NaN
+  - data sources
+    - make sure CSV source honors 'name' field from descriptor file
   - data
     - fix issue w/ timestamp conversion when running v1 algos inside v2 hosts with Yahoo data
     - extend backfills for DBC, PDBC, VIOO, VONE, VWO, VNQ

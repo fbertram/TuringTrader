@@ -206,7 +206,9 @@ namespace TuringTrader.SimulatorV2
             return new TimeSeriesAsset.MetaType
             {
                 Ticker = info[DataSourceParam.nickName2],
-                Description = info[DataSourceParam.nickName2],
+                Description = info.ContainsKey(DataSourceParam.name)
+                    ? info[DataSourceParam.name]
+                    : info[DataSourceParam.nickName2],
             };
         }
 
