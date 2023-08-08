@@ -371,7 +371,7 @@ namespace TuringTrader.SimulatorV2.Assets
         public const string PDBC = "splice:PDBC,csv:backfills/PDBC.csv";
         /// <summary>
         /// Vanguard Real Estate Index ETF
-        /// (since Sep 2004, backfilled to Oct 2001
+        /// (since Sep 2004, backfilled to Dec 1977
         /// </summary>
         public const string VNQ = "splice:VNQ,csv:backfills/VNQ.csv";
         /// <summary>
