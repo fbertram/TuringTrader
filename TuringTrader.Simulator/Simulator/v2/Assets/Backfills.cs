@@ -43,6 +43,11 @@ namespace TuringTrader.SimulatorV2.Assets
         /// (since Sep 1987, backfilled to Jan 1970
         /// </summary>
         public const string DJITR = "splice:$DJITR,csv:backfills/$DJITR.csv";
+        /// <summary>
+        /// S&amp;P US Aggregate Bond Total Return Index
+        /// (since Apr 2002, backfilled to Jan 1970
+        /// </summary>
+        public const string SPUSAGGT = "splice:$SPUSAGGT,csv:backfills/$SPUSAGGT.csv";
     }
     /// <summary>
     /// Collection of common ETFs.

@@ -10,7 +10,7 @@
     - make sure CSV source honors 'name' field from descriptor file
   - data
     - fix issue w/ timestamp conversion when running v1 algos inside v2 hosts with Yahoo data
-    - extend backfills for DBC, PDBC, VIOO, VONE, VWO, VNQ
+    - extend backfills for DBC, PDBC, VIOO, VONE, VWO, VNQ, $SPUSAGGT
   - support library
     - add Student's T-Test
 - 16.0.57 - April 17, 2023
