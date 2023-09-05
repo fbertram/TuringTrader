@@ -116,8 +116,6 @@ namespace TuringTrader.BooksAndPubsV2
         #region strategy logic
         public override void Run()
         {
-
-
             //========== initialization ==========
 
             StartDate = StartDate ?? AlgorithmConstants.START_DATE;
