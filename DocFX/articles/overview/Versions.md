@@ -13,6 +13,8 @@
     - extend backfills for DBC, PDBC, VIOO, VONE, VWO, VNQ, $SPUSAGGT
   - support library
     - add Student's T-Test
+  - showcase algorithms
+    - add Nelson Freeburg's PENTAD
 - 16.0.57 - April 17, 2023
   - data
     - extend backfills for SPY, VGIT, SHV,  GSY, GLD, IAU, DBC, PDBC, VNQ
