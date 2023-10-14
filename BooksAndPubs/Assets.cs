@@ -109,7 +109,7 @@ namespace TuringTrader.Algorithms.Glue
         /// </summary>
         public static readonly string SLYV = "SLYV";
         /// <summary>
-        /// Vanguard S&P Small-Cap 600 Index ETF
+        /// Vanguard S&amp;P Small-Cap 600 Index ETF
         /// (since Sep 2010, backfilled to Jan 1995)
         /// </summary>
         public static readonly string VIOO = "splice:VIOO,csv:backfills/VIOO.csv";
