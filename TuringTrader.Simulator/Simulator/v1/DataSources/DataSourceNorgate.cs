@@ -256,13 +256,15 @@ namespace TuringTrader.Simulator
                     List<NDU.RecOHLC> q = new List<NDU.RecOHLC>();
                     result = NDU.Api.GetData("$SPX", out q, DateTime.Now - TimeSpan.FromDays(5), DateTime.Now + TimeSpan.FromDays(5));
 
-                    if (!result.IsSuccess())
-                        Output.ThrowError("failed to retrieve data for {0}: {1}", "$SPX", result.ErrorMessage);
+                    //if (!result.IsSuccess())
+                    //    Output.ThrowError("failed to retrieve data for {0}: {1}", "$SPX", result.ErrorMessage);
 
-                    DateTime dbTimeStamp = q
-                        .Select(ohlc => ohlc.Date)
-                        .OrderByDescending(d => d)
-                        .First();
+                    DateTime dbTimeStamp = q.Count > 0
+                        ? q
+                            .Select(ohlc => ohlc.Date)
+                            .OrderByDescending(d => d)
+                            .First()
+                        : default(DateTime);
 #endif
 
                     if (endTime > dbTimeStamp)
