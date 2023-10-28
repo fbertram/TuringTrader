@@ -51,23 +51,24 @@ namespace Algorithms.TTorg
         #region configuration
         public enum MaType
         {
-            WMA,
-            SMA,
+            WMA, // weighted moving average
+            SMA, // simple moving average
         };
         public enum SignalMode
         {
-            CR,
+            CR,    // crossover signal
 #if FIX_ADL_HYSTERSIS
-            CRabs,
+            CRabs, // crossover signal w/ absolute hysteresis
 #endif
-            SL,
+            SL,    // slope signal
         };
 
 #if FIX_ADL_HYSTERSIS
-        [OptimizerParam(100, 1000, 25)]
-        public int ADL_U { get; set; } = 125;
-        [OptimizerParam(100, 1500, 25)]
-        public int ADL_L { get; set; } = 1000;
+        [OptimizerParam(25, 500, 25)]
+        public int ADL_U { get; set; } = 150;
+        [OptimizerParam(25, 500, 25)]
+        public int ADL_L { get; set; } = 400;
+        private int ADL_SCALE = 10;
 #endif
 
         public HashSet<Tuple<object, MaType, int, SignalMode, double, double>> CONFIG =>
@@ -76,11 +77,11 @@ namespace Algorithms.TTorg
                 new Tuple<object, MaType, int, SignalMode, double, double>("$SPX",    MaType.WMA, 65 * 5, SignalMode.CR, 0.0, 3.0), // $SPX - S&P 500 Index
 #if FIX_ADL_HYSTERSIS
                 // Freeburg used the NYSE Advance-Decline Line. We are using
-                // the Russell 1000 instead, so that we can scale the hysteresis
+                // the Russell 3000 instead, so that we can scale the hysteresis
                 // based on the total # of stocks observed.
-                new Tuple<object, MaType, int, SignalMode, double, double>("#RUIAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, 5 * 1000 * ADL_U / 100.0, 5 * 1000 * ADL_L / 100.0), // #RUIAD - Russell 1000 Cumulative Advance-Decline Line
-                //new Tuple<object, MaType, int, SignalMode, double, double>("#SPXAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, 5 * 500 * ADL_U / 100.0, 5 * 500 * ADL_L / 100.0), // #SPXAD - S&P 500 Cumulative Advance-Decline Line
-                //new Tuple<object, MaType, int, SignalMode, double, double>("#RUAAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, 5 * 500 * ADL_U / 100.0, 5 * 500 * ADL_L / 100.0), // #RUAAD - Russell 3000 Cumulative Advance-Decline Line
+                //new Tuple<object, MaType, int, SignalMode, double, double>("#SPXAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, ADL_SCALE * 500 * ADL_U / 100.0, ADL_SCALE * 500 * ADL_L / 100.0), // #SPXAD - S&P 500 Cumulative Advance-Decline Line
+                //new Tuple<object, MaType, int, SignalMode, double, double>("#RUIAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, ADL_SCALE * 1000 * ADL_U / 100.0, ADL_SCALE * 1000 * ADL_L / 100.0), // #RUIAD - Russell 1000 Cumulative Advance-Decline Line
+                new Tuple<object, MaType, int, SignalMode, double, double>("#RUAAD",     MaType.WMA, 14 * 5, SignalMode.CRabs, ADL_SCALE * 3000 * ADL_U / 100.0, ADL_SCALE * 3000 * ADL_L / 100.0), // #RUAAD - Russell 3000 Cumulative Advance-Decline Line
 #else
                 new Tuple<object, MaType, int, SignalMode, double, double>("#NYSEAD",    MaType.WMA, 14 * 5, SignalMode.CR, 0.5, 2.0), // #NYSEAD - NYSE Cumulative Advance-Decline Line
 #endif
@@ -91,7 +92,8 @@ namespace Algorithms.TTorg
                 // has a backfill to 1970.
                 //new Tuple<object, MaType, int, SignalMode, double, double>("$DJCBP",     MaType.WMA, 38 * 5, SignalMode.CR, 1.0, 2.0), // $DJCBP - Dow Jones Equal Weight US Corporate Bond Index
                 //new Tuple<object, MaType, int, SignalMode, double, double>("$SP5IGBIT",  MaType.WMA, 38 * 5, SignalMode.CR, 1.0, 2.0), // $SP5IGBIT - S&P 500 Investment Grade Corporate Bond Total Return Index
-                new Tuple<object, MaType, int, SignalMode, double, double>(ETF.LQD,      MaType.WMA, 38 * 5, SignalMode.CR, 1.0, 2.0), // LQD - iShares iBoxx $ Investment Grade Corporate Bond ETF
+                //new Tuple<object, MaType, int, SignalMode, double, double>(ETF.LQD,      MaType.WMA, 38 * 5, SignalMode.CR, 1.0, 2.0), // LQD - iShares iBoxx $ Investment Grade Corporate Bond ETF
+                new Tuple<object, MaType, int, SignalMode, double, double>(ETF.AGG,      MaType.WMA, 38 * 5, SignalMode.CR, 1.0, 2.0), // AGG - iShares Core US Aggregate Bond ETF
             };
 
         public virtual string STOCKS { get; set; } = ETF.SPY;
@@ -138,7 +140,7 @@ namespace Algorithms.TTorg
                             _ => throw new Exception("unexpected ma type"),
                         };
 
-                        var tempQuoteRef = 1e99;
+                        var tempQuoteRef = 1e99; // this is a hack!
                         var signal = indicator.Item4 switch
                         {
                             SignalMode.CR =>
@@ -188,6 +190,20 @@ namespace Algorithms.TTorg
                             Plotter.SetX(SimDate);
                             Plotter.Plot("Quote", Asset(indicator.Item1).Close[0] / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
                             Plotter.Plot("Moving Average", movingAverage[0] / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
+                            if(indicator.Item4 == SignalMode.CR)
+                            {
+                                Plotter.Plot("Upper Band", (movingAverage[0] * (1.0 + indicator.Item5 / 100.0)) / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
+                                Plotter.Plot("Lower Band", (movingAverage[0] * (1.0 - indicator.Item6 / 100.0)) / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
+                            }
+                            else if (indicator.Item4 == SignalMode.CRabs)
+                            {
+                                Plotter.Plot("Upper Band", (movingAverage[0] + indicator.Item5 / 100.0) / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
+                                Plotter.Plot("Lower Band", (movingAverage[0] - indicator.Item6 / 100.0) / Math.Abs(Asset(indicator.Item1).Close[(DateTime)StartDate]));
+                            }
+                            else if (indicator.Item4 == SignalMode.SL)
+                            {
+                                // unfortunately, we can't plot tempQuoteRef here...
+                            }
                             Plotter.Plot("Signal", signal[0]);
                         }
                     }
