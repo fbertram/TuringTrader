@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -705,8 +706,9 @@ namespace TuringTrader.SimulatorV2
                 "$dji" => _staticDji,
                 _ => throw new Exception(string.Format("Universe {0}:{1} not supported", datafeed, universe)),
             };
-
             return constituents
+                // Yahoo! convert "BRK.B" => "BRK-B"
+                .Select(name => datafeed == "yahoo" ? name.Replace(".", "-") : name)
                 .Select(name => datafeed + ':' + name)
                 .ToHashSet();
         }
