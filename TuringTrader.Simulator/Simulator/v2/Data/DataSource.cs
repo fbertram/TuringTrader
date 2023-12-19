@@ -766,6 +766,12 @@ namespace TuringTrader.SimulatorV2
                 case "norgate":
                     return NorgateGetUniverse(algo, universe);
 
+                case "yahoo":
+                    // convert 'BRK.B' to 'BRK-B'
+                    return StaticGetUniverse(algo, universe, datafeed)
+                        .Select(ticker => ticker.Replace(".", "-"))
+                        .ToHashSet();
+
                 default:
                     return StaticGetUniverse(algo, universe, datafeed);
             }
