@@ -706,9 +706,10 @@ namespace TuringTrader.SimulatorV2
                 "$dji" => _staticDji,
                 _ => throw new Exception(string.Format("Universe {0}:{1} not supported", datafeed, universe)),
             };
+            var datafeedL = datafeed.ToLower();
             return constituents
                 // Yahoo! convert "BRK.B" => "BRK-B"
-                .Select(name => datafeed == "yahoo" ? name.Replace(".", "-") : name)
+                .Select(name => datafeedL == "yahoo" ? name.Replace(".", "-") : name)
                 .Select(name => datafeed + ':' + name)
                 .ToHashSet();
         }
