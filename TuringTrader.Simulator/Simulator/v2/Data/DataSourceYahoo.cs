@@ -35,6 +35,7 @@ namespace TuringTrader.SimulatorV2
         private static readonly DateTime _yahooEpochOrigin = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static long _yahooToUnixTime(DateTime timestamp) => Convert.ToInt64((timestamp - _yahooEpochOrigin).TotalSeconds);
         private static DateTime _yahooFromUnixTime(long unixTime) => _yahooEpochOrigin.AddSeconds(unixTime);
+        private static string _yahooConvertTicker(string ticker) => ticker.Replace('.', '-');
         #endregion
         private static List<BarType<OHLCV>> YahooLoadData(Algorithm algo, Dictionary<DataSourceParam, string> info) =>
             _loadDataHelper<JObject>(
@@ -47,7 +48,7 @@ namespace TuringTrader.SimulatorV2
                         + "?interval=1d"
                         + "&period1={1}"
                         + "&period2={2}",
-                        info[DataSourceParam.symbolYahoo],
+                        _yahooConvertTicker(info[DataSourceParam.symbolYahoo]),
                         0, // epoch origin 01/01/1970
                         _yahooToUnixTime(DateTime.Now + TimeSpan.FromDays(5)));
 
@@ -145,7 +146,7 @@ namespace TuringTrader.SimulatorV2
                     string url = string.Format(
                         @"http://finance.yahoo.com/quote/"
                         + "{0}",
-                        info[DataSourceParam.symbolYahoo]);
+                        _yahooConvertTicker(info[DataSourceParam.symbolYahoo]));
 
                     using (var client = new HttpClient())
                         return client.GetStringAsync(url).Result;
