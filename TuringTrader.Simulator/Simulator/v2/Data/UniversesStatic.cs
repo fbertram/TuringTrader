@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -708,8 +707,6 @@ namespace TuringTrader.SimulatorV2
             };
             var datafeedL = datafeed.ToLower();
             return constituents
-                // Yahoo! convert "BRK.B" => "BRK-B"
-                .Select(name => datafeedL == "yahoo" ? name.Replace(".", "-") : name)
                 .Select(name => datafeed + ':' + name)
                 .ToHashSet();
         }
