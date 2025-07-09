@@ -40,7 +40,7 @@ namespace TuringTrader.SimulatorV2
         #region Norgate DLL loading helpers
         // see https://norgatedata.com/partners/API/cookbook.net.html
         // and https://norgatedata.com/partners/API/sample-code/NorgateDataApiAssemblyResolve.cs
-        private static class NorgateHelpers
+        public static class NorgateHelpers
         {
             private static bool _IsNorgateDataApiAvailable = false;
             private static bool _assemblyresolveadded = false;
