@@ -54,7 +54,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddTradeLog()
         {
-            if (Algorithm.Account.TradeLog.Count == 0)
+            if (Algorithm.Account.TradeLog == null || Algorithm.Account.TradeLog.Count == 0)
                 return;
 
             // TODO: rewrite to support RESOLVE_CHILD_HOLDINGS???
@@ -92,7 +92,9 @@ namespace TuringTrader.SimulatorV2
             // NOTE: the v2 wrapper for v1 child algorithms doesn't advance SimDate.
             //       As a workaround, we get lastSimDate from the top-level v2 algorithm.
             var lastSimDate = Algorithm.SimDate;
-            var lastRebalanceDate = Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate;
+            var lastRebalanceDate = Algorithm.Account.TradeLog != null && Algorithm.Account.TradeLog.Count > 0
+                ? Algorithm.Account.TradeLog.Last().OrderTicket.SubmitDate
+                : default;
 
             void addAssetAllocation(Algorithm algo, double scale = 1.0)
             {
@@ -151,7 +153,7 @@ namespace TuringTrader.SimulatorV2
         /// </summary>
         public void AddHistoricalAllocations()
         {
-            if (Algorithm.Account.TradeLog.Count == 0)
+            if (Algorithm.Account.TradeLog == null || Algorithm.Account.TradeLog.Count == 0)
                 return;
 
             var allEodAllocations = new Dictionary<Algorithm, List<Tuple<DateTime, Dictionary<string, double>>>>();
@@ -164,40 +166,42 @@ namespace TuringTrader.SimulatorV2
             {
                 var eodAllocation = new List<Tuple<DateTime, Dictionary<string, double>>>();
 
-                foreach (var trade in algo.Account.TradeLog)
+                if (algo.Account.TradeLog != null)
                 {
-                    // new date: copy previous allocation
-                    // BUGBUG: this is inaccurate. Due to the fluctuation
-                    //         of asset prices, the new line has deviated
-                    //         from the previous allocation.
-                    //         However, because a typical strategy adjusts
-                    //         all its assets weights simultaneously, this
-                    //         shouldn't matter too much.
-                    if (eodAllocation.Count == 0)
-                        eodAllocation.Add(Tuple.Create(
-                            trade.OrderTicket.SubmitDate,
-                            new Dictionary<string, double>()));
-                    else if (eodAllocation.Last().Item1 != trade.OrderTicket.SubmitDate)
-                        eodAllocation.Add(Tuple.Create(
-                            trade.OrderTicket.SubmitDate,
-                            new Dictionary<string, double>(eodAllocation.Last().Item2)));
+                    foreach (var trade in algo.Account.TradeLog)
+                    {
+                        // new date: copy previous allocation
+                        // BUGBUG: this is inaccurate. Due to the fluctuation
+                        //         of asset prices, the new line has deviated
+                        //         from the previous allocation.
+                        //         However, because a typical strategy adjusts
+                        //         all its assets weights simultaneously, this
+                        //         shouldn't matter too much.
+                        if (eodAllocation.Count == 0)
+                            eodAllocation.Add(Tuple.Create(
+                                trade.OrderTicket.SubmitDate,
+                                new Dictionary<string, double>()));
+                        else if (eodAllocation.Last().Item1 != trade.OrderTicket.SubmitDate)
+                            eodAllocation.Add(Tuple.Create(
+                                trade.OrderTicket.SubmitDate,
+                                new Dictionary<string, double>(eodAllocation.Last().Item2)));
 
-                    // adjust the asset allocation according to the order
-                    eodAllocation.Last().Item2[trade.OrderTicket.Name] = trade.OrderTicket.TargetAllocation;
+                        // adjust the asset allocation according to the order
+                        eodAllocation.Last().Item2[trade.OrderTicket.Name] = trade.OrderTicket.TargetAllocation;
 
 #if RESOLVE_CHILD_HOLDINGS
-                    // if an asset is referring to a child strategy,
-                    // collect that child strategy's allocations
-                    if (algo.Asset(trade.OrderTicket.Name).Meta.Generator != null
-                    && !allEodAllocations.ContainsKey(algo.Asset(trade.OrderTicket.Name).Meta.Generator))
-                        collectEodAllocation(algo.Asset(trade.OrderTicket.Name).Meta.Generator);
+                        // if an asset is referring to a child strategy,
+                        // collect that child strategy's allocations
+                        if (algo.Asset(trade.OrderTicket.Name).Meta.Generator != null
+                        && !allEodAllocations.ContainsKey(algo.Asset(trade.OrderTicket.Name).Meta.Generator))
+                            collectEodAllocation(algo.Asset(trade.OrderTicket.Name).Meta.Generator);
 #endif
 
-                    // record each day with a trade
-                    if (!allTradeDates.Contains(trade.OrderTicket.SubmitDate))
-                        allTradeDates.Add(trade.OrderTicket.SubmitDate);
+                        // record each day with a trade
+                        if (!allTradeDates.Contains(trade.OrderTicket.SubmitDate))
+                            allTradeDates.Add(trade.OrderTicket.SubmitDate);
+                    }
                 }
-
                 allEodAllocations[algo] = eodAllocation;
             }
             collectEodAllocation(Algorithm);
