@@ -144,6 +144,7 @@ namespace TuringTrader
 
             WriteEventHandler(string.Format("Version App = {0}, Engine = {1}\n", GitInfo.Version, SimulatorV2.GlobalSettings.Version));
             WriteEventHandler(string.Format("Home Path = {0}\n", GlobalSettings.HomePath));
+            WriteEventHandler(string.Format("Default Feed = {0}\n", GlobalSettings.DefaultDataFeed));
             WriteEventHandler(string.Format("Console Mode = {0}\n\n", GlobalSettings.ConsoleMode));
 
             UpdateHomeDir();

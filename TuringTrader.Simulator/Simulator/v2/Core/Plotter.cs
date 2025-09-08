@@ -101,8 +101,11 @@ namespace TuringTrader.SimulatorV2
                     // optional code to resolve holdings of child strategies
                     if (asset.Meta.Generator != null)
                     {
-                        var lastRebalanceDateChild = asset.Meta.Generator.Account.TradeLog.Last().OrderTicket.SubmitDate;
-                        if (lastRebalanceDateChild > lastRebalanceDate) lastRebalanceDate = lastRebalanceDateChild;
+                        if (asset.Meta.Generator.Account.TradeLog != null && asset.Meta.Generator.Account.TradeLog.Count > 0)
+                        {
+                            var lastRebalanceDateChild = asset.Meta.Generator.Account.TradeLog.Last().OrderTicket.SubmitDate;
+                            if (lastRebalanceDateChild > lastRebalanceDate) lastRebalanceDate = lastRebalanceDateChild;
+                        }
 
                         addAssetAllocation(asset.Meta.Generator, kv.Value * scale);
                     }
