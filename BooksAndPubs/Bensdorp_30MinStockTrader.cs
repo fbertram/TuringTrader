@@ -3,9 +3,9 @@
 // Name:        Bensdorp_30MinStockTrader
 // Description: Strategy, as published in Laurens Bensdorp's book
 //              'The 30-Minute Stock Trader'.
-// History:     2019iii19, FUB, created
+// History:     2019iii19, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

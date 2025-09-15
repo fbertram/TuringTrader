@@ -4,9 +4,9 @@
 // Description: Strategy, as published in Gary Antonacci's book
 //              'Dual Momentum Investing'.
 //              http://www.optimalmomentum.com/
-// History:     2018xi22, FUB, created
+// History:     2018xi22, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

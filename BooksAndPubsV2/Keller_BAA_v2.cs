@@ -6,9 +6,9 @@
 //              'Relative and Absolute Momentum in Times of Rising/Low Yields:
 //              Bold Asset Allocation (BAA)'
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4166845
-// History:     2022xi21, FUB, created
+// History:     2022xi21, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

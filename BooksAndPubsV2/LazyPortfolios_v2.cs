@@ -2,10 +2,10 @@
 // Project:     TuringTrader, algorithms from books & publications
 // Name:        LazyPortfolios_v2
 // Description: Simple benchmarking portfolios.
-// History:     2019xii04, FUB, created
-//              2023ii09, FUB, refactored for v2 engine
+// History:     2019xii04, EFB, created
+//              2023ii09, EFB, refactored for v2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

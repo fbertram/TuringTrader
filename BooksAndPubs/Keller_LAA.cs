@@ -5,9 +5,9 @@
 //              Wouter J. Keller's paper 
 //              'Growth-Trend Timing and 60-40 Variations: Lethargic Asset Allocation (LAA)'
 //              https://ssrn.com/abstract=3498092
-// History:     2020iv28, FUB, created
+// History:     2020iv28, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

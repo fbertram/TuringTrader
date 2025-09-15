@@ -3,9 +3,9 @@
 // Name:        Connors_ShortTermTrading
 // Description: Strategy, as published in Larry Connors and Cesar Alvarez book
 //              'Short Term Trading Strategies That Work'.
-// History:     2019iii28, FUB, created
+// History:     2019iii28, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

@@ -4,9 +4,9 @@
 // Description: 'Mama Bear' and 'Papa Bear' strategies, as published in Brian Livingston's book
 //              'Muscular Portfolios'.
 //               https://muscularportfolios.com/
-// History:     2018xii14, FUB, created
+// History:     2018xii14, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

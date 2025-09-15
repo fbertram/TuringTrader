@@ -4,9 +4,9 @@
 // Description: Universal Investment Strategy as described by Logical Invest.
 //              https://logical-invest.com/app/strategy/uis/universal-investment-strategy
 //              https://logical-invest.com/universal-investment-strategy/
-// History:     2020viiii15, FUB, created
+// History:     2020viiii15, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

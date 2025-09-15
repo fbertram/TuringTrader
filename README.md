@@ -44,5 +44,5 @@ The project also contains a script for a single-click build of the installer. Se
 
 Happy coding!
 
-Felix Bertram
+Elisabeth F. Bertram
 info@TuringTrader.org

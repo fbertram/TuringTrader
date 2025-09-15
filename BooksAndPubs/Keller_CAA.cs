@@ -5,9 +5,9 @@
 //              Wouter J. Keller, Adam Butler, and Ilya Kipnis' paper 
 //              'Momentum and Markowitz: a Golden Combination'.
 //              https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2606884
-// History:     2019iii07, FUB, created
+// History:     2019iii07, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

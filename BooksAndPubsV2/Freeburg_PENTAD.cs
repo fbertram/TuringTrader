@@ -3,9 +3,9 @@
 // Name:        Freeburg_PENTAD_v2
 // Description: PENTAD strategy, as published in Nelson Freeburg's
 //              Formula Research newsletter, October 1995.
-// History:     2023ix01, FUB, created
+// History:     2023ix01, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.
