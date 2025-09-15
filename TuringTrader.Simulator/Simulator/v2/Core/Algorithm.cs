@@ -2,7 +2,7 @@
 // Project:     TuringTrader, simulator core v2
 // Name:        Algorithm
 // Description: Algorithm base class/ simulator core.
-// History:     2021iv23, FUB, created
+// History:     2021iv23, EFB, created
 //------------------------------------------------------------------------------
 // Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
@@ -21,13 +21,16 @@
 //              https://www.gnu.org/licenses/agpl-3.0.
 //==============================================================================
 
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TuringTrader.Optimizer;
 using TuringTrader.SimulatorV2.Indicators;
+using static TuringTrader.SimulatorV2.IAccount;
 
 namespace TuringTrader.SimulatorV2
 {
@@ -485,6 +488,201 @@ namespace TuringTrader.SimulatorV2
         /// of the accounts NAV held.
         /// </summary>
         public Dictionary<string, double> Positions { get => Account.Positions; }
+        /// <summary>
+        /// Positions held by algorithm and its child algorithms.
+        /// </summary>
+        public Dictionary<string, double> PositionsFlattened
+        {
+            get
+            {
+                var holdings = new Dictionary<string, double>();
+
+                void addAssetAllocation(Algorithm algo, double scale = 1.0)
+                {
+                    foreach (var kv in algo.Positions)
+                    {
+                        var asset = algo.Asset(kv.Key);
+                        var child = asset.Meta.Generator;
+
+                        if (child != null)
+                        {
+                            addAssetAllocation(child, kv.Value * scale);
+                        }
+                        else
+                        {
+                            Debug.Assert(asset.Meta.Generator == null); // must not be a child algo
+
+                            var key = asset.Name;
+
+                            if (!holdings.ContainsKey(key))
+                                holdings[key] = 0.0;
+                            holdings[key] += kv.Value * scale;
+                        }
+                    }
+                }
+                addAssetAllocation(this);
+
+                return holdings;
+            }
+        }
+        /// <summary>
+        /// Retrieve trade log. Note that this log only contains trades executed
+        /// and not orders that were not executed.
+        /// </summary>
+        public List<IAccount.OrderReceipt> TradeLog { get => Account.TradeLog; }
+        /// <summary>
+        /// Retrieve trade log of this algorithm and its childs.
+        /// </summary>
+        public List<IAccount.OrderReceipt> TradeLogFlattened
+        {
+            get
+            {
+                var tradelog = new List<IAccount.OrderReceipt>();
+
+                if (Account.TradeLog == null || Account.TradeLog.Count == 0)
+                    return tradelog;
+
+                var allEodAllocations = new Dictionary<Algorithm, List<Tuple<DateTime, Dictionary<string, double>>>>();
+                var allTradeDates = new HashSet<DateTime>();
+
+                // collect EOD asset allocations
+                // - one row for each day in the trade log
+                // - assets referenced by their nickname
+                void collectEodAllocation(Algorithm algo)
+                {
+                    var eodAllocation = new List<Tuple<DateTime, Dictionary<string, double>>>();
+
+                    if (algo.Account.TradeLog != null)
+                    {
+                        foreach (var trade in algo.Account.TradeLog)
+                        {
+                            // new date: copy previous allocation
+                            // BUGBUG: this is inaccurate. Due to the fluctuation
+                            //         of asset prices, the new line has deviated
+                            //         from the previous allocation.
+                            //         However, because a typical strategy adjusts
+                            //         all its assets weights simultaneously, this
+                            //         shouldn't matter too much.
+                            if (eodAllocation.Count == 0)
+                            {
+                                // create very first asset allocation entry
+                                eodAllocation.Add(Tuple.Create(
+                                    trade.OrderTicket.SubmitDate,
+                                    new Dictionary<string, double>()));
+                            }
+                            else if (eodAllocation.Last().Item1 != trade.OrderTicket.SubmitDate)
+                            {
+                                // copy asset allocation entry from previous,
+                                // but remove flat allocations
+                                var baseAlloc = eodAllocation.Last().Item2
+                                    .Where(kv => kv.Value != 0.0)
+                                    .ToDictionary(
+                                        kv => kv.Key,
+                                        kv => kv.Value);
+
+                                eodAllocation.Add(Tuple.Create(
+                                    trade.OrderTicket.SubmitDate,
+                                    new Dictionary<string, double>(baseAlloc)));
+                            }
+
+                            // adjust the asset allocation according to the order
+                            eodAllocation.Last().Item2[trade.OrderTicket.Name] = trade.OrderTicket.TargetAllocation;
+
+                            // if an asset is referring to a child strategy,
+                            // collect that child strategy's allocations
+                            if (algo.Asset(trade.OrderTicket.Name).Meta.Generator != null
+                            && !allEodAllocations.ContainsKey(algo.Asset(trade.OrderTicket.Name).Meta.Generator))
+                                collectEodAllocation(algo.Asset(trade.OrderTicket.Name).Meta.Generator);
+
+                            // record each day with a trade
+                            if (!allTradeDates.Contains(trade.OrderTicket.SubmitDate))
+                                allTradeDates.Add(trade.OrderTicket.SubmitDate);
+                        }
+                    }
+                    allEodAllocations[algo] = eodAllocation;
+                }
+                collectEodAllocation(this);
+
+                // get asset allocation for specific date
+                // - assets referenced by their nickname
+                // - all child strategies resolved
+                Tuple<DateTime, Dictionary<string, double>> getAllocation(Algorithm algo, DateTime date)
+                {
+                    // BUGBUG: this is inaccurate. Due to the fluctuation
+                    //         of asset prices, the new line has deviated
+                    //         from the previous allocation.
+                    //         In this case, this may make a notible difference,
+                    //         when the asset is a child strategy that is
+                    //         then replaced with its internal holdings.
+                    var eodAlloc = allEodAllocations[algo]
+                        .Where(a => a.Item1 <= date)
+                        .LastOrDefault();
+
+                    if (eodAlloc == null) return Tuple.Create(date, new Dictionary<string, double>());
+
+                    var resolvedAlloc = Tuple.Create(eodAlloc.Item1, new Dictionary<string, double>());
+
+                    foreach (var asset in eodAlloc.Item2)
+                    {
+                        var childAlgo = algo.Asset(asset.Key).Meta.Generator;
+
+                        if (childAlgo != null)
+                        {
+                            // asset is child strategy: resolve
+                            var childAlloc = getAllocation(childAlgo, date);
+
+                            foreach (var child in childAlloc.Item2)
+                            {
+                                if (!resolvedAlloc.Item2.ContainsKey(child.Key))
+                                    resolvedAlloc.Item2[child.Key] = 0.0;
+                                resolvedAlloc.Item2[child.Key] += asset.Value * child.Value;
+                            }
+
+                            // if the child strategy's last trade is more recent,
+                            // use that date as the allocation's latest
+                            if (resolvedAlloc.Item1 < childAlloc.Item1)
+                                resolvedAlloc = Tuple.Create(childAlloc.Item1, resolvedAlloc.Item2);
+                        }
+                        else
+                        {
+                            // atomic asset, copy as-is
+                            if (!resolvedAlloc.Item2.ContainsKey(asset.Key))
+                                resolvedAlloc.Item2[asset.Key] = 0.0;
+                            resolvedAlloc.Item2[asset.Key] += asset.Value;
+                        }
+                    }
+
+                    return resolvedAlloc;
+                }
+
+                foreach (var date in allTradeDates.OrderBy(d => d))
+                {
+                    var alloc = getAllocation(this, date);
+
+                    if (alloc != null)
+                    {
+                        foreach (var kv in alloc.Item2)
+                        {
+                            tradelog.Add(new IAccount.OrderReceipt(
+                                new OrderTicket(
+                                    date, // submitDate, 
+                                    kv.Key, // symbol, 
+                                    kv.Value, // targetAllocation, 
+                                    OrderType.openNextBar, // orderType, 
+                                    0.0 // orderPrice
+                                ),
+                                date, // execDate
+                                kv.Value, // orderSize
+                                0.0, // fillPrice,
+                                0.0, // orderAmount,
+                                0.0)); // frictionAmount));
+                        }
+                    }
+                }
+
+                return tradelog;
+            }
+        }
         /// <summary>
         /// Algorithm's current net asset value. Expressed in currency.
         /// </summary>

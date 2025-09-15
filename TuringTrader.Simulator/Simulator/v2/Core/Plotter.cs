@@ -24,6 +24,10 @@
 // RESOLVE_CHILD_HOLDINGS: if defined, resolve asset holdings of child strategies
 #define RESOLVE_CHILD_HOLDINGS
 
+// USE_POSITIONS_FLATTENED: if defined, use Algorithm.PositionsFlattened
+#define USE_POSITIONS_FLATTENED
+#define USE_TRADELOG_FLATTENED
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,6 +89,27 @@ namespace TuringTrader.SimulatorV2
             if (Algorithm.Positions.Count == 0)
                 return;
 
+#if USE_POSITIONS_FLATTENED
+            var holdings = Algorithm.PositionsFlattened;
+
+            DateTime lastRebalDateFlattened(Algorithm algo, DateTime parentLastRebal)
+            {
+                var algoLastRebal = algo.Account.TradeLog.Last().OrderTicket.SubmitDate;
+                var levelLastRebal = parentLastRebal > algoLastRebal
+                    ? parentLastRebal : algoLastRebal;
+
+                foreach (var kv in algo.Positions)
+                {
+                    var childStrategy = algo.Asset(kv.Key).Meta.Generator;
+
+                    if (childStrategy != null)
+                        levelLastRebal = lastRebalDateFlattened(childStrategy, levelLastRebal);
+                }
+
+                return levelLastRebal;
+            }
+            var lastRebalanceDate = lastRebalDateFlattened(Algorithm, default);
+#else
             var holdings = new Dictionary<string, double>();
             var names = new Dictionary<string, string>();
             var prices = new Dictionary<string, double>();
@@ -131,14 +156,15 @@ namespace TuringTrader.SimulatorV2
                 }
             }
             addAssetAllocation(Algorithm);
+#endif
 
-            SelectChart(Simulator.Plotter.SheetNames.HOLDINGS, "Symbol");
-            foreach (var ticker in holdings.Keys.OrderByDescending(ticker => holdings[ticker]))
+            foreach (var nickname in holdings.Keys.OrderByDescending(ticker => holdings[ticker]))
             {
-                SetX(ticker);
-                Plot("Name", names[ticker]);
-                Plot("Allocation", string.Format("{0:P2}", holdings[ticker]));
-                Plot("Price", string.Format("{0:C2}", prices[ticker]));
+                SelectChart(Simulator.Plotter.SheetNames.HOLDINGS, "Symbol");
+                SetX(Algorithm.Asset(nickname).Ticker);
+                Plot("Name", Algorithm.Asset(nickname).Description);
+                Plot("Allocation", string.Format("{0:P2}", holdings[nickname]));
+                Plot("Price", string.Format("{0:C2}", Algorithm.Asset(nickname).Close[0]));
             }
 
             SelectChart(Simulator.Plotter.SheetNames.LAST_REBALANCE, "Key");
@@ -156,6 +182,44 @@ namespace TuringTrader.SimulatorV2
             if (Algorithm.Account.TradeLog == null || Algorithm.Account.TradeLog.Count == 0)
                 return;
 
+#if USE_TRADELOG_FLATTENED
+            var tradelog = Algorithm.TradeLogFlattened;
+
+            var targetHoldings = new Dictionary<string, double>();
+            var targetDate = tradelog.First().OrderTicket.SubmitDate;
+
+            for (int i = 0; i < tradelog.Count; i++)
+            {
+                var receipt = tradelog[i];
+
+                // BUGBUG: We assume that from one log entry to the next,
+                //         the asset allocation won't change - even if it
+                //         is a different day. Of course, that isn't true,
+                //         as prices and asset allocations fluctuate daily.
+                //         However, that shouldn't matter too much, if we
+                //         assume that typical algorithms adjust all assets
+                //         held on the same trading day, effectively fixing
+                //         this issue.
+                if (receipt.OrderTicket.SubmitDate != targetDate || i == tradelog.Count - 1)
+                {
+                    SelectChart(Simulator.Plotter.SheetNames.HOLDINGS_HISTORY, "Date");
+                    SetX(targetDate);
+
+                    var row = "";
+                    foreach (var kv in targetHoldings.OrderByDescending(kv => kv.Value))
+                    {
+                        if (kv.Value != 0.0)
+                            row += string.Format("{0}{1}={2:P2}", row.Length > 0 ? ", " : "", Algorithm.Asset(kv.Key).Ticker, kv.Value);
+                    }
+
+                    Plot("Allocation", row);
+
+                    targetDate = receipt.OrderTicket.SubmitDate;
+                }
+
+                targetHoldings[receipt.OrderTicket.Name] = receipt.OrderTicket.TargetAllocation;
+            }
+#else
             var allEodAllocations = new Dictionary<Algorithm, List<Tuple<DateTime, Dictionary<string, double>>>>();
             var allTradeDates = new HashSet<DateTime>();
 
@@ -299,6 +363,7 @@ namespace TuringTrader.SimulatorV2
                     Plot("Allocation", row);
                 }
             }
+#endif
         }
 
         /// <summary>
