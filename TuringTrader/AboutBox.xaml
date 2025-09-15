@@ -15,7 +15,7 @@ website at "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.org/">
                 <Run Text="https://www.turingtrader.org/"/></Hyperlink><Run Text="."/><LineBreak/>
             <LineBreak/>
-            <Run Text="Copyright © 2011-2023, "/>
+            <Run Text="Copyright © 2011-2025, "/>
             <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.turingtrader.com">
                 <Run Text="Bertram Enterprises LLC dba TuringTrader.com"/></Hyperlink><Run Text="."/><LineBreak/><LineBreak/>
             <Run Text="This program is free software: you can redistribute it and/or modify
