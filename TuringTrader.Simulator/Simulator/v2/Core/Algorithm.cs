@@ -510,8 +510,6 @@ namespace TuringTrader.SimulatorV2
                         }
                         else
                         {
-                            Debug.Assert(asset.Meta.Generator == null); // must not be a child algo
-
                             var key = asset.Name;
 
                             if (!holdings.ContainsKey(key))

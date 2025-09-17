@@ -94,7 +94,8 @@ namespace TuringTrader.SimulatorV2
 
             DateTime lastRebalDateFlattened(Algorithm algo, DateTime parentLastRebal)
             {
-                var algoLastRebal = algo.Account.TradeLog.Last().OrderTicket.SubmitDate;
+                var algoLastRebal = algo.Account.TradeLog != null && algo.Account.TradeLog.Count > 0
+                    ? algo.Account.TradeLog.Last().OrderTicket.SubmitDate : default;
                 var levelLastRebal = parentLastRebal > algoLastRebal
                     ? parentLastRebal : algoLastRebal;
 
@@ -184,6 +185,9 @@ namespace TuringTrader.SimulatorV2
 
 #if USE_TRADELOG_FLATTENED
             var tradelog = Algorithm.TradeLogFlattened;
+
+            if (tradelog == null || tradelog.Count == 0)
+                return;
 
             var targetHoldings = new Dictionary<string, double>();
             var targetDate = tradelog.First().OrderTicket.SubmitDate;
