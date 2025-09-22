@@ -2,10 +2,10 @@
 // Project:     TuringTrader, simulator core v2
 // Name:        Output
 // Description: Algorithm output capabilities.
-// History:     2018ix11, FUB, created
-//              2023ii13, FUB, new info/ warning/ error methods for v2 engine.
+// History:     2018ix11, EFB, created
+//              2023ii13, EFB, new info/ warning/ error methods for v2 engine.
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

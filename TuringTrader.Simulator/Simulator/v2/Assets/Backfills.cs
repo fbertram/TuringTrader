@@ -2,8 +2,9 @@
 // Name:        Backfills
 // Description: Backfills for common ETFs and indices.
 //              - file created automatically -
-// History:     2023/08/07, FUB, created
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// History:     2023/08/07, EFB, created
+//------------------------------------------------------------------------------
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 
 namespace TuringTrader.SimulatorV2.Assets

@@ -2,9 +2,9 @@
 // Project:     TuringTrader, simulator core
 // Name:        GlobalSettings
 // Description: Global settings for simulator engine
-// History:     2018x09, FUB, created
+// History:     2018x09, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

@@ -2,9 +2,9 @@
 // Project:     TuringTrader, simulator core
 // Name:        DataSourceSplice
 // Description: Virtual data source to splice results from multiple other sources.
-// History:     2022xi25, FUB, created
+// History:     2022xi25, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

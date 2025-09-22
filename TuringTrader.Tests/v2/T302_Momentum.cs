@@ -2,9 +2,9 @@
 // Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        T302_Momentum
 // Description: Unit test for momentum indicators.
-// History:     2023ii11, FUB, created
+// History:     2023ii11, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

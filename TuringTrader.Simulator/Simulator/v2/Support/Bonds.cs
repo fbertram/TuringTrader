@@ -2,10 +2,10 @@
 // Project:     TuringTrader, simulator core
 // Name:        Support/Bonds
 // Description: Bond support functionality
-// History:     2019v19, FUB, created
-//              2023ii17, FUB, adapted for V2 engine
+// History:     2019v19, EFB, created
+//              2023ii17, EFB, adapted for V2 engine
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.

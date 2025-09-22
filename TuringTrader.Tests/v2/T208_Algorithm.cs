@@ -2,9 +2,9 @@
 // Project:     TuringTrader: SimulatorEngine.Tests
 // Name:        T208_Algorithm
 // Description: Unit test for child algorithms.
-// History:     2023ii08, FUB, created
+// History:     2023ii08, EFB, created
 //------------------------------------------------------------------------------
-// Copyright:   (c) 2011-2023, Bertram Enterprises LLC dba TuringTrader.
+// Copyright:   (c) 2011-2025, Bertram Enterprises LLC dba TuringTrader.
 //              https://www.turingtrader.org
 // License:     This file is part of TuringTrader, an open-source backtesting
 //              engine/ trading simulator.
