@@ -944,6 +944,28 @@ namespace TuringTrader.SimulatorV2
             DateTime.Parse("09/01/2025", CultureInfo.InvariantCulture), // Labor Day
             DateTime.Parse("11/27/2025", CultureInfo.InvariantCulture), // Thanksgiving Day
             DateTime.Parse("12/25/2025", CultureInfo.InvariantCulture), // Christmas Day
+            //--- 2026
+            DateTime.Parse("01/01/2026", CultureInfo.InvariantCulture), // New Years Day
+            DateTime.Parse("01/19/2026", CultureInfo.InvariantCulture), // Martin Luther King, Jr. Day
+            DateTime.Parse("02/16/2026", CultureInfo.InvariantCulture), // Washington's Birthday
+            DateTime.Parse("04/03/2026", CultureInfo.InvariantCulture), // Good Friday
+            DateTime.Parse("05/25/2026", CultureInfo.InvariantCulture), // Memorial Day
+            DateTime.Parse("06/19/2026", CultureInfo.InvariantCulture), // Juneteenth National Independence Day
+            DateTime.Parse("07/03/2026", CultureInfo.InvariantCulture), // Independence Day
+            DateTime.Parse("09/07/2026", CultureInfo.InvariantCulture), // Labor Day
+            DateTime.Parse("11/26/2026", CultureInfo.InvariantCulture), // Thanksgiving Day
+            DateTime.Parse("12/25/2026", CultureInfo.InvariantCulture), // Christmas Day
+            //--- 2027
+            DateTime.Parse("01/01/2027", CultureInfo.InvariantCulture), // New Years Day
+            DateTime.Parse("01/18/2027", CultureInfo.InvariantCulture), // Martin Luther King, Jr. Day
+            DateTime.Parse("02/15/2027", CultureInfo.InvariantCulture), // Washington's Birthday
+            DateTime.Parse("03/26/2027", CultureInfo.InvariantCulture), // Good Friday
+            DateTime.Parse("05/31/2027", CultureInfo.InvariantCulture), // Memorial Day
+            DateTime.Parse("06/18/2027", CultureInfo.InvariantCulture), // Juneteenth National Independence Day
+            DateTime.Parse("07/05/2027", CultureInfo.InvariantCulture), // Independence Day
+            DateTime.Parse("09/06/2027", CultureInfo.InvariantCulture), // Labor Day
+            DateTime.Parse("11/25/2027", CultureInfo.InvariantCulture), // Thanksgiving Day
+            DateTime.Parse("12/24/2027", CultureInfo.InvariantCulture), // Christmas Day
             //---
             #endregion
 #endif
