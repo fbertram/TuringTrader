@@ -495,6 +495,11 @@ namespace TuringTrader.SimulatorV2
         {
             get
             {
+#if false
+                // FIXME: retired 2025xi20.
+                // This is problematic. Within the hierarchy of
+                // algos, the same ticker might occur under multiple
+                // nicknames.
                 var holdings = new Dictionary<string, double>();
 
                 void addAssetAllocation(Algorithm algo, double scale = 1.0)
@@ -521,6 +526,46 @@ namespace TuringTrader.SimulatorV2
                 addAssetAllocation(this);
 
                 return holdings;
+#else
+                // new 2025xi20
+                // To address the issue above, we are combining assets
+                // based on their ticker symbols. However, to keep code
+                // compatibility, we still return a dictionary with
+                // asset nicknames.
+                var holdings = new Dictionary<string, double>();
+                var nicknames = new Dictionary<string, string>();
+
+                void addAssetAllocation(Algorithm algo, double scale = 1.0)
+                {
+                    foreach (var kv in algo.Positions)
+                    {
+                        var asset = algo.Asset(kv.Key);
+                        var child = asset.Meta.Generator;
+
+                        if (child != null)
+                        {
+                            addAssetAllocation(child, kv.Value * scale);
+                        }
+                        else
+                        {
+                            var nickname = asset.Name;
+                            var ticker = asset.Ticker;
+
+                            if (!holdings.ContainsKey(ticker))
+                                holdings[ticker] = 0.0;
+                            holdings[ticker] += kv.Value * scale;
+
+                            if (!nicknames.ContainsKey(ticker))
+                                nicknames[ticker] = nickname;
+                        }
+                    }
+                }
+                addAssetAllocation(this);
+
+                return holdings.ToDictionary(
+                    kv => nicknames[kv.Key],
+                    kv => kv.Value);
+#endif
             }
         }
         /// <summary>
@@ -690,7 +735,7 @@ namespace TuringTrader.SimulatorV2
         /// account's NAV.
         /// </summary>
         public double Cash { get => Account.Cash; }
-        #endregion
+#endregion
 
         /// <summary>
         /// Run backtest.
