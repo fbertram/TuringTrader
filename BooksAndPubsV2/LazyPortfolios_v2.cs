@@ -54,7 +54,11 @@ namespace TuringTrader.BooksAndPubsV2
             WarmupPeriod = TimeSpan.FromDays(0);
             ((Account_Default)Account).Friction = 0.0; // lazy portfolios typically w/o commission
 
-            var autoAlloc = ALLOCATION.Sum(a => a.Item2) == 0.0;
+            // FIXME: ALLOCATION is not a property. As a consequence, it is evaluated
+            //        every time we use it, which is problematic for strategy blends.
+            //        To fix this, we introduce a copy here.
+            var _ALLOCATION = ALLOCATION;
+            var autoAlloc = _ALLOCATION.Sum(a => a.Item2) == 0.0;
 
             //========== simulation loop ==========
 
@@ -65,9 +69,9 @@ namespace TuringTrader.BooksAndPubsV2
                 // rebalance allocation
                 if (IS_TRADING_DAY)
                 {
-                    foreach (var asset in ALLOCATION)
+                    foreach (var asset in _ALLOCATION)
                         Asset(asset.Item1).Allocate(
-                            autoAlloc ? 1.0 / ALLOCATION.Count : asset.Item2,
+                            autoAlloc ? 1.0 / _ALLOCATION.Count : asset.Item2,
                             OrderType.openNextBar);
                 }
 
@@ -107,7 +111,7 @@ namespace TuringTrader.BooksAndPubsV2
 
                     Plotter.SelectChart("Asset 12-Months Rolling Returns", "Date");
                     Plotter.SetX(SimDate);
-                    foreach (var alloc in ALLOCATION)
+                    foreach (var alloc in _ALLOCATION)
                     {
                         var asset = Asset(alloc.Item1);
                         Plotter.Plot(asset.Description, 100.0 * (asset.Close[0] / asset.Close[252] - 1.0));
