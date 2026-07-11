@@ -24,20 +24,27 @@ namespace FxMacroDataCalendar
         private const string CalendarCurrency = "USD";
         private const int FastTrendDays = 50;
         private const int SlowTrendDays = 200;
-        private const int SampleLookbackYears = 10;
+        private const string MarketTimeZoneId = "Eastern Standard Time";
+        private static readonly DateTime DefaultStartDate = DateTimeOffset
+            .Parse("2007-01-01T16:00:00-05:00", CultureInfo.InvariantCulture)
+            .DateTime;
 
         private readonly ReleaseCalendarClient _calendarClient = new ReleaseCalendarClient();
+        private readonly TimeZoneInfo _marketTimeZone = FindMarketTimeZone();
         private HashSet<DateTime> _blackoutDates = new HashSet<DateTime>();
 
         public override string Name => "FXMacroData Macro Blackout Sample";
 
         public override void Run()
         {
-            StartDate = StartDate ?? DateTime.Today.AddYears(-SampleLookbackYears);
-            EndDate = EndDate ?? DateTime.Today;
+            StartDate = StartDate ?? DefaultStartDate;
+            EndDate = EndDate ?? TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _marketTimeZone)
+                .Date
+                .AddHours(16);
             WarmupPeriod = TimeSpan.FromDays(365);
 
-            _blackoutDates = new HashSet<DateTime>(_calendarClient.TopTierBlackoutDates(CalendarCurrency, this));
+            _blackoutDates = new HashSet<DateTime>(
+                _calendarClient.TopTierBlackoutDates(CalendarCurrency, this, _marketTimeZone));
 
             SimLoop(() =>
             {
@@ -45,7 +52,7 @@ namespace FxMacroDataCalendar
                 var trendSignal = asset.Close.EMA(FastTrendDays)[0] > asset.Close.EMA(SlowTrendDays)[0];
                 var targetWeight = trendSignal ? 1.0 : 0.0;
 
-                if (IsMacroBlackout(SimDate) && asset.Position <= 0.0 && targetWeight > 0.0)
+                if (IsMacroBlackout(SimDate))
                     targetWeight = 0.0;
 
                 if (Math.Abs(asset.Position - targetWeight) > 0.05)
@@ -73,6 +80,18 @@ namespace FxMacroDataCalendar
         {
             return _blackoutDates.Contains(simDate.Date);
         }
+
+        private static TimeZoneInfo FindMarketTimeZone()
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(MarketTimeZoneId);
+            }
+            catch (Exception ex) when (ex is TimeZoneNotFoundException || ex is InvalidTimeZoneException)
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+            }
+        }
     }
 
     internal sealed class ReleaseCalendarClient
@@ -80,14 +99,17 @@ namespace FxMacroDataCalendar
         private const string CalendarUrl = "https://fxmacrodata.com/api/v1/calendar/";
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
 
-        public IReadOnlyList<DateTime> TopTierBlackoutDates(string currency, Algorithm parentAlgorithm)
+        public IReadOnlyList<DateTime> TopTierBlackoutDates(
+            string currency,
+            Algorithm parentAlgorithm,
+            TimeZoneInfo marketTimeZone)
         {
             if (parentAlgorithm.StartDate == null || parentAlgorithm.EndDate == null)
                 throw new InvalidOperationException("Set StartDate and EndDate before loading FXMacroData calendar events.");
 
             return FetchCalendar(currency, (DateTime)parentAlgorithm.StartDate, (DateTime)parentAlgorithm.EndDate)
                 .Where(IsTopTier)
-                .Select(LocalEventDate)
+                .Select(item => LocalEventDate(item, marketTimeZone))
                 .Where(date => date != DateTime.MinValue)
                 .Distinct()
                 .OrderBy(date => date)
@@ -114,7 +136,7 @@ namespace FxMacroDataCalendar
             return item.TopTierForCurrency || item.MarketTier == 1;
         }
 
-        private static DateTime LocalEventDate(CalendarEvent item)
+        private static DateTime LocalEventDate(CalendarEvent item, TimeZoneInfo marketTimeZone)
         {
             if (!string.IsNullOrWhiteSpace(item.AnnouncementDatetimeUtc)
                 && DateTimeOffset.TryParse(
@@ -123,7 +145,7 @@ namespace FxMacroDataCalendar
                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
                     out var utcTimestamp))
             {
-                return utcTimestamp.ToLocalTime().Date;
+                return TimeZoneInfo.ConvertTime(utcTimestamp, marketTimeZone).Date;
             }
 
             if (!string.IsNullOrWhiteSpace(item.Date)
