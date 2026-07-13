@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -96,8 +97,14 @@ namespace FxMacroDataCalendar
 
     internal sealed class ReleaseCalendarClient
     {
+        private const string AnnouncementsUrl = "https://fxmacrodata.com/api/v1/announcements/";
         private const string CalendarUrl = "https://fxmacrodata.com/api/v1/calendar/";
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
+        private static readonly string[] HistoricalTopTierIndicators =
+        {
+            "employment", "non_farm_payrolls", "unemployment", "inflation", "inflation_mom",
+            "core_inflation", "core_inflation_mom", "pce", "core_pce", "gdp", "retail_sales", "policy_rate",
+        };
 
         public IReadOnlyList<DateTime> TopTierBlackoutDates(
             string currency,
@@ -107,14 +114,18 @@ namespace FxMacroDataCalendar
             if (parentAlgorithm.StartDate == null || parentAlgorithm.EndDate == null)
                 throw new InvalidOperationException("Set StartDate and EndDate before loading FXMacroData calendar events.");
 
-            var calendarEvents = FetchCalendar(currency, (DateTime)parentAlgorithm.StartDate, (DateTime)parentAlgorithm.EndDate);
-            if (calendarEvents.Count == 0 && parentAlgorithm.EndDate.Value.Date < DateTime.UtcNow.Date)
-                throw new InvalidOperationException(
-                    "FXMacroData does not currently provide confirmed historical release timestamps for this range. "
-                    + "Do not run a historical blackout backtest until the calendar has coverage for the requested period.");
+            var startDate = (DateTime)parentAlgorithm.StartDate;
+            var endDate = (DateTime)parentAlgorithm.EndDate;
+            var today = DateTime.UtcNow.Date;
+            var calendarEvents = new List<CalendarEvent>();
+
+            if (startDate.Date < today)
+                calendarEvents.AddRange(FetchHistoricalAnnouncements(currency, startDate, endDate < today ? endDate : today));
+            if (endDate.Date >= today)
+                calendarEvents.AddRange(FetchCalendar(currency, startDate > today ? startDate : today, endDate)
+                    .Where(IsTopTier));
 
             return calendarEvents
-                .Where(IsTopTier)
                 .Select(item => LocalEventDate(item, marketTimeZone))
                 .Where(date => date != DateTime.MinValue)
                 .Distinct()
@@ -137,6 +148,46 @@ namespace FxMacroDataCalendar
             return payload?.Data ?? new List<CalendarEvent>();
         }
 
+        private static IReadOnlyList<CalendarEvent> FetchHistoricalAnnouncements(
+            string currency,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var events = new List<CalendarEvent>();
+            using var client = new HttpClient { Timeout = RequestTimeout };
+
+            foreach (var indicator in HistoricalTopTierIndicators)
+            {
+                var offset = 0;
+                while (true)
+                {
+                    var url = AnnouncementsUrl
+                        + Uri.EscapeDataString(currency.ToUpperInvariant())
+                        + "/"
+                        + Uri.EscapeDataString(indicator)
+                        + "?start_date="
+                        + Uri.EscapeDataString(startDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                        + "&end_date="
+                        + Uri.EscapeDataString(endDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                        + "&limit=100&offset="
+                        + offset.ToString(CultureInfo.InvariantCulture);
+                    using var response = client.GetAsync(url).Result;
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                        break;
+                    response.EnsureSuccessStatusCode();
+                    var payload = JsonSerializer.Deserialize<AnnouncementResponse>(response.Content.ReadAsStringAsync().Result);
+                    var rows = payload?.Data ?? new List<CalendarEvent>();
+                    events.AddRange(rows);
+
+                    if (payload?.Pagination?.HasMore != true || rows.Count == 0)
+                        break;
+                    offset += rows.Count;
+                }
+            }
+
+            return events;
+        }
+
         private static bool IsTopTier(CalendarEvent item)
         {
             return item.TopTierForCurrency || item.MarketTier == 1;
@@ -144,6 +195,9 @@ namespace FxMacroDataCalendar
 
         private static DateTime LocalEventDate(CalendarEvent item, TimeZoneInfo marketTimeZone)
         {
+            if (item.AnnouncementDatetime is long unixTimestamp)
+                return TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeSeconds(unixTimestamp), marketTimeZone).Date;
+
             if (!string.IsNullOrWhiteSpace(item.AnnouncementDatetimeUtc)
                 && DateTimeOffset.TryParse(
                     item.AnnouncementDatetimeUtc,
@@ -174,6 +228,21 @@ namespace FxMacroDataCalendar
         public List<CalendarEvent> Data { get; set; } = new List<CalendarEvent>();
     }
 
+    internal sealed class AnnouncementResponse
+    {
+        [JsonPropertyName("data")]
+        public List<CalendarEvent> Data { get; set; } = new List<CalendarEvent>();
+
+        [JsonPropertyName("pagination")]
+        public Pagination Pagination { get; set; } = new Pagination();
+    }
+
+    internal sealed class Pagination
+    {
+        [JsonPropertyName("has_more")]
+        public bool HasMore { get; set; }
+    }
+
     internal sealed class CalendarEvent
     {
         [JsonPropertyName("name")]
@@ -184,6 +253,9 @@ namespace FxMacroDataCalendar
 
         [JsonPropertyName("announcement_datetime_utc")]
         public string AnnouncementDatetimeUtc { get; set; } = string.Empty;
+
+        [JsonPropertyName("announcement_datetime")]
+        public long? AnnouncementDatetime { get; set; }
 
         [JsonPropertyName("market_tier")]
         public int MarketTier { get; set; }
