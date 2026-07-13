@@ -107,7 +107,13 @@ namespace FxMacroDataCalendar
             if (parentAlgorithm.StartDate == null || parentAlgorithm.EndDate == null)
                 throw new InvalidOperationException("Set StartDate and EndDate before loading FXMacroData calendar events.");
 
-            return FetchCalendar(currency, (DateTime)parentAlgorithm.StartDate, (DateTime)parentAlgorithm.EndDate)
+            var calendarEvents = FetchCalendar(currency, (DateTime)parentAlgorithm.StartDate, (DateTime)parentAlgorithm.EndDate);
+            if (calendarEvents.Count == 0 && parentAlgorithm.EndDate.Value.Date < DateTime.UtcNow.Date)
+                throw new InvalidOperationException(
+                    "FXMacroData does not currently provide confirmed historical release timestamps for this range. "
+                    + "Do not run a historical blackout backtest until the calendar has coverage for the requested period.");
+
+            return calendarEvents
                 .Where(IsTopTier)
                 .Select(item => LocalEventDate(item, marketTimeZone))
                 .Where(date => date != DateTime.MinValue)
@@ -128,7 +134,7 @@ namespace FxMacroDataCalendar
             using var client = new HttpClient { Timeout = RequestTimeout };
             var json = client.GetStringAsync(url).Result;
             var payload = JsonSerializer.Deserialize<CalendarResponse>(json);
-            return payload?.Data ?? Array.Empty<CalendarEvent>();
+            return payload?.Data ?? new List<CalendarEvent>();
         }
 
         private static bool IsTopTier(CalendarEvent item)
