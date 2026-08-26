@@ -97,8 +97,8 @@ namespace FxMacroDataCalendar
 
     internal sealed class ReleaseCalendarClient
     {
-        private const string AnnouncementsUrl = "https://fxmacrodata.com/api/v1/announcements/";
-        private const string CalendarUrl = "https://fxmacrodata.com/api/v1/calendar/";
+        private const string AnnouncementsUrl = "https://api.fxmacrodata.com/v1/announcements/";
+        private const string CalendarUrl = "https://api.fxmacrodata.com/v1/calendar/";
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
         private static readonly string[] HistoricalTopTierIndicators =
         {
